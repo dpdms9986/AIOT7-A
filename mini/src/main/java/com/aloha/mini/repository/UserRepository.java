@@ -1,5 +1,9 @@
 package com.aloha.mini.repository;
 
-public class UserRepository {
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.aloha.mini.domain.Notices;
+
+public interface UserRepository extends JpaRepository<Notices, Long>{
     
 }

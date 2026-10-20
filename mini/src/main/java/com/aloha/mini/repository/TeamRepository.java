@@ -1,5 +1,9 @@
 package com.aloha.mini.repository;
 
-public interface TeamRepository {
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.aloha.mini.domain.Notices;
+
+public interface TeamRepository extends JpaRepository<Notices, Long> {
     
 }

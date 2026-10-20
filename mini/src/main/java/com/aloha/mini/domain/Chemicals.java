@@ -8,7 +8,10 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "chemicals")
-@Getter @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter
+@Setter
+@AllArgsConstructor 
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Chemicals {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
