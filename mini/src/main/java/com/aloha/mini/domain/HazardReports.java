@@ -36,6 +36,10 @@ public class HazardReports {
     @Column(nullable = false, length = 20)
     private String status = "ACTIVE"; // ACTIVE(주의 요망), RESOLVED(해소됨)
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "region_id")
+    private Regions region; // 행정구역별 필터링용 매핑 - BRD_002, BRD_004
+
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 

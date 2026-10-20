@@ -8,7 +8,10 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "chemicals")
-@Getter @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter
+@Setter
+@AllArgsConstructor 
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Chemicals {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,14 +24,16 @@ public class Chemicals {
     @Column(nullable = false, length = 100)
     private String chemicalName; // 약제 품목명
 
+    @Column(nullable = false, length = 50)
+    private String category; // 약제 분류 (살충제 / 살균제 / 제초제) - AST_006
+
+    private Double recommendedDosage; // 면적당 권장 살포량 - AST_006
+
     @Column(length = 100)
     private String manufacturer; // 제조사
 
     @Column(nullable = false)
     private Double currentStock; // 현재 재고 수량
-
-    @Column(nullable = false)
-    private Double safetyStock; // 안전 재고 기준량 (이 수치 이하일 때 프론트에서 빨간 배지 표시)
 
     @Column(nullable = false, length = 20)
     private String unit; // 단위 (예: L, ml, 포, 병)

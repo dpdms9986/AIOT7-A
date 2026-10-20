@@ -24,6 +24,9 @@ public class PilotProfiles {
     @Column(nullable = false, length = 30)
     private String skillLevel; // 숙련도 (BEGINNER, INTERMEDIATE, EXPERT)
 
+    @Column(length = 20)
+    private String phone; // 조종사 연락처 - USER_011
+
     @Column(length = 50)
     private String licenseNumber; // 조종 자격증 번호
 
