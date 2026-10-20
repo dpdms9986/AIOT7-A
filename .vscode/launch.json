@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-MiniApplication<mini>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.aloha.mini.MiniApplication",
+            "projectName": "mini",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
