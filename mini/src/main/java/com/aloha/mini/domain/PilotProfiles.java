@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 @Table(name = "pilot_profiles")
 @Getter
 @Setter 
+@Builder
 @AllArgsConstructor 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PilotProfiles {

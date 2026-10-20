@@ -6,7 +6,8 @@ import java.time.LocalDateTime;
 
 @Entity
 @Getter 
-@Setter 
+@Setter
+@Builder
 @AllArgsConstructor 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "teams")

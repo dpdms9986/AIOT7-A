@@ -9,6 +9,7 @@ import java.util.UUID;
 @Table(name = "users")
 @Getter 
 @Setter 
+@Builder
 @AllArgsConstructor 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Users {
@@ -20,7 +21,7 @@ public class Users {
     private String id; // UUID (UK)
 
     @Column(nullable = false, unique = true, length = 100)
-    private String user_id; // 로그인 이메일 (UK)
+    private String userId; // 로그인 이메일 (UK)
 
     @Column(nullable = false)
     private String password; // BCrypt 암호화 비밀번호
