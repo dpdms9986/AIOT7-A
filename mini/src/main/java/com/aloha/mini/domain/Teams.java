@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 public class Teams {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long teamId;
+    private Long no;
 
     private String teamName;
     

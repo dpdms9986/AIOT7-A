@@ -15,10 +15,10 @@ import java.time.LocalDateTime;
 public class PilotProfiles {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long profileId;
+    private Long no;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_no", nullable = false, unique = true)
+    @JoinColumn(name = "users_no", nullable = false, unique = true)
     private Users user; // Users의 PK(no) 참조
 
     @Column(nullable = false, length = 30)

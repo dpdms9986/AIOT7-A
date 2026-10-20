@@ -12,14 +12,14 @@ import java.time.LocalDateTime;
 public class DispatchBatches {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long batchId;
+    private Long no;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "team_id", nullable = false)
+    @JoinColumn(name = "teams_no", nullable = false)
     private Teams team; // 어느 방제단의 배정 묶음인지 구분
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "leader_no", nullable = false)
+    @JoinColumn(name = "users_no", nullable = false)
     private Users leader; // 배정을 지시한 단장(Users.no)
 
     @Column(nullable = false, length = 100)

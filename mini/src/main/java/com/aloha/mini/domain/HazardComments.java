@@ -12,14 +12,14 @@ import java.time.LocalDateTime;
 public class HazardComments {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long commentId;
+    private Long no;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "report_id", nullable = false)
+    @JoinColumn(name = "hazard_reports_no", nullable = false)
     private HazardReports hazardReport; // 대상 위험 신고 게시글 참조
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_no", nullable = false)
+    @JoinColumn(name = "users_no", nullable = false)
     private Users user; // 댓글 작성자(Users.no)
 
     @Column(nullable = false, length = 500)

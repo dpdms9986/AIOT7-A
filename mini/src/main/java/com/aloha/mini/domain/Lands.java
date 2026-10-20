@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 public class Lands {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long landId;
+    private Long no;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "region_id", nullable = false)

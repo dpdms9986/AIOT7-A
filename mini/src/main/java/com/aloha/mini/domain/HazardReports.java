@@ -12,10 +12,10 @@ import java.time.LocalDateTime;
 public class HazardReports {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long reportId;
+    private Long no;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_no", nullable = false)
+    @JoinColumn(name = "users_no", nullable = false)
     private Users user; // 신고 작성자(Users.no)
 
     @Column(nullable = false, length = 150)
