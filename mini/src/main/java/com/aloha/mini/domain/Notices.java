@@ -12,14 +12,14 @@ import java.time.LocalDateTime;
 public class Notices {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long noticeId;
+    private Long no;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "team_id", nullable = false)
+    @JoinColumn(name = "teams_no", nullable = false)
     private Teams team; // 어느 방제단의 공지사항인지 구분
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_no", nullable = false)
+    @JoinColumn(name = "users_no", nullable = false)
     private Users user; // 작성한 단장(Users.no)
 
     @Column(nullable = false, length = 150)

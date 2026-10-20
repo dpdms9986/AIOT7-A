@@ -15,10 +15,10 @@ import java.time.LocalDateTime;
 public class Chemicals {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long chemicalId;
+    private Long no;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "team_id", nullable = false)
+    @JoinColumn(name = "teams_no", nullable = false)
     private Teams team; // 소속 방제단별 약제 창고 격리
 
     @Column(nullable = false, length = 100)

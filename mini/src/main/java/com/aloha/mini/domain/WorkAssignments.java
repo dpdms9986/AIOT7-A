@@ -15,18 +15,18 @@ import java.time.LocalDateTime;
 public class WorkAssignments {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long assignmentId;
+    private Long no;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "batch_id", nullable = false)
+    @JoinColumn(name = "dispatch_batches_no", nullable = false)
     private DispatchBatches dispatchBatch; // 상위 배정 묶음 참조
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "land_id", nullable = false)
+    @JoinColumn(name = "lands_no", nullable = false)
     private Lands land; // 배정된 대상 농지 참조
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "pilot_no", nullable = false)
+    @JoinColumn(name = "users_no", nullable = false)
     private Users pilot; // 담당 조종사(Users.no) 참조
 
     private Double weightRatio; // 분배 가중치 비율 (균등 또는 수동 할당 비율)

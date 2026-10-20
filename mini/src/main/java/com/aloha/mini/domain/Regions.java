@@ -12,7 +12,7 @@ import lombok.*;
 public class Regions {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long regionId;
+    private Long no;
 
     @Column(nullable = false, unique = true, length = 100)
     private String regionName;

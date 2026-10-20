@@ -12,18 +12,18 @@ import java.time.LocalDateTime;
 public class ChemicalUsages {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long usageId;
+    private Long no;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "assignment_id", nullable = false)
+    @JoinColumn(name = "work_assignments_no", nullable = false)
     private WorkAssignments workAssignment; // 어떤 농지 배정 작업에서 썼는지 참조
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "chemical_id", nullable = false)
+    @JoinColumn(name = "chemicals_no", nullable = false)
     private Chemicals chemical; // 사용한 약제 품목 참조
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_no", nullable = false)
+    @JoinColumn(name = "users_no", nullable = false)
     private Users user; // 약제를 사용한 조종사(Users.no)
 
     @Column(nullable = false)

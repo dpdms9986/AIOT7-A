@@ -16,10 +16,10 @@ import java.time.LocalDateTime;
 public class Drones {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long droneId;
+    private Long no;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_no", nullable = false)
+    @JoinColumn(name = "users_no", nullable = false)
     private Users user; // 기체 담당자/소유자(Users.no)
 
     @Column(nullable = false, length = 100)
