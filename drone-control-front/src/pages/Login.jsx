@@ -1,3 +1,7 @@
+
+
+import { Link } from 'react-router-dom'
+
 export default function Login() {
   return (
     <main className="login-page">
@@ -44,9 +48,9 @@ export default function Login() {
           </button>
         </form>
 
-        <footer className="login-footer">
-          농업 드론 관제 시스템
-        </footer>
+        <div className="login-signup-link">
+  계정이 없으신가요? <Link to="/signup">회원가입</Link>
+</div>
       </section>
     </main>
   );

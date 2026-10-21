@@ -1,0 +1,129 @@
+* {
+  box-sizing: border-box;
+}
+
+/* 회원가입 페이지 전체 */
+.signup-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
+  background: #f5f7fa;
+  color: #203246;
+}
+
+/* 회원가입 카드 */
+.signup-card {
+  width: 100%;
+  max-width: 440px;
+  padding: 40px;
+  border: 1px solid #e5eaf0;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 12px 36px rgba(31, 48, 67, 0.08);
+}
+
+/* 제목 */
+.signup-title {
+  margin: 0 0 32px;
+  color: #203246;
+  font-size: 23px;
+  font-weight: 800;
+  line-height: 1.4;
+  text-align: center;
+}
+
+/* 회원가입 폼 */
+.signup-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* 입력창 그룹 */
+.signup-fields,
+.signup-extra-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* 입력창 및 역할 선택창 */
+.signup-fields input,
+.signup-extra-fields input,
+.signup-extra-fields select {
+  width: 100%;
+  height: 46px;
+  padding: 0 13px;
+  border: 1px solid #dce3eb;
+  border-radius: 8px;
+  outline: none;
+  background: #ffffff;
+  color: #253448;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 400;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+/* 입력 안내 문구 */
+.signup-fields input::placeholder,
+.signup-extra-fields input::placeholder {
+  color: #a3adba;
+  opacity: 1;
+}
+
+/* 입력창 선택 효과 */
+.signup-fields input:focus,
+.signup-extra-fields input:focus,
+.signup-extra-fields select:focus {
+  border-color: #238451;
+  box-shadow: 0 0 0 3px rgba(35, 132, 81, 0.1);
+}
+
+/* 역할 선택창 */
+.signup-extra-fields select {
+  cursor: pointer;
+}
+
+/* 회원가입 버튼 */
+.signup-submit {
+  width: 100%;
+  height: 47px;
+  margin-top: 5px;
+  border: none;
+  border-radius: 8px;
+  background: #238451;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 750;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.signup-submit:hover {
+  background: #196b40;
+}
+
+.signup-submit:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+/* 모바일 화면 */
+@media (max-width: 480px) {
+  .signup-page {
+    padding: 20px 14px;
+  }
+
+  .signup-card {
+    padding: 28px 22px;
+  }
+
+  .signup-title {
+    margin-bottom: 28px;
+    font-size: 21px;
+  }
+}
