@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 @Table(name = "work_assignments")
 @Getter 
 @Setter 
+@Builder 
 @AllArgsConstructor 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class WorkAssignments {

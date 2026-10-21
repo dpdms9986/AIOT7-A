@@ -8,7 +8,11 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "dispatch_batches")
-@Getter @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter 
+@Setter
+@Builder
+@AllArgsConstructor 
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class DispatchBatches {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
