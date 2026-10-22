@@ -1,8 +1,25 @@
-
-
-import { Link } from 'react-router-dom'
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { requestLogin } from '../api/loginApi'; // 만들어둔 API 파일 불러오기
 
 export default function Login() {
+  // api.js의 파라미터명과 맞추어 userId로 상태 관리
+  const [userId, setUserId] = useState('');
+  const [password, setPassword] = useState('');
+  
+  const navigate = useNavigate();
+
+  const handleLoginSubmit = async (e) => {
+    e.preventDefault();
+
+    // requestLogin 함수에 userId와 password 전달
+    const isSuccess = await requestLogin(userId, password);
+
+    if (isSuccess) {
+      navigate('/'); // 성공 시 메인으로 이동
+    }
+  };
+
   return (
     <main className="login-page">
       <section className="login-card">
@@ -12,14 +29,16 @@ export default function Login() {
           <p>계정에 로그인하여 관제 서비스를 이용하세요.</p>
         </header>
 
-        <form className="login-form">
+        <form className="login-form" onSubmit={handleLoginSubmit}>
           <div className="login-field">
-            <label htmlFor="username">아이디</label>
+            <label htmlFor="userId">아이디</label>
             <input
-              id="username"
-              name="username"
+              id="userId"
+              name="userId"
               type="text"
               placeholder="아이디를 입력하세요"
+              value={userId}
+              onChange={(e) => setUserId(e.target.value)}
             />
           </div>
 
@@ -30,6 +49,8 @@ export default function Login() {
               name="password"
               type="password"
               placeholder="비밀번호를 입력하세요"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
             />
           </div>
 
@@ -39,8 +60,8 @@ export default function Login() {
               아이디 기억하기
             </label>
             <Link to="/findaccount" className="login-link">
-               계정 찾기
-                 </Link>
+              계정 찾기
+            </Link>
           </div>
 
           <button type="submit" className="login-submit">
@@ -49,8 +70,8 @@ export default function Login() {
         </form>
 
         <div className="login-signup-link">
-  계정이 없으신가요? <Link to="/signup">회원가입</Link>
-</div>
+          계정이 없으신가요? <Link to="/signup">회원가입</Link>
+        </div>
       </section>
     </main>
   );
