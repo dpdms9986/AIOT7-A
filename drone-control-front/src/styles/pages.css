@@ -1,6 +1,4 @@
-/* =========================
-   메인화면 Page
-========================= */
+
 /* ===== 소개(홈) 화면 ===== */
 .home {
   --g: var(--color-primary);
@@ -342,3 +340,20 @@
   }
 }
 
+.login-signup-link {
+  margin-top: 24px;
+  color: #687789;
+  font-size: 13px;
+  text-align: center;
+}
+
+.login-signup-link a {
+  margin-left: 4px;
+  color: #238451;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.login-signup-link a:hover {
+  text-decoration: underline;
+}

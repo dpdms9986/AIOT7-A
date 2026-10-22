@@ -1,8 +1,28 @@
 
 
 import { Link } from 'react-router-dom'
+import { requestLogin } from '../api/loginApi.js';
 
 export default function Login() {
+  // 아이디와 비밀번호 입력값 관리
+  const [userId, setUserId] = useState('');
+  const [password, setPassword] = useState('');
+
+   // 로그인 버튼을 눌렀을 때 실행될 함수
+  const handleLoginClick = async () => {
+    // requestLogin 함수에 입력한 아이디, 비번을 넣어 실행
+    const isSuccess = await requestLogin(userId, password);
+
+
+    if (isSuccess) {
+      alert('로그인 환영합니다!');
+    }
+  };
+
+
+
+
+
   return (
     <main className="login-page">
       <section className="login-card">
