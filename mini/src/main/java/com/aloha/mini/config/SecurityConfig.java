@@ -9,9 +9,21 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
+import com.aloha.mini.handler.CustomAccessDeniedHandler;
+import com.aloha.mini.handler.LogoutSuccessHandler;
+import com.aloha.mini.service.CustomUserDetailsService;
+
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
+
+    private final CustomUserDetailsService customUserDetailsService;
+    private final LogoutSuccessHandler logoutSuccessHandler;
+    private final CustomAccessDeniedHandler accessDeniedHandler;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -19,18 +31,42 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable()) // REST API 세션 인증을 위해 CSRF 비활성화
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED) // 필요 시 세션 생성
             )
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**").permitAll() // 로그인/회원가입/중복확인은 전원 허용
-                .requestMatchers("/api/mock/**").permitAll() // 시뮬레이션용 목데이터 세팅 허용
+                .requestMatchers("/api/auth/**","/api/mock/**", "/login", "/logout", "/error/**").permitAll() // 로그인/회원가입/중복확인은 전원 허용
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                .requestMatchers("/api/pilot/**").hasRole("PILOT")
                 .anyRequest().permitAll() // 초기 개발 단계에서는 편의를 위해 전체 허용 (추후 세션 체크)
             );
 
+        // 로그아웃 설정 및 핸들러 연결
+        http.logout(logout -> logout
+                .logoutUrl("/logout")                  // POST /logout 요청 시 로그아웃 처리
+                .logoutSuccessHandler(logoutSuccessHandler)
+                .invalidateHttpSession(true)           // 세션 초기화
+                .deleteCookies("JSESSIONID")           // 세션 쿠키 삭제
+                .permitAll()
+        );
+
+        // 인증/인가 예외 처리 핸들러 연결 (403 권한 없음 등)
+        http.exceptionHandling(ex -> ex
+            // 미인증 사용자가 접근 시 로그인 HTML 대신 401 JSON 반환
+                .authenticationEntryPoint((request, response, authException) -> {
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.getWriter().write("{\"error\": \"UNAUTHORIZED\", \"message\": \"로그인이 필요합니다.\"}");
+                })
+                    .accessDeniedHandler(accessDeniedHandler));
+
+        // UserDetailsService 등록
+        http.userDetailsService(customUserDetailsService);
+
         return http.build();
     }
+
 }
