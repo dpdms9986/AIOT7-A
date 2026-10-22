@@ -84,13 +84,54 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  /* ===== 회원가입 (signup.html) - 기존 Signup.jsx ===== */
+    /* ===== 회원가입 (signup.html) ===== */
   const signupForm = document.querySelector("#signup-form");
   if (signupForm) {
+    const userIdInput = document.querySelector("#signup-userId");
+    const checkBtn = document.querySelector("#check-userId-btn");
+    let checkedUserId = ""; // 중복확인을 통과한 아이디를 기억
+
+    // 아이디를 다시 고치면 중복확인을 다시 해야 함
+    userIdInput.addEventListener("input", () => {
+      checkedUserId = "";
+    });
+
+    // 중복확인 버튼
+    checkBtn.addEventListener("click", async () => {
+      const userId = userIdInput.value.trim();
+
+      if (userId.length < 4 || userId.length > 50) {
+        alert("아이디는 4~50자로 입력하세요.");
+        return;
+      }
+
+      try {
+        // ⚠️ 백엔드 주소는 팀원이 만든 API에 맞게 바꾸세요
+        const response = await fetch(`/api/users/check?userId=${encodeURIComponent(userId)}`);
+        const isDuplicate = await response.json(); // 서버가 true(중복)/false(사용 가능)를 준다고 가정
+
+        if (isDuplicate) {
+          alert("이미 사용 중인 아이디입니다.");
+        } else {
+          alert("사용 가능한 아이디입니다.");
+          checkedUserId = userId;
+        }
+      } catch (error) {
+        console.error("중복확인 에러:", error);
+        alert("중복확인 기능은 백엔드 연결 후 사용할 수 있습니다.");
+      }
+    });
+
+    // 회원가입 버튼
     signupForm.addEventListener("submit", (event) => {
       event.preventDefault();
 
       const data = Object.fromEntries(new FormData(signupForm));
+
+      if (data.userId !== checkedUserId) {
+        alert("아이디 중복확인을 해주세요.");
+        return;
+      }
       if (data.password !== data.passwordConfirm) {
         alert("비밀번호가 일치하지 않습니다.");
         return;

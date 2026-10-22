@@ -13,7 +13,11 @@
       <form class="signup-form" id="signup-form">
         <div class="signup-fields">
           <input type="text" name="name" placeholder="이름" aria-label="이름" required>
-          <input type="text" name="userId" placeholder="아이디" aria-label="아이디" required>
+          <div class="signup-id-row">
+            <input type="text" id="signup-userId" name="userId" placeholder="아이디 (4~50자)"
+                   aria-label="아이디" minlength="4" maxlength="50" required>
+            <button type="button" class="btn-mini" id="check-userId-btn">중복확인</button>
+          </div>
           <input type="password" name="password" placeholder="비밀번호" aria-label="비밀번호" required>
           <input type="password" name="passwordConfirm" placeholder="비밀번호 확인" aria-label="비밀번호 확인" required>
         </div>
