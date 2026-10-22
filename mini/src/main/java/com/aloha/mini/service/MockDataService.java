@@ -62,7 +62,7 @@ private final LandRepository landRepository;
     // 3. 20개의 농지 데이터를 DB에 한 번에 저장합니다.
     landRepository.saveAll(mockLands);
 
-    return "미양면 주변 미배정 가상 농지 20개가 성공적으로 생성되었습니다.";
+    return "어남동 주변 미배정 가상 농지 20개가 성공적으로 생성되었습니다.";
 }
 
 
