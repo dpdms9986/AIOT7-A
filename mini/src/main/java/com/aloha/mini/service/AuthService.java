@@ -2,6 +2,7 @@ package com.aloha.mini.service;
 
 import com.aloha.mini.domain.PilotProfiles;
 import com.aloha.mini.domain.Teams;
+import com.aloha.mini.domain.UserAuth;
 import com.aloha.mini.domain.Users;
 import com.aloha.mini.dto.LoginRequest;
 import com.aloha.mini.dto.SignUpRequest;
@@ -29,18 +30,20 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
 
     // 1. 이메일 중복 확인 (USER_002)
-    public boolean checkUserIdDuplicate(String userId) {
-        return userRepository.existsByUserId(userId);
+    public boolean checkUserIdDuplicate(String userid) {
+        return userRepository.existsByUserid(userid);
     }
 
     // 2. 회원가입 처리 (USER_005, USER_007)
     @Transactional
     public UserResponse signUp(SignUpRequest req) {
-        if (userRepository.existsByUserId(req.getUserId())) {
+        if (userRepository.existsByUserid(req.getUserId())) {
             throw new IllegalArgumentException("이미 사용 중인 이메일 아이디입니다.");
         }
 
         Teams team = null;
+
+        
 
         // 단장(ADMIN)인 경우: 새 방제단 창설 및 6자리 고유 초대코드 발급
         if ("ADMIN".equalsIgnoreCase(req.getRole())) {
@@ -59,14 +62,25 @@ public class AuthService {
 
         // 유저 기본 생성
         Users user = Users.builder()
-                .userId(req.getUserId())
-                .userName(req.getUserName())
+                .userid(req.getUserId())
+                .username(req.getUserName())
                 .password(passwordEncoder.encode(req.getPassword())) // BCrypt 암호화
                 .role(req.getRole().toUpperCase())
                 .team(team)
+                .enabled(1)
                 .build();
-        user = userRepository.save(user);
+                
+                // 권한 객체 생성 및 추가
+                UserAuth userAuth = new UserAuth();
+                if ("ADMIN".equals(user.getRole())) {
+                    userAuth.setAuth("ROLE_ADMIN");
+                } else {
+                    userAuth.setAuth("ROLE_PILOT");
+                }
+                user.addAuth(userAuth);
 
+                user = userRepository.save(user);
+                
         // 조종사(PILOT)인 경우: 프로필 기본 데이터 및 기본 좌표 생성 (어남동 일대 중심)
         if ("PILOT".equalsIgnoreCase(req.getRole())) {
             PilotProfiles profile = PilotProfiles.builder()
@@ -85,7 +99,7 @@ public class AuthService {
 
     // 3. 로그인 및 세션 등록 처리 (USER_008, USER_009)
     public UserResponse login(LoginRequest req, HttpSession session) {
-        Users user = userRepository.findByUserId(req.getUserId())
+        Users user = userRepository.findByUserid(req.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("가입되지 않은 이메일이거나 비밀번호가 일치하지 않습니다."));
 
         if (!passwordEncoder.matches(req.getPassword(), user.getPassword())) {
