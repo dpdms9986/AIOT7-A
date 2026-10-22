@@ -1,23 +1,35 @@
 package com.aloha.mini.service;
 
-import com.aloha.mini.domain.Lands;
-import com.aloha.mini.domain.Regions;
-import com.aloha.mini.repository.LandRepository;
-import com.aloha.mini.repository.RegionRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.aloha.mini.domain.Lands;
+import com.aloha.mini.domain.Regions;
+import com.aloha.mini.domain.Teams;
+import com.aloha.mini.domain.UserAuth;
+import com.aloha.mini.domain.Users;
+import com.aloha.mini.repository.LandRepository;
+import com.aloha.mini.repository.RegionRepository;
+import com.aloha.mini.repository.TeamRepository;
+import com.aloha.mini.repository.UserRepository;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class MockDataService {
 
-private final RegionRepository regionRepository;
-private final LandRepository landRepository;
+    private final RegionRepository regionRepository;
+    private final LandRepository landRepository;
+    // (유저, 팀, 비밀번호 암호화)
+    private final UserRepository userRepository;
+    private final TeamRepository teamRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public String createMockLands() {
@@ -65,5 +77,59 @@ private final LandRepository landRepository;
     return "어남동 주변 미배정 가상 농지 20개가 성공적으로 생성되었습니다.";
 }
 
+// 👇 [추가된 코드] 3가지 Role에 맞춘 초기 사용자 데이터 생성 로직
+    @Transactional
+    public String createMockUsers() {
+        // 1. 방제단 생성
+        Teams teamA = Teams.builder().teamName("알로하 방제단").build();
+        teamRepository.save(teamA);
+
+        String encodedPassword = passwordEncoder.encode("password123");
+
+        // 2-1. 시스템 관리자 (ROLE_ADMIN) - 팀 없음
+        Users sysAdmin = Users.builder()
+                .userId("admin@test.com")
+                .password(encodedPassword)
+                .username("시스템관리자")
+                .role("ROLE_ADMIN")
+                .build();
+        // 빌더 이용하기
+        sysAdmin.addAuth(UserAuth.builder().auth("ROLE_ADMIN").build());
+        userRepository.save(sysAdmin);
+
+
+        // 2-2. 단장 (ROLE_LEADER) - 알로하 방제단 소속
+        Users leader = Users.builder()
+                .userId("leader@test.com")
+                .password(encodedPassword)
+                .username("단장님")
+                .role("ROLE_LEADER")
+                .team(teamA)
+                .build();
+
+        // 노가다
+        UserAuth leaderAuth = new UserAuth();
+        leaderAuth.setAuth("ROLE_LEADER");
+        leader.addAuth(leaderAuth);
+        userRepository.save(leader);;
+
+        // 2-3. 조종사 (ROLE_PILOT) - 알로하 방제단 소속
+        Users pilot = Users.builder()
+                .userId("pilot@test.com")
+                .password(encodedPassword)
+                .username("조종사1")
+                .role("ROLE_PILOT")
+                .team(teamA)
+                .build();
+        UserAuth pilotAuth = new UserAuth();
+        pilotAuth.setAuth("ROLE_PILOT");
+        pilot.addAuth(pilotAuth);
+        userRepository.save(pilot);
+
+        return "가상 계정(ADMIN, LEADER, PILOT) 세팅 완료";
+
+
+
+}
 
 }

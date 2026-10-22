@@ -27,12 +27,14 @@ public class UserAuth {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long no;
+  
   // Users : UserAuth = 1 : N
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "user_no", nullable = false)
   private Users user;
 
   @Column(nullable = false, length = 100)
-  private String auth;            // ⭐ 회원 권한 : ROLE_PILOT, ROLE_ADMIN 등
+   // ⭐ 회원 권한 : ROLE_PILOT, ROLE_ADMIN, RILE_LEADER 등
+  private String auth;           
   
 }

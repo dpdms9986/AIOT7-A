@@ -25,7 +25,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
+import java.util.Map;
 
 @RestController
 @Slf4j 
@@ -106,4 +106,15 @@ public class AuthController {
         }
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
+
+    @GetMapping("/check-id")
+    public ResponseEntity<?> checkIdDuplicate(@RequestParam("userId") String userId) {
+    boolean isDuplicate = authService.checkIdDuplicate(userId);
+    
+    // 중복이면 true, 사용 가능하면 false를 JSON으로 응답
+    return ResponseEntity.ok(Map.of(
+            "isDuplicate", isDuplicate,
+            "message", isDuplicate ? "이미 사용 중인 아이디입니다." : "사용 가능한 아이디입니다."
+    ));
+}
 }

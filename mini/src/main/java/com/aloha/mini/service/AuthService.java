@@ -30,14 +30,14 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
 
     // 1. 이메일 중복 확인 (USER_002)
-    public boolean checkUserIdDuplicate(String userid) {
-        return userRepository.existsByUserid(userid);
+    public boolean checkUserIdDuplicate(String userId) {
+        return userRepository.existsByUserId(userId);
     }
 
     // 2. 회원가입 처리 (USER_005, USER_007)
     @Transactional
     public UserResponse signUp(SignUpRequest req) {
-        if (userRepository.existsByUserid(req.getUserId())) {
+        if (userRepository.existsByUserId(req.getUserId())) {
             throw new IllegalArgumentException("이미 사용 중인 이메일 아이디입니다.");
         }
 
@@ -62,7 +62,7 @@ public class AuthService {
 
         // 유저 기본 생성
         Users user = Users.builder()
-                .userid(req.getUserId())
+                .userId(req.getUserId())
                 .username(req.getUserName())
                 .password(passwordEncoder.encode(req.getPassword())) // BCrypt 암호화
                 .role(req.getRole().toUpperCase())
@@ -99,7 +99,7 @@ public class AuthService {
 
     // 3. 로그인 및 세션 등록 처리 (USER_008, USER_009)
     public UserResponse login(LoginRequest req, HttpSession session) {
-        Users user = userRepository.findByUserid(req.getUserId())
+        Users user = userRepository.findByUserId(req.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("가입되지 않은 이메일이거나 비밀번호가 일치하지 않습니다."));
 
         if (!passwordEncoder.matches(req.getPassword(), user.getPassword())) {
@@ -125,5 +125,10 @@ public class AuthService {
             code = UUID.randomUUID().toString().substring(0, 6).toUpperCase();
         } while (teamRepository.existsByInviteCode(code));
         return code;
+    }
+
+    // AuthService 클래스 내부에 추가
+    public boolean checkIdDuplicate(String userId) {
+        return userRepository.existsByUserId(userId);
     }
 }
