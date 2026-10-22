@@ -38,9 +38,9 @@ export default function Login() {
               <input type="checkbox" />
               아이디 기억하기
             </label>
-            <button type="button" className="login-link">
-              계정 찾기
-            </button>
+            <Link to="/findaccount" className="login-link">
+               계정 찾기
+                 </Link>
           </div>
 
           <button type="submit" className="login-submit">

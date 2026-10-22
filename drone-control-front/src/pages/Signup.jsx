@@ -54,7 +54,7 @@ export default function Signup() {
               required
             >
               <option value="" disabled>
-                역할 선택 EX 조종수
+                역할 선택
               </option>
               <option value="pilot">조종수</option>
               <option value="admin">단장</option>
