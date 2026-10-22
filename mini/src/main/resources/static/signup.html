@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>회원가입</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <main class="signup-page">
+    <section class="signup-card">
+      <h1 class="signup-title">회원가입</h1>
+      <form class="signup-form" id="signup-form">
+        <div class="signup-fields">
+          <input type="text" name="name" placeholder="이름" aria-label="이름" required>
+          <input type="text" name="userId" placeholder="아이디" aria-label="아이디" required>
+          <input type="password" name="password" placeholder="비밀번호" aria-label="비밀번호" required>
+          <input type="password" name="passwordConfirm" placeholder="비밀번호 확인" aria-label="비밀번호 확인" required>
+        </div>
+        <div class="signup-extra-fields">
+          <select name="role" aria-label="역할 선택" required>
+            <option value="" disabled selected>역할 선택</option>
+            <option value="pilot">조종수</option>
+            <option value="admin">단장</option>
+          </select>
+          <input type="email" name="email" placeholder="이메일" aria-label="이메일" required>
+        </div>
+        <button class="signup-submit" type="submit">회원가입</button>
+      </form>
+      <div class="signup-footer">이미 계정이 있으신가요?<a href="login.html">로그인</a></div>
+    </section>
+  </main>
+  <script src="js/app.js"></script>
+</body>
+</html>
