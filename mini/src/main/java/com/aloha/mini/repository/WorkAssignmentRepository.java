@@ -15,4 +15,8 @@ public interface WorkAssignmentRepository extends JpaRepository<WorkAssignments,
 
     // 방제단 전체 작업 이력 조회 (MNG_008)
     List<WorkAssignments> findByDispatchBatch_Team_NoOrderByCreatedAtDesc(Long teamsNo);
+
+    // 특정 조종사(pilot)에게 할당된 작업 목록 전체 조회
+    // 참고: WorkAssignments 엔티티 내부의 Users 변수명이 user라면 findByUser_No로 변경해 주세요.
+    List<WorkAssignments> findByPilot_No(Long pilotNo);
 }

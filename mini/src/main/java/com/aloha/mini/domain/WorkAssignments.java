@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 @Table(name = "work_assignments")
 @Getter 
 @Setter 
+@Builder 
 @AllArgsConstructor 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class WorkAssignments {
@@ -44,5 +45,9 @@ public class WorkAssignments {
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
+    }
+// Lands.java 및 WorkAssignments.java 내부에 각각 추가
+    public void updateStatus(String status) {
+    this.status = status;
     }
 }

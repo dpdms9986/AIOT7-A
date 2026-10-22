@@ -41,4 +41,9 @@ public class Lands {
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
     }
+
+    // Lands.java 및 WorkAssignments.java 내부에 각각 추가
+    public void updateStatus(String status) {
+    this.status = status;
+}
 }
