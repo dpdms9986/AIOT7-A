@@ -1,7 +1,3 @@
-<<<<<<< HEAD:drone-control-front/src/styles/pages.css
-
-/* ===== 소개(홈) 화면 ===== */
-=======
 /* ===== 1. 공통 변수 ===== */
 :root {
   --color-primary: #238451;
@@ -43,7 +39,6 @@ body { font-family: Arial, "Noto Sans KR", sans-serif; }
 [hidden] { display: none !important; }
 
 /* ===== 3. 메인 화면 ===== */
->>>>>>> rkgus:mini/src/main/resources/static/css/style.css
 .home {
   --g: var(--color-primary);
   --g-dark: var(--color-primary-hover);
@@ -52,7 +47,7 @@ body { font-family: Arial, "Noto Sans KR", sans-serif; }
   --sub: var(--color-text-sub);
   --line: var(--color-border);
   min-height: 100vh;
-  background: linear-gradient(180deg, #f1f8f3 0%, #ffffff 60%);
+  background: linear-gradient(180deg, #b3dcc0 0%, #ffffff 80%);
   color: var(--text);
   word-break: keep-all;
 }
@@ -311,36 +306,6 @@ body { font-family: Arial, "Noto Sans KR", sans-serif; }
 .login-submit:hover { background: #196b40; }
 .login-submit:disabled { cursor: not-allowed; opacity: 0.65; }
 
-<<<<<<< HEAD:drone-control-front/src/styles/pages.css
-.login-submit:hover {
-  background: #196b40;
-}
-
-.login-submit:disabled {
-  cursor: not-allowed;
-  opacity: 0.65;
-}
-
-.login-footer {
-  margin-top: 25px;
-  color: #9aa5b2;
-  font-size: 11px;
-  line-height: 1.7;
-  text-align: center;
-}
-
-@media (max-width: 480px) {
-  .login-page {
-    padding: 20px 14px;
-  }
-
-  .login-card {
-    padding: 28px 22px;
-  }
-}
-
-=======
->>>>>>> rkgus:mini/src/main/resources/static/css/style.css
 .login-signup-link {
   margin-top: 24px;
   color: #687789;
@@ -355,11 +320,6 @@ body { font-family: Arial, "Noto Sans KR", sans-serif; }
 }
 .login-signup-link a:hover { text-decoration: underline; }
 
-<<<<<<< HEAD:drone-control-front/src/styles/pages.css
-.login-signup-link a:hover {
-  text-decoration: underline;
-}
-=======
 @media (max-width: 480px) {
   .login-page { padding: 20px 14px; }
   .login-card { padding: 28px 22px; }
@@ -456,6 +416,31 @@ body { font-family: Arial, "Noto Sans KR", sans-serif; }
   .signup-page { padding: 20px 14px; }
   .signup-card { padding: 28px 22px; }
   .signup-title { margin-bottom: 28px; font-size: 21px; }
+}
+/* 아이디 + 중복확인 버튼 한 줄 */
+.signup-id-row {
+  display: flex;
+  gap: 8px;
+}
+.signup-id-row input {
+  flex: 1;
+}
+.btn-mini {
+  flex-shrink: 0;
+  height: 46px;
+  padding: 0 14px;
+  border: 1px solid #238451;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #238451;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.btn-mini:hover {
+  background: #e8f3ec;
 }
 
 /* ===== 6. 계정 찾기 화면 ===== */
@@ -556,11 +541,234 @@ body { font-family: Arial, "Noto Sans KR", sans-serif; }
   .findaccount-card { padding: 28px 22px; }
 }
 
-/* ===== 7. 아이콘·핀 색상 (반드시 맨 마지막) ===== */
+
+
+/* 농지 관리 화면 레이아웃 */
+.app-layout {
+    display: flex;
+    min-height: calc(100vh - var(--header-height));
+    width: 100%;
+}
+
+.main-content {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 28px;
+    background: var(--color-bg);
+}
+
+
+.main-content h1 {
+    margin: 0;
+    font-size: 24px;
+}
+
+.page-description {
+    margin: 8px 0 24px;
+    color: var(--color-text-sub);
+}
+
+.filter-card {
+    display: flex;
+    align-items: end;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 20px;
+    padding: 18px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    background: var(--color-card);
+    box-shadow: var(--shadow-card);
+}
+
+.filter-group {
+    display: flex;
+    flex: 0 1 145px;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.filter-group label {
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.filter-group input,
+.filter-group select {
+    width: 100%;
+    min-width: 0;
+    height: var(--input-height);
+    padding: 0 12px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-card);
+    color: var(--color-text);
+}
+
+.search-group {
+    flex: 1 1 220px;
+}
+
+.button {
+    min-height: var(--button-height);
+    padding: 0 16px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-card);
+    color: var(--color-text);
+    font: inherit;
+    white-space: nowrap;
+}
+
+.button:hover {
+    border-color: var(--color-primary);
+    background: var(--color-primary-light);
+}
+
+.button.primary-button {
+    border-color: var(--color-primary);
+    background: var(--color-primary);
+    color: #fff;
+}
+
+.table-card {
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    background: var(--color-card);
+    box-shadow: var(--shadow-card);
+}
+
+.table-heading {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.table-heading h2 {
+    margin: 0;
+    font-size: 16px;
+}
+
+.table-heading span {
+    color: var(--color-text-sub);
+    font-size: 12px;
+}
+
+.table-heading strong {
+    color: var(--color-primary);
+}
+
+.table-scroll {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.farm-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--color-card);
+}
+
+.farm-table th,
+.farm-table td {
+    height: 48px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--color-border);
+    text-align: left;
+    white-space: nowrap;
+}
+
+.farm-table th {
+    background: #edf3ef;
+    color: var(--color-text-sub);
+    font-size: 12px;
+}
+
+.farm-table tbody tr:hover {
+    background: #f8fbf9;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 5px 9px;
+    border-radius: 5px;
+    background: var(--color-primary-light);
+    color: var(--color-primary);
+    font-size: 12px;
+}
+
+.detail-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.farm-info {
+    display: grid;
+    grid-template-columns: 140px minmax(0, 1fr);
+    overflow: hidden;
+    margin: 0 0 28px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    background: var(--color-card);
+}
+
+.farm-info dt,
+.farm-info dd {
+    margin: 0;
+    padding: 16px;
+    border-bottom: 1px solid var(--color-border);
+    overflow-wrap: anywhere;
+}
+
+.farm-info dt {
+    background: #edf3ef;
+    color: var(--color-text-sub);
+    font-weight: 600;
+}
+
+.section-title {
+    margin: 0 0 14px;
+    font-size: 18px;
+}
+
+.history-placeholder {
+    padding: 24px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    background: var(--color-card);
+    color: var(--color-text-sub);
+}
+
+@media (max-width: 760px) {
+    .main-content {
+        padding: 20px 14px;
+    }
+
+    .filter-group,
+    .search-group {
+        flex: 1 1 100%;
+    }
+
+    .farm-info {
+        grid-template-columns: 100px minmax(0, 1fr);
+    }
+}
+
+
+
+
+
+/* ===== 8. 아이콘·핀 색상 (반드시 맨 마지막) ===== */
 .home-point-icon, .home-feature-icon { font-size: 22px; }
 .home-pin { font-size: 28px; }
 .pin-1 { color: #f2b705; }
 .pin-2 { color: #238451; }
 .pin-3 { color: #2f80ed; }
 .pin-4 { color: #8a8f8c; }
->>>>>>> rkgus:mini/src/main/resources/static/css/style.css

@@ -1,0 +1,175 @@
+
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>농지 관리</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header class="site-header">
+        <h1>농업 관제 드론 시스템</h1>
+    </header>
+
+
+<main class="app-layout">
+    <div class="main-content">
+
+
+        <section id="farm-list" class="tab-content">
+            <h1>농지 목록</h1>
+            <p class="page-description">등록된 농지를 확인하고 관리합니다.</p>
+
+            <div class="filter-card">
+                <div class="filter-group">
+                    <label for="region-filter">행정구역</label>
+                    <select id="region-filter">
+                        <option value="">전체 행정구역</option>
+                        <option value="유성구">유성구</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="status-filter">상태</label>
+                    <select id="status-filter">
+                        <option value="">전체 상태</option>
+                        <option value="대기">대기</option>
+                    </select>
+                </div>
+
+                <div class="filter-group search-group">
+                    <label for="farm-search">검색</label>
+                    <input
+                        type="search"
+                        id="farm-search"
+                        placeholder="주소 또는 행정구역 검색"
+                    >
+                </div>
+
+                <button type="button" id="search-button" class="button">
+                    검색
+                </button>
+
+                <button
+                    type="button"
+                    id="register-button"
+                    class="button primary-button"
+                >
+                    + 농지 등록
+                </button>
+            </div>
+
+            <div class="table-card">
+                <div class="table-heading">
+                    <h2>농지 목록</h2>
+                    <span>총 <strong id="farm-count">2</strong>건</span>
+                </div>
+
+                <div class="table-scroll">
+                    <table class="farm-table">
+                        <thead>
+                            <tr>
+                                <th>선택</th>
+                                <th>주소</th>
+                                <th>면적(㎡)</th>
+                                <th>행정구역</th>
+                                <th>상태</th>
+                                <th>관리</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr data-farm-id="1">
+                                <td>
+                                    <input
+                                        type="checkbox"
+                                        class="farm-select"
+                                        aria-label="전민동 농지 선택"
+                                    >
+                                </td>
+                                <td>전민동 15-2</td>
+                                <td>800</td>
+                                <td>유성구</td>
+                                <td><span class="status-badge">대기</span></td>
+                                <td>
+                                    <button
+                                        type="button"
+                                        class="button detail-button"
+                                        data-farm-id="1"
+                                    >
+                                        상세
+                                    </button>
+                                </td>
+                            </tr>
+
+                            <tr data-farm-id="2">
+                                <td>
+                                    <input
+                                        type="checkbox"
+                                        class="farm-select"
+                                        aria-label="노은동 농지 선택"
+                                    >
+                                </td>
+                                <td>노은동 2-8</td>
+                                <td>600</td>
+                                <td>유성구</td>
+                                <td><span class="status-badge">대기</span></td>
+                                <td>
+                                    <button
+                                        type="button"
+                                        class="button detail-button"
+                                        data-farm-id="2"
+                                    >
+                                        상세
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section id="farm-detail" class="tab-content" hidden>
+            <div class="detail-header">
+                <div>
+                    <div class="breadcrumb">
+                        홈　/　농지 관리　/　농지 상세
+                    </div>
+                    <h1>농지 상세 정보</h1>
+                </div>
+
+                <button
+                    type="button"
+                    class="button"
+                    id="back-to-list"
+                >
+                    목록으로 돌아가기
+                </button>
+            </div>
+
+            <dl class="farm-info">
+                <dt>주소</dt>
+                <dd id="detail-address">-</dd>
+
+                <dt>면적</dt>
+                <dd id="detail-area">-</dd>
+
+                <dt>행정구역</dt>
+                <dd id="detail-region">-</dd>
+
+                <dt>상태</dt>
+                <dd id="detail-status">-</dd>
+            </dl>
+
+            <h2 class="section-title">작업 이력</h2>
+            <div class="history-placeholder">
+                작업 이력은 추후 연결
+            </div>
+        </section>
+    </div>
+</main>
+
+</body>
+</html>
