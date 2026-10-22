@@ -1,5 +1,49 @@
+<<<<<<< HEAD:drone-control-front/src/styles/pages.css
 
 /* ===== 소개(홈) 화면 ===== */
+=======
+/* ===== 1. 공통 변수 ===== */
+:root {
+  --color-primary: #238451;
+  --color-primary-hover: #1c6d42;
+  --color-primary-light: #e8f3ec;
+  --color-bg: #f5f7fa;
+  --color-card: #ffffff;
+  --color-border: #e3e8ef;
+  --color-text: #1f2937;
+  --color-text-sub: #6b7280;
+
+  --color-ready: #238451;
+  --color-assigned: #f2b705;
+  --color-in-progress: #2f80ed;
+  --color-completed: #8a8f8c;
+  --color-high: #e5484d;
+  --color-med: #f5a623;
+  --color-low: #238451;
+
+  --header-height: 68px;
+  --sidebar-width: 200px;
+  --content-padding: 28px;
+  --card-gap: 18px;
+  --radius-card: 12px;
+  --radius-sm: 6px;
+  --input-height: 42px;
+  --button-height: 42px;
+
+  --font-body: 14px;
+  --font-title: 24px;
+
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+/* ===== 2. 기본 설정 ===== */
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+body { font-family: Arial, "Noto Sans KR", sans-serif; }
+[hidden] { display: none !important; }
+
+/* ===== 3. 메인 화면 ===== */
+>>>>>>> rkgus:mini/src/main/resources/static/css/style.css
 .home {
   --g: var(--color-primary);
   --g-dark: var(--color-primary-hover);
@@ -10,10 +54,8 @@
   min-height: 100vh;
   background: linear-gradient(180deg, #f1f8f3 0%, #ffffff 60%);
   color: var(--text);
+  word-break: keep-all;
 }
-
-  .home, .home * { box-sizing: border-box; }
-  .home { word-break: keep-all; }
 
 .home-header {
   display: flex;
@@ -171,10 +213,7 @@
   .home-features { grid-template-columns: 1fr; }
 }
 
-/* =========================
-   Login Page
-========================= */
-
+/* ===== 4. 로그인 화면 ===== */
 .login-page {
   min-height: 100vh;
   display: flex;
@@ -183,7 +222,6 @@
   padding: 32px 20px;
   background: #f5f7fa;
 }
-
 .login-card {
   width: 100%;
   max-width: 440px;
@@ -193,12 +231,7 @@
   background: #ffffff;
   box-shadow: 0 12px 36px rgba(31, 48, 67, 0.08);
 }
-
-.login-brand {
-  margin-bottom: 32px;
-  text-align: center;
-}
-
+.login-brand { margin-bottom: 32px; text-align: center; }
 .login-brand-logo {
   display: inline-flex;
   align-items: center;
@@ -212,38 +245,12 @@
   font-size: 24px;
   font-weight: 800;
 }
+.login-brand h1 { margin: 0; color: #203246; font-size: 23px; font-weight: 800; }
+.login-brand p { margin: 9px 0 0; color: #7d8a99; font-size: 13px; }
 
-.login-brand h1 {
-  margin: 0;
-  color: #203246;
-  font-size: 23px;
-  font-weight: 800;
-}
-
-.login-brand p {
-  margin: 9px 0 0;
-  color: #7d8a99;
-  font-size: 13px;
-}
-
-.login-form {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
-
-.login-field {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.login-field label {
-  color: #344254;
-  font-size: 13px;
-  font-weight: 700;
-}
-
+.login-form { display: flex; flex-direction: column; gap: 18px; }
+.login-field { display: flex; flex-direction: column; gap: 8px; }
+.login-field label { color: #344254; font-size: 13px; font-weight: 700; }
 .login-field input {
   width: 100%;
   height: 46px;
@@ -256,11 +263,7 @@
   font-size: 13px;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
-
-.login-field input::placeholder {
-  color: #a3adba;
-}
-
+.login-field input::placeholder { color: #a3adba; }
 .login-field input:focus {
   border-color: #238451;
   box-shadow: 0 0 0 3px rgba(35, 132, 81, 0.1);
@@ -273,7 +276,6 @@
   gap: 12px;
   margin-top: -3px;
 }
-
 .login-remember {
   display: inline-flex;
   align-items: center;
@@ -281,11 +283,7 @@
   color: #687789;
   font-size: 12px;
 }
-
-.login-remember input {
-  accent-color: #238451;
-}
-
+.login-remember input { accent-color: #238451; }
 .login-link {
   padding: 0;
   border: 0;
@@ -293,11 +291,9 @@
   background: transparent;
   font-size: 12px;
   cursor: pointer;
+  text-decoration: none;
 }
-
-.login-link:hover {
-  text-decoration: underline;
-}
+.login-link:hover { text-decoration: underline; }
 
 .login-submit {
   width: 100%;
@@ -312,7 +308,10 @@
   cursor: pointer;
   transition: background 0.2s;
 }
+.login-submit:hover { background: #196b40; }
+.login-submit:disabled { cursor: not-allowed; opacity: 0.65; }
 
+<<<<<<< HEAD:drone-control-front/src/styles/pages.css
 .login-submit:hover {
   background: #196b40;
 }
@@ -340,20 +339,228 @@
   }
 }
 
+=======
+>>>>>>> rkgus:mini/src/main/resources/static/css/style.css
 .login-signup-link {
   margin-top: 24px;
   color: #687789;
   font-size: 13px;
   text-align: center;
 }
-
 .login-signup-link a {
   margin-left: 4px;
   color: #238451;
   font-weight: 700;
   text-decoration: none;
 }
+.login-signup-link a:hover { text-decoration: underline; }
 
+<<<<<<< HEAD:drone-control-front/src/styles/pages.css
 .login-signup-link a:hover {
   text-decoration: underline;
 }
+=======
+@media (max-width: 480px) {
+  .login-page { padding: 20px 14px; }
+  .login-card { padding: 28px 22px; }
+}
+
+/* ===== 5. 회원가입 화면 ===== */
+.signup-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
+  background: #f5f7fa;
+  color: #203246;
+}
+.signup-card {
+  width: 100%;
+  max-width: 440px;
+  padding: 40px;
+  border: 1px solid #e5eaf0;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 12px 36px rgba(31, 48, 67, 0.08);
+}
+.signup-title {
+  margin: 0 0 32px;
+  color: #203246;
+  font-size: 23px;
+  font-weight: 800;
+  line-height: 1.4;
+  text-align: center;
+}
+.signup-form { display: flex; flex-direction: column; gap: 18px; }
+.signup-fields,
+.signup-extra-fields { display: flex; flex-direction: column; gap: 12px; }
+
+.signup-fields input,
+.signup-extra-fields input,
+.signup-extra-fields select {
+  width: 100%;
+  height: 46px;
+  padding: 0 13px;
+  border: 1px solid #dce3eb;
+  border-radius: 8px;
+  outline: none;
+  background: #ffffff;
+  color: #253448;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 400;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.signup-fields input::placeholder,
+.signup-extra-fields input::placeholder { color: #a3adba; opacity: 1; }
+.signup-fields input:focus,
+.signup-extra-fields input:focus,
+.signup-extra-fields select:focus {
+  border-color: #238451;
+  box-shadow: 0 0 0 3px rgba(35, 132, 81, 0.1);
+}
+.signup-extra-fields select { cursor: pointer; }
+
+.signup-submit {
+  width: 100%;
+  height: 47px;
+  margin-top: 5px;
+  border: none;
+  border-radius: 8px;
+  background: #238451;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 750;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.signup-submit:hover { background: #196b40; }
+.signup-submit:disabled { cursor: not-allowed; opacity: 0.65; }
+
+.signup-footer {
+  margin-top: 24px;
+  color: #687789;
+  font-size: 13px;
+  text-align: center;
+}
+.signup-footer a {
+  margin-left: 4px;
+  color: #238451;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+@media (max-width: 480px) {
+  .signup-page { padding: 20px 14px; }
+  .signup-card { padding: 28px 22px; }
+  .signup-title { margin-bottom: 28px; font-size: 21px; }
+}
+
+/* ===== 6. 계정 찾기 화면 ===== */
+.findaccount-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
+  background: #f5f7fa;
+  color: #203246;
+}
+.findaccount-card {
+  width: 100%;
+  max-width: 440px;
+  padding: 40px;
+  border: 1px solid #e5eaf0;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 12px 36px rgba(31, 48, 67, 0.08);
+}
+
+.findaccount-tabs {
+  display: flex;
+  margin-bottom: 24px;
+  border-bottom: 1px solid #e5eaf0;
+}
+.findaccount-tabs button {
+  flex: 1;
+  padding: 13px 6px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: #7d8a99;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+}
+.findaccount-tabs button.active { border-bottom-color: #238451; color: #238451; }
+.findaccount-tabs button:hover { color: #238451; }
+
+.findaccount-form { display: flex; flex-direction: column; gap: 18px; }
+.findaccount-field { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+.findaccount-field label { color: #344254; font-size: 13px; font-weight: 700; }
+.findaccount-field input {
+  display: block;
+  width: 100%;
+  height: 46px;
+  padding: 0 13px;
+  border: 1px solid #dce3eb;
+  border-radius: 8px;
+  outline: none;
+  color: #253448;
+  background: #ffffff;
+  font-family: inherit;
+  font-size: 13px;
+}
+.findaccount-field input::placeholder { color: #a3adba; }
+.findaccount-field input:focus {
+  border-color: #238451;
+  box-shadow: 0 0 0 3px rgba(35, 132, 81, 0.1);
+}
+
+.findaccount-submit {
+  width: 100%;
+  height: 47px;
+  margin-top: 5px;
+  border: none;
+  border-radius: 8px;
+  background: #238451;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 750;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.findaccount-submit:hover { background: #196b40; }
+
+.findaccount-footer {
+  margin-top: 24px;
+  color: #687789;
+  font-size: 13px;
+  text-align: center;
+}
+.findaccount-footer a {
+  margin-left: 4px;
+  color: #238451;
+  font-weight: 700;
+  text-decoration: none;
+}
+.findaccount-footer a:hover { text-decoration: underline; }
+
+@media (max-width: 480px) {
+  .findaccount-page { padding: 20px 14px; }
+  .findaccount-card { padding: 28px 22px; }
+}
+
+/* ===== 7. 아이콘·핀 색상 (반드시 맨 마지막) ===== */
+.home-point-icon, .home-feature-icon { font-size: 22px; }
+.home-pin { font-size: 28px; }
+.pin-1 { color: #f2b705; }
+.pin-2 { color: #238451; }
+.pin-3 { color: #2f80ed; }
+.pin-4 { color: #8a8f8c; }
+>>>>>>> rkgus:mini/src/main/resources/static/css/style.css
