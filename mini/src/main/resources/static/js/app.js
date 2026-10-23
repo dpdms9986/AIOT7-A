@@ -1,5 +1,4 @@
 // 모든 페이지가 이 파일 하나를 같이 씁니다.
-// 각 기능은 "해당 폼이 있는 페이지에서만" 실행되도록 if로 감싸 두었습니다.
 document.addEventListener("DOMContentLoaded", () => {
 
   /* ===== 로그인 (login.html) - 기존 loginApi.js + Login.jsx ===== */
@@ -28,15 +27,11 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       // 백엔드 시큐리티 로그인 규칙에 맞게 Form 데이터 형식으로 변환
-      const params = new URLSearchParams();
-      params.append("userId", userId);
-      params.append("password", password);
-
-      try {
-        // 같은 서버(8080)에서 열리므로 "/login"만 씀
-        const response = await fetch("/login", {
+        try {
+        const response = await fetch("/api/auth/login", {
           method: "POST",
-          body: params,
+          headers: { "Content-Type": "application/json" }, // JSON으로 보낸다고 알려줌
+          body: JSON.stringify({ userId, password }),      // { "userId": "...", "password": "..." }
         });
         if (response.ok) {
           alert("로그인 환영합니다!");
@@ -106,8 +101,8 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       try {
-        // ⚠️ 백엔드 주소는 팀원이 만든 API에 맞게 바꾸세요
-        const response = await fetch(`/api/users/check?userId=${encodeURIComponent(userId)}`);
+        // 주소 백엔드 확인 후 변경
+        const response = await fetch(`/api/auth/check-email?userId=${encodeURIComponent(userId)}`);
         const isDuplicate = await response.json(); // 서버가 true(중복)/false(사용 가능)를 준다고 가정
 
         if (isDuplicate) {
