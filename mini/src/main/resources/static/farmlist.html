@@ -6,13 +6,29 @@
     <title>농지 관리</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
-    <header class="site-header">
-        <a href="index.html" class="home-logo">
-            <span class="icon-leaf" aria-hidden="true">✦</span>
-            <span>스마트 농업 관제 시스템</span>
-        </a>
+<body class="dash-body">
+    <header class="dash-header">
+        <a href="#" class="dash-logo"><span>🌱</span>스마트 농업 관제 시스템</a>
+        <nav class="dash-topnav" id="gnb-menu"></nav>
+        <div class="dash-header-right">
+            <span class="gnb-team" id="team-name">방제단</span>
+            <button type="button" class="gnb-invite" id="invite-btn" hidden>초대 코드 <b id="invite-code">------</b> 📋</button>
+            <span class="dash-role" id="user-role">-</span>
+            <a href="mypage.html" class="gnb-user" title="마이페이지"><span class="dash-avatar">👤</span><span id="user-name">사용자</span></a>
+            <button type="button" class="dash-btn-outline gnb-logout" id="logout-btn">로그아웃</button>
+        </div>
     </header>
+
+    <div class="dash-layout">
+
+        <aside class="dash-sidebar">
+            <nav class="dash-sidenav" id="gnb-side"></nav>
+
+            <div class="dash-side-promo">
+                <strong>🌱 더 스마트한<br>농업의 시작</strong>
+                데이터로 만드는 건강한 농작물,<br>지속 가능한 농업을 실현합니다.
+            </div>
+        </aside>
 
     <main class="app-layout">
         <div class="main-content">
@@ -185,5 +201,8 @@
 
         </div>
     </main>
+    </div>
+
+    <script src="js/common.js"></script>
 </body>
 </html>
