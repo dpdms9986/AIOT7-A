@@ -1,15 +1,14 @@
-// 모든 페이지가 이 파일 하나를 같이 씁니다.
-// 각 기능은 "해당 폼이 있는 페이지에서만" 실행되도록 if로 감싸 두었습니다.
+// 로그인 전 화면 공통 (로그인, 계정 찾기, 회원가입)
 document.addEventListener("DOMContentLoaded", () => {
 
-  /* ===== 로그인 (login.html) - 기존 loginApi.js + Login.jsx ===== */
+  /* ===== 로그인 (login.html) - USER_008~009 ===== */
   const loginForm = document.querySelector("#login-form");
   if (loginForm) {
     const userIdInput = document.querySelector("#userId");
     const passwordInput = document.querySelector("#password");
     const rememberCheck = document.querySelector("#remember-id");
 
-    // 아이디 기억하기: 저장된 아이디가 있으면 채워 넣기
+    // 아이디 기억하기
     const savedId = localStorage.getItem("savedUserId");
     if (savedId) {
       userIdInput.value = savedId;
@@ -17,7 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     loginForm.addEventListener("submit", async (event) => {
-      event.preventDefault(); // 새로고침 막기
+      event.preventDefault();
       const userId = userIdInput.value.trim();
       const password = passwordInput.value;
 
@@ -27,22 +26,31 @@ document.addEventListener("DOMContentLoaded", () => {
         localStorage.removeItem("savedUserId");
       }
 
-      // 백엔드 시큐리티 로그인 규칙에 맞게 Form 데이터 형식으로 변환
-      const params = new URLSearchParams();
-      params.append("userId", userId);
-      params.append("password", password);
-
       try {
-        // 같은 서버(8080)에서 열리므로 "/login"만 씀
-        const response = await fetch("/login", {
+        const response = await fetch("/api/auth/login", {
           method: "POST",
-          body: params,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId, password }),
         });
+
         if (response.ok) {
+          const text = await response.text();
+          console.log("로그인 응답 원본:", text);
+
+          let user = {};
+          try {
+            user = JSON.parse(text);
+          } catch (e) {
+            console.warn("응답이 JSON이 아닙니다.");
+          }
+
           alert("로그인 환영합니다!");
-          location.href = "index.html"; // 성공 시 메인으로 이동
+
+          // 권한별 메인으로 이동 (USER_009)
+          const role = String(user.role || "").toUpperCase();
+          location.href = role === "PILOT" ? "pilot-dashboard.html" : "dashboard.html";
         } else {
-          alert("아이디나 비밀번호가 틀렸습니다.");
+          alert("이메일이나 비밀번호가 틀렸습니다.");
         }
       } catch (error) {
         console.error("서버 통신 에러 발생:", error);
@@ -51,7 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  /* ===== 계정 찾기 (findaccount.html) - 기존 FindAccount.jsx ===== */
+  /* ===== 계정 찾기 (findaccount.html) ===== */
   const findForm = document.querySelector("#findaccount-form");
   if (findForm) {
     const tabs = [...document.querySelectorAll("[data-tab]")];
@@ -84,60 +92,137 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-    /* ===== 회원가입 (signup.html) ===== */
+  /* ===== 회원가입 (signup.html) - USER_001~007 ===== */
   const signupForm = document.querySelector("#signup-form");
   if (signupForm) {
-    const userIdInput = document.querySelector("#signup-userId");
+    const emailInput = document.querySelector("#signup-userId");
     const checkBtn = document.querySelector("#check-userId-btn");
-    let checkedUserId = ""; // 중복확인을 통과한 아이디를 기억
+    const pwInput = document.querySelector("#signup-pw");
+    const pw2Input = document.querySelector("#signup-pw2");
+    const pwMsg = document.querySelector("#pw-msg");
+    const teamField = document.querySelector("#field-team");
+    const inviteField = document.querySelector("#field-invite");
+    const teamInput = document.querySelector("#signup-team");
+    const inviteInput = document.querySelector("#signup-invite");
+    const phoneInput = document.querySelector("#signup-phone");
+    let checkedUserId = ""; // 중복확인을 통과한 이메일
 
-    // 아이디를 다시 고치면 중복확인을 다시 해야 함
-    userIdInput.addEventListener("input", () => {
+    const isEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+
+    // 이메일을 고치면 중복확인 다시
+    emailInput.addEventListener("input", () => {
       checkedUserId = "";
     });
 
-    // 중복확인 버튼
+    // 이메일 형식 검사 + 중복확인 (USER_001~002)
     checkBtn.addEventListener("click", async () => {
-      const userId = userIdInput.value.trim();
+      const userId = emailInput.value.trim();
 
-      if (userId.length < 4 || userId.length > 50) {
-        alert("아이디는 4~50자로 입력하세요.");
+      if (!isEmail(userId)) {
+        alert("올바른 이메일 형식으로 입력하세요. (예: user@example.com)");
         return;
       }
 
       try {
-        // ⚠️ 백엔드 주소는 팀원이 만든 API에 맞게 바꾸세요
-        const response = await fetch(`/api/users/check?userId=${encodeURIComponent(userId)}`);
-        const isDuplicate = await response.json(); // 서버가 true(중복)/false(사용 가능)를 준다고 가정
+        const response = await fetch(`/api/auth/check-email?userId=${encodeURIComponent(userId)}`);
 
-        if (isDuplicate) {
-          alert("이미 사용 중인 아이디입니다.");
-        } else {
-          alert("사용 가능한 아이디입니다.");
+        if (!response.ok) {
+          alert(`중복확인을 할 수 없습니다. (서버 응답: ${response.status})`);
+          return;
+        }
+
+        const result = await response.json();
+
+        if (result === true) {
+          alert("이미 사용 중인 이메일입니다.");
+          checkedUserId = "";
+        } else if (result === false) {
+          alert("사용 가능한 이메일입니다.");
           checkedUserId = userId;
+        } else {
+          console.log("서버 응답 내용:", result);
+          alert("서버 응답 형식이 예상과 다릅니다.");
         }
       } catch (error) {
         console.error("중복확인 에러:", error);
-        alert("중복확인 기능은 백엔드 연결 후 사용할 수 있습니다.");
+        alert("서버와 연결할 수 없습니다.");
       }
     });
 
-    // 회원가입 버튼
-    signupForm.addEventListener("submit", (event) => {
-      event.preventDefault();
+    // 비밀번호 확인 실시간 검사 (USER_004)
+    const checkPassword = () => {
+      if (!pw2Input.value) {
+        pwMsg.textContent = "";
+        pwMsg.className = "signup-hint";
+      } else if (pwInput.value === pw2Input.value) {
+        pwMsg.textContent = "비밀번호가 일치합니다.";
+        pwMsg.className = "signup-hint ok";
+      } else {
+        pwMsg.textContent = "비밀번호가 일치하지 않습니다.";
+        pwMsg.className = "signup-hint warn";
+      }
+    };
+    pwInput.addEventListener("input", checkPassword);
+    pw2Input.addEventListener("input", checkPassword);
 
+    // 역할에 따라 입력칸 보이기 (USER_005)
+    signupForm.querySelectorAll('input[name="role"]').forEach((radio) => {
+      radio.addEventListener("change", () => {
+        const isLeader = radio.value === "ADMIN";
+        teamField.hidden = !isLeader;
+        teamInput.required = isLeader;
+        inviteField.hidden = isLeader;
+        inviteInput.required = !isLeader;
+        phoneInput.required = !isLeader;
+      });
+    });
+
+    // 회원가입 (USER_007)
+    signupForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
       const data = Object.fromEntries(new FormData(signupForm));
 
-      if (data.userId !== checkedUserId) {
-        alert("아이디 중복확인을 해주세요.");
+      if (data.userId.trim() !== checkedUserId) {
+        alert("이메일 중복확인을 해주세요.");
         return;
       }
       if (data.password !== data.passwordConfirm) {
         alert("비밀번호가 일치하지 않습니다.");
         return;
       }
+      if (data.role === "PILOT" && !/^[A-Za-z0-9]{6}$/.test(data.inviteCode || "")) {
+        alert("초대 코드는 영문·숫자 6자리입니다.");
+        return;
+      }
 
-      alert("회원가입 기능은 추후 연결할 예정입니다.");
+      const body = {
+        userId: data.userId.trim(),
+        password: data.password,
+        userName: data.userName.trim(),
+        role: data.role,
+        teamName: data.role === "ADMIN" ? data.teamName.trim() : null,
+        inviteCode: data.role === "PILOT" ? data.inviteCode.toUpperCase() : null,
+        phone: data.role === "PILOT" ? data.phone.trim() : null,
+      };
+
+      try {
+        const response = await fetch("/api/auth/signup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+
+        if (response.ok) {
+          alert("회원가입이 완료되었습니다. 로그인해 주세요.");
+          location.href = "login.html";
+        } else {
+          console.log("회원가입 실패 응답:", await response.text());
+          alert("회원가입에 실패했습니다. 입력값이나 초대 코드를 확인하세요.");
+        }
+      } catch (error) {
+        console.error("회원가입 에러:", error);
+        alert("서버와 연결할 수 없습니다.");
+      }
     });
   }
 });
