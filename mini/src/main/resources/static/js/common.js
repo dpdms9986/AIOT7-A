@@ -31,12 +31,12 @@ const MENUS = {
     ["#", "방제단 관리", "👥"],
     ["#", "드론 · 자산", "🚁"],
     ["#", "통계/리포트", "📊"],
-    ["hazardlist.html", "안전 게시판", "⚠️"],
+    ["hazardlist.html", "게시판", "⚠️"],
   ],
   PILOT: [
     ["pilot-dashboard.html", "내 할당 필지", "📍"],
     ["#", "작업 이력", "🕘"],
-    ["hazardlist.html", "안전 게시판", "⚠️"],
+    ["hazardlist.html", "게시판", "⚠️"],
   ],
 };
 MENUS.ADMIN = MENUS.LEADER;
