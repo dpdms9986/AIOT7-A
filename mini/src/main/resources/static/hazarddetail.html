@@ -6,26 +6,34 @@
     <title>위험 상세 | 스마트 농업 관제 시스템</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
-    <header class="site-header">
-        <a href="index.html" class="home-logo">
-            <span class="logo-icon" aria-hidden="true">🌱</span>
-            <span>스마트 농업 관제 시스템</span>
+<body class="hazard-detail-page">
+   <header class="dash-header">
+    <a href="dashboard.html" class="dash-logo">
+        <span>🌱</span>스마트 농업 관제 시스템
+    </a>
+
+    <nav class="dash-topnav">
+        <a href="dashboard.html">관제 대시보드</a>
+        <a href="task-assignment.html">작업 배정</a>
+        <a href="farmlist.html">농지 관리</a>
+        <a href="#">방제단 관리</a>
+        <a href="#">드론 · 자산</a>
+        <a href="#">통계/리포트</a>
+        <a href="hazardlist.html">안전 게시판</a>
+    </nav>
+
+    <div class="dash-header-right">
+        <span class="gnb-team" id="team-name">방제단</span>
+        <span class="dash-role" id="user-role">방제단장</span>
+        <a href="#" class="gnb-user" title="마이페이지">
+            <span class="dash-avatar">👤</span>
+            <span id="user-name">사용자</span>
         </a>
-
-        <nav class="top-nav" aria-label="주요 메뉴">
-            <a href="index.html">대시보드</a>
-            <a href="farmlist.html">농지 관리</a>
-            <a href="#">드론 · 자산 관리</a>
-            <a href="#">작업 배정</a>
-            <a href="#">방제단 팀 관리</a>
-            <a href="#">통계/리포트</a>
-        </nav>
-
-        <div class="header-user">
-            <span>ADMIN</span>
-        </div>
-    </header>
+        <button type="button"
+                class="dash-btn-outline gnb-logout"
+                id="logout-btn">로그아웃</button>
+    </div>
+</header>
 
     <div class="dashboard-layout">
         <aside class="sidebar">
@@ -40,14 +48,14 @@
         </button>
 
             <nav class="side-nav" aria-label="사이드 메뉴">
-                <a href="index.html"><span>⌂</span> 대시보드</a>
-                <a href="farmlist.html"><span>🌱</span> 농지 관리</a>
-                <a href="#"><span>▣</span> 드론 · 자산 관리</a>
-                <a href="#"><span>▤</span> 작업 배정</a>
-                <a href="#"><span>♟</span> 방제단 팀 관리</a>
-                <a href="#"><span>▥</span> 통계/리포트</a>
-                <a href="#"><span>⚙</span> 설정</a>
-            </nav>
+            <a href="dashboard.html"><span>🏠</span> 관제 대시보드</a>
+           <a href="task-assignment.html"><span>📋</span> 작업 배정</a>
+           <a href="farmlist.html"><span>🌱</span> 농지 관리</a>
+           <a href="#"><span>👥</span> 방제단 관리</a>
+           <a href="#"><span>🚁</span> 드론 · 자산</a>
+          <a href="#"><span>📊</span> 통계/리포트</a>
+           <a href="hazardlist.html"><span>⚠️</span> 안전 게시판</a>
+         </nav>
 
             <div class="sidebar-notice">
                 <strong>🌱 더 스마트한 농업의 시작</strong>
@@ -55,11 +63,14 @@
             </div>
         </aside>
 
-        <main class="main-content hazard-detail-page">
-            <section class="page-heading">
-                <h1>위험 상세</h1>
-                <p>현장에서 발견한 위험 요소를 공유하고 안전한 비행을 지원합니다.</p>
-            </section>
+        <main class="main-content">
+        <section class="page-heading">
+        <div class="page-heading-icon" aria-hidden="true">⚠️</div>
+          <div>
+        <h1>위험 상세</h1>
+        <p>현장에서 발견한 위험 요소를 공유하고 안전한 비행을 지원합니다.</p>
+        </div>
+        </section>
 
             <div class="hazard-detail-toolbar">
                 <a href="hazardlist.html" class="button">← 위험 목록</a>
@@ -121,44 +132,14 @@
             작업 전 주변 전선의 위치를 확인하고 안전거리를 확보해 주세요.
         </p>
     </div>
+     </section> <!-- hazard-detail-card 종료 -->
 
-            </section>
-
-
-                <div class="hazard-detail-meta">
-                    <div>
-                        <span>발생 지역</span>
-                        <strong id="hazard-region">대전 유성구</strong>
-                    </div>
-                    <div>
-                        <span>작성자</span>
-                        <strong id="hazard-author">김조종</strong>
-                    </div>
-                    <div>
-                        <span>작성일</span>
-                        <strong id="hazard-date">2026-10-22</strong>
-                    </div>
-                </div>
-
-                <div class="hazard-detail-content">
-                    <h3>위험 내용</h3>
-                    <p id="hazard-description">농지 주변에 고압선이 설치되어 있습니다.
-                        드론 비행 및 방제 작업 시 전선과의 접촉에 주의해야 합니다.</p>
-                </div>
-
-                <div class="hazard-detail-content">
-                    <h3>조치 및 참고 사항</h3>
-                    <p id="hazard-action">작업 전 주변 전선의 위치를 확인하고 안전거리를 확보해 주세요.</p>
-                </div>
-            </section>
-
-           <section class="hazard-comment-card">
-             <div class="hazard-comment-heading">
+      <section class="hazard-comment-card">
+    <div class="hazard-comment-heading">
                 <h2>댓글 및 조치 의견 <span id="hazard-comment-count">0</span></h2>
                <span>현장 확인 사항을 공유합니다!</span>
                </div>
 
-        
 
     <form id="hazard-comment-form" class="hazard-comment-form">
     <div class="hazard-comment-input-wrap">
