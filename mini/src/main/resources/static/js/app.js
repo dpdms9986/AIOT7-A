@@ -1,7 +1,7 @@
 // 로그인 전 화면 공통 (로그인, 계정 찾기, 회원가입)
 document.addEventListener("DOMContentLoaded", () => {
 
-  /* ===== 로그인 (login.html) - USER_008~009 ===== */
+  /* ===== 로그인 (login.html) ===== */
   const loginForm = document.querySelector("#login-form");
   if (loginForm) {
     const userIdInput = document.querySelector("#userId");
@@ -46,9 +46,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
           alert("로그인 환영합니다!");
 
-          // 권한별 메인으로 이동 (USER_009)
+          // 권한별 메인으로 이동
           const role = String(user.role || "").toUpperCase();
-          location.href = role === "PILOT" ? "pilot-dashboard.html" : "dashboard.html";
+          // location.href = role === "PILOT" ? "pilot-dashboard.html" : "dashboard.html";
+          location.href = role === "PILOT" ? "pilot-dashboard.html" : "task-assignment.html";
         } else {
           alert("이메일이나 비밀번호가 틀렸습니다.");
         }
@@ -92,7 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  /* ===== 회원가입 (signup.html) - USER_001~007 ===== */
+  /* ===== 회원가입 (signup.html) ===== */
   const signupForm = document.querySelector("#signup-form");
   if (signupForm) {
     const emailInput = document.querySelector("#signup-userId");
@@ -114,7 +115,7 @@ document.addEventListener("DOMContentLoaded", () => {
       checkedUserId = "";
     });
 
-    // 이메일 형식 검사 + 중복확인 (USER_001~002)
+    // 이메일 형식 검사 + 중복확인
     checkBtn.addEventListener("click", async () => {
       const userId = emailInput.value.trim();
 
@@ -149,7 +150,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    // 비밀번호 확인 실시간 검사 (USER_004)
+    // 비밀번호 확인 실시간 검사
     const checkPassword = () => {
       if (!pw2Input.value) {
         pwMsg.textContent = "";
@@ -165,7 +166,7 @@ document.addEventListener("DOMContentLoaded", () => {
     pwInput.addEventListener("input", checkPassword);
     pw2Input.addEventListener("input", checkPassword);
 
-    // 역할에 따라 입력칸 보이기 (USER_005)
+    // 역할에 따라 입력칸 보이기
     signupForm.querySelectorAll('input[name="role"]').forEach((radio) => {
       radio.addEventListener("change", () => {
         const isLeader = radio.value === "ADMIN";
@@ -177,7 +178,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
 
-    // 회원가입 (USER_007)
+    // 회원가입
     signupForm.addEventListener("submit", async (event) => {
       event.preventDefault();
       const data = Object.fromEntries(new FormData(signupForm));

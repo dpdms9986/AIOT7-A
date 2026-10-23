@@ -1,9 +1,7 @@
 // 조종사 메인 화면 
 // ⚠️ 작업·드론·약제 데이터는 화면 확인용 데이터 , 백엔드 API 연결 후 교체
 
-
-
-/* ===== 1. 상태 이름 → 화면 글자와 색 ===== */
+/* ===== 상태 이름 → 화면 글자와 색 ===== */
 const STATUS = {
   READY:       { text: "배정 전", cls: "st-ready" },
   ASSIGNED:    { text: "대기",    cls: "st-assigned" },
@@ -11,7 +9,7 @@ const STATUS = {
   COMPLETED:   { text: "완료",    cls: "st-completed" },
 };
 
-/* ===== 2. 임시 데이터 ===== */
+/* ===== 임시 데이터 ===== */
 // 사용 가능한 방제 드론
 const DRONES = [
   { id: "DR-003", label: "DR-003 · DJI Agras T40" },
@@ -43,7 +41,7 @@ const OTHER_FARMS = [
   { farm: "관저동 10-2", status: "READY", x: 18, y: 76 },
 ];
 
-/* ===== 3. 화면 요소 ===== */
+/* ===== 화면 요소 ===== */
 const mapBox = document.querySelector("#pilot-map");
 const listBox = document.querySelector("#pilot-task-list");
 const detailBox = document.querySelector("#pilot-detail");
@@ -54,34 +52,8 @@ let selectedId = (myTasks.find((t) => t.status === "IN_PROGRESS") || myTasks[0])
 
 const labelOf = (list, id) => (list.find((item) => item.id === id) || {}).label || "-";
 
-/* ===== 4. 로그인·권한 검사 ===== */
-async function checkLogin() {
-  if (!CHECK_LOGIN) return;
 
-  try {
-    const res = await fetch("/api/auth/status");
-
-    if (!res.ok) {
-      location.href = "login.html";
-      return;
-    }
-
-    const user = await res.json();
-
-    if (String(user.role).toUpperCase() !== "PILOT") {
-      alert("조종사만 볼 수 있는 화면입니다.");
-      location.href = "dashboard.html";
-      return;
-    }
-
-    document.querySelector("#pilot-name").textContent = user.userName || user.userId;
-  } catch (error) {
-    console.error("로그인 확인 실패:", error);
-    location.href = "login.html";
-  }
-}
-
-/* ===== 5. 그리기 ===== */
+/* ===== 그리기 ===== */
 function filteredTasks() {
   if (currentFilter === "active") {
     return myTasks.filter((t) => t.status === "ASSIGNED" || t.status === "IN_PROGRESS");
@@ -168,7 +140,7 @@ function renderDetail() {
   let form = "";
 
   if (t.status === "ASSIGNED") {
-    // 대기 → 드론·약제 선택 후 작업 시작 (PLT_005)
+    // 대기 → 드론·약제 선택 후 작업 시작
     form = `
       <div class="pilot-form">
         <p class="pilot-form-title">드론 및 약제 선택</p>
@@ -194,7 +166,7 @@ function renderDetail() {
       <button type="button" class="dash-btn-primary" data-action="start">작업 시작</button>
     `;
   } else if (t.status === "IN_PROGRESS") {
-    // 진행 중 → 실제 사용량 입력 후 완료 보고 (PLT_009, AST_009)
+    // 진행 중 → 실제 사용량 입력 후 완료 보고 
     info += `
       <dt>드론</dt><dd>${labelOf(DRONES, t.drone)}</dd>
       <dt>약제</dt><dd>${labelOf(CHEMICALS, t.chemical)}</dd>
@@ -232,7 +204,7 @@ function renderAll() {
   renderDetail();
 }
 
-/* ===== 6. 클릭 동작 ===== */
+/* ===== 클릭 동작 ===== */
 function selectTask(id) {
   selectedId = id;
   renderAll();
@@ -294,7 +266,7 @@ detailBox.addEventListener("click", (event) => {
       return;
     }
 
-    // 나중에 백엔드 연결 (PLT_009, AST_009): 완료 보고 + 약제 재고 차감
+    // 나중에 백엔드 연결: 완료 보고 + 약제 재고 차감
     // await fetch(`/api/pilot/tasks/${t.id}/complete`, { method: "POST", headers: {...}, body: JSON.stringify({ used }) });
 
     t.used = used;
@@ -305,5 +277,5 @@ detailBox.addEventListener("click", (event) => {
 });
 
 
-/* ===== 7. 시작 ===== */
+/* ===== 시작 ===== */
 renderAll();

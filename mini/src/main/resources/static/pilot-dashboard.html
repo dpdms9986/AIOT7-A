@@ -8,22 +8,17 @@
 </head>
 <body class="dash-body" data-role="PILOT">
     <!-- 상단 헤더 (조종사는 사이드 바 없이) -->
-     <header class="dash-header">
-        <a href="pilot-dashboard.html" class="dash-logo"><span>🌱</span>농업 관제 드론 시스템</a>
-
-            <nav class="dash-topnav">
-                <a href="pilot-dashboard.html" class="active">내 할당 필지</a>
-                <a href="#">작업 이력</a>
-                <a href="#">안전 게시판</a>
-            </nav>
-
+    <header class="dash-header">
+        <a href="#" class="dash-logo"><span>🌱</span>스마트 농업 관제 시스템</a>
+        <nav class="dash-topnav" id="gnb-menu"></nav>
         <div class="dash-header-right">
             <span class="gnb-team" id="team-name">방제단</span>
-            <span class="dash-role" id="user-role">조종사</span>
-            <a href="#" class="gnb-user" title="마이페이지"><span class="dash-avatar">👤</span><span id="user-name">조종사</span></a>
+            <button type="button" class="gnb-invite" id="invite-btn" hidden>초대 코드 <b id="invite-code">------</b> 📋</button>
+            <span class="dash-role" id="user-role">-</span>
+            <a href="mypage.html" class="gnb-user" title="마이페이지"><span class="dash-avatar">👤</span><span id="user-name">사용자</span></a>
             <button type="button" class="dash-btn-outline gnb-logout" id="logout-btn">로그아웃</button>
-            </div>
-        </header>
+        </div>
+    </header>
 
      <main class="dash-main">
         <!-- 제목 -->
@@ -72,7 +67,7 @@
          </section>
      </main>
 
-     <script src="js/commin.js"></script>
+     <script src="js/common.js"></script>
      <script src="js/pilot-dashboard.js"></script>
     
 </body>

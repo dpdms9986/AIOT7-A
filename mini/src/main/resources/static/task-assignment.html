@@ -10,40 +10,32 @@
 
   <!-- ===== 공통 헤더 ===== -->
   <header class="dash-header">
-    <a href="dashboard.html" class="dash-logo"><span>🌱</span>스마트 농업 관제 시스템</a>
-
-    <nav class="dash-topnav">
-      <a href="dashboard.html">관제 대시보드</a>
-      <a href="task-assignment.html" class="active">작업 배정</a>
-      <a href="#">농지 관리</a>
-      <a href="#">방제단 관리</a>
-      <a href="#">드론 · 자산</a>
-      <a href="#">통계/리포트</a>
-      <a href="#">안전 게시판</a>
-    </nav>
-
-    <div class="dash-header-right">
-      <span class="gnb-team" id="team-name">방제단</span>
-      <button type="button" class="gnb-invite" id="invite-btn" hidden>초대 코드 <b id="invite-code">------</b> 📋</button>
-      <span class="dash-role" id="user-role">방제단장</span>
-      <a href="#" class="gnb-user" title="마이페이지"><span class="dash-avatar">👤</span><span id="user-name">사용자</span></a>
-      <button type="button" class="dash-btn-outline gnb-logout" id="logout-btn">로그아웃</button>
-    </div>
+      <a href="#" class="dash-logo"><span>🌱</span>스마트 농업 관제 시스템</a>
+    <nav class="dash-topnav" id="gnb-menu"></nav>
+      <div class="dash-header-right">
+        <span class="gnb-team" id="team-name">방제단</span>
+        <button type="button" class="gnb-invite" id="invite-btn" hidden>초대 코드 <b id="invite-code">------</b> 📋</button>
+        <span class="dash-role" id="user-role">-</span>
+        <a href="mypage.html" class="gnb-user" title="마이페이지"><span class="dash-avatar">👤</span><span id="user-name">사용자</span></a>
+        <button type="button" class="dash-btn-outline gnb-logout" id="logout-btn">로그아웃</button>
+      </div>
   </header>
 
   <div class="dash-layout">
 
     <!-- ===== 왼쪽 사이드바 ===== -->
     <aside class="dash-sidebar">
-      <nav class="dash-sidenav">
-        <a href="dashboard.html"><span>🏠</span>관제 대시보드</a>
+      <nav class="dash-sidenav" id="gnb-side"></nav>
+        <a href="#"><span>🏠</span>관제 대시보드</a>
         <a href="task-assignment.html" class="active"><span>📋</span>작업 배정</a>
-        <a href="#"><span>🌱</span>농지 관리</a>
+        <a href="farmlist.html"><span>🌱</span>농지 관리</a>
         <a href="#"><span>👥</span>방제단 관리</a>
         <a href="#"><span>🚁</span>드론 · 자산</a>
         <a href="#"><span>📊</span>통계/리포트</a>
-        <a href="#"><span>⚠️</span>안전 게시판</a>
+        <a href="hazardlist.html"><span>⚠️</span>안전 게시판</a>
       </nav>
+
+      
 
       <div class="dash-side-promo">
         <strong>🌱 더 스마트한<br>농업의 시작</strong>
@@ -67,6 +59,7 @@
       <div class="task-tabs">
         <button type="button" class="task-tab active" data-tab="assign">📋 작업 배정</button>
         <button type="button" class="task-tab" data-tab="status">📄 배정 현황</button>
+        <button type="button" class="task-tab" data-tab="history">🕘 작업 이력</button>
       </div>
 
       <!-- ===== 작업 배정 ===== -->
@@ -104,8 +97,99 @@
         </article>
       </section>
 
-      <!-- ===== 준비 중 ===== -->
-      <section class="dash-card task-panel task-empty" data-panel="status" hidden>배정 현황 화면은 준비 중입니다.</section>
+      <!-- ===== 배정 현황  ===== -->
+      <section class="task-panel" data-panel="status" hidden>
+        <!-- 조종사별 현황 카드 -->
+        <div class="task-pilot-summary" id="pilot-summary"></div>
+
+        <article class="dash-card">
+          <div class="dash-card-head task-map-head">
+            <h2>📄 배정 현황 <span class="task-count" id="status-count">-</span></h2>
+            <div class="task-search">
+              <select class="task-select" id="status-filter" aria-label="상태">
+                <option value="">전체 상태</option>
+                <option value="ASSIGNED">ASSIGNED (대기)</option>
+                <option value="IN_PROGRESS">IN_PROGRESS (진행 중)</option>
+              </select>
+              <select class="task-select" id="status-pilot" aria-label="담당 조종사">
+                <option value="">전체 조종사</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="task-table-wrap">
+            <table class="task-table plain">
+              <thead>
+                <tr>
+                  <th>주소</th>
+                  <th>행정구역</th>
+                  <th>면적(㎡)</th>
+                  <th>담당 조종사</th>
+                  <th>배정 일시</th>
+                  <th>상태</th>
+                  <th>관리</th>
+                </tr>
+              </thead>
+              <tbody id="status-tbody"></tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+      <!-- ===== 작업 이력  ===== -->
+      <section class="task-panel" data-panel="history" hidden>
+        <article class="dash-card">
+          <div class="dash-card-head">
+            <h2>🕘 작업 이력 <span class="task-count" id="history-count">-</span></h2>
+            <button type="button" class="dash-btn-outline" id="csv-btn">⬇ CSV 다운로드</button>
+          </div>
+
+          <form class="task-filter" id="history-form">
+            <label class="task-field">
+              <span>시작일</span>
+              <input type="date" id="h-from">
+            </label>
+            <label class="task-field">
+              <span>종료일</span>
+              <input type="date" id="h-to">
+            </label>
+            <label class="task-field">
+              <span>행정구역</span>
+              <input type="text" id="h-region" placeholder="예: 유성구, 어남동">
+            </label>
+            <label class="task-field">
+              <span>담당 조종사</span>
+              <select id="h-pilot">
+                <option value="">전체</option>
+              </select>
+            </label>
+            <div class="task-filter-btns">
+              <button type="submit" class="dash-btn-primary">검색</button>
+              <button type="button" class="dash-btn-outline" id="h-reset">초기화</button>
+            </div>
+          </form>
+
+          <p class="task-history-sum" id="history-sum"></p>
+
+          <div class="task-table-wrap">
+            <table class="task-table plain">
+              <thead>
+                <tr>
+                  <th>완료 일시</th>
+                  <th>주소</th>
+                  <th>행정구역</th>
+                  <th>면적(㎡)</th>
+                  <th>담당 조종사</th>
+                  <th>배정 일시</th>
+                  <th>사용 약제</th>
+                  <th>사용량(L)</th>
+                </tr>
+              </thead>
+              <tbody id="history-tbody"></tbody>
+            </table>
+          </div>
+        </article>
+      </section>
 
     </main>
   </div>
@@ -113,7 +197,7 @@
   <!-- ===== 분배 설정 팝업  ===== -->
   <div class="task-modal" id="assign-modal" hidden>
     <form class="task-modal-box task-assign-box" id="assign-form" role="dialog" aria-modal="true" aria-labelledby="assign-title">
-      <button type="button" class="task-modal-close" data-close aria-label="닫기">×</button>
+      <button type="button" class="task-modal-close" data-close aria-label="닫기">✖</button>
       <h3 id="assign-title">공동 방제단 구성</h3>
       <p class="task-assign-sum">선택 농지 <strong id="modal-count">0</strong>필지 · 총 <strong id="modal-area">0</strong>㎡</p>
 
@@ -134,7 +218,7 @@
   <!-- ===== 배정 완료 팝업 ===== -->
   <div class="task-modal" id="done-modal" hidden>
     <div class="task-modal-box" role="dialog" aria-modal="true" aria-labelledby="done-title">
-      <button type="button" class="task-modal-close" data-close aria-label="닫기">×</button>
+      <button type="button" class="task-modal-close" data-close aria-label="닫기">✖</button>
       <div class="task-modal-icon">✓</div>
       <h3 id="done-title">작업이 성공적으로 배정되었습니다.</h3>
       <p id="done-desc">선택한 농지가 조종사에게 정상적으로 배정되었습니다.</p>

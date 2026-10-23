@@ -1,6 +1,7 @@
 // 작업 배정 화면 (task-assignment.html) - 기능정의서 ADM_002~005, ADM_016~022
+// ⚠️ 농지·조종사 데이터는 화면 확인용 임시 데이터입니다. 백엔드 API 연결 후 교체하세요.
 
-/* ===== 임시 데이터 ===== */
+/* ===== 1. 임시 데이터 ===== */
 const farms = [
   { id: 101, address: "어남동 12-3", region: "대전시 유성구 어남동", area: 800,  status: "READY" },
   { id: 102, address: "어남동 12-5", region: "대전시 유성구 어남동", area: 980,  status: "READY" },
@@ -15,7 +16,7 @@ const farms = [
   { id: 303, address: "관저동 11-7", region: "대전시 서구 관저동",   area: 1240, status: "COMPLETED" },
 ];
 
-// 소속 조종사 (대기 중인 조종사만 선택 가능)
+// 소속 조종사 (대기 중인 조종사만 선택 가능 - ADM_017)
 const PILOTS = [
   { id: "P01", name: "김조종", status: "대기" },
   { id: "P02", name: "박비행", status: "대기" },
@@ -23,7 +24,7 @@ const PILOTS = [
   { id: "P04", name: "최운항", status: "작업 중" },
 ];
 
-/* =====화면 상태 ===== */
+/* ===== 화면 상태 ===== */
 let keywords = [];
 const selectedFarmIds = new Set();
 const checkedPilotIds = new Set();
@@ -136,7 +137,7 @@ function renderPilots() {
   }).join("");
 }
 
-// 합계 검증 
+// 합계 검증 (ADM_020)
 function renderQuotaMsg() {
   const total = selectedFarmIds.size;
   const sum = quotaSum();
@@ -284,9 +285,9 @@ assignForm.addEventListener("submit", (event) => {
   //   body: JSON.stringify(assignments),
   // });
   // if (!res.ok) { alert("배정에 실패했습니다."); return; }
-  // ※ await를 쓰려면 위의 (event) => 를 async (event) => 로 변경
+  // ※ await를 쓰려면 위의 (event) => 를 async (event) => 로 바꿔야 합니다.
 
-  // READY → ASSIGNED
+  // READY → ASSIGNED (ADM_022)
   pickedFarms.forEach((f) => (f.status = "ASSIGNED"));
 
   document.querySelector("#done-desc").textContent =
