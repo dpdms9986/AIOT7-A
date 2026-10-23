@@ -1,0 +1,162 @@
+
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>공지사항 상세 | 스마트 농업 관제 시스템</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="notice-detail-page">
+    <header class="dash-header">
+    <a href="dashboard.html" class="dash-logo">
+        <span>🌱</span>스마트 농업 관제 시스템
+    </a>
+
+    <nav class="dash-topnav">
+        <a href="dashboard.html">관제 대시보드</a>
+        <a href="task-assignment.html">작업 배정</a>
+        <a href="farmlist.html">농지 관리</a>
+        <a href="#">방제단 관리</a>
+        <a href="#">드론 · 자산</a>
+        <a href="#">통계/리포트</a>
+        <a href="hazardlist.html">안전 게시판</a>
+    </nav>
+
+    <div class="dash-header-right">
+        <span class="gnb-team" id="team-name">방제단</span>
+        <span class="dash-role" id="user-role">방제단장</span>
+        <a href="#" class="gnb-user" title="마이페이지">
+            <span class="dash-avatar">👤</span>
+            <span id="user-name">사용자</span>
+        </a>
+        <button type="button"
+                class="dash-btn-outline gnb-logout"
+                id="logout-btn">로그아웃</button>
+    </div>
+</header>
+
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <button
+                type="button"
+                class="sidebar-toggle"
+                id="sidebar-toggle"
+                aria-label="사이드바 펼치기"
+                aria-expanded="false"
+                title="메뉴 펼치기">
+                <span aria-hidden="true">•••</span>
+            </button>
+
+            <nav class="side-nav" aria-label="사이드 메뉴">
+    <a href="dashboard.html"><span>🏠</span> 관제 대시보드</a>
+    <a href="task-assignment.html"><span>📋</span> 작업 배정</a>
+    <a href="farmlist.html"><span>🌱</span> 농지 관리</a>
+    <a href="#"><span>👥</span> 방제단 관리</a>
+    <a href="#"><span>🚁</span> 드론 · 자산</a>
+    <a href="#"><span>📊</span> 통계/리포트</a>
+    <a href="hazardlist.html"><span>⚠️</span> 안전 게시판</a>
+</nav>
+
+            <div class="sidebar-notice">
+                <strong>🌱 더 스마트한 농업의 시작</strong>
+                <p>데이터로 만드는 건강한 농작물, 스마트 농업 관제 시스템</p>
+            </div>
+        </aside>
+        
+        <main class="main-content">
+        <section class="page-heading">
+    <div class="page-heading-icon" aria-hidden="true">📢</div>
+    <div>
+        <h1>공지사항 상세</h1>
+        <p>방제단 작업 지침 및 기상 특보를 확인합니다.</p>
+    </div>
+</section>
+
+            <div class="notice-detail-toolbar">
+                <a href="noticelist.html" class="button">
+                    ← 공지사항 목록
+                </a>
+            </div>
+
+            <article class="notice-detail-card">
+                <header class="notice-detail-heading">
+                    <div class="notice-detail-title-row">
+                        <h2 id="notice-title">
+                            [기상특보] 10월 23일 강풍 주의보 발령
+                        </h2>
+
+                        <span class="notice-badge urgent" id="notice-type">
+                            긴급
+                        </span>
+
+                        <span class="notice-pin" id="notice-pin">
+                            📌 중요 공지
+                        </span>
+
+                        <div class="notice-detail-actions">
+                            <button type="button" class="button"
+                                    id="notice-edit-button">수정</button>
+                            <button type="button" class="button danger-button"
+                                    id="notice-delete-button">삭제</button>
+                        </div>
+                    </div>
+
+                    <div class="notice-detail-meta">
+                        <span class="notice-author-avatar" aria-hidden="true">
+                            👤
+                        </span>
+                        <strong id="notice-author">김민수 (단장)</strong>
+                        <span>·</span>
+                        <time id="notice-date" datetime="2026-10-22T14:32">
+                            2026-10-22 14:32
+                        </time>
+                        <span>·</span>
+                        <span>조회 <strong id="notice-views">124</strong></span>
+                    </div>
+                </header>
+
+                <div class="notice-detail-content">
+                    <p id="notice-content">
+                        기상청 예보에 따라 10월 23일(금) 해당 지역에 강풍 주의보가
+                        발령되었습니다. 안전한 방제 작업을 위해 아래 내용을 준수해
+                        주시기 바랍니다.
+                    </p>
+
+                    <section class="notice-alert-box">
+                        <h3>📢 주의 내용</h3>
+                        <ul id="notice-alert-list">
+                            <li>10월 23일(금) 전 지역 드론 비행 금지</li>
+                            <li>최대 풍속 5m/s 이상 예상</li>
+                            <li>현장 풍속 3m/s 이상 점검</li>
+                            <li>추가 변동 사항은 추후 공지 예정</li>
+                        </ul>
+                    </section>
+                </div>
+
+                <section class="notice-attachments">
+                    <h3>첨부 파일</h3>
+                    <div id="notice-attachment-list">
+                        <div class="notice-attachment-item">
+                            <span aria-hidden="true">📕</span>
+                            <a href="#" class="notice-attachment-name">
+                                기상특보_강풍주의보.pdf
+                            </a>
+                            <span class="notice-attachment-size">(245KB)</span>
+                            <a href="#" class="notice-attachment-download"
+                               aria-label="첨부 파일 다운로드">⇩</a>
+                        </div>
+                    </div>
+                </section>
+
+                <aside class="notice-member-info">
+                    <span aria-hidden="true">ⓘ</span>
+                    이 공지사항은 해당 방제단 회원에게만 공개됩니다.
+                </aside>
+            </article>
+        </main>
+    </div>
+
+    <script src="js/sidebar.js"></script>
+</body>
+</html>

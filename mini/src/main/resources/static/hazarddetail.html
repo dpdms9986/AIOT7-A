@@ -37,101 +37,124 @@
             </div>
         </aside>
 
-        <main class="main-content hazard-detail-page">
-            <section class="page-heading">
-                <h1>위험 상세</h1>
-                <p>현장에서 발견한 위험 요소를 공유하고 안전한 비행을 지원합니다.</p>
-            </section>
+        <main class="main-content">
+        <section class="page-heading">
+        <div class="page-heading-icon" aria-hidden="true">⚠️</div>
+          <div>
+        <h1>위험 상세</h1>
+        <p>현장에서 발견한 위험 요소를 공유하고 안전한 비행을 지원합니다.</p>
+        </div>
+        </section>
 
             <div class="hazard-detail-toolbar">
                 <a href="hazardlist.html" class="button">← 위험 목록</a>
             </div>
 
-            <section class="hazard-detail-card">
-                <div class="hazard-detail-heading">
-                    <div>
-                        <span class="hazard-detail-type" id="hazard-type">고압선</span>
-                        <h2 id="hazard-title">논 주변 고압선 주의</h2>
-                    </div>
-                    <span class="hazard-severity high" id="hazard-severity">고위험</span>
-                </div>
+            
+           <section class="hazard-detail-card">
 
-                <div class="hazard-detail-meta">
-                    <div>
-                        <span>발생 지역</span>
-                        <strong id="hazard-region">대전 유성구</strong>
-                    </div>
-                    <div>
-                        <span>작성자</span>
-                        <strong id="hazard-author">김조종</strong>
-                    </div>
-                    <div>
-                        <span>작성일</span>
-                        <strong id="hazard-date">2026-10-22</strong>
-                    </div>
-                </div>
+        <div class="hazard-detail-heading">
+        <div class="hazard-detail-title-group">
+            <h2 id="hazard-title">논 주변 고압선 주의</h2>
 
-                <div class="hazard-detail-content">
-                    <h3>위험 내용</h3>
-                    <p id="hazard-description">농지 주변에 고압선이 설치되어 있습니다.
-                        드론 비행 및 방제 작업 시 전선과의 접촉에 주의해야 합니다.</p>
-                </div>
+            <span class="hazard-detail-type" id="hazard-type">
+                고압선
+            </span>
 
-                <div class="hazard-detail-content">
-                    <h3>조치 및 참고 사항</h3>
-                    <p id="hazard-action">작업 전 주변 전선의 위치를 확인하고 안전거리를 확보해 주세요.</p>
-                </div>
-            </section>
+            <span class="hazard-severity high" id="hazard-severity">
+                고위험
+            </span>
+        </div>
 
-            <section class="hazard-comment-card">
-                <div class="hazard-comment-heading">
-                    <div>
-                        <h2>댓글 및 조치 의견 <span id="hazard-comment-count">0</span></h2>
-                        <p>현장 확인 사항과 안전 조치 의견을 공유합니다.</p>
-                    </div>
-                </div>
+        <div class="hazard-detail-actions">
+            <button type="button" class="hazard-edit-button">
+                수정
+            </button>
 
-                <div id="hazard-comment-list" class="hazard-comment-list">
-                    <p class="hazard-comment-empty">등록된 댓글이 없습니다.</p>
-                </div>
+            <button type="button" class="hazard-delete-button">
+                삭제
+            </button>
+        </div>
+    </div>
 
-                <form id="hazard-comment-form" class="hazard-comment-form">
-                    <div class="hazard-comment-avatar" aria-hidden="true">👤</div>
-                    <div class="hazard-comment-input-wrap">
-                        <label for="hazard-comment">댓글 작성</label>
-                        <textarea
-                            id="hazard-comment"
-                            name="comment"
-                            maxlength="200"
-                            rows="2"
-                            placeholder="조치 의견이나 현장 확인 사항을 입력하세요. (최대 200자)"
-                            required
-                        ></textarea>
-                        <div class="hazard-comment-form-footer">
-                            <span id="hazard-comment-length">0/200</span>
-                            <button type="submit" class="primary-button">등록</button>
-                        </div>
-                    </div>
-                </form>
-                <p class="hazard-comment-notice">
-                    현재 댓글은 이 브라우저에 저장됩니다. 실제 사용자 인증 및 서버 저장은 백엔드 연동이 필요합니다.
-                </p>
+         <div class="hazard-detail-meta">
+         <div>
+            <span>발생 지역</span>
+            <strong id="hazard-region">대전 유성구</strong>
+         </div>
+         <div>
+            <span>작성자</span>
+            <strong id="hazard-author">김조종</strong>
+        </div>
+        <div>
+            <span>작성일</span>
+            <strong id="hazard-date">2026-10-22</strong>
+        </div>
+    </div>
 
-               <div class="hazard-detail-content">
-                <h3>현장 사진</h3>
+    <div class="hazard-detail-content">
+        <h3>위험 내용</h3>
+        <p id="hazard-description">
+            농지 주변에 고압선이 설치되어 있습니다.
+            드론 비행 및 방제 작업 시 전선과의 접촉에 주의해야 합니다.
+        </p>
+    </div>
 
-                <label for="hazard-image-input" class="hazard-image-upload">
-                   <span>＋ 현장 이미지 추가</span>
-                    <input
-                      type="file"
-                      id="hazard-image-input"
-                      accept="image/*"
-                      multiple>
-                </label>
+    <div class="hazard-detail-content">
+        <h3>조치 및 참고 사항</h3>
+        <p id="hazard-action">
+            작업 전 주변 전선의 위치를 확인하고 안전거리를 확보해 주세요.
+        </p>
+    </div>
+     </section> <!-- hazard-detail-card 종료 -->
 
-                <div id="hazard-image-preview" class="hazard-image-gallery"></div>
-                 </div> 
-            </section>
+      <section class="hazard-comment-card">
+    <div class="hazard-comment-heading">
+                <h2>댓글 및 조치 의견 <span id="hazard-comment-count">0</span></h2>
+               <span>현장 확인 사항을 공유합니다!</span>
+               </div>
+
+
+    <form id="hazard-comment-form" class="hazard-comment-form">
+    <div class="hazard-comment-input-wrap">
+        <label for="hazard-comment">댓글 작성</label>
+
+        <textarea
+            id="hazard-comment"
+            name="comment"
+            rows="3"
+            placeholder="조치 의견이나 현장 확인 사항을 입력하세요."
+            required
+        ></textarea>
+
+        <div id="hazard-comment-preview" class="hazard-comment-preview"></div>
+
+        <div class="hazard-comment-form-footer">
+            <label for="hazard-comment-images" class="hazard-image-button">
+                <span>＋ 이미지 첨부</span>
+            </label>
+
+            <input
+                type="file"
+                id="hazard-comment-images"
+                accept="image/*"
+                multiple
+                hidden
+            >
+
+            <span id="hazard-image-count">첨부 이미지 0개</span>
+
+            <button type="submit" class="primary-button">
+                댓글 등록
+            </button>
+        </div>
+    </div>
+</form>
+
+    <div id="hazard-comment-list" class="hazard-comment-list">
+        <p class="hazard-comment-empty">등록된 댓글이 없습니다.</p>
+    </div>
+</section>
         </main>
     </div>
 

@@ -1,0 +1,198 @@
+
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>공지사항 | 스마트 농업 관제 시스템</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="notice-page">
+    <header class="dash-header">
+    <a href="dashboard.html" class="dash-logo">
+        <span>🌱</span>스마트 농업 관제 시스템
+    </a>
+
+    <nav class="dash-topnav">
+        <a href="dashboard.html">관제 대시보드</a>
+        <a href="task-assignment.html">작업 배정</a>
+        <a href="farmlist.html">농지 관리</a>
+        <a href="#">방제단 관리</a>
+        <a href="#">드론 · 자산</a>
+        <a href="#">통계/리포트</a>
+        <a href="hazardlist.html">안전 게시판</a>
+    </nav>
+
+    <div class="dash-header-right">
+        <span class="gnb-team" id="team-name">방제단</span>
+        <span class="dash-role" id="user-role">방제단장</span>
+        <a href="#" class="gnb-user" title="마이페이지">
+            <span class="dash-avatar">👤</span>
+            <span id="user-name">사용자</span>
+        </a>
+        <button type="button"
+                class="dash-btn-outline gnb-logout"
+                id="logout-btn">로그아웃</button>
+    </div>
+</header>
+
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+             <button
+            type="button"
+            class="sidebar-toggle"
+            id="sidebar-toggle"
+            aria-label="사이드바 펼치기"
+            aria-expanded="false"
+            title="메뉴 펼치기">
+        <span aria-hidden="true">•••</span>
+        </button>
+            <nav class="side-nav" aria-label="사이드 메뉴">
+    <a href="dashboard.html"><span>🏠</span> 관제 대시보드</a>
+    <a href="task-assignment.html"><span>📋</span> 작업 배정</a>
+    <a href="farmlist.html"><span>🌱</span> 농지 관리</a>
+    <a href="#"><span>👥</span> 방제단 관리</a>
+    <a href="#"><span>🚁</span> 드론 · 자산</a>
+    <a href="#"><span>📊</span> 통계/리포트</a>
+    <a href="hazardlist.html"><span>⚠️</span> 안전 게시판</a>
+</nav>
+
+            <div class="sidebar-notice">
+                <strong>🌱 더 스마트한 농업의 시작</strong>
+                <p>데이터로 만드는 건강한 농작물, 스마트 농업 관제 시스템</p>
+            </div>
+        </aside>
+
+
+        <main class="main-content">
+        <section class="page-heading">
+    <div class="page-heading-icon" aria-hidden="true">📢</div>
+    <div>
+        <h1>공지사항</h1>
+        <p>방제단의 중요 공지 및 기상 특보를 확인하세요.</p>
+    </div>
+</section>
+
+          <div class="notice-toolbar">
+            <button type="button" class="primary-button"
+               id="notice-create-button">
+               + 공지사항 작성
+                </button>
+                </div>
+
+            <section class="notice-card">
+                <div class="notice-search">
+                    <label class="notice-filter">
+                        <span class="sr-only">공지 유형</span>
+                        <select id="notice-type-filter">
+                            <option value="all">전체</option>
+                            <option value="urgent">긴급</option>
+                            <option value="general">일반</option>
+                        </select>
+                    </label>
+
+                    <label class="notice-search-input">
+                        <span class="sr-only">공지 검색</span>
+                        <input type="search" id="notice-search"
+                               placeholder="제목, 내용 검색...">
+                    </label>
+
+                    <button type="button" class="button"
+                            id="notice-search-button">검색</button>
+                </div>
+
+                    <div class="notice-table-wrap">
+                        <table class="notice-table">
+                            <thead>
+                                <tr>
+                                <th scope="col">번호</th>
+                                <th scope="col">구분</th>
+                                <th scope="col">제목</th>
+                                <th scope="col">작성자</th>
+                                <th scope="col">작성일</th>
+                                <th scope="col">조회</th>
+                            </tr>
+                            </thead>
+                            <tbody id="notice-list">
+                                <tr>
+                                    <td>56</td>
+                                    <td><span class="notice-badge urgent">긴급</span></td>
+                                    <td>
+                                        <a href="noticelistdetail.html?id=56">
+                                            📌 [기상특보] 10월 23일 강풍 주의보 발령
+                                        </a>
+                                    </td>
+                                    <td>김민수</td>
+                                    <td>2026-10-22</td>
+                                    <td>124</td>
+                                </tr>
+                                <tr>
+                                    <td>55</td>
+                                    <td><span class="notice-badge urgent">긴급</span></td>
+                                    <td>
+                                        <a href="noticelistdetail.html?id=55">
+                                            [작업 지침] 오전 8시 방제 작업 준비 안내
+                                        </a>
+                                    </td>
+                                    <td>김민수</td>
+                                    <td>2026-10-20</td>
+                                    <td>98</td>
+                                </tr>
+                                <tr>
+                                <td>54</td>
+                                <td><span class="notice-badge general">일반</span></td>
+                                <td>
+                                    <a href="noticelistdetail.html?id=54">
+                                        10월 방제 일정 변경 안내
+                                    </a>
+                                </td>
+                                <td>김민수</td>
+                                <td>2026-10-18</td>
+                                <td>67</td>
+                            </tr>
+                            <tr>
+                                <td>53</td>
+                                <td><span class="notice-badge general">일반</span></td>
+                                <td>
+                                    <a href="noticelistdetail.html?id=53">
+                                        신규 조종사 안전 교육 안내
+                                    </a>
+                                </td>
+                                <td>관리자</td>
+                                <td>2026-10-15</td>
+                                <td>89</td>
+                            </tr>
+                            <tr>
+                                <td>52</td>
+                                <td><span class="notice-badge general">일반</span></td>
+                                <td>
+                                    <a href="noticedetail.html?id=52">
+                                        드론 정기 점검 안내
+                                    </a>
+                                </td>
+                                <td>관리자</td>
+                                <td>2026-10-12</td>
+                                <td>45</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <nav class="notice-pagination" aria-label="공지사항 페이지">
+                       <button type="button" disabled aria-label="이전 페이지">‹</button>
+                       <button type="button" class="active" aria-current="page">1</button>
+                       <button type="button">2</button>
+                       <button type="button">3</button>
+                       <button type="button">4</button>
+                       <button type="button">5</button>
+                       <button type="button" aria-label="다음 페이지">›</button>
+                    </nav>
+                </section>
+        </main>
+    </div>
+
+    <script src="js/hazardlist.js"></script>
+    <script src="js/hazardlist.js"></script>
+    <script src="js/sidebar.js"></script>
+</body>
+</html>
