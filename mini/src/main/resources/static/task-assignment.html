@@ -6,25 +6,28 @@
   <title>작업 배정 | 스마트 농업 관제 시스템</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="dash-body">
+<body class="dash-body" data-role="ADMIN">
 
-  <!-- ===== 상단 헤더 ===== -->
+  <!-- ===== 공통 헤더 ===== -->
   <header class="dash-header">
     <a href="dashboard.html" class="dash-logo"><span>🌱</span>스마트 농업 관제 시스템</a>
 
     <nav class="dash-topnav">
-      <a href="dashboard.html">대시보드</a>
-      <a href="#">농지 관리</a>
-      <a href="#">드론 · 자산 관리</a>
+      <a href="dashboard.html">관제 대시보드</a>
       <a href="task-assignment.html" class="active">작업 배정</a>
-      <a href="#">방제단 팀 관리</a>
+      <a href="#">농지 관리</a>
+      <a href="#">방제단 관리</a>
+      <a href="#">드론 · 자산</a>
       <a href="#">통계/리포트</a>
+      <a href="#">안전 게시판</a>
     </nav>
 
     <div class="dash-header-right">
-      <button type="button" class="dash-bell" aria-label="알림">🔔<span class="dash-bell-dot"></span></button>
-      <span class="dash-role">ADMIN</span>
-      <span class="dash-avatar">👤</span>
+      <span class="gnb-team" id="team-name">방제단</span>
+      <button type="button" class="gnb-invite" id="invite-btn" hidden>초대 코드 <b id="invite-code">------</b> 📋</button>
+      <span class="dash-role" id="user-role">방제단장</span>
+      <a href="#" class="gnb-user" title="마이페이지"><span class="dash-avatar">👤</span><span id="user-name">사용자</span></a>
+      <button type="button" class="dash-btn-outline gnb-logout" id="logout-btn">로그아웃</button>
     </div>
   </header>
 
@@ -33,13 +36,13 @@
     <!-- ===== 왼쪽 사이드바 ===== -->
     <aside class="dash-sidebar">
       <nav class="dash-sidenav">
-        <a href="dashboard.html"><span>🏠</span>대시보드</a>
-        <a href="#"><span>🌱</span>농지 관리</a>
-        <a href="#"><span>🚁</span>드론 · 자산 관리</a>
+        <a href="dashboard.html"><span>🏠</span>관제 대시보드</a>
         <a href="task-assignment.html" class="active"><span>📋</span>작업 배정</a>
-        <a href="#"><span>👥</span>방제단 팀 관리</a>
+        <a href="#"><span>🌱</span>농지 관리</a>
+        <a href="#"><span>👥</span>방제단 관리</a>
+        <a href="#"><span>🚁</span>드론 · 자산</a>
         <a href="#"><span>📊</span>통계/리포트</a>
-        <a href="#"><span>⚙️</span>설정</a>
+        <a href="#"><span>⚠️</span>안전 게시판</a>
       </nav>
 
       <div class="dash-side-promo">
@@ -48,157 +51,98 @@
       </div>
     </aside>
 
-    <!-- ===== 오른쪽 본문 ===== -->
+    <!-- ===== 본문 ===== -->
     <main class="dash-main">
 
-      <!-- 제목 줄 -->
       <div class="dash-title-row">
         <div class="task-title">
           <span class="task-title-icon">📋</span>
           <div>
             <h1>작업 배정</h1>
-            <p>드론과 인력을 활용한 농업 작업을 배정하고 관리할 수 있습니다.</p>
+            <p>지역을 검색해 미배정 농지를 선택하고, 조종사에게 나눠 배정합니다.</p>
           </div>
         </div>
-        <label class="task-date-box">📅 <input type="date" id="task-top-date" aria-label="기준 날짜"></label>
       </div>
 
-      <!-- 탭 -->
       <div class="task-tabs">
         <button type="button" class="task-tab active" data-tab="assign">📋 작업 배정</button>
         <button type="button" class="task-tab" data-tab="status">📄 배정 현황</button>
-        <button type="button" class="task-tab" data-tab="history">🕘 작업 이력</button>
-        <button type="button" class="task-tab" data-tab="template">🗂️ 작업 템플릿</button>
       </div>
 
-      <!-- ===== 탭 1: 작업 배정 ===== -->
+      <!-- ===== 작업 배정 ===== -->
       <section class="task-panel" data-panel="assign">
-        <div class="task-layout">
+        <article class="dash-card">
+          <div class="dash-card-head task-map-head">
+            <h2>🌱 미배정 농지 목록 <span class="task-count" id="farm-count">-</span></h2>
+            <form class="task-search" id="region-form">
+              <input type="text" class="dash-input" id="region-input" placeholder="🔍 행정구역 검색 (예: 유성구, 어남동)">
+              <button type="submit" class="dash-btn-primary">검색</button>
+              <button type="button" class="dash-btn-outline" id="region-reset">전체</button>
+            </form>
+          </div>
 
-          <!-- 왼쪽: 작업 유형 목록 (task-assignment.js가 채움) -->
-          <aside class="dash-card">
-            <div class="dash-card-head">
-              <h2>📋 작업 유형</h2>
-            </div>
-            <ul class="task-type-list" id="task-type-list"></ul>
-          </aside>
+          <div class="task-table-wrap">
+            <table class="task-table">
+              <thead>
+                <tr>
+                  <th><input type="checkbox" id="check-all" aria-label="전체 선택"></th>
+                  <th>주소</th>
+                  <th>행정구역</th>
+                  <th>면적(㎡)</th>
+                  <th>상태</th>
+                </tr>
+              </thead>
+              <tbody id="farm-tbody"></tbody>
+            </table>
+          </div>
 
-          <!-- 오른쪽: 배정 입력 폼 -->
-          <form class="dash-card" id="task-form">
-            <h2 class="task-form-title">🚁 작업 배정</h2>
-
-            <div class="task-form-grid">
-
-              <!-- 왼쪽 열 -->
-              <div class="task-col">
-                <div class="task-box">
-                  <h3>작업 대상 선택</h3>
-                  <div class="task-row-2">
-                    <label class="task-field">
-                      <span>작업 유형</span>
-                      <select id="task-type" required></select>
-                    </label>
-                    <label class="task-field">
-                      <span>농지 선택</span>
-                      <select id="task-farm" required></select>
-                    </label>
-                  </div>
-
-                  <p class="task-sub">작업 구역</p>
-                  <div class="task-zones">
-                    <label class="task-check"><input type="checkbox" id="zone-all" checked> 전체 구역</label>
-                    <label class="task-check"><input type="checkbox" class="zone-box" value="A"> 구역 A</label>
-                    <label class="task-check"><input type="checkbox" class="zone-box" value="B"> 구역 B</label>
-                    <label class="task-check"><input type="checkbox" class="zone-box" value="C"> 구역 C</label>
-                    <label class="task-check"><input type="checkbox" class="zone-box" value="D"> 구역 D</label>
-                  </div>
-                </div>
-
-                <div class="task-box">
-                  <h3>작업 일정</h3>
-                  <div class="task-row-2">
-                    <label class="task-field">
-                      <span>시작일</span>
-                      <input type="date" id="task-date" required>
-                    </label>
-                    <label class="task-field">
-                      <span>시작 시간</span>
-                      <input type="time" id="task-time" value="09:00" required>
-                    </label>
-                  </div>
-                </div>
-              </div>
-
-              <!-- 오른쪽 열 -->
-              <div class="task-col">
-                <div class="task-box">
-                  <h3>드론 및 약제 선택</h3>
-                  <label class="task-field">
-                    <span>드론 선택</span>
-                    <select id="task-drone" required></select>
-                  </label>
-                  <label class="task-field">
-                    <span>약제 선택</span>
-                    <select id="task-chem"></select>
-                  </label>
-
-                  <p class="task-sub">작업 설정</p>
-                  <div class="task-row-2">
-                    <label class="task-field">
-                      <span>살포량 (L/ha)</span>
-                      <input type="number" id="task-amount" value="12" min="1" max="50">
-                    </label>
-                    <label class="task-field">
-                      <span>예상 소요 시간</span>
-                      <input type="text" id="task-duration" readonly>
-                    </label>
-                  </div>
-                </div>
-
-                <div class="task-box">
-                  <h3>담당자 선택</h3>
-                  <label class="task-field">
-                    <span>담당자</span>
-                    <select id="task-pilot" required></select>
-                  </label>
-                </div>
-              </div>
-            </div>
-
-            <!-- 작업 요약 + 배정 버튼 -->
-            <div class="task-summary">
-              <div class="task-summary-items">
-                <div><small>농지</small><strong id="sum-farm">-</strong></div>
-                <div><small>작업 유형</small><strong id="sum-type">-</strong></div>
-                <div><small>드론</small><strong id="sum-drone">-</strong></div>
-                <div><small>약제</small><strong id="sum-chem">-</strong></div>
-                <div><small>예상 소요 시간</small><strong id="sum-time">-</strong></div>
-              </div>
-              <button type="submit" class="dash-btn-primary task-submit">➤ 작업 배정하기</button>
-            </div>
-          </form>
-        </div>
+          <!-- 선택 요약 + 분배 설정 버튼 -->
+          <div class="task-select-bar">
+            <p>선택한 농지 <strong id="sel-count">0</strong>필지 · 총 <strong id="sel-area">0</strong>㎡</p>
+            <button type="button" class="dash-btn-primary" id="open-assign">👥 분배 설정</button>
+          </div>
+        </article>
       </section>
 
-      <!-- ===== 탭 2~4: 아직 준비 중 ===== -->
+      <!-- ===== 준비 중 ===== -->
       <section class="dash-card task-panel task-empty" data-panel="status" hidden>배정 현황 화면은 준비 중입니다.</section>
-      <section class="dash-card task-panel task-empty" data-panel="history" hidden>작업 이력 화면은 준비 중입니다.</section>
-      <section class="dash-card task-panel task-empty" data-panel="template" hidden>작업 템플릿 화면은 준비 중입니다.</section>
 
     </main>
   </div>
 
-  <!-- ===== 배정 완료 팝업 (처음엔 숨김) ===== -->
-  <div class="task-modal" id="task-modal" hidden>
-    <div class="task-modal-box" role="dialog" aria-modal="true" aria-labelledby="task-modal-title">
-      <button type="button" class="task-modal-close" id="task-modal-close" aria-label="닫기">×</button>
+  <!-- ===== 분배 설정 팝업  ===== -->
+  <div class="task-modal" id="assign-modal" hidden>
+    <form class="task-modal-box task-assign-box" id="assign-form" role="dialog" aria-modal="true" aria-labelledby="assign-title">
+      <button type="button" class="task-modal-close" data-close aria-label="닫기">×</button>
+      <h3 id="assign-title">공동 방제단 구성</h3>
+      <p class="task-assign-sum">선택 농지 <strong id="modal-count">0</strong>필지 · 총 <strong id="modal-area">0</strong>㎡</p>
+
+      <div class="task-box-head">
+        <h4>투입 조종사</h4>
+        <button type="button" class="dash-btn-outline task-mini-btn" id="even-btn">균등 분배</button>
+      </div>
+      <ul class="task-pilot-list" id="pilot-list"></ul>
+      <p class="task-quota" id="quota-msg"></p>
+
+      <div class="task-modal-actions">
+        <button type="button" class="dash-btn-outline" data-close>취소</button>
+        <button type="submit" class="dash-btn-primary">배정 확정</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- ===== 배정 완료 팝업 ===== -->
+  <div class="task-modal" id="done-modal" hidden>
+    <div class="task-modal-box" role="dialog" aria-modal="true" aria-labelledby="done-title">
+      <button type="button" class="task-modal-close" data-close aria-label="닫기">×</button>
       <div class="task-modal-icon">✓</div>
-      <h3 id="task-modal-title">작업이 성공적으로 배정되었습니다.</h3>
-      <p>선택한 작업이 드론과 인력에게 정상적으로 배정되었습니다.</p>
-      <button type="button" class="dash-btn-primary" id="task-modal-ok">확인</button>
+      <h3 id="done-title">작업이 성공적으로 배정되었습니다.</h3>
+      <p id="done-desc">선택한 농지가 조종사에게 정상적으로 배정되었습니다.</p>
+      <button type="button" class="dash-btn-primary" data-close>확인</button>
     </div>
   </div>
 
+  <script src="js/common.js"></script>
   <script src="js/task-assignment.js"></script>
 </body>
 </html>
