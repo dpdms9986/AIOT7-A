@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.aloha.mini.domain.CustomUser;
 import com.aloha.mini.domain.Lands;
 import com.aloha.mini.dto.AssignRequest;
+import com.aloha.mini.dto.AssignmentFormResponse;
 import com.aloha.mini.dto.DashboardResponse;
 import com.aloha.mini.dto.UserResponse;
 import com.aloha.mini.service.AdminService;
@@ -29,6 +30,8 @@ import lombok.RequiredArgsConstructor;
 public class LeaderController {
 
     private final AdminService adminService;
+    private final WorkAssignmentService workAssignmentService;
+
 
     // 1. 미배정(READY) 농지 목록 조회
     // 호출 예시: GET http://localhost:8080/api/admin/lands/ready?regionNo=1
@@ -59,8 +62,6 @@ public class LeaderController {
         return ResponseEntity.ok("성공적으로 배정되었습니다.");
     }
 
-    private final WorkAssignmentService workAssignmentService;
-
     // 단장용 방제 대시보드 조회
     @GetMapping("/dashboard")
     public ResponseEntity<DashboardResponse> getDashboard(@AuthenticationPrincipal CustomUser customUser) {
@@ -71,5 +72,17 @@ public class LeaderController {
         DashboardResponse dashboardData = workAssignmentService.getDashboardData(teamNo);
         
         return ResponseEntity.ok(dashboardData);
+    }
+
+    // 👇 배정 폼 데이터(조종사 목록 + 농지 목록) 조회 API
+    @GetMapping("/assignment-form")
+    public ResponseEntity<AssignmentFormResponse> getAssignmentForm(@AuthenticationPrincipal CustomUser customUser) {
+        
+        // 세션에서 단장의 소속 방제단 번호 추출
+        Long teamNo = customUser.getUser().getTeam().getNo();
+        
+        AssignmentFormResponse formData = workAssignmentService.getAssignmentFormData(teamNo);
+        
+        return ResponseEntity.ok(formData);
     }
 }

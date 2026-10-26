@@ -43,10 +43,8 @@ public class AuthService {
 
         Teams team = null;
 
-        
-
-        // 단장(ADMIN)인 경우: 새 방제단 창설 및 6자리 고유 초대코드 발급
-        if ("ADMIN".equalsIgnoreCase(req.getRole())) {
+        // 단장(LEADER)인 경우: 새 방제단 창설 및 6자리 고유 초대코드 발급
+        if ("LEADER".equalsIgnoreCase(req.getRole())) {
             String inviteCode = generateUniqueInviteCode();
             team = Teams.builder()
                     .teamName(req.getTeamName())

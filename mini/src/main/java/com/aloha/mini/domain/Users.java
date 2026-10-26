@@ -48,6 +48,9 @@ public class Users {
     @Column(nullable = false)
     private int enabled = 1;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UserAuth> userAuths = new ArrayList<>();
+
   // 회원 권한 목록 (Users : UserAuth = 1 : N)
   // cascade = CascadeType.ALL  : ON UPDATE CASCADE
   // ➡ 부모 Users 의 PK(no) 변경되면, 자식 UserAuth FK(user_no) 변경합니다.
