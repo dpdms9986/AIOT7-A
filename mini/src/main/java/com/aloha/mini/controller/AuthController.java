@@ -39,7 +39,7 @@ public class AuthController {
     // 1. 이메일 중복 확인 (USER_002)
     // GET /api/auth/check-email?userId=test@test.com
     @GetMapping("/check-email")
-    public ResponseEntity<Boolean> checkUserIdDuplicate(@RequestParam String userId) {
+    public ResponseEntity<Boolean> checkUserIdDuplicate(@RequestParam("userId") String userId) {
         boolean isDuplicate = authService.checkUserIdDuplicate(userId);
         return ResponseEntity.ok(isDuplicate);
     }
