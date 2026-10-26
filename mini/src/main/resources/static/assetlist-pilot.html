@@ -167,7 +167,7 @@
                 </thead>
                 <tbody id="pilot-asset-tbody">
                     <tr data-asset-type="drone" data-asset-id="DR-001"
-                        data-status="normal" data-maintenance="false">
+                        data-status="AVAILABLE" data-maintenance="false">
                         <td>🚁 드론</td>
                         <td>
                             <strong>DJI Agras T30</strong>
@@ -222,15 +222,25 @@
         </p>
     </section>
 
-    <section class="asset-pilot-detail-card">
-        <div class="asset-pilot-detail-heading">
+    <section class="asset-pilot-detail-card" id="pilot-asset-detail-card" hidden>
+    <div class="asset-pilot-detail-heading">
+        <div>
             <h2>선택된 자산 상세 정보</h2>
-            <span id="pilot-detail-type">자산을 선택하세요</span>
+            <p>자산별 기본 정보와 관리 이력을 확인합니다.</p>
         </div>
-        <div id="pilot-asset-detail">
-            <p>목록에서 상세보기를 선택하면 자산 정보가 표시됩니다.</p>
+        <span id="pilot-detail-type" class="asset-detail-type-label">
+            자산을 선택하세요
+        </span>
+    </div>
+
+    <div id="pilot-asset-detail" class="asset-detail-content">
+        <div class="asset-detail-empty">
+            <span class="asset-detail-empty-icon">🚁</span>
+            <strong>선택된 자산이 없습니다.</strong>
+            <p>위 자산 목록에서 상세보기를 선택하세요.</p>
         </div>
-    </section>
+    </div>
+</section>
 </main>
 
 <script src="js/common.js"></script>

@@ -5528,3 +5528,426 @@ button.asset-role-chip:focus-visible {
         grid-template-columns: 1fr;
     }
 }
+
+/* ========================================
+   자산 상세 정보
+======================================== */
+
+.asset-pilot-detail-card {
+    margin-top: 24px;
+    padding: 24px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    box-shadow: 0 3px 12px rgba(31, 50, 70, 0.04);
+}
+
+.asset-pilot-detail-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 22px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid #e8edf2;
+}
+
+.asset-pilot-detail-heading h2 {
+    margin: 0;
+    color: #203246;
+    font-size: 19px;
+    font-weight: 700;
+}
+
+.asset-pilot-detail-heading p {
+    margin: 7px 0 0;
+    color: #7b8794;
+    font-size: 13px;
+}
+
+.asset-detail-type-label {
+    flex-shrink: 0;
+    padding: 7px 12px;
+    color: #238451;
+    background: #eaf6ee;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.asset-detail-empty {
+    display: flex;
+    min-height: 180px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #64748b;
+    text-align: center;
+}
+
+.asset-detail-empty-icon {
+    margin-bottom: 12px;
+    font-size: 32px;
+}
+
+.asset-detail-empty strong {
+    color: #334155;
+    font-size: 15px;
+}
+
+.asset-detail-empty p {
+    margin: 8px 0 0;
+    font-size: 13px;
+}
+
+/* 상세 정보 상단 */
+
+.asset-detail-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.asset-detail-title h3 {
+    margin: 0;
+    color: #203246;
+    font-size: 22px;
+}
+
+.asset-detail-title p {
+    margin: 7px 0 0;
+    color: #7b8794;
+    font-size: 13px;
+}
+
+.asset-detail-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.asset-detail-status .status-dot {
+    width: 8px;
+    height: 8px;
+    flex-shrink: 0;
+    background: currentColor;
+    border-radius: 50%;
+}
+
+.asset-detail-status.available,
+.asset-detail-status.normal {
+    color: #16834a;
+    background: #eaf7ef;
+    border-color: #ccebd7;
+}
+
+.asset-detail-status.in-use {
+    color: #c77716;
+    background: #fff4df;
+    border-color: #f4dfb6;
+}
+
+.asset-detail-status.maintenance,
+.asset-detail-status.low {
+    color: #d13b3b;
+    background: #fff0f0;
+    border-color: #f3cccc;
+}
+
+/* 상세 정보 카드 그리드 */
+
+.asset-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 24px;
+}
+
+.asset-detail-info {
+    min-width: 0;
+    padding: 16px;
+    background: #f8fafc;
+    border: 1px solid #e8edf2;
+    border-radius: 10px;
+}
+
+.asset-detail-info span {
+    display: block;
+    margin-bottom: 9px;
+    color: #7b8794;
+    font-size: 12px;
+}
+
+.asset-detail-info strong {
+    display: block;
+    overflow-wrap: anywhere;
+    color: #203246;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.asset-detail-info small {
+    display: block;
+    margin-top: 6px;
+    color: #8b97a5;
+    font-size: 11px;
+}
+
+/* 이력 영역 */
+
+.asset-detail-section {
+    margin-top: 22px;
+}
+
+.asset-detail-section-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.asset-detail-section-heading h4 {
+    margin: 0;
+    color: #203246;
+    font-size: 15px;
+}
+
+.asset-detail-section-heading span {
+    color: #8491a0;
+    font-size: 12px;
+}
+
+.asset-detail-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid #e5eaf0;
+    border-radius: 9px;
+}
+
+.asset-detail-table {
+    width: 100%;
+    min-width: 520px;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+.asset-detail-table th,
+.asset-detail-table td {
+    padding: 13px 14px;
+    border-bottom: 1px solid #edf0f4;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.asset-detail-table th {
+    color: #64748b;
+    background: #f8fafc;
+    font-weight: 600;
+}
+
+.asset-detail-table td {
+    color: #334155;
+}
+
+.asset-detail-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.asset-detail-table .empty-row {
+    padding: 22px;
+    color: #94a3b8;
+    text-align: center;
+}
+
+/* 상태 안내 */
+
+.asset-detail-status-guide {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 18px;
+    margin-top: 18px;
+    padding: 13px 15px;
+    background: #fafbfc;
+    border-radius: 8px;
+}
+
+.asset-detail-status-guide span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #64748b;
+    font-size: 11px;
+}
+
+.asset-detail-status-guide i {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+}
+
+.asset-detail-status-guide .guide-available {
+    background: #16834a;
+}
+
+.asset-detail-status-guide .guide-in-use {
+    background: #c77716;
+}
+
+.asset-detail-status-guide .guide-maintenance {
+    background: #d13b3b;
+}
+
+/* 반응형 */
+
+@media (max-width: 900px) {
+    .asset-detail-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 600px) {
+    .asset-pilot-detail-card {
+        padding: 16px;
+    }
+
+    .asset-pilot-detail-heading {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .asset-detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .asset-detail-title h3 {
+        font-size: 18px;
+    }
+
+    .asset-detail-top {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+
+.asset-detail-status.unknown {
+    color: #64748b;
+    background: #f1f5f9;
+    border-color: #e2e8f0;
+}
+
+/* 자산 상세 영역: 상세보기 전에는 숨김 */
+.asset-pilot-detail-card[hidden] {
+    display: none !important;
+}
+
+/* 현재 가동 상태 강조 */
+.asset-current-status {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 18px 0;
+    padding: 18px;
+    border: 1px solid #dce5e0;
+    border-radius: 10px;
+    background: #f8fafc;
+}
+
+.asset-current-status-label {
+    color: #64748b;
+    font-size: 13px;
+}
+
+.asset-current-status strong {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 23px;
+    font-weight: 800;
+}
+
+.asset-current-status .status-dot {
+    width: 12px;
+    height: 12px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+/* 상태별 색상 */
+.asset-current-status.available {
+    color: #159447;
+    background: #effaf3;
+    border-color: #c9ecd5;
+}
+
+.asset-current-status.in-use {
+    color: #e87916;
+    background: #fff7ed;
+    border-color: #fed7aa;
+}
+
+.asset-current-status.maintenance {
+    color: #dc2626;
+    background: #fef2f2;
+    border-color: #fecaca;
+}
+
+/* 세 가지 상태 범례 */
+.asset-detail-status-guide {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 24px;
+    margin-top: 18px;
+    padding: 15px;
+    background: #f8fafc;
+    border: 1px solid #e8edf2;
+    border-radius: 9px;
+}
+
+.asset-detail-status-guide span {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #334155;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.asset-detail-status-guide i {
+    width: 10px;
+    height: 10px;
+    flex-shrink: 0;
+    border-radius: 50%;
+}
+
+.asset-detail-status-guide .guide-available {
+    background: #159447;
+}
+
+.asset-detail-status-guide .guide-in-use {
+    background: #e87916;
+}
+
+.asset-detail-status-guide .guide-maintenance {
+    background: #dc2626;
+}
+
+@media (max-width: 600px) {
+    .asset-current-status strong {
+        font-size: 19px;
+    }
+
+    .asset-detail-status-guide {
+        flex-direction: column;
+        gap: 12px;
+    }
+}
