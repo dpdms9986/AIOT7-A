@@ -41,7 +41,7 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/","/index.html", "/*.html", "/css/**", "/js/**", 
                                 "/images/**", "/api/auth/**", "/api/auth/**","/api/mock/**",
-                                "/login", "/logout", "/error/**", "/ws-test.html", "/ws-drone/**").permitAll() // 로그인/회원가입/중복확인은 전원 허용
+                                "/login", "/logout", "/error/**", "/ws-test.html", "/ws-drone/**", "/api/hazards/**").permitAll() // 로그인/회원가입/중복확인은 전원 허용
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")   // 1. 새로운 시스템 관리자 전용
                 .requestMatchers("/api/leader/**").hasRole("LEADER") // 2. 단장 전용 (새로 추가!)
                 .requestMatchers("/api/pilot/**").hasRole("PILOT")   // 3. 조종사 전용
