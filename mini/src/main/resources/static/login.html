@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>로그인</title>
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/users.css">
+</head>
+<body>
+  <main class="login-page">
+    <section class="login-card">
+      <header class="login-brand">
+        <div class="login-brand-logo">A</div>
+        <h1>농업 드론 관제 시스템</h1>
+        <p>계정에 로그인하여 관제 서비스를 이용하세요.</p>
+      </header>
+
+      <form class="login-form" id="login-form">
+        <div class="login-field">
+          <label for="userId">이메일</label>
+          <input id="userId" name="userId" type="email" placeholder="이메일을 입력하세요" required>
+        </div>
+
+        <div class="login-field">
+          <label for="password">비밀번호</label>
+          <input id="password" name="password" type="password" placeholder="비밀번호를 입력하세요" required>
+        </div>
+
+        <div class="login-options">
+          <label class="login-remember">
+            <input type="checkbox" id="remember-id">
+            아이디 기억하기
+          </label>
+          <a href="findaccount.html" class="login-link">계정 찾기</a>
+        </div>
+
+        <button type="submit" class="login-submit">로그인</button>
+      </form>
+
+      <div class="login-signup-link">
+        계정이 없으신가요? <a href="signup.html">회원가입</a>
+      </div>
+    </section>
+  </main>
+  <script src="js/app.js"></script>
+</body>
+</html>

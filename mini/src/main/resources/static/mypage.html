@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>마이페이지 | 스마트 농업 관제 시스템</title>
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/header.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/task.css">
+    <link rel="stylesheet" href="css/users.css">
+
+
+</head>
+<!-- data-role 없음: 로그인한 사람 누구나 -->
+<body class="dash-body">
+
+  <!-- ===== 공통 헤더 (메뉴는 역할에 맞게 common.js가 채움) ===== -->
+  <header class="dash-header">
+    <a href="#" class="dash-logo"><span>🌱</span>스마트 농업 관제 시스템</a>
+
+    <nav class="dash-topnav" id="gnb-menu"></nav>
+
+    <div class="dash-header-right">
+      <span class="gnb-team" id="team-name">방제단</span>
+      <button type="button" class="gnb-invite" id="invite-btn" hidden>초대 코드 <b id="invite-code">------</b> 📋</button>
+      <span class="dash-role" id="user-role">-</span>
+      <a href="mypage.html" class="gnb-user" title="마이페이지"><span class="dash-avatar">👤</span><span id="user-name">사용자</span></a>
+      <button type="button" class="dash-btn-outline gnb-logout" id="logout-btn">로그아웃</button>
+    </div>
+  </header>
+
+  <main class="dash-main my-main">
+
+    <div class="dash-title-row">
+      <div class="task-title">
+        <span class="task-title-icon">👤</span>
+        <div>
+          <h1>마이페이지</h1>
+          <p>내 정보와 기체, 비밀번호를 관리합니다.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="my-grid">
+
+      <!-- 왼쪽: 프로필 + 실적 -->
+      <div class="my-col">
+        <article class="dash-card my-profile">
+          <span class="my-avatar">👤</span>
+          <h2 id="my-name">-</h2>
+          <span class="dash-role" id="my-role">-</span>
+
+          <dl class="my-info">
+            <dt>이메일</dt>
+            <dd id="my-email">-</dd>
+            <dt>소속 방제단</dt>
+            <dd id="my-team">-</dd>
+            <dt class="my-invite-row" hidden>초대 코드</dt>
+            <dd class="my-invite-row" hidden>
+              <button type="button" class="gnb-invite" id="my-invite"><b id="my-invite-code">-</b> 📋 복사</button>
+            </dd>
+          </dl>
+        </article>
+
+        <!-- GNB_007: 개인 방제 실적 -->
+        <article class="dash-card">
+          <div class="dash-card-head">
+            <h2 id="record-title">📊 내 방제 실적</h2>
+          </div>
+          <div class="my-stats">
+            <div><small>이번 달 완료</small><strong id="rec-month">0</strong><span>필지</span></div>
+            <div><small>누적 완료</small><strong id="rec-total">0</strong><span>필지</span></div>
+            <div><small>누적 면적</small><strong id="rec-area">0</strong><span>㎡</span></div>
+            <div><small>약제 사용량</small><strong id="rec-used">0</strong><span>L</span></div>
+          </div>
+        </article>
+      </div>
+
+      <!-- 오른쪽: 정보 수정 + 비밀번호 변경 (USER_011) -->
+      <div class="my-col">
+        <form class="dash-card" id="info-form">
+          <div class="dash-card-head">
+            <h2>✏️ 정보 수정</h2>
+          </div>
+
+          <label class="task-field">
+            <span>이메일 (로그인 아이디, 변경 불가)</span>
+            <input type="email" id="info-email" readonly>
+          </label>
+          <label class="task-field">
+            <span>이름</span>
+            <input type="text" id="info-name" readonly>
+          </label>
+          <label class="task-field">
+            <span>연락처</span>
+            <input type="tel" id="info-phone" placeholder="010-1234-5678" maxlength="13" required>
+          </label>
+
+          <!-- 조종사만 보임 -->
+          <fieldset class="my-drone" id="drone-fields" hidden>
+            <legend>🚁 내 기체 정보</legend>
+            <div class="task-row-2">
+              <label class="task-field">
+                <span>기체 모델</span>
+                <select id="info-drone"></select>
+              </label>
+              <label class="task-field">
+                <span>약제 탱크 용량 (L)</span>
+                <input type="number" id="info-tank" min="1" max="100">
+              </label>
+            </div>
+          </fieldset>
+
+          <button type="submit" class="dash-btn-primary my-submit">정보 저장</button>
+        </form>
+
+        <form class="dash-card" id="pw-form">
+          <div class="dash-card-head">
+            <h2>🔒 비밀번호 변경</h2>
+          </div>
+
+          <label class="task-field">
+            <span>현재 비밀번호</span>
+            <input type="password" id="pw-current" autocomplete="current-password" required>
+          </label>
+          <label class="task-field">
+            <span>새 비밀번호</span>
+            <input type="password" id="pw-new" autocomplete="new-password" required>
+          </label>
+          <label class="task-field">
+            <span>새 비밀번호 확인</span>
+            <input type="password" id="pw-new2" autocomplete="new-password" required>
+          </label>
+          <p class="signup-hint" id="pw-check"></p>
+
+          <button type="submit" class="dash-btn-primary my-submit">비밀번호 변경</button>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/common.js"></script>
+  <script src="js/mypage.js"></script>
+</body>
+</html>
