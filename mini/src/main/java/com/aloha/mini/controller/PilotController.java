@@ -1,16 +1,27 @@
 package com.aloha.mini.controller;
 
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.aloha.mini.dto.PilotAssignmentResponse;
+import com.aloha.mini.dto.StatusUpdateRequest;
 import com.aloha.mini.dto.UserResponse;
 import com.aloha.mini.dto.WorkActionRequest;
 import com.aloha.mini.service.PilotService;
+import com.aloha.mini.service.WorkAssignmentService;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/pilot")
@@ -18,6 +29,7 @@ import java.util.List;
 public class PilotController {
 
     private final PilotService pilotService;
+    private final WorkAssignmentService workAssignmentService;
 
     // 1. 내 작업 목록 조회 (GET /api/pilot/assignments)
     @GetMapping("/assignments")
@@ -62,5 +74,16 @@ public class PilotController {
             return null;
         }
         return (UserResponse) session.getAttribute("LOGIN_USER");
+    }
+
+    // 조종사 작업 상태 변경 API
+    @PatchMapping("/assignments/{assignmentNo}/status")
+    public ResponseEntity<?> updateStatus(
+            @PathVariable("assignmentNo") Long assignmentNo, 
+            @RequestBody StatusUpdateRequest dto) {
+        
+        workAssignmentService.updateAssignmentStatus(assignmentNo, dto.getStatus());
+        
+        return ResponseEntity.ok(Map.of("message", "작업 상태가 " + dto.getStatus() + "(으)로 변경되었습니다."));
     }
 }
