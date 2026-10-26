@@ -25,7 +25,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
+import java.util.Map;
 
 @RestController
 @Slf4j 
@@ -39,7 +39,7 @@ public class AuthController {
     // 1. 이메일 중복 확인 (USER_002)
     // GET /api/auth/check-email?userId=test@test.com
     @GetMapping("/check-email")
-    public ResponseEntity<Boolean> checkUserIdDuplicate(@RequestParam String userId) {
+    public ResponseEntity<Boolean> checkUserIdDuplicate(@RequestParam("userId") String userId) {
         boolean isDuplicate = authService.checkUserIdDuplicate(userId);
         return ResponseEntity.ok(isDuplicate);
     }
@@ -106,4 +106,33 @@ public class AuthController {
         }
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
+
+    @GetMapping("/check-id")
+    public ResponseEntity<?> checkIdDuplicate(@RequestParam("userId") String userId) {
+    boolean isDuplicate = authService.checkIdDuplicate(userId);
+    
+    // 중복이면 true, 사용 가능하면 false를 JSON으로 응답
+    return ResponseEntity.ok(Map.of(
+            "isDuplicate", isDuplicate,
+            "message", isDuplicate ? "이미 사용 중인 아이디입니다." : "사용 가능한 아이디입니다."
+    ));
+}
+
+// 예시: HttpSession 또는 SecurityContext에서 로그인 유저 정보를 꺼내 반환하는 API
+    @GetMapping("/api/auth/me")
+    public ResponseEntity<?> getMyInfo(HttpSession session) {
+    // 1. 세션에서 로그인 시 저장해둔 유저 정보(또는 DTO)를 꺼냅니다.
+    UserResponse loginUser = (UserResponse) session.getAttribute("LOGIN_USER");
+
+    // 2. 로그인이 안 된 상태로 접근했다면 401(권한 없음) 에러를 보냅니다.
+    if (loginUser == null) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+    }
+
+    // 3. 로그인된 상태라면 유저 정보(userNo, userName, role, teamNo, inviteCode 등)를 반환합니다.
+    return ResponseEntity.ok(loginUser);
+}
+
+// 🌻 FE 팀은 leader.html이나 pilot.html이 열릴 때 $.get('/api/auth/me')를 호출하기만 하면, 
+//    누가 로그인했는지 바로 알아내어 웹소켓 연결까지 자동으로 실행할 수 있고, 로그인 안 한 사람이 주소창에 치고 들어오면 login.html로 쫓아낼 수 있습니다.
 }

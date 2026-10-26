@@ -21,5 +21,10 @@ public ResponseEntity<String> createMockLands() {
     return ResponseEntity.ok(result);
 }
 
-
+// POST /api/mock/users (유저 세팅)
+@PostMapping("/users")
+public ResponseEntity<String> createMockUsers() {
+    String result = mockDataService.createMockUsers();
+    return ResponseEntity.ok(result);
+}
 }
