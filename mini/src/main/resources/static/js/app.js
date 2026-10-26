@@ -169,7 +169,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 역할에 따라 입력칸 보이기
     signupForm.querySelectorAll('input[name="role"]').forEach((radio) => {
       radio.addEventListener("change", () => {
-        const isLeader = radio.value === "ADMIN";
+        const isLeader = radio.value === "LEADER";
         teamField.hidden = !isLeader;
         teamInput.required = isLeader;
         inviteField.hidden = isLeader;
@@ -177,6 +177,15 @@ document.addEventListener("DOMContentLoaded", () => {
         phoneInput.required = !isLeader;
       });
     });
+
+    const roleParam = new URLSearchParams(location.search).get("role");
+    if (["LEADER", "PILOT"].includes(roleParam)) {
+      const target = signupForm.querySelector(`input[name="role"][value="${roleParam}"]`);
+      if (target) {
+        target.checked = true;
+        target.dispatchEvent(new Event("change"));
+      }
+    }
 
     // 회원가입
     signupForm.addEventListener("submit", async (event) => {
@@ -201,7 +210,7 @@ document.addEventListener("DOMContentLoaded", () => {
         password: data.password,
         userName: data.userName.trim(),
         role: data.role,
-        teamName: data.role === "ADMIN" ? data.teamName.trim() : null,
+        teamName: data.role === "LEADER" ? data.teamName.trim() : null,
         inviteCode: data.role === "PILOT" ? data.inviteCode.toUpperCase() : null,
         phone: data.role === "PILOT" ? data.phone.trim() : null,
       };

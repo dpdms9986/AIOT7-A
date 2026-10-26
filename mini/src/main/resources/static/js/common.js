@@ -119,6 +119,7 @@ async function checkAccess() {
     const role = String(user.role || "").toUpperCase();
 
     if (required && !required.split(" ").includes(role)) {
+      console.log("status 응답:", user, "필요 권한:", required, "내 권한:", role);
       alert("접근 권한이 없는 화면입니다.");
       location.href = MAIN_PAGE[role] || "login.html";
       return;
