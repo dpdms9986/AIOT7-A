@@ -53,7 +53,7 @@ public class LeaderController {
         
         // 2) 단장(LEADER) 권한 확인
         UserResponse loginUser = (UserResponse) session.getAttribute("LOGIN_USER");
-        if (!"LEARDER".equals(loginUser.getRole())) {
+        if (!"LEADER".equals(loginUser.getRole())) {
             return ResponseEntity.status(403).body("단장(LEADER) 권한이 필요합니다.");
         }
 
