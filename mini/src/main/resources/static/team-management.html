@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>방제단 관리 | 스마트 농업 관제 시스템</title>
+  <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/header.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+  <link rel="stylesheet" href="css/team-management.css">
+</head>
+<body class="dash-body" data-role="ADMIN">
+
+  <!-- ===== 공통 헤더 ===== -->
+  <header class="dash-header">
+      <a href="#" class="dash-logo"><span>🌱</span>스마트 농업 관제 시스템</a>
+    <nav class="dash-topnav" id="gnb-menu"></nav>
+      <div class="dash-header-right">
+        <span class="gnb-team" id="team-name">방제단</span>
+        <button type="button" class="gnb-invite" id="invite-btn" hidden>초대 코드 <b id="invite-code">------</b> 📋</button>
+        <span class="dash-role" id="user-role">-</span>
+        <a href="mypage.html" class="gnb-user" title="마이페이지"><span class="dash-avatar">👤</span><span id="user-name">사용자</span></a>
+        <button type="button" class="dash-btn-outline gnb-logout" id="logout-btn">로그아웃</button>
+      </div>
+  </header>
+
+  <div class="dash-layout">
+
+    <!-- ===== 왼쪽 사이드바 ===== -->
+   <aside class="dash-sidebar">
+    <nav class="dash-sidenav" id="gnb-side" aria-label="사이드 메뉴">
+    </nav>
+
+    <div class="dash-side-promo">
+        <strong>🌱 더 스마트한 농업의 시작</strong>
+        <p>데이터로 만드는 건강한 농작물, 스마트 농업 관제 시스템</p>
+    </div>
+</aside>
+
+    <!-- ===== 본문 ===== -->
+    <main class="main-content team-management-page">
+    <section class="team-page-heading">
+          <div>
+            <h1>방제단 관리</h1>
+            <p>소속 조종사의 접속 상태와 작업 현황, 배정 정보를 관리합니다.</p>
+          </div>
+
+         <div class="team-heading-actions">
+            <button type="button" class="team-btn team-btn-primary"
+                    id="add-pilot-btn">
+                + 프로필 추가
+            </button>
+            <button type="button" class="team-btn team-btn-outline"
+                    id="invite-pilot-btn">
+                초대 코드 안내
+            </button>
+        </div>
+    </section>
+
+    <!-- ===== 요약 ===== -->
+
+    <section class="team-summary" aria-label="방제단 현황">
+        <article class="team-summary-card">
+            <span class="team-summary-icon blue">👥</span>
+            <div>
+                <span>전체 조종사</span>
+                <strong id="team-total-count">4명</strong>
+                <small>등록된 프로필</small>
+            </div>
+        </article>
+
+       <article class="team-summary-card">
+            <span class="team-summary-icon green">●</span>
+            <div>
+                <span>접속 중</span>
+                <strong id="team-online-count">2명</strong>
+                <small>현재 접속 상태</small>
+            </div>
+        </article>
+
+       <article class="team-summary-card">
+            <span class="team-summary-icon orange">🚁</span>
+            <div>
+                <span>작업 중</span>
+                <strong id="team-working-count">1명</strong>
+                <small>진행 중인 작업</small>
+            </div>
+        </article>
+
+        <article class="team-summary-card">
+            <span class="team-summary-icon purple">✓</span>
+            <div>
+                <span>금일 완료</span>
+                <strong id="team-completed-count">7건</strong>
+                <small>예시 작업 데이터</small>
+            </div>
+        </article>
+    </section>
+
+     <!-- ===== 탭 ===== -->
+      <section class="team-tabs" aria-label="방제단원 메뉴">
+    <button type="button"
+            class="team-tab active"
+            data-team-tab="members"
+            aria-pressed="true">
+        조종사 현황
+    </button>
+
+    <button type="button"
+            class="team-tab"
+            data-team-tab="allocation"
+            aria-pressed="false">
+        숙련도 · 할당 가중치
+    </button>
+</section>
+
+     <!-- ===== 조종사 현황 ===== -->
+      <section class="team-panel" id="team-members-panel">
+        <div class="team-panel-heading">
+            <div>
+                <h2>소속 조종사 목록</h2>
+                <p>접속 상태, 담당 기체, 탱크 용량 및 당일 작업량을 확인합니다.</p>
+            </div>
+            <span class="team-result-count">
+                총 <strong id="team-visible-count">4</strong>명
+            </span>
+        </div>
+
+        <form class="team-filters" id="team-search-form">
+            <label class="team-search-field">
+                이름 또는 연락처
+                <input type="search" id="team-keyword"
+                       placeholder="조종사 이름, 연락처 검색">
+            </label>
+          
+        <label>
+                접속 상태
+                <select id="team-status-filter">
+                    <option value="">전체 상태</option>
+                    <option value="online">접속 중</option>
+                    <option value="working">작업 중</option>
+                    <option value="offline">오프라인</option>
+                </select>
+            </label>
+
+        <label>
+                숙련도
+                <select id="team-skill-filter">
+                    <option value="">전체 숙련도</option>
+                    <option value="초급">초급</option>
+                    <option value="중급">중급</option>
+                    <option value="베테랑">베테랑</option>
+                </select>
+            </label>
+
+        <button type="submit" class="team-btn team-btn-primary">검색</button>
+            <button type="reset" class="team-btn team-btn-outline">초기화</button>
+        </form>
+
+         <div class="team-table-wrap">
+            <table class="team-table">
+                <thead>
+                    <tr>
+                        <th>조종사</th>
+                        <th>연락처</th>
+                        <th>접속 상태</th>
+                        <th>담당 기체</th>
+                        <th>탱크 용량</th>
+                        <th>현재 작업</th>
+                        <th>금일 작업량</th>
+                        <th>숙련도</th>
+                        <th>관리</th>
+                    </tr>
+                </thead>
+                <tbody id="team-member-tbody"></tbody>
+            </table>
+        </div>
+
+        <p class="team-empty" id="team-empty" hidden>
+            검색 조건에 맞는 조종사가 없습니다.
+        </p>
+
+        <p class="team-demo-note">
+            ※ 현재 목록은 UI 확인용 예시 데이터이며 실제 접속 상태 및 작업량은 서버 연동 후 갱신됩니다.
+        </p>
+    </section>
+
+    <!-- 숙련도 및 할당 가중치 -->
+    <section class="team-panel" id="team-allocation-panel" hidden>
+        <div class="team-panel-heading">
+            <div>
+                <h2>숙련도 및 기본 할당 가중치</h2>
+                <p>조종사별 숙련도와 작업 분배에 사용할 기본 가중치를 설정합니다.</p>
+            </div>
+        </div>
+
+        <div class="team-info-banner">
+            <strong>할당 가중치 안내</strong>
+            <p>
+                가중치는 작업 분배 시 참고하는 설정값입니다.
+                실제 농지 분배 계산 규칙은 서버의 배정 로직과 연결해야 합니다.
+            </p>
+        </div>
+
+        <div class="team-table-wrap">
+            <table class="team-table">
+                <thead>
+                    <tr>
+                        <th>조종사</th>
+                        <th>숙련도</th>
+                        <th>기본 할당 가중치</th>
+                        <th>현재 금일 완료량</th>
+                        <th>관리</th>
+                    </tr>
+                </thead>
+                <tbody id="team-allocation-tbody"></tbody>
+            </table>
+        </div>
+    </section>
+  </main>
+
+
+  <!-- 프로필 추가 -->
+<div class="team-modal-backdrop" id="team-profile-modal" hidden>
+    <section class="team-modal" role="dialog"
+             aria-modal="true" aria-labelledby="team-profile-modal-title">
+        <div class="team-modal-heading">
+            <div>
+                <h2 id="team-profile-modal-title">조종사 프로필 추가</h2>
+                <p>시연용 목록에 조종사 프로필을 추가합니다.</p>
+            </div>
+            <button type="button" class="team-modal-close"
+                    data-close-modal aria-label="닫기">×</button>
+        </div>
+
+        <form id="team-profile-form">
+            <div class="team-form-grid">
+                <label>
+                    조종사 이름 *
+                    <input name="name" required maxlength="30"
+                           placeholder="예: 홍길동">
+                </label>
+
+                <label>
+                    연락처 *
+                    <input name="phone" required
+                           placeholder="010-0000-0000">
+                </label>
+
+                <label>
+                    담당 기체
+                    <input name="drone" placeholder="예: DR-005">
+                </label>
+
+                <label>
+                    약제 탱크 용량 (L)
+                    <input name="tank" type="number" min="0" step="0.1"
+                           placeholder="예: 30">
+                </label>
+
+                <label>
+                    숙련도
+                    <select name="skill">
+                        <option value="초급">초급</option>
+                        <option value="중급">중급</option>
+                        <option value="베테랑">베테랑</option>
+                    </select>
+                </label>
+
+                <label>
+                    기본 할당 가중치
+                    <input name="weight" type="number" min="0.1"
+                           max="10" step="0.1" value="1">
+                </label>
+
+                <label>
+                    접속 상태
+                    <select name="status">
+                        <option value="online">접속 중</option>
+                        <option value="working">작업 중</option>
+                        <option value="offline">오프라인</option>
+                    </select>
+                </label>
+            </div>
+
+            <p class="team-form-note">
+                프로필은 현재 브라우저의 시연 데이터에만 추가됩니다.
+            </p>
+
+            <div class="team-modal-actions">
+                <button type="button" class="team-btn team-btn-outline"
+                        data-close-modal>취소</button>
+                <button type="submit" class="team-btn team-btn-primary">
+                    프로필 추가
+                </button>
+            </div>
+        </form>
+    </section>
+</div>
+
+<!-- 조종사 상세 모달 -->
+<div class="team-modal-backdrop" id="team-detail-modal" hidden>
+    <section class="team-modal" role="dialog"
+             aria-modal="true" aria-labelledby="team-detail-title">
+        <div class="team-modal-heading">
+            <div>
+                <h2 id="team-detail-title">조종사 상세 정보</h2>
+                <p>조종사 프로필과 작업 현황</p>
+            </div>
+            <button type="button" class="team-modal-close"
+                    data-close-modal aria-label="닫기">×</button>
+        </div>
+        <div id="team-detail-content"></div>
+    </section>
+</div>
+
+<!-- 미완료 농지 재배정 모달 -->
+<div class="team-modal-backdrop" id="team-reassign-modal" hidden>
+    <section class="team-modal" role="dialog"
+             aria-modal="true" aria-labelledby="team-reassign-title">
+        <div class="team-modal-heading">
+            <div>
+                <h2 id="team-reassign-title">미완료 농지 재배정</h2>
+                <p>현장 이탈 등으로 작업을 이어갈 수 없을 때 사용할 기능입니다.</p>
+            </div>
+            <button type="button" class="team-modal-close"
+                    data-close-modal aria-label="닫기">×</button>
+        </div>
+
+        <form id="team-reassign-form">
+            <input type="hidden" name="sourceId">
+
+            <label class="team-form-full">
+                기존 담당 조종사
+                <input name="sourceName" readonly>
+            </label>
+
+            <label class="team-form-full">
+                재배정할 미완료 농지
+                <select name="land" required>
+                    <option value="유성구 봉명동 123-4">유성구 봉명동 123-4</option>
+                    <option value="유성구 구암동 55-3">유성구 구암동 55-3</option>
+                </select>
+            </label>
+
+            <label class="team-form-full">
+                새 담당 조종사
+                <select name="targetId" id="team-reassign-target" required></select>
+            </label>
+
+            <p class="team-form-note">
+                현재는 화면 시연용입니다. 실제 농지 상태 검증과 재배정 저장은 서버 API 연동이 필요합니다.
+            </p>
+
+            <div class="team-modal-actions">
+                <button type="button" class="team-btn team-btn-outline"
+                        data-close-modal>취소</button>
+                <button type="submit" class="team-btn team-btn-primary">
+                    재배정 확인
+                </button>
+            </div>
+        </form>
+    </section>
+</div>
+
+  <script src="js/team-management.js"></script>
+  <script src="js/common.js"></script>
+</body>
+</html>

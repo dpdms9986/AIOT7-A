@@ -2728,7 +2728,7 @@ body.sidebar-collapsed:has(#sidebar-toggle) .sidebar-notice {
     color: var(--color-primary);
 }
 
-/* 댓글 입력 영역 */
+/* 댓글 입력 영역 */tbo
 .hazard-comment-heading {
     margin-bottom: 18px;
 }
