@@ -44,7 +44,6 @@ const OTHER_FARMS = [
 /* ===== 화면 요소 ===== */
 const mapBox = document.querySelector("#pilot-map");
 const listBox = document.querySelector("#pilot-task-list");
-const detailBox = document.querySelector("#pilot-detail");
 const tabButtons = document.querySelectorAll("#pilot-tabs button");
 
 let currentFilter = "all"; // all / active / done
@@ -139,7 +138,7 @@ function renderDetail() {
   `;
   let form = "";
 
-  if (t.status === "ASSIGNED") {
+    if (t.status === "ASSIGNED") {
     // 대기 → 드론·약제 선택 후 작업 시작
     form = `
       <div class="pilot-form">
@@ -166,21 +165,14 @@ function renderDetail() {
       <button type="button" class="dash-btn-primary" data-action="start">작업 시작</button>
     `;
   } else if (t.status === "IN_PROGRESS") {
-    // 진행 중 → 실제 사용량 입력 후 완료 보고 
+    // 진행 중 → 정보만 보여줌 (완료 보고는 작업 이력 화면에서)
     info += `
       <dt>드론</dt><dd>${labelOf(DRONES, t.drone)}</dd>
       <dt>약제</dt><dd>${labelOf(CHEMICALS, t.chemical)}</dd>
       <dt>살포량</dt><dd>${t.amount} L/ha</dd>
     `;
     form = `
-      <div class="pilot-form">
-        <p class="pilot-form-title">방제 완료 보고</p>
-        <label class="task-field">
-          <span>실제 약제 사용량 (L)</span>
-          <input type="number" id="used-amount" min="0" step="0.1" placeholder="예: 1.2">
-        </label>
-      </div>
-      <button type="button" class="dash-btn-primary" data-action="finish">작업 완료 보고</button>
+      <a class="dash-btn-primary" href="pilot-history.html">작업 이력에서 완료 보고 →</a>
     `;
   } else if (t.status === "COMPLETED") {
     info += `
@@ -201,7 +193,6 @@ function renderAll() {
   renderTabs();
   renderList();
   renderMap();
-  renderDetail();
 }
 
 /* ===== 클릭 동작 ===== */
@@ -227,54 +218,7 @@ tabButtons.forEach((button) => {
   });
 });
 
-// 작업 시작 / 작업 완료 보고
-detailBox.addEventListener("click", (event) => {
-  const button = event.target.closest("[data-action]");
-  if (!button) return;
 
-  const t = myTasks.find((task) => task.id === selectedId);
-
-  if (button.dataset.action === "start") {
-    const drone = document.querySelector("#sel-drone").value;
-    const chemical = document.querySelector("#sel-chem").value;
-    const amount = Number(document.querySelector("#sel-amount").value);
-
-    if (!drone || !chemical) {
-      alert("드론과 약제를 선택하세요.");
-      return;
-    }
-    if (!amount || amount <= 0) {
-      alert("살포량을 입력하세요.");
-      return;
-    }
-
-    // 나중에 백엔드 연결
-    // 다른 조종사가 먼저 시작했으면 서버가 에러
-    // const res = await fetch(`/api/pilot/tasks/${t.id}/start`, { method: "POST", headers: {...}, body: JSON.stringify({ drone, chemical, amount }) });
-
-    t.drone = drone;
-    t.chemical = chemical;
-    t.amount = amount;
-    t.status = "IN_PROGRESS";
-  }
-
-  if (button.dataset.action === "finish") {
-    const used = Number(document.querySelector("#used-amount").value);
-
-    if (!used || used <= 0) {
-      alert("실제 약제 사용량을 입력하세요.");
-      return;
-    }
-
-    // 나중에 백엔드 연결: 완료 보고 + 약제 재고 차감
-    // await fetch(`/api/pilot/tasks/${t.id}/complete`, { method: "POST", headers: {...}, body: JSON.stringify({ used }) });
-
-    t.used = used;
-    t.status = "COMPLETED";
-  }
-
-  renderAll();
-});
 
 
 /* ===== 시작 ===== */

@@ -22,7 +22,7 @@ public class UserResponse {
 
         return UserResponse.builder()
                 .userNo(user.getNo())
-                .userId(user.getUserid())
+                .userId(user.getUserId())
                 .userName(user.getUsername())
                 .role(user.getRole())
                 .teamNo(teamNo)

@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>이용 안내 | 스마트 농업 관제 시스템</title>
+  <link rel="stylesheet" href="css/info.css">
+</head>
+<body>
+  <header class="pub-header">
+    <a href="index.html" class="pub-logo"><span>🌱</span>스마트 농업 관제 시스템</a>
+    <nav class="pub-nav">
+      <a href="intro.html">시스템 소개</a>
+      <a href="features.html">주요 기능</a>
+      <a href="guide.html">이용 안내</a>
+      <a href="support.html">고객센터</a>
+    </nav>
+    <div class="pub-auth">
+      <a href="login.html" class="pub-btn pub-btn-outline">로그인</a>
+      <a href="signup.html" class="pub-btn pub-btn-primary">회원가입</a>
+    </div>
+  </header>
+
+  <main class="pub-section">
+    <p class="pub-kicker">이용 안내</p>
+    <h1 class="pub-title">이용 안내</h1>
+    <p class="pub-desc">서비스 이용 방법을 단계별로 확인해 보세요.</p>
+
+    <div class="tabs" role="tablist">
+      <button class="tab active" type="button" data-target="panel-leader">방제단장</button>
+      <button class="tab" type="button" data-target="panel-pilot">드론 조종사</button>
+    </div>
+
+    <section id="panel-leader" class="panel">
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <h3>회원가입 및 방제단 생성</h3>
+          <p>계정을 만들고 방제단 이름을 입력합니다.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <h3>초대 코드 공유</h3>
+          <p>가입 후 확인되는 초대 코드를 조종사에게 전달합니다.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <h3>농지 등록</h3>
+          <p>지도에서 농지를 찾아 면적과 정보를 입력합니다.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <h3>조종사에게 작업 배정</h3>
+          <p>농지를 영역별로 묶어 조종사에게 배정하고 진행 상황을 확인합니다.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="panel-pilot" class="panel" hidden>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <h3>회원가입 및 초대 코드 입력</h3>
+          <p>드론 조종사로 가입하고 방제단장에게 받은 초대 코드를 입력합니다.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <h3>할당 농지 확인</h3>
+          <p>로그인 후 내 할당 필지에서 배정받은 농지를 확인합니다.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <h3>작업 시작</h3>
+          <p>현장에 도착하면 작업 시작 버튼을 눌러 작업을 시작합니다.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <h3>작업 완료 보고</h3>
+          <p>작업이 끝나면 완료 버튼을 눌러 방제단장에게 보고합니다.</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="safety">
+      <div class="safety-icon">🛡️</div>
+      <div>
+        <h3>안전 게시판 이용</h3>
+        <p>위험 요소나 특이사항을 사진과 함께 공유하고, 모두의 안전한 작업 환경을 만들어 보세요.</p>
+      </div>
+    </div>
+  </main>
+
+  <footer class="pub-footer">
+    <div class="pub-footer-inner">
+      <div class="pub-logo small"><span>🌱</span>스마트 농업 관제 시스템</div>
+      <p>© 2026 스마트 농업 관제 시스템. All rights reserved.</p>
+      <div class="pub-footer-links">
+        <a href="support.html">고객센터</a>
+        <a href="#">이용약관</a>
+        <a href="#">개인정보처리방침</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const tabs = document.querySelectorAll('.tab');
+    tabs.forEach((tab) => {
+      tab.addEventListener('click', () => {
+        tabs.forEach((t) => t.classList.toggle('active', t === tab));
+        document.querySelectorAll('.panel').forEach((panel) => {
+          panel.hidden = panel.id !== tab.dataset.target;
+        });
+      });
+    });
+  </script>
+</body>
+</html>

@@ -4,7 +4,67 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>조종사 대시보드</title>
-    <link rel="stylesheet" href="css/style.css">
+    
+    <!-- 기존 FE 팀 CSS -->
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/header.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/task.css">
+
+    <!-- [추가 1] jQuery, 웹소켓(SockJS, STOMP), 실시간 지도(Leaflet) 라이브러리 -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- [추가 2] 지도 높이 보장 및 GPS 조작 컨트롤 바 스타일 -->
+    <style>
+        /* 지도가 깨지지 않도록 최소 높이 지정 */
+        #pilot-map {
+            width: 100%;
+            min-height: 420px;
+            border-radius: 8px;
+            z-index: 1;
+        }
+        .gps-control-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            padding: 10px 12px;
+            margin-bottom: 12px;
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 13px;
+        }
+        .gps-control-bar input {
+            padding: 4px 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+        .gps-btn {
+            padding: 6px 10px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            color: #fff;
+            background: #2f80ed;
+        }
+        .gps-btn.btn-real { background: #238451; }
+        .gps-btn.btn-stop { background: #6c757d; }
+        .gps-status-text {
+            width: 100%;
+            margin-top: 4px;
+            font-size: 12px;
+            color: #2f80ed;
+            font-weight: 500;
+        }
+    </style>
 </head>
 <body class="dash-body" data-role="PILOT">
     <!-- 상단 헤더 (조종사는 사이드 바 없이) -->
@@ -20,36 +80,53 @@
         </div>
     </header>
 
-     <main class="dash-main">
+    <main class="dash-main">
         <!-- 제목 -->
-         <div class="dash-title-row">
+        <div class="dash-title-row">
             <div>
                 <h1>🚁 작업 현황</h1>
                 <p>배정된 작업과 농지 위치를 확인하세요.</p>
             </div>
-         </div>
+        </div>
 
-         <section class="pilot-layout">
+        <section class="pilot-layout">
 
             <!-- 왼쪽: 지도 -->
-             <article class="dash-card">
-                <div class="dash-card-head">
+            <article class="dash-card">
+                <div class="dash-card-head" style="display: flex; justify-content: space-between; align-items: center;">
                     <h2>🗺 내 작업 지도</h2>
+                    <!-- 웹소켓 연결 상태 표시 -->
+                    <span id="status" style="font-size: 13px; color: gray;">현재 상태: 연결 대기 중</span>
                 </div>
 
-                <!-- 카카오 맵 들어갈 자리 -->
-                 <div class="pilot-map" id="pilot-map"></div>
+                <!-- [추가 3] 조종사 실시간 GPS 전송 조작 패널 -->
+                <div class="gps-control-bar">
+                    <label>방제단 번호:</label>
+                    <input type="number" id="teamNoInput" value="1" style="width: 45px;">
+                    <label>조종사명:</label>
+                    <input type="text" id="pilotName" value="김파일럿" style="width: 80px;">
+                    
+                    <button type="button" class="gps-btn" onclick="connect()">🔌 채널 연결</button>
+                    <button type="button" class="gps-btn" onclick="startFakeAuto()">✈️ 가상 비행</button>
+                    <button type="button" class="gps-btn btn-real" onclick="startRealGpsAuto()">📱 실제 GPS 시작</button>
+                    <button type="button" class="gps-btn btn-stop" onclick="stopAuto()">⏹️ 중지</button>
+                    
+                    <div id="autoStatus" class="gps-status-text"></div>
+                </div>
 
-                 <ul class="dash-legend">
+                <!-- 실제 지도가 들어갈 자리 (id="pilot-map") -->
+                <div class="pilot-map" id="pilot-map"></div>
+
+                <ul class="dash-legend">
                     <li><i style="background: #238451;"></i>READY 배정 전</li>
                     <li><i style="background: #f2b705;"></i>ASSIGNED 대기</li>
                     <li><i style="background: #2f80ed;"></i>IN_PROGRESS 진행 중</li>
                     <li><i style="background: #8a8f8c;"></i>COMPLETED 완료</li>
-                 </ul>
-             </article>
+                </ul>
+            </article>
 
-             <!-- 오른쪽 : 내 작업 목록 + 상세 -->
-              <article class="dash-card">
+            <!-- 오른쪽 : 내 작업 목록 + 상세 -->
+            <article class="dash-card">
                 <div class="dash-card-head">
                     <h2>📋 내 작업 목록</h2>
                 </div>
@@ -62,13 +139,143 @@
 
                 <ul class="pilot-task-list" id="pilot-task-list"></ul>
                 
-                <div class="pilot-detail" id="pilot-detail"></div>
-              </article>
-         </section>
-     </main>
+                
+            </article>
+        </section>
+    </main>
 
-     <script src="js/common.js"></script>
-     <script src="js/pilot-dashboard.js"></script>
-    
+    <!-- 기존 FE 팀 스크립트 -->
+    <script src="js/common.js"></script>
+    <script src="js/pilot-dashboard.js"></script>
+
+    <!-- [추가 4] 실시간 지도 및 웹소켓 위치 관제 스크립트 -->
+    <script>
+        let stompClient = null;
+        let currentLat = 36.3504; // 초기 위치: 대전 시청 위도
+        let currentLng = 127.3845; // 초기 위치: 대전 시청 경도
+
+        let fakeInterval = null;
+        let gpsWatchId = null;
+
+        // FE 팀의 <div id="pilot-map"> 에 지도 렌더링
+        const map = L.map('pilot-map').setView([currentLat, currentLng], 16);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        const markers = {};
+
+        // 페이지 로드 시 상단 헤더의 사용자 이름을 가져와 조종사명 입력칸에 동기화하고 웹소켓 자동 연결
+        $(document).ready(function() {
+            const headerUserName = $('#user-name').text().trim();
+            if (headerUserName && headerUserName !== '사용자') {
+                $('#pilotName').val(headerUserName);
+            }
+            // 페이지 진입 시 바로 채널 연결 시도
+            connect();
+        });
+
+        // 1. 웹소켓 연결 및 구독 (끊어지면 3초 뒤 자동 재연결)
+        function connect() {
+            const teamNo = $('#teamNoInput').val();
+            const socket = new SockJS('/ws-drone');
+            stompClient = Stomp.over(socket);
+            stompClient.debug = null;
+
+            stompClient.connect({}, function (frame) {
+                $('#status').text(`✅ ${teamNo}번 방제단 관제 연결됨`).css('color', '#238451');
+
+                stompClient.subscribe('/sub/team/' + teamNo, function (message) {
+                    const data = JSON.parse(message.body);
+                    updateMarker(data.pilotName, data.latitude, data.longitude);
+                });
+            }, function (error) {
+                $('#status').text(`🔄 연결 끊김 (3초 후 재연결...)`).css('color', '#f2b705');
+                setTimeout(connect, 3000);
+            });
+        }
+
+        // 2. 지도 위 마커 생성 및 이동 함수
+        function updateMarker(pilotName, lat, lng) {
+            if (markers[pilotName]) {
+                markers[pilotName].setLatLng([lat, lng]);
+            } else {
+                const newMarker = L.marker([lat, lng]).addTo(map);
+                newMarker.bindPopup(`<b>🚁 ${pilotName}</b>`).openPopup();
+                markers[pilotName] = newMarker;
+            }
+            map.panTo([lat, lng]);
+        }
+
+        // 3. 2초 간격 가상 위치 자동 비행
+        function startFakeAuto() {
+            if (!stompClient || !stompClient.connected) return alert("먼저 채널 연결을 확인해주세요!");
+            stopAuto();
+
+            $('#autoStatus').text("✈️ 가짜 위치 자동 비행 중... (2초마다 전송)").css('color', '#2f80ed');
+
+            fakeInterval = setInterval(function() {
+                currentLat += 0.0002;
+                currentLng += 0.0002;
+
+                const payload = {
+                    teamNo: Number($('#teamNoInput').val()),
+                    pilotName: $('#pilotName').val(),
+                    latitude: currentLat,
+                    longitude: currentLng
+                };
+                stompClient.send("/pub/location", {}, JSON.stringify(payload));
+            }, 2000);
+        }
+
+        // 4. 스마트폰 실제 GPS 실시간 추적 (오차 필터링 적용)
+        function startRealGpsAuto() {
+            if (!stompClient || !stompClient.connected) return alert("먼저 채널 연결을 확인해주세요!");
+            if (!navigator.geolocation) return alert("GPS를 지원하지 않는 환경입니다.");
+            stopAuto();
+
+            $('#autoStatus').text("📱 실제 GPS 실시간 추적 시작...").css('color', '#238451');
+
+            gpsWatchId = navigator.geolocation.watchPosition(
+                sendGpsData,
+                function(error) {
+                    alert("GPS 신호를 가져오지 못했습니다. 위치 권한을 확인해주세요.");
+                },
+                { enableHighAccuracy: true }
+            );
+        }
+
+        function sendGpsData(position) {
+            // 오차 반경이 30m를 초과하는 튀는 신호 무시
+            if (position.coords.accuracy > 30) {
+                console.warn(`[무시됨] 위치 신호 불안정 (오차: ${Math.round(position.coords.accuracy)}m)`);
+                return;
+            }
+
+            $('#autoStatus').text(`📱 실제 GPS 전송 중! (오차범위: 약 ${Math.round(position.coords.accuracy)}m)`).css('color', '#238451');
+
+            const payload = {
+                teamNo: Number($('#teamNoInput').val()),
+                pilotName: $('#pilotName').val(),
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude
+            };
+            stompClient.send("/pub/location", {}, JSON.stringify(payload));
+        }
+
+        // 5. 자동 전송 중지
+        function stopAuto() {
+            if (fakeInterval) {
+                clearInterval(fakeInterval);
+                fakeInterval = null;
+            }
+            if (gpsWatchId !== null) {
+                navigator.geolocation.clearWatch(gpsWatchId);
+                gpsWatchId = null;
+            }
+            $('#autoStatus').text("⏹️ 위치 전송이 중지되었습니다.").css('color', '#6c757d');
+        }
+    </script>
 </body>
 </html>

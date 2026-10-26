@@ -23,7 +23,7 @@ public class Users {
     private String id; // UUID (UK)
 
     @Column(name = "user_id", nullable = false, unique = true, length = 100)
-    private String userid; // 로그인 이메일 (UK)
+    private String userId; // 로그인 이메일 (UK)
 
     @Column(nullable = false)
     private String password; // BCrypt 암호화 비밀번호
@@ -32,7 +32,7 @@ public class Users {
     private String username; // 사용자 실명
 
     @Column(nullable = false, length = 20)
-    private String role; // ADMIN / PILOT
+    private String role; // ADMIN /LEADER / PILOT 
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "team_id")
@@ -48,7 +48,10 @@ public class Users {
     @Column(nullable = false)
     private int enabled = 1;
 
-     // 회원 권한 목록 (Users : UserAuth = 1 : N)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UserAuth> userAuths = new ArrayList<>();
+
+  // 회원 권한 목록 (Users : UserAuth = 1 : N)
   // cascade = CascadeType.ALL  : ON UPDATE CASCADE
   // ➡ 부모 Users 의 PK(no) 변경되면, 자식 UserAuth FK(user_no) 변경합니다.
 
@@ -67,7 +70,7 @@ public class Users {
   )
   private List<UserAuth> authList = new ArrayList<>();
 
-  // 회원 추가 메소드
+  // 시큐리티 인가를 위해 List<UserAuth> authList에도 넣는 구조 (addAuth 메섣 활용)
   public void addAuth(UserAuth userAuth) {
     userAuth.setUser(this);
     this.authList.add(userAuth);

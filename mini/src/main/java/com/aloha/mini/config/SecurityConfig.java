@@ -38,9 +38,13 @@ public class SecurityConfig {
                 .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED) // 필요 시 세션 생성
             )
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**","/api/mock/**", "/login", "/logout", "/error/**").permitAll() // 로그인/회원가입/중복확인은 전원 허용
-                .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                .requestMatchers("/api/pilot/**").hasRole("PILOT")
+                .requestMatchers(
+                    "/","/index.html", "/*.html", "/css/**", "/js/**", 
+                                "/images/**", "/api/auth/**", "/api/auth/**","/api/mock/**",
+                                "/login", "/logout", "/error/**", "/ws-test.html", "/ws-drone/**").permitAll() // 로그인/회원가입/중복확인은 전원 허용
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")   // 1. 새로운 시스템 관리자 전용
+                .requestMatchers("/api/leader/**").hasRole("LEADER") // 2. 단장 전용 (새로 추가!)
+                .requestMatchers("/api/pilot/**").hasRole("PILOT")   // 3. 조종사 전용
                 .anyRequest().permitAll() // 초기 개발 단계에서는 편의를 위해 전체 허용 (추후 세션 체크)
             );
 
