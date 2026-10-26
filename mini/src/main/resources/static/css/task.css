@@ -1,0 +1,454 @@
+/* =====================================================
+   9. 작업 배정 (task-assignment.html)
+===================================================== */
+
+/* ----- 제목 줄 ----- */
+.task-title { display: flex; align-items: center; gap: 14px; }
+.task-title-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  background: var(--color-primary);
+  font-size: 26px;
+}
+
+/* ----- 탭 ----- */
+.task-tabs { display: flex; gap: 12px; }
+.task-tab {
+  height: var(--button-height);
+  padding: 0 28px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: #ffffff;
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.task-tab:hover { border-color: var(--color-primary); }
+.task-tab.active { border-color: var(--color-primary); background: var(--color-primary); color: #ffffff; }
+
+/* ----- 왼쪽 농지 + 오른쪽 배정 배치 ----- */
+.task-layout { display: grid; grid-template-columns: 1fr 360px; gap: var(--card-gap); align-items: start; }
+
+/* ----- 지역 검색 + 지도 ----- */
+.task-map-head { flex-wrap: wrap; }
+.task-search { display: flex; gap: 8px; }
+.task-count { margin-left: 6px; color: var(--color-primary); font-size: 13px; }
+.task-map-empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  color: var(--color-text-sub);
+  font-size: 13px;
+}
+
+/* ----- 미배정 농지 목록 ----- */
+.task-farm-head { display: flex; align-items: center; justify-content: space-between; margin: 20px 0 10px; }
+.task-farm-head h3 { margin: 0; font-size: 15px; font-weight: 800; }
+.task-farm-head span { color: var(--color-text-sub); font-size: 12px; }
+.task-farm-head strong { color: var(--color-primary); }
+
+.task-table-wrap { max-height: 560px; overflow: auto; border: 1px solid var(--color-border); border-radius: 10px; }
+.task-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.task-table th {
+  position: sticky;
+  top: 0;
+  padding: 10px 12px;
+  background: #edf3ef;
+  color: var(--color-text-sub);
+  font-size: 12px;
+  text-align: left;
+}
+.task-table td { padding: 10px 12px; border-top: 1px solid var(--color-border); }
+.task-table th:first-child,
+.task-table td:first-child { width: 44px; text-align: center; }
+.task-table input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--color-primary); cursor: pointer; }
+.task-table tbody tr { cursor: pointer; }
+.task-table tbody tr:hover { background: #f8fbf9; }
+.task-table tbody tr.selected { background: var(--color-primary-light); }
+.task-empty-cell { padding: 30px 12px; color: var(--color-text-sub); text-align: center; }
+
+/* ----- 오른쪽 조종사 배정 ----- */
+.task-side { display: flex; flex-direction: column; gap: 14px; }
+.task-form-title { margin: 0; font-size: 18px; font-weight: 800; }
+.task-box { padding: 16px; border: 1px solid var(--color-border); border-radius: 10px; }
+.task-box h3 { margin: 0 0 12px; font-size: 14px; font-weight: 800; }
+.task-box-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.task-box-head h3 { margin: 0; }
+.task-mini-btn { height: 32px; padding: 0 12px; font-size: 12px; }
+.task-selected { margin: 0; font-size: 14px; }
+.task-selected strong { color: var(--color-primary); font-size: 18px; }
+
+/* 입력칸 (조종사 화면에서도 같이 씀) */
+.task-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.task-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+.task-row-2 .task-field,
+.task-field:last-child { margin-bottom: 0; }
+.task-field span { color: var(--color-text-sub); font-size: 12px; }
+.task-field select,
+.task-field input {
+  width: 100%;
+  height: var(--input-height);
+  padding: 0 12px;
+  border: 1px solid #dce3eb;
+  border-radius: 8px;
+  outline: none;
+  background: #ffffff;
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 13px;
+}
+.task-field select:focus,
+.task-field input:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(35, 132, 81, 0.1); }
+
+/* 조종사 목록 */
+.task-pilot-list { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.task-pilot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+.task-pilot.checked { border-color: var(--color-primary); background: var(--color-primary-light); }
+.task-pilot.busy { opacity: 0.55; }
+.task-pilot label { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; cursor: pointer; }
+.task-pilot label small { color: var(--color-text-sub); font-size: 11px; font-weight: 400; }
+.task-pilot input[type="checkbox"] { width: 16px; height: 16px; margin: 0; accent-color: var(--color-primary); }
+.task-quota-box { display: flex; align-items: center; gap: 6px; color: var(--color-text-sub); font-size: 12px; }
+.task-quota-input {
+  width: 56px;
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid #dce3eb;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 13px;
+  text-align: right;
+}
+.task-quota-input:disabled { background: var(--color-bg); }
+.task-quota { margin: 10px 0 0; color: var(--color-text-sub); font-size: 12px; }
+.task-quota.ok { color: var(--color-primary); font-weight: 700; }
+.task-quota.warn { color: var(--color-high); font-weight: 700; }
+
+.task-submit { height: 46px; font-size: 14px; }
+
+/* ----- 준비 중 탭 ----- */
+.task-empty { padding: 60px 20px; color: var(--color-text-sub); text-align: center; }
+
+/* ----- 완료 팝업 ----- */
+.task-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  background: rgba(31, 41, 55, 0.45);
+}
+.task-modal-box {
+  position: relative;
+  width: min(380px, calc(100% - 32px));
+  padding: 32px 28px 26px;
+  border-radius: 14px;
+  background: #ffffff;
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+}
+.task-modal-icon {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 14px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #ffffff;
+  font-size: 26px;
+  font-weight: 800;
+}
+.task-modal-box h3 { margin: 0 0 8px; font-size: 17px; }
+.task-modal-box p { margin: 0 0 20px; color: var(--color-text-sub); font-size: 13px; }
+.task-modal-box .dash-btn-primary { width: 120px; }
+.task-modal-close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  border: 0;
+  background: none;
+  color: var(--color-text-sub);
+  font-size: 22px;
+  cursor: pointer;
+}
+
+/* ----- 화면이 좁을 때 ----- */
+@media (max-width: 1280px) {
+  .task-layout { grid-template-columns: 1fr; }
+}
+@media (max-width: 900px) {
+  .task-tabs { flex-wrap: wrap; }
+  .task-row-2 { grid-template-columns: 1fr; }
+  .task-search { flex-wrap: wrap; width: 100%; }
+}
+
+/* ----- 조종사: 드론·약제 선택 / 완료 보고 입력 ----- */
+.pilot-form { margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--color-border); }
+.pilot-form-title { margin: 0 0 10px; font-size: 13px; font-weight: 800; }
+.pilot-form .task-field { margin-bottom: 10px; }
+
+
+
+/* =====================================================
+   10. 조종사 대시보드 (pilot-dashboard.html)
+   ※ 작업 배정 화면의 지도 핀도 여기 스타일을 같이 씀
+===================================================== */
+
+/* ----- 헤더 오른쪽 ----- */
+.pilot-name { font-size: 14px; font-weight: 700; }
+.pilot-logout { height: 36px; padding: 0 12px; font-size: 12px; }
+
+/* ----- 지도 + 목록 배치 ----- */
+.pilot-layout {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: var(--card-gap);
+  align-items: start;
+}
+
+/* ----- 상태 색 (핀, 점, 태그가 같이 씀) ----- */
+.st-ready     { --st: var(--color-ready);       --st-bg: #e8f3ec; --st-text: #238451; }
+.st-assigned  { --st: var(--color-assigned);    --st-bg: #fff4d6; --st-text: #b7860b; }
+.st-progress  { --st: var(--color-in-progress); --st-bg: #e6f0fd; --st-text: #2f80ed; }
+.st-completed { --st: var(--color-completed);   --st-bg: #eef1f4; --st-text: #6b7280; }
+
+/* ----- 임시 지도 ----- */
+.pilot-map {
+  position: relative;
+  height: 560px;
+  overflow: hidden;
+  border-radius: 10px;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.45) 1px, transparent 1px) 0 0 / 80px 80px,
+    linear-gradient(rgba(255, 255, 255, 0.45) 1px, transparent 1px) 0 0 / 80px 80px,
+    linear-gradient(135deg, #e4ede6, #cbdfd1);
+}
+
+/* 물방울 모양 핀 */
+.pilot-pin {
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  margin: -30px 0 0 -13px;
+  padding: 0;
+  border: 3px solid #ffffff;
+  border-radius: 50% 50% 50% 0;
+  background: var(--st);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
+  transform: rotate(-45deg);
+  cursor: pointer;
+}
+span.pilot-pin { cursor: default; opacity: 0.75; }
+.pilot-pin.selected {
+  z-index: 2;
+  width: 34px;
+  height: 34px;
+  margin: -40px 0 0 -17px;
+  box-shadow: 0 0 0 4px rgba(35, 132, 81, 0.25), 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* 선택한 핀 위 말풍선 */
+.pilot-pin-label {
+  position: absolute;
+  z-index: 3;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  transform: translate(-50%, calc(-100% - 50px));
+}
+
+/* ----- 탭 ----- */
+.pilot-tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+.pilot-tabs button {
+  flex: 1;
+  height: 36px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--color-text-sub);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.pilot-tabs button.active { border-color: var(--color-primary); background: var(--color-primary); color: #ffffff; }
+
+/* ----- 작업 목록 ----- */
+.pilot-task-list { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.pilot-task {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: #ffffff;
+  color: var(--color-text);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.pilot-task:hover { border-color: var(--color-primary); }
+.pilot-task.selected { border-color: var(--color-primary); background: var(--color-primary-light); }
+.pilot-dot { flex-shrink: 0; width: 10px; height: 10px; border-radius: 50%; background: var(--st); }
+.pilot-task-body { flex: 1; min-width: 0; }
+.pilot-task-body strong { display: block; font-size: 14px; }
+.pilot-task-body small { color: var(--color-text-sub); font-size: 12px; }
+.pilot-status {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--st-bg);
+  color: var(--st-text);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.pilot-empty { margin: 0; padding: 20px 0; color: var(--color-text-sub); font-size: 13px; text-align: center; }
+
+/* ----- 작업 상세 ----- */
+.pilot-detail { margin-top: 16px; padding: 16px; border-radius: 10px; background: var(--color-bg); }
+.pilot-detail h3 { margin: 0 0 12px; font-size: 15px; }
+.pilot-detail dl { display: grid; grid-template-columns: 80px 1fr; gap: 8px; margin: 0; font-size: 13px; }
+.pilot-detail dt { color: var(--color-text-sub); }
+.pilot-detail dd { margin: 0; font-weight: 600; }
+.pilot-detail .dash-btn-primary { width: 100%; margin-top: 14px; }
+
+/* ----- 드론·약제 선택 / 완료 보고 입력 ----- */
+.pilot-form { margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--color-border); }
+.pilot-form-title { margin: 0 0 10px; font-size: 13px; font-weight: 800; }
+.pilot-form .task-field { margin-bottom: 10px; }
+
+/* ----- 화면이 좁을 때 ----- */
+@media (max-width: 1100px) {
+  .pilot-layout { grid-template-columns: 1fr; }
+  .pilot-map { height: 420px; }
+}
+
+
+
+/* =====================================================
+   13. 작업 배정 추가 (선택 요약 줄, 분배 설정 팝업)
+===================================================== */
+.task-select-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 14px 18px;
+  border-radius: 10px;
+  background: var(--color-primary-light);
+}
+.task-select-bar p { margin: 0; font-size: 14px; }
+.task-select-bar strong { color: var(--color-primary); font-size: 18px; }
+
+.task-assign-box { width: min(460px, calc(100% - 32px)); text-align: left; }
+.task-assign-box h3 { margin: 0 0 6px; font-size: 18px; }
+.task-assign-box .task-assign-sum { margin: 0 0 18px; color: var(--color-text-sub); font-size: 13px; }
+.task-assign-box .task-assign-sum strong { color: var(--color-primary); }
+.task-box-head h4 { margin: 0; font-size: 14px; font-weight: 800; }
+.task-assign-box .task-quota { margin: 10px 0 0; font-size: 12px; }
+.task-assign-box .task-quota.ok { color: var(--color-primary); font-weight: 700; }
+.task-assign-box .task-quota.warn { color: var(--color-high); font-weight: 700; }
+.task-modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+
+
+
+/* =====================================================
+   14. 배정 현황 · 작업 이력 (task-assignment.html 탭 2, 3)
+===================================================== */
+
+/* 체크박스 없는 표: 첫 칸을 일반 칸처럼 */
+.task-table.plain th:first-child,
+.task-table.plain td:first-child { width: auto; text-align: left; }
+.task-table.plain tbody tr { cursor: default; }
+.task-table.plain td { white-space: nowrap; }
+
+/* 선택 상자 (상태, 조종사) */
+.task-select {
+  height: var(--input-height);
+  padding: 0 12px;
+  border: 1px solid #dce3eb;
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: 13px;
+}
+
+/* 조종사별 현황 카드 */
+.task-pilot-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--card-gap);
+  margin-bottom: var(--card-gap);
+}
+.task-pilot-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: #ffffff;
+  box-shadow: var(--shadow-card);
+}
+.task-pilot-card strong { display: block; margin-bottom: 4px; font-size: 14px; }
+.task-pilot-card strong small { color: var(--color-text-sub); font-size: 11px; font-weight: 400; }
+.task-pilot-card > div > small { color: var(--color-text-sub); font-size: 12px; }
+.task-pilot-card b { color: var(--color-primary); }
+
+/* 배정 취소 버튼 */
+.task-cancel-btn {
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--color-high);
+  border-radius: 6px;
+  background: #ffffff;
+  color: var(--color-high);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.task-cancel-btn:hover { background: #fdeaea; }
+
+/* 작업 이력 검색 조건 */
+.task-filter {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr) auto;
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 14px;
+}
+.task-filter .task-field { margin-bottom: 0; }
+.task-filter-btns { display: flex; gap: 8px; }
+.task-history-sum { margin: 0 0 10px; color: var(--color-text-sub); font-size: 13px; }
+.task-history-sum strong { color: var(--color-primary); }
+
+@media (max-width: 1100px) {
+  .task-filter { grid-template-columns: 1fr 1fr; }
+  .task-filter-btns { grid-column: 1 / -1; }
+}
