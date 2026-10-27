@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 public class Drones {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "drone_id")
     private Long no;
 
     @ManyToOne(fetch = FetchType.LAZY)

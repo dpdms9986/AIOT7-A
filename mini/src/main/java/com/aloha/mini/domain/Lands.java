@@ -17,7 +17,7 @@ public class Lands {
     private Long no;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "region_no", nullable = false)
+    @JoinColumn(name = "region_id", nullable = false)
     private Regions region; // 어느 행정구역에 속하는지 매핑
 
     @Column(nullable = false, length = 200)
