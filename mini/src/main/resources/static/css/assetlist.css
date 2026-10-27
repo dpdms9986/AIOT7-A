@@ -1,0 +1,1365 @@
+.asset-team-page .main-content {
+    box-sizing: border-box;
+    flex: 1;
+    min-width: 0;
+    padding: 24px 28px 32px;
+    background: #f5f7fa;
+    color: #203246;
+}
+
+
+/* 2. 페이지 제목 */
+
+.asset-team-page .page-heading {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    margin-bottom: 24px;
+    padding: 8px 0;
+
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+
+.asset-team-page .page-heading-icon {
+    display: grid;
+    flex: 0 0 40px;
+    place-items: center;
+
+    width: 40px;
+    height: 40px;
+
+    border-radius: 8px;
+    background: #e5f4eb;
+
+    font-size: 24px;
+}
+
+.asset-team-page .page-heading h1 {
+    margin: 0 0 7px;
+
+    color: #203246;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+.asset-team-page .page-heading p {
+    margin: 0;
+
+    color: #718093;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+
+.asset-team-page .asset-tab {
+    position: relative;
+
+    padding: 14px 18px;
+
+    border: 0;
+    background: transparent;
+
+    color: #637184;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+.asset-team-page .asset-tab.active {
+    color: #16804b;
+}
+
+.asset-team-page .asset-tab.active::after {
+    position: absolute;
+    right: 12px;
+    bottom: -1px;
+    left: 12px;
+
+    height: 3px;
+
+    border-radius: 3px 3px 0 0;
+    background: #16804b;
+
+    content: "";
+}
+
+.asset-team-page .asset-tab:focus-visible {
+    outline: 2px solid #9bd3b1;
+    outline-offset: -3px;
+}
+
+
+/* 4. 요약 카드 */
+
+.asset-team-page .asset-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+
+    margin-bottom: 16px;
+}
+
+.asset-team-page .asset-summary-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    min-width: 0;
+    padding: 18px;
+
+    border: 1px solid #e4eaee;
+    border-radius: 11px;
+    background: #fff;
+}
+
+.asset-team-page .asset-summary-icon {
+    display: grid;
+    flex: 0 0 58px;
+    place-items: center;
+
+    width: 58px;
+    height: 58px;
+
+    border-radius: 10px;
+    font-size: 27px;
+}
+
+.asset-team-page .drone-icon {
+    background: #e7f5ec;
+}
+
+.asset-team-page .chemical-icon {
+    background: #eaf2ff;
+}
+
+.asset-team-page .asset-summary-card span,
+.asset-team-page .asset-summary-card strong,
+.asset-team-page .asset-summary-card small {
+    display: block;
+}
+
+.asset-team-page .asset-summary-card span {
+    margin-bottom: 5px;
+
+    color: #47576a;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.asset-team-page .asset-summary-card strong {
+    color: #16804b;
+    font-size: 25px;
+    font-weight: 750;
+    line-height: 1.3;
+}
+
+.asset-team-page .asset-summary-card small {
+    margin-top: 5px;
+
+    color: #8390a0;
+    font-size: 11px;
+}
+
+
+/* 5. 자산 목록 카드 */
+
+.asset-team-page .asset-list-card {
+    min-width: 0;
+    margin-bottom: 16px;
+    padding: 18px;
+
+    border: 1px solid #e4eaee;
+    border-radius: 11px;
+    background: #fff;
+}
+
+.asset-team-page .asset-list-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+
+    margin-bottom: 15px;
+}
+
+.asset-team-page .asset-list-heading h2,
+.asset-team-page .asset-detail-card h2 {
+    margin: 0;
+
+    color: #203246;
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.asset-team-page .asset-list-heading > span {
+    color: #7b8897;
+    font-size: 12px;
+}
+
+.asset-team-page .asset-list-heading > span strong {
+    color: #16804b;
+}
+
+
+/* 6. 테이블 */
+
+.asset-team-page .table-scroll {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.asset-team-page .asset-table {
+    width: 100%;
+
+    border-collapse: separate;
+    border-spacing: 0;
+
+    color: #344456;
+    font-size: 12px;
+}
+
+.asset-team-page .asset-table th,
+.asset-team-page .asset-table td {
+    padding: 12px;
+
+    border-right: 1px solid #e9eef2;
+    border-bottom: 1px solid #e9eef2;
+
+    text-align: left;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.asset-team-page .asset-table th {
+    border-top: 1px solid #e1e7ec;
+    background: #f3f6f8;
+
+    color: #405064;
+    font-weight: 700;
+}
+
+.asset-team-page .asset-table th:first-child,
+.asset-team-page .asset-table td:first-child {
+    border-left: 1px solid #e9eef2;
+}
+
+.asset-team-page .asset-table td strong,
+.asset-team-page .asset-table td small {
+    display: block;
+}
+
+.asset-team-page .asset-table td strong {
+    color: #27394c;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.asset-team-page .asset-table td small {
+    margin-top: 4px;
+
+    color: #8491a0;
+    font-size: 11px;
+}
+
+.asset-team-page .asset-table tbody tr:hover {
+    background: #f5faf7;
+}
+
+/* HTML의 hidden 속성이 다른 스타일에 의해 덮이지 않도록 유지 */
+.asset-team-page .asset-table tbody tr[hidden] {
+    display: none !important;
+}
+
+
+/* 7. 자산 상태 */
+
+.asset-team-page .asset-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 48px;
+    padding: 5px 9px;
+
+    border-radius: 6px;
+    background: #dcf3e5;
+
+    color: #087443;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+
+/* 8. 상세보기 버튼 */
+
+.asset-team-page .asset-detail-button {
+    min-height: 32px;
+    padding: 0 12px;
+
+    border: 1px solid #d6dfe6;
+    border-radius: 6px;
+    background: #fff;
+
+    color: #34465a;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 600;
+
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.asset-team-page .asset-detail-button:hover {
+    border-color: #16804b;
+    background: #f2faf5;
+    color: #16804b;
+}
+
+.asset-team-page .asset-detail-button:focus-visible {
+    outline: 2px solid #9bd3b1;
+    outline-offset: 2px;
+}
+
+
+/* 9. 자산 상세 정보 */
+
+.asset-team-page .asset-detail-card {
+    min-width: 0;
+    margin-bottom: 16px;
+    padding: 18px;
+
+    border: 1px solid #e4eaee;
+    border-radius: 11px;
+    background: #fff;
+}
+
+.asset-team-page .asset-detail-card h2 {
+    margin-bottom: 14px;
+    padding-bottom: 13px;
+
+    border-bottom: 1px solid #e8edf1;
+}
+
+.asset-team-page #pilot-asset-detail {
+    min-height: 60px;
+
+    color: #46576a;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.asset-team-page #pilot-asset-detail > p {
+    margin: 0;
+    padding: 10px 0;
+
+    color: #8491a0;
+    text-align: center;
+}
+
+
+/* 10. 태블릿 */
+
+@media (max-width: 1000px) {
+    .asset-team-page .main-content {
+        padding: 18px;
+    }
+
+    .asset-team-page .asset-list-card,
+    .asset-team-page .asset-detail-card {
+        padding: 14px;
+    }
+}
+
+
+/* 11. 모바일 */
+
+@media (max-width: 650px) {
+    .asset-team-page .main-content {
+        padding: 12px;
+    }
+
+    .asset-team-page .page-heading {
+        gap: 12px;
+        padding: 15px;
+    }
+
+    .asset-team-page .page-heading-icon {
+        flex-basis: 44px;
+        width: 44px;
+        height: 44px;
+        font-size: 22px;
+    }
+
+    .asset-team-page .page-heading h1 {
+        font-size: 20px;
+    }
+
+    .asset-team-page .page-heading p {
+        font-size: 12px;
+    }
+
+    .asset-team-page .asset-summary-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .asset-team-page .asset-summary-card {
+        padding: 14px;
+    }
+
+    .asset-team-page .asset-tabs {
+        overflow-x: auto;
+    }
+
+    .asset-team-page .asset-tab {
+        flex-shrink: 0;
+        padding: 13px 14px;
+    }
+
+    .asset-team-page .asset-list-card,
+    .asset-team-page .asset-detail-card {
+        padding: 12px;
+    }
+
+    .asset-team-page .asset-table th,
+    .asset-team-page .asset-table td {
+        padding: 10px;
+    }
+}
+
+
+/* ==================================================
+   조종사용 드론 · 자산 관리
+   기존 style.css 하단에 통합
+================================================== */
+
+.asset-page-main {
+    box-sizing: border-box;
+    flex: 1;
+    min-width: 0;
+    padding: 24px 28px 32px;
+    background: #f5f7fa;
+    color: #203246;
+}
+
+.asset-page-heading {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+    padding: 20px;
+    border: 1px solid #e4eaee;
+    border-radius: 12px;
+    background: #fff;
+}
+
+.asset-page-heading .page-heading-icon {
+    display: grid;
+    flex: 0 0 60px;
+    width: 60px;
+    height: 60px;
+    place-items: center;
+    border-radius: 10px;
+    background: #e5f4eb;
+    font-size: 28px;
+}
+
+.asset-page-heading h1 {
+    margin: 0 0 6px;
+    font-size: 24px;
+    font-weight: 750;
+    letter-spacing: -0.5px;
+}
+
+.asset-page-heading p {
+    margin: 0;
+    color: #718093;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+button.asset-role-chip {
+    margin-left: auto;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+button.asset-role-chip:hover {
+    border-color: #13834f;
+    background: #dff3e6;
+}
+
+button.asset-role-chip:focus-visible {
+    outline: 2px solid #13834f;
+    outline-offset: 3px;
+}
+
+.asset-role-chip {
+    margin-left: auto;
+    padding: 9px 12px;
+    border: 1px solid #d3eadc;
+    border-radius: 8px;
+    background: #eff9f2;
+    color: #117347;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.asset-pilot-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 15px;
+    padding: 0 10px;
+    border-bottom: 1px solid #e0e7ec;
+    background: #fff;
+}
+
+.asset-pilot-tab {
+    position: relative;
+    padding: 15px 18px;
+    border: 0;
+    background: transparent;
+    color: #526174;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 650;
+    cursor: pointer;
+}
+
+.asset-pilot-tab.active {
+    color: #12814d;
+}
+
+.asset-pilot-tab.active::after {
+    position: absolute;
+    right: 12px;
+    bottom: -1px;
+    left: 12px;
+    height: 3px;
+    border-radius: 3px 3px 0 0;
+    background: #13834f;
+    content: "";
+}
+
+.asset-pilot-summary {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 16px;
+}
+
+.asset-pilot-stat {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 0;
+    padding: 16px;
+    border: 1px solid #e4eaee;
+    border-radius: 11px;
+    background: #fff;
+}
+
+.asset-pilot-stat-icon {
+    display: grid;
+    flex: 0 0 54px;
+    width: 54px;
+    height: 54px;
+    place-items: center;
+    border-radius: 10px;
+    font-size: 26px;
+}
+
+.asset-pilot-stat-icon.drone {
+    background: #e7f5ec;
+}
+
+.asset-pilot-stat-icon.chemical {
+    background: #eaf2ff;
+}
+
+.asset-pilot-stat-icon.maintenance {
+    background: #fff3e4;
+}
+
+.asset-pilot-stat span,
+.asset-pilot-stat strong,
+.asset-pilot-stat small {
+    display: block;
+}
+
+.asset-pilot-stat span {
+    color: #47576a;
+    font-size: 12px;
+    font-weight: 650;
+}
+
+.asset-pilot-stat strong {
+    margin-top: 4px;
+    color: #16804b;
+    font-size: 24px;
+}
+
+.asset-pilot-stat small {
+    margin-top: 4px;
+    color: #8390a0;
+    font-size: 11px;
+}
+
+.asset-pilot-list-card,
+.asset-pilot-detail-card {
+    min-width: 0;
+    margin-bottom: 16px;
+    padding: 18px;
+    border: 1px solid #e4eaee;
+    border-radius: 11px;
+    background: #fff;
+}
+
+.asset-pilot-list-heading,
+.asset-pilot-detail-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.asset-pilot-list-heading h2,
+.asset-pilot-detail-heading h2 {
+    margin: 0;
+    color: #203246;
+    font-size: 17px;
+    font-weight: 750;
+}
+
+.asset-pilot-list-heading p {
+    margin: 5px 0 0;
+    color: #7b8897;
+    font-size: 12px;
+}
+
+.asset-pilot-list-heading > span {
+    color: #7b8897;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.asset-pilot-list-heading > span strong {
+    color: #16804b;
+}
+
+.asset-pilot-filters {
+    display: grid;
+    grid-template-columns: 150px minmax(180px, 1fr) 145px auto auto;
+    align-items: end;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.asset-pilot-filters label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    color: #47576a;
+    font-size: 12px;
+    font-weight: 650;
+}
+
+.asset-pilot-filters input,
+.asset-pilot-filters select {
+    box-sizing: border-box;
+    width: 100%;
+    height: 40px;
+    padding: 0 11px;
+    border: 1px solid #dce4ea;
+    border-radius: 6px;
+    background: #fff;
+    color: #344456;
+    font: inherit;
+    font-size: 12px;
+}
+
+.asset-pilot-search-button,
+.asset-pilot-reset-button {
+    height: 40px;
+    padding: 0 17px;
+    border: 1px solid #d7e0e7;
+    border-radius: 6px;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.asset-pilot-search-button {
+    border-color: #13834f;
+    background: #13834f;
+    color: #fff;
+}
+
+.asset-pilot-search-button:hover {
+    background: #08663b;
+}
+
+.asset-pilot-reset-button {
+    background: #fff;
+    color: #344456;
+}
+
+.asset-pilot-table-scroll {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.asset-pilot-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    color: #344456;
+    font-size: 12px;
+}
+
+.asset-pilot-table th,
+.asset-pilot-table td {
+    padding: 12px 10px;
+    border-right: 1px solid #e9eef2;
+    border-bottom: 1px solid #e9eef2;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.asset-pilot-table th {
+    border-top: 1px solid #e1e7ec;
+    background: #f3f6f8;
+    color: #405064;
+    font-weight: 750;
+    white-space: nowrap;
+}
+
+.asset-pilot-table th:first-child,
+.asset-pilot-table td:first-child {
+    border-left: 1px solid #e9eef2;
+}
+
+.asset-pilot-table td strong,
+.asset-pilot-table td small {
+    display: block;
+}
+
+.asset-pilot-table td strong {
+    color: #27394c;
+    font-size: 12px;
+}
+
+.asset-pilot-table td small {
+    margin-top: 4px;
+    color: #8491a0;
+    font-size: 11px;
+}
+
+.asset-pilot-table tbody tr:hover,
+.asset-pilot-table tbody tr.selected {
+    background: #f1faf5;
+}
+
+.asset-pilot-table tbody tr[hidden] {
+    display: none !important;
+}
+
+.asset-pilot-badge {
+    display: inline-flex;
+    justify-content: center;
+    min-width: 50px;
+    padding: 5px 9px;
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 750;
+    white-space: nowrap;
+}
+
+/* 정상: 초록 */
+.asset-pilot-badge.normal {
+    background: #dcf3e5;
+    color: #087443;
+}
+
+/* 부족: 빨강 */
+.asset-pilot-badge.low {
+    background: #fde8e8;
+    color: #c62828;
+}
+
+/* 고장: 노란색 */
+.asset-pilot-badge.fault {
+    background: #fff3cd;
+    color: #946c00;
+}
+
+.asset-pilot-detail-button {
+    min-height: 32px;
+    padding: 0 12px;
+    border: 1px solid #d6dfe6;
+    border-radius: 6px;
+    background: #fff;
+    color: #34465a;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 650;
+    cursor: pointer;
+}
+
+.asset-pilot-detail-button:hover {
+    border-color: #16804b;
+    color: #16804b;
+    background: #f2faf5;
+}
+
+.asset-pilot-empty {
+    padding: 22px;
+    color: #8491a0;
+    text-align: center;
+    font-size: 13px;
+}
+
+.asset-pilot-detail-heading {
+    padding-bottom: 13px;
+    border-bottom: 1px solid #e8edf1;
+}
+
+.asset-pilot-detail-heading span {
+    color: #718093;
+    font-size: 12px;
+}
+
+#pilot-asset-detail > p {
+    margin: 0;
+    padding: 14px 0;
+    color: #8491a0;
+    text-align: center;
+    font-size: 13px;
+}
+
+.asset-pilot-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.asset-pilot-detail-item {
+    padding: 12px;
+    border-right: 1px solid #e8edf1;
+}
+
+.asset-pilot-detail-item span {
+    display: block;
+    margin-bottom: 7px;
+    color: #718093;
+    font-size: 11px;
+}
+
+.asset-pilot-detail-item strong {
+    color: #26384a;
+    font-size: 13px;
+    overflow-wrap: anywhere;
+}
+
+.asset-pilot-maintenance-button {
+    margin-top: 14px;
+    padding: 9px 14px;
+    border: 1px solid #d6dfe6;
+    border-radius: 6px;
+    background: #fff;
+    color: #34465a;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 650;
+    cursor: pointer;
+}
+
+@media (max-width: 1100px) {
+    .asset-pilot-filters {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .asset-pilot-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .asset-pilot-detail-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 650px) {
+    .asset-page-main {
+        padding: 12px;
+    }
+
+    .asset-page-heading {
+        flex-wrap: wrap;
+        padding: 14px;
+    }
+
+    .asset-page-heading h1 {
+        font-size: 20px;
+    }
+
+    .asset-role-chip {
+        margin-left: 0;
+    }
+
+    .asset-pilot-tabs {
+        overflow-x: auto;
+    }
+
+    .asset-pilot-tab {
+        flex: 0 0 auto;
+        padding: 13px 12px;
+    }
+
+    .asset-pilot-list-card,
+    .asset-pilot-detail-card {
+        padding: 12px;
+    }
+
+    .asset-pilot-filters {
+        grid-template-columns: 1fr;
+    }
+
+    .asset-pilot-detail-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ========================================
+   자산 상세 정보
+======================================== */
+
+.asset-pilot-detail-card {
+    margin-top: 24px;
+    padding: 24px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    box-shadow: 0 3px 12px rgba(31, 50, 70, 0.04);
+}
+
+.asset-pilot-detail-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 22px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid #e8edf2;
+}
+
+.asset-pilot-detail-heading h2 {
+    margin: 0;
+    color: #203246;
+    font-size: 19px;
+    font-weight: 700;
+}
+
+.asset-pilot-detail-heading p {
+    margin: 7px 0 0;
+    color: #7b8794;
+    font-size: 13px;
+}
+
+.asset-detail-type-label {
+    flex-shrink: 0;
+    padding: 7px 12px;
+    color: #238451;
+    background: #eaf6ee;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.asset-detail-empty {
+    display: flex;
+    min-height: 180px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #64748b;
+    text-align: center;
+}
+
+.asset-detail-empty-icon {
+    margin-bottom: 12px;
+    font-size: 32px;
+}
+
+.asset-detail-empty strong {
+    color: #334155;
+    font-size: 15px;
+}
+
+.asset-detail-empty p {
+    margin: 8px 0 0;
+    font-size: 13px;
+}
+
+/* 상세 정보 상단 */
+
+.asset-detail-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.asset-detail-title h3 {
+    margin: 0;
+    color: #203246;
+    font-size: 22px;
+}
+
+.asset-detail-title p {
+    margin: 7px 0 0;
+    color: #7b8794;
+    font-size: 13px;
+}
+
+.asset-detail-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.asset-detail-status .status-dot {
+    width: 8px;
+    height: 8px;
+    flex-shrink: 0;
+    background: currentColor;
+    border-radius: 50%;
+}
+
+.asset-detail-status.available,
+.asset-detail-status.normal {
+    color: #16834a;
+    background: #eaf7ef;
+    border-color: #ccebd7;
+}
+
+.asset-detail-status.in-use {
+    color: #c77716;
+    background: #fff4df;
+    border-color: #f4dfb6;
+}
+
+.asset-detail-status.maintenance,
+.asset-detail-status.low {
+    color: #d13b3b;
+    background: #fff0f0;
+    border-color: #f3cccc;
+}
+
+/* 상세 정보 카드 그리드 */
+
+.asset-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 24px;
+}
+
+.asset-detail-info {
+    min-width: 0;
+    padding: 16px;
+    background: #f8fafc;
+    border: 1px solid #e8edf2;
+    border-radius: 10px;
+}
+
+.asset-detail-info span {
+    display: block;
+    margin-bottom: 9px;
+    color: #7b8794;
+    font-size: 12px;
+}
+
+.asset-detail-info strong {
+    display: block;
+    overflow-wrap: anywhere;
+    color: #203246;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.asset-detail-info small {
+    display: block;
+    margin-top: 6px;
+    color: #8b97a5;
+    font-size: 11px;
+}
+
+/* 이력 영역 */
+
+.asset-detail-section {
+    margin-top: 22px;
+}
+
+.asset-detail-section-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.asset-detail-section-heading h4 {
+    margin: 0;
+    color: #203246;
+    font-size: 15px;
+}
+
+.asset-detail-section-heading span {
+    color: #8491a0;
+    font-size: 12px;
+}
+
+.asset-detail-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid #e5eaf0;
+    border-radius: 9px;
+}
+
+.asset-detail-table {
+    width: 100%;
+    min-width: 520px;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+.asset-detail-table th,
+.asset-detail-table td {
+    padding: 13px 14px;
+    border-bottom: 1px solid #edf0f4;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.asset-detail-table th {
+    color: #64748b;
+    background: #f8fafc;
+    font-weight: 600;
+}
+
+.asset-detail-table td {
+    color: #334155;
+}
+
+.asset-detail-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.asset-detail-table .empty-row {
+    padding: 22px;
+    color: #94a3b8;
+    text-align: center;
+}
+
+/* 상태 안내 */
+
+.asset-detail-status-guide {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 18px;
+    margin-top: 18px;
+    padding: 13px 15px;
+    background: #fafbfc;
+    border-radius: 8px;
+}
+
+.asset-detail-status-guide span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #64748b;
+    font-size: 11px;
+}
+
+.asset-detail-status-guide i {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+}
+
+.asset-detail-status-guide .guide-available {
+    background: #16834a;
+}
+
+.asset-detail-status-guide .guide-in-use {
+    background: #c77716;
+}
+
+.asset-detail-status-guide .guide-maintenance {
+    background: #d13b3b;
+}
+
+/* 반응형 */
+
+@media (max-width: 900px) {
+    .asset-detail-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 600px) {
+    .asset-pilot-detail-card {
+        padding: 16px;
+    }
+
+    .asset-pilot-detail-heading {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .asset-detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .asset-detail-title h3 {
+        font-size: 18px;
+    }
+
+    .asset-detail-top {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+
+.asset-detail-status.unknown {
+    color: #64748b;
+    background: #f1f5f9;
+    border-color: #e2e8f0;
+}
+
+/* 자산 상세 영역: 상세보기 전에는 숨김 */
+.asset-pilot-detail-card[hidden] {
+    display: none !important;
+}
+
+/* 현재 가동 상태 강조 */
+.asset-current-status {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 18px 0;
+    padding: 18px;
+    border: 1px solid #dce5e0;
+    border-radius: 10px;
+    background: #f8fafc;
+}
+
+.asset-current-status-label {
+    color: #64748b;
+    font-size: 13px;
+}
+
+.asset-current-status strong {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 23px;
+    font-weight: 800;
+}
+
+.asset-current-status .status-dot {
+    width: 12px;
+    height: 12px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+/* 상태별 색상 */
+.asset-current-status.available {
+    color: #159447;
+    background: #effaf3;
+    border-color: #c9ecd5;
+}
+
+.asset-current-status.in-use {
+    color: #e87916;
+    background: #fff7ed;
+    border-color: #fed7aa;
+}
+
+.asset-current-status.maintenance {
+    color: #dc2626;
+    background: #fef2f2;
+    border-color: #fecaca;
+}
+
+/* 세 가지 상태 범례 */
+.asset-detail-status-guide {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px 24px;
+    margin-top: 18px;
+    padding: 15px;
+    background: #f8fafc;
+    border: 1px solid #e8edf2;
+    border-radius: 9px;
+}
+
+.asset-detail-status-guide span {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #334155;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.asset-detail-status-guide i {
+    width: 10px;
+    height: 10px;
+    flex-shrink: 0;
+    border-radius: 50%;
+}
+
+.asset-detail-status-guide .guide-available {
+    background: #159447;
+}
+
+.asset-detail-status-guide .guide-in-use {
+    background: #e87916;
+}
+
+.asset-detail-status-guide .guide-maintenance {
+    background: #dc2626;
+}
+
+@media (max-width: 600px) {
+    .asset-current-status strong {
+        font-size: 19px;
+    }
+
+    .asset-detail-status-guide {
+        flex-direction: column;
+        gap: 12px;
+    }
+}

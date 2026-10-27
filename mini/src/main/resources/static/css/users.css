@@ -110,10 +110,14 @@
 }
 .login-signup-link a:hover { text-decoration: underline; }
 
+
+
 @media (max-width: 480px) {
   .login-page { padding: 20px 14px; }
   .login-card { padding: 28px 22px; }
 }
+
+
 
 
 /* ===== 5. 회원가입 화면 ===== */
@@ -412,3 +416,4 @@
 @media (max-width: 900px) {
   .my-grid { grid-template-columns: 1fr; }
 }
+
