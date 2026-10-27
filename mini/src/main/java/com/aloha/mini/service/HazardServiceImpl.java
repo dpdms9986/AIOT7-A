@@ -113,12 +113,28 @@ public class HazardServiceImpl implements HazardService {
 
         checkPermission(hazardReport, userNo, isAdmin);
 
-        hazardReport.setTitle(request.getTitle());
-        hazardReport.setContent(request.getContent());
-        hazardReport.setHazardType(request.getHazardType());
-        hazardReport.setLatitude(request.getLatitude());
-        hazardReport.setLongitude(request.getLongitude());
+        // 값이 전달된 필드만 수정
+        if (request.getTitle() != null) {
+            hazardReport.setTitle(request.getTitle());
+        }
 
+        if (request.getContent() != null) {
+            hazardReport.setContent(request.getContent());
+        }
+
+        if (request.getHazardType() != null) {
+            hazardReport.setHazardType(request.getHazardType());
+        }
+
+        if (request.getLatitude() != null) {
+            hazardReport.setLatitude(request.getLatitude());
+        }
+
+        if (request.getLongitude() != null) {
+            hazardReport.setLongitude(request.getLongitude());
+        }
+
+        // 지역 번호가 전달된 경우 해당 지역으로 변경
         if (request.getRegionNo() != null) {
             Regions region = entityManager.find(
                     Regions.class, request.getRegionNo());
@@ -129,8 +145,6 @@ public class HazardServiceImpl implements HazardService {
             }
 
             hazardReport.setRegion(region);
-        } else {
-            hazardReport.setRegion(null);
         }
 
         HazardReports updatedReport =
