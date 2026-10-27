@@ -5,18 +5,8 @@
 // - 로그아웃 (USER_012)
 // ⚠️ 각 페이지에서 페이지 전용 JS보다 "먼저" 불러오세요.
 
-// 로그인 검사 켜기/끄기 (로그인이 안 될 때 화면만 보려면 false, 완성 후에는 꼭 true)
-const LOGIN_GUARD = false;
 
-// LOGIN_GUARD = false 일 때 쓰는 가짜 사용자 (role을 "LEADER"로 바꾸면 단장으로 확인 가능)
-const DEV_USER = {
-  userId: "pilot@test.com",
-  userName: "김조종",
-  role: "LEADER",
-  teamName: "대전 유성 방제단",
-  inviteCode: "DR789A",
-  phone: "010-1234-5678",
-};
+
 
 // 권한별 메인 화면 (대시보드가 없는 동안 단장을 작업 배정으로 보내려면 "task-assignment.html")
 const MAIN_PAGE = { ADMIN: "task-assignment.html", LEADER: "task-assignment.html", PILOT: "pilot-dashboard.html" };
@@ -25,17 +15,17 @@ const ROLE_NAME = { ADMIN: "관리자", LEADER: "방제단장", PILOT: "조종�
 // 권한별 메뉴 (GNB_004) - <nav id="gnb-menu"></nav> 가 있는 화면에서 자동으로 그림
 const MENUS = {
   LEADER: [
-    ["#", "관제 대시보드", "🏠"],
+    ["control-dashboard.html", "관제 대시보드", "🏠"],
     ["task-assignment.html", "작업 배정", "📋"],
     ["farmlist.html", "농지 관리", "🌱"],
-    ["#", "방제단 관리", "👥"],
-    ["#", "드론 · 자산", "🚁"],
-    ["#", "통계/리포트", "📊"],
+    ["team-management.html", "방제단 관리", "👥"],
+    ["assetlist-leader.html", "드론 · 자산", "🚁"],
     ["hazardlist.html", "게시판", "⚠️"],
   ],
   PILOT: [
     ["pilot-dashboard.html", "내 할당 필지", "📍"],
-    ["#", "작업 이력", "🕘"],
+    ["pilot-history.html", "작업 이력", "🕘"],
+    ["assetlist-pilot.html", "드론 · 자산", "🚁"],
     ["hazardlist.html", "게시판", "⚠️"],
   ],
 };
@@ -100,10 +90,6 @@ function userReady(user) {
 
 // 로그인·권한 검사
 async function checkAccess() {
-  if (!LOGIN_GUARD) {
-    setTimeout(() => userReady(DEV_USER)); // 페이지 JS가 다 준비된 뒤 실행
-    return;
-  }
 
   const required = document.body.dataset.role; // 이 화면에 필요한 역할
 

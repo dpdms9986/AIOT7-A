@@ -7,6 +7,8 @@ UPDATE users SET role = 'ROLE_LEADER' WHERE user_id = 'admin@test.com';
 -- 2. 단장: ROLE_LEADER
 -- 3. 조종사: ROLE_PILOT
 
+
+
 -- users 에서 데이터 삭제하기 ( user_auth 부터 삭제해야함 ! )
 DELETE FROM user_auth WHERE user_no = (SELECT no FROM users WHERE user_name = '김 단장');
 DELETE FROM users WHERE user_name = '김 단장';

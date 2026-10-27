@@ -4,70 +4,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>위험 목록 | 스마트 농업 관제 시스템</title>
+    <title>위험요소 게시판 | 스마트 농업 관제 시스템></title>
+
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/header.css">
-    <link rel="stylesheet" href="css/board.css">
     <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/board.css">
 </head>
-<body class="dash-body">
+
+<body class="dash-body" data-role="ADMIN">
+
+    <!-- 공통 헤더 -->
     <header class="dash-header">
-        <a href="#" class="dash-logo"><span>🌱</span>스마트 농업 관제 시스템</a>
+        <a href="dashboard.html" class="dash-logo">
+            <span>🌱</span>스마트 농업 관제 시스템
+        </a>
+
         <nav class="dash-topnav" id="gnb-menu"></nav>
+
         <div class="dash-header-right">
             <span class="gnb-team" id="team-name">방제단</span>
-            <button type="button" class="gnb-invite" id="invite-btn" hidden>초대 코드 <b id="invite-code">------</b> 📋</button>
+
+            <button type="button" class="gnb-invite" id="invite-btn" hidden>
+                초대 코드 <b id="invite-code">------</b> 📋
+            </button>
+
             <span class="dash-role" id="user-role">-</span>
-            <a href="mypage.html" class="gnb-user" title="마이페이지"><span class="dash-avatar">👤</span><span id="user-name">사용자</span></a>
-            <button type="button" class="dash-btn-outline gnb-logout" id="logout-btn">로그아웃</button>
+
+            <a href="mypage.html" class="gnb-user" title="마이페이지">
+                <span class="dash-avatar">👤</span>
+                <span id="user-name">사용자</span>
+            </a>
+
+            <button type="button"
+                    class="dash-btn-outline gnb-logout"
+                    id="logout-btn">
+                로그아웃
+            </button>
         </div>
     </header>
 
+    <!-- 사이드바 및 본문 -->
     <div class="dash-layout">
+
         <aside class="dash-sidebar">
-            <nav class="dash-sidenav" id="gnb-side"></nav>
+            <nav class="dash-sidenav" id="gnb-side"
+                 aria-label="사이드 메뉴"></nav>
 
             <div class="dash-side-promo">
-                <strong>🌱 더 스마트한<br>농업의 시작</strong>
-                데이터로 만드는 건강한 농작물,<br>지속 가능한 농업을 실현합니다.
+                <strong>🌱 더 스마트한 농업의 시작</strong>
+                <p>데이터로 만드는 건강한 농작물, 스마트 농업 관제 시스템</p>
             </div>
         </aside>
 
-        <main class="main-content">
-            <section class="page-heading">
-            <div class="page-heading-icon" aria-hidden="true">⚠️</div>
-             <div>
-        <h1>위험 목록</h1>
-        <p>현장에서 발견한 위험 요소를 공유하고 안전한 비행을 지원합니다.</p>
-              </div>
-          </section>
+        <main class="main-content hazard-board-page">
 
-            <section class="hazard-toolbar">
-                <div class="hazard-toolbar-title">
-                    <h2>위험 요소 목록</h2>
-                    <span>총 <strong id="hazard-count">3</strong>건</span>
+            <!-- 페이지 제목 -->
+            <section class="page-heading">
+                <div class="page-heading-icon" aria-hidden="true">📢</div>
+
+                <div>
+                    <h1>위험요소 게시판</h1>
+                    <p>
+                        현장 위험 요소와 방제단 공지사항을 한곳에서 확인하고 관리합니다.
+                    </p>
                 </div>
 
-                <button type="button" class="button primary-button"
-                        id="write-hazard">
-                    + 위험 요소 신고
-                </button>
+                <div class="hazard-board-heading-actions">
+                    <button type="button"
+                            class="button primary-button"
+                            id="write-hazard">
+                        + 위험 요소 신고
+                    </button>
+
+                    <button type="button"
+                            class="button"
+                            id="notice-create-button">
+                        + 공지사항 작성
+                    </button>
+                </div>
             </section>
 
+            <!-- 검색 및 필터 -->
             <section class="hazard-filter-card">
                 <form id="hazard-search-form" class="hazard-filter">
+
                     <div class="filter-group">
-                        <label for="hazard-region">행정구역</label>
-                        <select id="hazard-region">
-                            <option value="">전체 행정구역</option>
-                            <option value="동구">대전 동구</option>
-                            <option value="중구">대전 중구</option>
-                            <option value="서구">대전 서구</option>
-                            <option value="유성구">대전 유성구</option>
-                            <option value="대덕구">대전 대덕구</option>
+                        <label for="hazard-category">게시글 구분</label>
+                        <select id="hazard-category">
+                            <option value="">전체</option>
+                            <option value="notice">공지</option>
+                            <option value="hazard">위험</option>
                         </select>
                     </div>
 
+                    <div class="filter-group">
+                   <label for="hazard-region">행정구역</label>
+                   <select id="hazard-region">
+                  <option value="">전체 행정구역</option>
+                   <option value="대전시 동구 어남동">대전시 동구 어남동</option>
+                   <option value="대전시 대덕구 송촌동">대전시 대덕구 송촌동</option>
+                   <option value="대전시 유성구 신성동">대전시 유성구 신성동</option>
+                </select>
+                   </div>
+                   
                     <div class="filter-group">
                         <label for="hazard-type">위험 유형</label>
                         <select id="hazard-type">
@@ -80,90 +120,214 @@
                         </select>
                     </div>
 
+                    <div class="filter-group">
+                        <label for="hazard-severity-filter">위험도</label>
+                        <select id="hazard-severity-filter">
+                            <option value="">전체</option>
+                            <option value="HIGH">고위험</option>
+                            <option value="MEDIUM">중위험</option>
+                            <option value="LOW">저위험</option>
+                        </select>
+                    </div>
+
                     <div class="filter-group hazard-keyword">
-                        <label for="hazard-search">검색</label>
-                        <input type="search" id="hazard-search"
+                        <label for="hazard-search">검색어</label>
+                        <input type="search"
+                               id="hazard-search"
                                placeholder="제목, 내용, 작성자 검색">
                     </div>
 
                     <div class="filter-actions">
-                        <button type="submit" class="button primary-button">
+                        <button type="submit"
+                                class="button primary-button">
                             검색
                         </button>
-                        <button type="button" class="button"
-                                id="hazard-reset-button">초기화</button>
+
+                        <button type="button"
+                                class="button"
+                                id="hazard-reset-button">
+                            초기화
+                        </button>
                     </div>
                 </form>
             </section>
 
+            <!-- 통합 게시글 목록 -->
             <section class="table-card hazard-table-card">
+
                 <div class="table-heading">
-                    <h2>위험 요소 목록</h2>
-                    <span>총 <strong id="hazard-result-count">3</strong>건</span>
+                    <div>
+                        <h2>게시글 목록</h2>
+                        <p>공지사항과 현장 위험 요소를 함께 확인합니다.</p>
+                    </div>
+
+                    <span>
+                        총 <strong id="hazard-result-count">8</strong>건
+                    </span>
                 </div>
 
                 <div class="table-scroll">
                     <table class="farm-table hazard-table">
                         <thead>
                             <tr>
-                                <th>번호</th>
-                                <th>위험 유형</th>
-                                <th>제목</th>
-                                <th>발생 지역</th>
-                                <th>작성자</th>
-                                <th>작성일</th>
-                                <th>위험도</th>
+                                <th scope="col">구분</th>
+                                <th scope="col">제목 / 내용 요약</th>
+                                <th scope="col">발생 지역</th>
+                                <th scope="col">작성자</th>
+                                <th scope="col">작성일</th>
+                                <th scope="col">위험도 / 유형</th>
+                                <th scope="col">관리</th>
                             </tr>
                         </thead>
 
                         <tbody id="hazard-tbody">
-                            <tr tabindex="0" data-hazard-id="3"
-                                data-region="유성구" data-type="고압선"
+
+                            <!-- 공지사항 -->
+                            <tr class="hazard-notice-row"
+                                tabindex="0"
+                                data-category="notice"
+                                data-hazard-id="notice-56"
+                                data-region=""
+                                data-type="공지"
+                                data-severity="GENERAL"
+                                data-title="[기상특보] 10월 23일 강풍 주의보 발령"
+                                data-content="강풍으로 인한 드론 비행 및 방제 작업 주의"
+                                data-writer="관리자"
+                                data-date="2026-10-22">
+
+                                <td>
+                                    <span class="notice-badge urgent">📢 공지</span>
+                                </td>
+
+                                <td>
+                                    <strong>
+                                        [기상특보] 10월 23일 강풍 주의보 발령
+                                    </strong>
+                                    <small>강풍으로 인한 드론 비행 및 방제 작업 주의</small>
+                                </td>
+
+                                <td>-</td>
+                                <td>관리자</td>
+                                <td>2026-10-22</td>
+                                <td>
+                                    <span class="notice-badge general">일반</span>
+                                </td>
+
+
+                                <td>
+                                    <button type="button"
+                                            class="button hazard-detail-button"
+                                            data-detail-id="notice-56">
+                                        상세보기
+                                    </button>
+                                </td>
+                            </tr>
+
+
+                            <!-- 현장 위험 요소 -->
+                            <tr tabindex="0"
+                                data-category="hazard"
+                                data-hazard-id="3"
+                                data-region="대전시 유성구 신성동"
+                                data-type="고압선"
                                 data-severity="HIGH"
                                 data-title="논 주변 고압선 주의"
                                 data-content="논 주변에 고압선이 있어 비행 시 주의가 필요합니다."
                                 data-writer="김조종"
                                 data-date="2026-10-22">
-                                <td>1</td>
-                                <td>고압선</td>
-                                <td>논 주변 고압선 주의</td>
-                                <td>대전 유성구</td>
+
+                                <td><span class="hazard-type-badge">⚠️ 위험</span></td>
+
+                                <td>
+                                    <strong>논 주변 고압선 주의</strong>
+                                    <small>논 주변에 고압선이 있어 비행 시 주의가 필요합니다.</small>
+                                </td>
+
+                                <td>대전시 유성구 신성동</td>
                                 <td>김조종</td>
                                 <td>2026-10-22</td>
-                                <td><span class="hazard-severity high">고위험</span></td>
+                                <td>
+                                    <span class="hazard-severity high">고위험</span>
+                                </td>
+
+                                <td>
+                                    <button type="button"
+                                            class="button hazard-detail-button"
+                                            data-detail-id="3">
+                                        상세보기
+                                    </button>
+                                </td>
                             </tr>
 
-                            <tr tabindex="0" data-hazard-id="2"
-                                data-region="대덕구" data-type="통신탑"
+                            <tr tabindex="0"
+                                data-category="hazard"
+                                data-hazard-id="2"
+                                data-region="대전시 대덕구 송촌동"
+                                data-type="통신탑"
                                 data-severity="MEDIUM"
                                 data-title="통신탑 근처 비행 주의"
                                 data-content="통신탑 주변에서 비행 경로를 확인해야 합니다."
                                 data-writer="이조종"
                                 data-date="2026-10-21">
-                                <td>2</td>
-                                <td>통신탑</td>
-                                <td>통신탑 근처 비행 주의</td>
-                                <td>대전 대덕구</td>
+
+                                <td><span class="hazard-type-badge">⚠️ 위험</span></td>
+
+                                <td>
+                                    <strong>통신탑 근처 비행 주의</strong>
+                                    <small>통신탑 주변 비행 경로 확인</small>
+                                </td>
+
+                                <td>대전시 대덕구 송촌동</td>
                                 <td>이조종</td>
                                 <td>2026-10-21</td>
-                                <td><span class="hazard-severity medium">중위험</span></td>
+                                <td>
+                                    <span class="hazard-severity medium">중위험</span>
+                                </td>
+
+                                <td>
+                                    <button type="button"
+                                            class="button hazard-detail-button"
+                                            data-detail-id="2">
+                                        상세보기
+                                    </button>
+                                </td>
                             </tr>
 
-                            <tr tabindex="0" data-hazard-id="1"
-                                data-region="동구" data-type="진입로"
+                            <tr tabindex="0"
+                                data-category="hazard"
+                                data-hazard-id="1"
+                                data-region="대전시 동구 어남동"
+                                data-type="진입로"
                                 data-severity="LOW"
                                 data-title="농지 진입로 뻘밭 주의"
                                 data-content="비가 온 뒤 진입로가 미끄러울 수 있습니다."
                                 data-writer="박조종"
-                                data-date="2026-10-20">
-                                <td>1</td>
-                                <td>진입로</td>
-                                <td>농지 진입로 뻘밭 주의</td>
-                                <td>대전 동구</td>
+                                data-date="2026-10-20"
+                                data-views="44">
+
+                                <td><span class="hazard-type-badge">⚠️ 위험</span></td>
+
+                                <td>
+                                    <strong>농지 진입로 뻘밭 주의</strong>
+                                    <small>비가 온 뒤 진입로가 미끄러울 수 있습니다.</small>
+                                </td>
+
+                                <td>대전시 동구 어남동</td>
                                 <td>박조종</td>
                                 <td>2026-10-20</td>
-                                <td><span class="hazard-severity low">저위험</span></td>
+                                <td>
+                                    <span class="hazard-severity low">저위험</span>
+                                </td>
+
+                                <td>
+                                    <button type="button"
+                                            class="button hazard-detail-button"
+                                            data-detail-id="1">
+                                        상세보기
+                                    </button>
+                                </td>
                             </tr>
+
                         </tbody>
                     </table>
                 </div>
@@ -171,14 +335,58 @@
                 <p class="hazard-empty" id="hazard-empty" hidden>
                     검색 결과가 없습니다.
                 </p>
+
                 <p class="hazard-table-help">
-                    목록의 행을 클릭하면 위험 상세 정보를 확인할 수 있습니다.
+                    게시글을 선택하면 상세 내용을 확인할 수 있습니다.
                 </p>
+
+                <!-- 페이지네이션: 현재 화면용 -->
+                <nav class="notice-pagination"
+                     aria-label="게시글 페이지">
+                    <button type="button" disabled aria-label="이전 페이지">‹</button>
+                    <button type="button" class="active" aria-current="page">1</button>
+                    <button type="button">2</button>
+                    <button type="button">3</button>
+                    <button type="button">4</button>
+                    <button type="button">5</button>
+                    <button type="button" aria-label="다음 페이지">›</button>
+                </nav>
             </section>
+
+            <!-- 위험도 범례 -->
+            <section class="hazard-legend-card" aria-label="위험도 안내">
+                <div>
+                    <h2>위험도 안내</h2>
+                    <p>등록된 위험 요소의 위험도 표시를 확인하세요.</p>
+                </div>
+
+                <div class="hazard-legend-item">
+                    <span class="hazard-severity high">고위험</span>
+                    <span>즉시 주의가 필요한 위험 요소</span>
+                </div>
+
+                <div class="hazard-legend-item">
+                    <span class="hazard-severity medium">중위험</span>
+                    <span>주의해서 작업해야 하는 위험 요소</span>
+                </div>
+
+                <div class="hazard-legend-item">
+                    <span class="hazard-severity low">저위험</span>
+                    <span>상대적으로 위험도가 낮은 요소</span>
+                </div>
+
+                <div class="hazard-legend-item">
+                    <span class="notice-badge general">일반</span>
+                    <span>공지사항 게시글</span>
+                </div>
+            </section>
+
         </main>
     </div>
 
+    <!-- 공통 기능 및 게시판 기능 -->
     <script src="js/common.js"></script>
     <script src="js/hazardlist.js"></script>
+    <script src="js/sidebar.js"></script>
 </body>
 </html>

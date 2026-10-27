@@ -1,59 +1,43 @@
-// 조종사 메인 화면 
-// ⚠️ 작업·드론·약제 데이터는 화면 확인용 데이터 , 백엔드 API 연결 후 교체
+// 조종사 메인 화면 (Leaflet 지도 연동 버전)
+// 작업 시작·완료 보고·상세는 pilot-history.html 에서 처리
 
 /* ===== 상태 이름 → 화면 글자와 색 ===== */
 const STATUS = {
-  READY:       { text: "배정 전", cls: "st-ready" },
-  ASSIGNED:    { text: "대기",    cls: "st-assigned" },
-  IN_PROGRESS: { text: "진행 중", cls: "st-progress" },
-  COMPLETED:   { text: "완료",    cls: "st-completed" },
+  READY:       { text: "배정 전", cls: "st-ready", color: "#238451" },
+  ASSIGNED:    { text: "대기",    cls: "st-assigned", color: "#f2b705" },
+  IN_PROGRESS: { text: "진행 중", cls: "st-progress", color: "#2f80ed" },
+  COMPLETED:   { text: "완료",    cls: "st-completed", color: "#8a8f8c" },
 };
 
-/* ===== 임시 데이터 ===== */
-// 사용 가능한 방제 드론
-const DRONES = [
-  { id: "DR-003", label: "DR-003 · DJI Agras T40" },
-  { id: "DR-004", label: "DR-004 · DJI Agras T30" },
-];
+/* ===== 서버 데이터 (임시 데이터 제거 및 API 연동 준비) ===== */
+const TASKS_API = "/api/pilot/tasks";             // 내 작업 (lat, lng 포함)
+const OTHER_FARMS_API = "/api/pilot/farms/ready"; // 주변 배정 전 농지 (lat, lng 포함)
 
-// 약제 (재고 표시)
-const CHEMICALS = [
-  { id: "CH-01", label: "약제 A (살충제) · 재고 84L" },
-  { id: "CH-02", label: "약제 B (살균제) · 재고 40L" },
-  { id: "CH-03", label: "약제 C (영양제) · 재고 25L" },
-];
-
-// 내 작업 (x, y = 임시 지도 위치 %)
-const myTasks = [
-  { id: 1, farm: "어남동 12-3", area: 800,  date: "2026-10-23 09:00", status: "IN_PROGRESS", x: 40, y: 58,
-    drone: "DR-003", chemical: "CH-01", amount: 12, used: null },
-  { id: 2, farm: "노은동 2-6",  area: 600,  date: "2026-10-23 13:00", status: "ASSIGNED",    x: 26, y: 38,
-    drone: null, chemical: null, amount: null, used: null },
-  { id: 3, farm: "어남동 14-2", area: 1100, date: "2026-10-24 08:30", status: "ASSIGNED",    x: 58, y: 26,
-    drone: null, chemical: null, amount: null, used: null },
-  { id: 4, farm: "관저동 9-4",  area: 1050, date: "2026-10-22 10:00", status: "COMPLETED",   x: 70, y: 60,
-    drone: "DR-004", chemical: "CH-02", amount: 10, used: 1.1 },
-];
-
-// 주변의 배정 전 농지 (지도에만 표시)
-const OTHER_FARMS = [
-  { farm: "노은동 2-8", status: "READY", x: 82, y: 32 },
-  { farm: "관저동 10-2", status: "READY", x: 18, y: 76 },
-];
+let myTasks = [];
+let OTHER_FARMS = [];
 
 /* ===== 화면 요소 ===== */
-const mapBox = document.querySelector("#pilot-map");
 const listBox = document.querySelector("#pilot-task-list");
-const detailBox = document.querySelector("#pilot-detail");
 const tabButtons = document.querySelectorAll("#pilot-tabs button");
 
 let currentFilter = "all"; // all / active / done
-let selectedId = (myTasks.find((t) => t.status === "IN_PROGRESS") || myTasks[0]).id;
+let selectedId = null;
 
-const labelOf = (list, id) => (list.find((item) => item.id === id) || {}).label || "-";
+// Leaflet 지도 위에 그려진 농지 마커들을 관리할 배열
+let taskMarkers = [];
 
+// 화면에 넣을 글자의 특수문자를 안전하게 바꿔주는 함수 (XSS 방어)
+const esc = (v) => 
+  String(v ?? "").replace(/[&<>"']/g, (c) => 
+    ({ "&": "&amp;", 
+      "<": "&lt;", 
+      ">": "&gt;", 
+      '"': "&quot;", 
+      "'": "&#39;" }
+      [c]
+    ));
 
-/* ===== 그리기 ===== */
+/* ===== 필터링 ===== */
 function filteredTasks() {
   if (currentFilter === "active") {
     return myTasks.filter((t) => t.status === "ASSIGNED" || t.status === "IN_PROGRESS");
@@ -64,6 +48,7 @@ function filteredTasks() {
   return myTasks;
 }
 
+/* ===== 탭 렌더링 ===== */
 function renderTabs() {
   const counts = {
     all: myTasks.length,
@@ -79,145 +64,113 @@ function renderTabs() {
   });
 }
 
+/* ===== 목록 렌더링 ===== */
 function renderList() {
   const tasks = filteredTasks();
 
   if (tasks.length === 0) {
-    listBox.innerHTML = `<li class="pilot-empty">해당하는 작업이 없습니다.</li>`;
+    listBox.innerHTML = `<li class="pilot-empty" style="padding: 20px; text-align: center; color: #666;">해당하는 작업이 없습니다.</li>`;
     return;
   }
 
   listBox.innerHTML = tasks.map((t) => {
-    const st = STATUS[t.status];
+    const st = STATUS[t.status] || STATUS.ASSIGNED;
     return `
       <li>
-        <button type="button" class="pilot-task ${t.id === selectedId ? "selected" : ""}" data-id="${t.id}">
-          <span class="pilot-dot ${st.cls}"></span>
-          <span class="pilot-task-body">
-            <strong>${t.farm}</strong>
-            <small>${t.area.toLocaleString()}㎡ · ${t.date}</small>
+        <button type="button" class="pilot-task ${t.id === selectedId ? "selected" : ""}" data-id="${t.id}" style="width:100%; display:flex; align-items:center; padding:10px; border:1px solid #eee; background:#fff; cursor:pointer; margin-bottom:6px; border-radius:6px;">
+          <span class="pilot-dot ${st.cls}" style="width:10px; height:10px; border-radius:50%; background:${st.color}; margin-right:8px;"></span>
+          <span class="pilot-task-body" style="flex:1; text-align:left;">
+            <strong style="display:block; font-size:14px;">${esc(t.farm)}</strong>
+            <small style="color:#666;">${Number(t.area || 0).toLocaleString()}㎡ · ${esc(t.date)}</small>
           </span>
-          <span class="pilot-status ${st.cls}">${st.text}</span>
+          <span class="pilot-status ${st.cls}" style="font-size:12px; padding:2px 6px; border-radius:4px; background:#eee;">${st.text}</span>
         </button>
       </li>
     `;
   }).join("");
 }
 
-function renderMap() {
-  const otherPins = OTHER_FARMS.map((f) => `
-    <span class="pilot-pin ${STATUS[f.status].cls}" style="left:${f.x}%; top:${f.y}%" title="${f.farm} (배정 전)"></span>
-  `).join("");
+/* ===== Leaflet 지도 마커 렌더링 (안전장치 유지 버전) ===== */
+function renderMapMarkers() {
+  if (typeof map === "undefined") return; // 지도가 아직 없으면 건너뜀
 
-  const myPins = myTasks.map((t) => `
-    <button type="button" class="pilot-pin ${STATUS[t.status].cls} ${t.id === selectedId ? "selected" : ""}"
-            style="left:${t.x}%; top:${t.y}%" data-id="${t.id}" aria-label="${t.farm}"></button>
-  `).join("");
+  // 1. 기존에 지도에 그려둔 농지 마커들 싹 지우기 (html 지도 자체는 유지됨)
+  taskMarkers.forEach(marker => map.removeLayer(marker));
+  taskMarkers = [];
 
-  const selected = myTasks.find((t) => t.id === selectedId);
-  const label = selected
-    ? `<div class="pilot-pin-label" style="left:${selected.x}%; top:${selected.y}%">${selected.farm}</div>`
-    : "";
+  // 2. 주변 대기 농지(OTHER_FARMS) 마커 찍기 (안전 처리 반영)
+  OTHER_FARMS.forEach(f => {
+    const fs = STATUS[f.status] || STATUS.READY;
+    const marker = L.circleMarker([f.lat, f.lng], {
+      radius: 8,
+      fillColor: fs.color,
+      color: "#fff",
+      weight: 2,
+      opacity: 1,
+      fillOpacity: 0.9
+    }).addTo(map);
+    
+    marker.bindPopup(`<b>🌱 ${esc(f.farm)}</b><br>상태: ${fs.text}`);
+    taskMarkers.push(marker);
+  });
 
-  mapBox.innerHTML = otherPins + myPins + label;
-}
+  // 3. 현재 필터링된 내 작업들만 지도에 새 마커로 찍기
+  const tasksToDisplay = filteredTasks();
+  tasksToDisplay.forEach(t => {
+    const st = STATUS[t.status] || STATUS.ASSIGNED;
+    const isSelected = t.id === selectedId;
 
-// 작업 상세: 상태에 따라 다른 입력칸과 버튼
-function renderDetail() {
-  const t = myTasks.find((task) => task.id === selectedId);
+    const marker = L.circleMarker([t.lat, t.lng], {
+      radius: isSelected ? 11 : 9,
+      fillColor: st.color,
+      color: isSelected ? "#000" : "#fff",
+      weight: isSelected ? 3 : 2,
+      opacity: 1,
+      fillOpacity: 0.9
+    }).addTo(map);
 
-  if (!t) {
-    detailBox.innerHTML = `<p class="pilot-empty">목록이나 지도에서 작업을 선택하세요.</p>`;
-    return;
-  }
+    marker.bindPopup(
+      `<b>🏠 ${esc(t.farm)}</b><br>상태: ${st.text}<br>면적: ${Number(t.area || 0).toLocaleString()}㎡` +
+      `<br><a href="pilot-history.html">작업 이력에서 처리 →</a>`
+    );
+    
+    // 마커 클릭 시 작업 선택 연동
+    marker.on('click', () => {
+      selectTask(t.id);
+    });
 
-  const st = STATUS[t.status];
-  let info = `
-    <dt>면적</dt><dd>${t.area.toLocaleString()}㎡</dd>
-    <dt>작업 일시</dt><dd>${t.date}</dd>
-    <dt>상태</dt><dd><span class="pilot-status ${st.cls}">${st.text}</span></dd>
-  `;
-  let form = "";
+    taskMarkers.push(marker);
+  });
 
-  if (t.status === "ASSIGNED") {
-    // 대기 → 드론·약제 선택 후 작업 시작
-    form = `
-      <div class="pilot-form">
-        <p class="pilot-form-title">드론 및 약제 선택</p>
-        <label class="task-field">
-          <span>드론</span>
-          <select id="sel-drone">
-            <option value="">드론 선택</option>
-            ${DRONES.map((d) => `<option value="${d.id}">${d.label}</option>`).join("")}
-          </select>
-        </label>
-        <label class="task-field">
-          <span>약제</span>
-          <select id="sel-chem">
-            <option value="">약제 선택</option>
-            ${CHEMICALS.map((c) => `<option value="${c.id}">${c.label}</option>`).join("")}
-          </select>
-        </label>
-        <label class="task-field">
-          <span>살포량 (L/ha)</span>
-          <input type="number" id="sel-amount" value="12" min="1" max="50">
-        </label>
-      </div>
-      <button type="button" class="dash-btn-primary" data-action="start">작업 시작</button>
-    `;
-  } else if (t.status === "IN_PROGRESS") {
-    // 진행 중 → 실제 사용량 입력 후 완료 보고 
-    info += `
-      <dt>드론</dt><dd>${labelOf(DRONES, t.drone)}</dd>
-      <dt>약제</dt><dd>${labelOf(CHEMICALS, t.chemical)}</dd>
-      <dt>살포량</dt><dd>${t.amount} L/ha</dd>
-    `;
-    form = `
-      <div class="pilot-form">
-        <p class="pilot-form-title">방제 완료 보고</p>
-        <label class="task-field">
-          <span>실제 약제 사용량 (L)</span>
-          <input type="number" id="used-amount" min="0" step="0.1" placeholder="예: 1.2">
-        </label>
-      </div>
-      <button type="button" class="dash-btn-primary" data-action="finish">작업 완료 보고</button>
-    `;
-  } else if (t.status === "COMPLETED") {
-    info += `
-      <dt>드론</dt><dd>${labelOf(DRONES, t.drone)}</dd>
-      <dt>약제</dt><dd>${labelOf(CHEMICALS, t.chemical)}</dd>
-      <dt>사용량</dt><dd>${t.used} L</dd>
-    `;
-  }
-
-  detailBox.innerHTML = `
-    <h3>${t.farm}</h3>
-    <dl>${info}</dl>
-    ${form}
-  `;
+  // 레이아웃 변경으로 인한 지도 깨짐 방지
+  setTimeout(() => {
+    if (typeof map !== 'undefined' && map.invalidateSize) {
+      map.invalidateSize();
+    }
+  }, 100);
 }
 
 function renderAll() {
   renderTabs();
   renderList();
-  renderMap();
-  renderDetail();
+  renderMapMarkers();
 }
 
-/* ===== 클릭 동작 ===== */
+/* ===== 이벤트 핸들러 설정 ===== */
 function selectTask(id) {
   selectedId = id;
   renderAll();
+  
+  // 선택된 작업 위치로 지도 중심 이동
+  const t = myTasks.find(task => task.id === id);
+  if (t && typeof map !== 'undefined') {
+    map.setView([t.lat, t.lng], 16);
+  }
 }
 
 listBox.addEventListener("click", (event) => {
   const item = event.target.closest("[data-id]");
   if (item) selectTask(Number(item.dataset.id));
-});
-
-mapBox.addEventListener("click", (event) => {
-  const pin = event.target.closest("[data-id]");
-  if (pin) selectTask(Number(pin.dataset.id));
 });
 
 tabButtons.forEach((button) => {
@@ -227,55 +180,28 @@ tabButtons.forEach((button) => {
   });
 });
 
-// 작업 시작 / 작업 완료 보고
-detailBox.addEventListener("click", (event) => {
-  const button = event.target.closest("[data-action]");
-  if (!button) return;
-
-  const t = myTasks.find((task) => task.id === selectedId);
-
-  if (button.dataset.action === "start") {
-    const drone = document.querySelector("#sel-drone").value;
-    const chemical = document.querySelector("#sel-chem").value;
-    const amount = Number(document.querySelector("#sel-amount").value);
-
-    if (!drone || !chemical) {
-      alert("드론과 약제를 선택하세요.");
-      return;
+/* ===== 초기 실행 (서버 데이터 페치 연동) ===== */
+document.addEventListener("DOMContentLoaded", async () => {
+  try {
+    const [taskRes, farmRes] = await Promise.all([
+      fetch(TASKS_API),
+      fetch(OTHER_FARMS_API),
+    ]);
+    
+    if (!taskRes.ok) throw new Error(`서버 응답 ${taskRes.status}`);
+    
+    myTasks = await taskRes.json();
+    if (farmRes.ok) {
+      OTHER_FARMS = await farmRes.json();
     }
-    if (!amount || amount <= 0) {
-      alert("살포량을 입력하세요.");
-      return;
-    }
-
-    // 나중에 백엔드 연결
-    // 다른 조종사가 먼저 시작했으면 서버가 에러
-    // const res = await fetch(`/api/pilot/tasks/${t.id}/start`, { method: "POST", headers: {...}, body: JSON.stringify({ drone, chemical, amount }) });
-
-    t.drone = drone;
-    t.chemical = chemical;
-    t.amount = amount;
-    t.status = "IN_PROGRESS";
+  } catch (error) {
+    console.error("작업 목록 조회 실패:", error);
+    listBox.innerHTML = `<li class="pilot-empty" style="padding: 20px; text-align: center; color: #666;">작업 목록을 불러오지 못했습니다.</li>`;
+    renderTabs();
+    return;
   }
 
-  if (button.dataset.action === "finish") {
-    const used = Number(document.querySelector("#used-amount").value);
-
-    if (!used || used <= 0) {
-      alert("실제 약제 사용량을 입력하세요.");
-      return;
-    }
-
-    // 나중에 백엔드 연결: 완료 보고 + 약제 재고 차감
-    // await fetch(`/api/pilot/tasks/${t.id}/complete`, { method: "POST", headers: {...}, body: JSON.stringify({ used }) });
-
-    t.used = used;
-    t.status = "COMPLETED";
-  }
-
+  const first = myTasks.find((t) => t.status === "IN_PROGRESS") || myTasks[0];
+  selectedId = first ? first.id : null;
   renderAll();
 });
-
-
-/* ===== 시작 ===== */
-renderAll();
