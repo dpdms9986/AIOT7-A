@@ -6,9 +6,13 @@ import java.time.LocalDateTime;
 
 // 고압선, 철탑 등 비행 위험 요소를 위치 좌표와 함께 공유하는 게시판
 
+@Builder 
 @Entity
 @Table(name = "hazard_reports")
-@Getter @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter 
+@Setter
+@AllArgsConstructor 
+@NoArgsConstructor
 public class HazardReports {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,7 +41,7 @@ public class HazardReports {
     private String status = "ACTIVE"; // ACTIVE(주의 요망), RESOLVED(해소됨)
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "region_id")
+    @JoinColumn(name = "region_no")
     private Regions region; // 행정구역별 필터링용 매핑 - BRD_002, BRD_004
 
     @Column(name = "created_at", updatable = false)
