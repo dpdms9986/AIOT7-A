@@ -69,7 +69,7 @@ public class AuthController {
         HttpSession session = request.getSession(true);
         UserResponse response = authService.login(req, session);
 
-        // 자동 로그인이 체크된 경우: 세션 및 브라우저 쿠키를 7일간 유지
+        // 자동 로그인이 체크된 경우: 세션 및 브라우저 쿠키를 14일간 유지
     if (req.isRememberMe()) {
         int maxAge = 60 * 60 * 24 * 14; // 14일 (초 단위)
         session.setMaxInactiveInterval(maxAge);

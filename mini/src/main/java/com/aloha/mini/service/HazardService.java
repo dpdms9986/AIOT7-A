@@ -1,4 +1,3 @@
-
 package com.aloha.mini.service;
 
 import java.util.List;
@@ -19,7 +18,7 @@ public interface HazardService {
     HazardResponse findById(Long no);
 
     // 지역별 위험 게시글 목록 조회
-    List<HazardResponse> findByRegion(Long regionNo);
+    List<HazardResponse> findByRegion(String regionCode);
 
     // 위험 게시글 수정
     HazardResponse update(

@@ -18,6 +18,7 @@ import com.aloha.mini.repository.RegionRepository;
 import com.aloha.mini.repository.TeamRepository;
 import com.aloha.mini.repository.UserRepository;
 
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -33,16 +34,22 @@ public class MockDataService {
 
     @Transactional
     public String createMockLands() {
-        // 1. 행정구역 생성 또는 조회
-        Regions region = regionRepository.findByRegionName("대전시 동구 어남동")
-                .orElseGet(() -> {
-                    Regions newRegion = Regions.builder()
-                            .regionName("대전시 동구 어남동")
-                            .centerLat(36.2530)
-                            .centerLng(127.4580)
-                            .build();
-                    return regionRepository.save(newRegion);
-                });
+
+        // 1. 행정구역 생성 또는 조회(임의의 지역코드 '3011059000' 사용)
+    Regions region = regionRepository.findByRegionCode("3011059000")
+                                     .orElseGet(() -> {
+                Regions newRegion = Regions.builder()
+                        .regionCode("3011059000")
+                        .sido("대전광역시")
+                        .sigungu("중구")
+                        .eupmyeondong("어남동")
+                        .centerLat(36.2530)
+                        .centerLng(127.4580)
+                        .isActive(true)
+                        .build();
+                return regionRepository.save(newRegion);
+            });
+            
 
         // 2. 어남동 주변 가상 농지 20개 생성
         List<Lands> mockLands = new ArrayList<>();
@@ -61,7 +68,7 @@ public class MockDataService {
             // 주의: 아래 빌더의 메서드명은 Lands.java 엔티티의 변수명과 100% 일치해야 합니다.
             Lands land = Lands.builder()
                     .region(region)
-                    .address("대전시 동구 어남동 산" + random.nextInt(100) + "-" + i)
+                    .address("대전시 중구 어남동 산" + random.nextInt(100) + "-" + i)
                     .latitude(randomLat)  // 엔티티 변수명이 latitude 인지 확인 (lat 인 경우 .lat() 사용)
                     .longitude(randomLng) // 엔티티 변수명이 longitude 인지 확인 (lng 인 경우 .lng() 사용)
                     .areaSize(Math.round(randomArea * 10.0) / 10.0) // 엔티티 변수명이 areaSize 인지 확인
@@ -76,6 +83,11 @@ public class MockDataService {
 
     return "어남동 주변 미배정 가상 농지 20개가 성공적으로 생성되었습니다.";
 }
+
+   @PostConstruct
+ public void init() {
+ createMockLands(); // 서버가 켜질 때 이 로직이 무조건 한 번 실행되게 만듦
+ }
 
 // 👇 [추가된 코드] 3가지 Role에 맞춘 초기 사용자 데이터 생성 로직
     @Transactional
