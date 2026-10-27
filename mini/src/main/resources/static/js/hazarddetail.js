@@ -39,9 +39,14 @@ function renderHazardDetail() {
     const hazard = hazardData[hazardId];
 
     if (!hazard) {
-        console.warn("해당 ID의 위험 데이터가 없습니다:", hazardId);
+    // 공지사항 상세 페이지에서는 위험 데이터가 없어도 정상
+    if (document.body.classList.contains("notice-detail-page")) {
         return;
     }
+
+    console.warn("해당 ID의 위험 데이터가 없습니다:", hazardId);
+    return;
+}
 
     document.getElementById("hazard-title").textContent = hazard.title;
     document.getElementById("hazard-type").textContent = hazard.type;
@@ -135,3 +140,85 @@ function renderCommentImagePreview() {
     commentImageCount.textContent =
         `첨부 이미지 ${commentImages.length}개`;
 }
+
+/* ===== 공지사항 상세 처리 ===== */
+
+const noticeData = {
+    "56": {
+        title: "[기상특보] 10월 23일 강풍 주의보 발령",
+        type: "긴급",
+        pinned: true,
+        author: "관리자",
+        date: "2026-10-22 14:32",
+        content:
+            "기상청 예보에 따라 10월 23일 해당 지역에 강풍 주의보가 발령되었습니다. 안전한 방제 작업을 위해 아래 내용을 준수해 주시기 바랍니다.",
+        alerts: [
+            "10월 23일 전 지역 드론 비행 금지",
+            "최대 풍속 5m/s 이상 예상",
+            "현장 풍속 3m/s 이상 점검",
+            "추가 변동 사항은 추후 공지 예정"
+        ],
+        attachment: "기상특보_강풍주의보.pdf",
+        attachmentSize: "245KB"
+    }
+};
+
+function renderNoticeDetail() {
+    const noticeId = new URLSearchParams(location.search).get("id");
+
+    // 공지 ID가 아니면 기존 위험 상세 로직을 사용
+    if (!noticeId || !noticeData[noticeId]) {
+        return;
+    }
+
+    const notice = noticeData[noticeId];
+
+    const setText = (id, value) => {
+        const element = document.getElementById(id);
+        if (element) element.textContent = value;
+    };
+
+    setText("notice-title", notice.title);
+    setText("notice-type", notice.type);
+    setText("notice-author", notice.author);
+    setText("notice-date", notice.date);
+    setText("notice-content", notice.content);
+
+    const pin = document.getElementById("notice-pin");
+    if (pin) pin.hidden = !notice.pinned;
+
+    const alertList = document.getElementById("notice-alert-list");
+
+    if (alertList) {
+        alertList.replaceChildren();
+
+        notice.alerts.forEach(message => {
+            const li = document.createElement("li");
+            li.textContent = message;
+            alertList.appendChild(li);
+        });
+    }
+
+    const attachmentList =
+        document.getElementById("notice-attachment-list");
+
+    if (attachmentList) {
+        attachmentList.replaceChildren();
+
+        const item = document.createElement("div");
+        item.className = "notice-attachment-item";
+
+        const name = document.createElement("span");
+        name.className = "notice-attachment-name";
+        name.textContent = notice.attachment;
+
+        const size = document.createElement("span");
+        size.className = "notice-attachment-size";
+        size.textContent = `(${notice.attachmentSize})`;
+
+        item.append(name, size);
+        attachmentList.appendChild(item);
+    }
+}
+
+renderNoticeDetail();
