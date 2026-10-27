@@ -22,4 +22,9 @@ public interface WorkAssignmentRepository extends JpaRepository<WorkAssignments,
 
     // 👇 수정 후: 조종사(pilot) 객체 안에 있는 팀(team)의 고유번호(no)로 찾기
     List<WorkAssignments> findByPilot_Team_No(Long teamNo);
+
+
+
+    // 해당 농지의 작업 배정 이력 존재 여부 확인
+    boolean existsByLand_No(Long landNo);
 }
