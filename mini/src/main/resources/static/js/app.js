@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const userIdInput = document.querySelector("#userId");
     const passwordInput = document.querySelector("#password");
     const rememberCheck = document.querySelector("#remember-id");
+    const autoLoginCheck = document.querySelector("#remember-me")
 
     // 아이디 기억하기
     const savedId = localStorage.getItem("savedUserId");
@@ -26,11 +27,17 @@ document.addEventListener("DOMContentLoaded", () => {
         localStorage.removeItem("savedUserId");
       }
 
+      const isAutoLogin = autoLoginCheck ? autoLoginCheck.checked : false;
       try {
         const response = await fetch("/api/auth/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId, password }),
+          // 2. body에 autoLogin 추가 (팀원분이 지정한 DTO 필드명에 맞추세요)
+          body: JSON.stringify({ 
+            userId, 
+            password, 
+            rememberMe: isAutoLogin
+          }),
         });
 
         if (response.ok) {

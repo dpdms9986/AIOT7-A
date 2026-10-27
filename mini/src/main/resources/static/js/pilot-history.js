@@ -1,8 +1,6 @@
 // 조종사 작업 이력 화면 (pilot-history.html)
 // 대기(작업 시작) / 진행 중(완료 보고) / 완료(결과)
-// ⚠️ 가짜 데이터는 화면 확인용, 백엔드 API 연결 후 PH_USE_MOCK = false
 
-const PH_USE_MOCK = false;
 const PH_API = "/api/pilot/tasks"; // 목록 GET, 시작 POST /{id}/start, 완료 POST /{id}/complete
 
 const PH_STATUS = {
@@ -11,27 +9,19 @@ const PH_STATUS = {
   COMPLETED:   { text: "완료",    cls: "st-completed" },
 };
 
-const PH_DRONES = [
-  { id: "DR-003", label: "DR-003 · DJI Agras T40" },
-  { id: "DR-004", label: "DR-004 · DJI Agras T30" },
-];
-const PH_CHEMICALS = [
-  { id: "CH-01", label: "약제 A (살충제) · 재고 84L" },
-  { id: "CH-02", label: "약제 B (살균제) · 재고 40L" },
-  { id: "CH-03", label: "약제 C (영양제) · 재고 25L" },
-];
+let PH_DRONES = [];     // 서버에서 받아옴: [{ id, label }]
+let PH_CHEMICALS = [];
 
-// 가짜 데이터 (date = 작업 일시, completedAt = 완료 일시)
-const PH_MOCK = [
-  { id: 1, farm: "어남동 12-3", area: 800,  date: "2026-10-23 09:00", status: "IN_PROGRESS",
-    drone: "DR-003", chemical: "CH-01", amount: 12, used: null, completedAt: null },
-  { id: 2, farm: "노은동 2-6",  area: 600,  date: "2026-10-23 13:00", status: "ASSIGNED",
-    drone: null, chemical: null, amount: null, used: null, completedAt: null },
-  { id: 3, farm: "어남동 14-2", area: 1100, date: "2026-10-24 08:30", status: "ASSIGNED",
-    drone: null, chemical: null, amount: null, used: null, completedAt: null },
-  { id: 4, farm: "관저동 9-4",  area: 1050, date: "2026-10-22 10:00", status: "COMPLETED",
-    drone: "DR-004", chemical: "CH-02", amount: 10, used: 1.1, completedAt: "2026-10-22 15:40" },
-];
+async function loadOptions() {
+  const [dr, ch] = await Promise.all([
+    fetch("/api/pilot/drones"),      // 주소는 팀원과 맞춰서 수정
+    fetch("/api/pilot/chemicals"),
+  ]);
+  if (dr.ok) PH_DRONES = await dr.json();
+  if (ch.ok) PH_CHEMICALS = await ch.json();
+}
+
+
 
 const listBox = document.querySelector("#ph-list");
 const detailBox = document.querySelector("#ph-detail");
@@ -52,9 +42,7 @@ const nowText = () => {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 };
 
-// 서버에 POST (가짜 데이터일 땐 건너뜀). 성공하면 true
 async function postTo(path, body) {
-  if (PH_USE_MOCK) return true;
   try {
     const res = await fetch(`${PH_API}/${path}`, {
       method: "POST",
@@ -74,7 +62,6 @@ async function postTo(path, body) {
 }
 
 async function loadTasks() {
-  if (PH_USE_MOCK) return PH_MOCK;
   const res = await fetch(PH_API);
   if (!res.ok) throw new Error(`서버 응답 ${res.status}`);
   return res.json();
@@ -277,6 +264,7 @@ detailBox.addEventListener("click", async (event) => {
 (async () => {
   try {
     tasks = await loadTasks();
+    await loadOptions();
   } catch (error) {
     console.error("작업 목록 조회 실패:", error);
     listBox.innerHTML = '<li class="pilot-empty">작업 목록을 불러오지 못했습니다.</li>';

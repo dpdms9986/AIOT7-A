@@ -2,7 +2,7 @@
 // ⚠️ 농지·조종사 데이터는 화면 확인용 임시 데이터입니다. 백엔드 API 연결 후 교체하세요.
 
 /* ===== 1. 임시 데이터 ===== */
-const farms = [
+/* const farms = [
   { id: 101, address: "어남동 12-3", region: "대전시 유성구 어남동", area: 800,  status: "READY" },
   { id: 102, address: "어남동 12-5", region: "대전시 유성구 어남동", area: 980,  status: "READY" },
   { id: 103, address: "어남동 14-2", region: "대전시 유성구 어남동", area: 1100, status: "READY" },
@@ -14,15 +14,19 @@ const farms = [
   { id: 301, address: "관저동 9-4",  region: "대전시 서구 관저동",   area: 1050, status: "READY" },
   { id: 302, address: "관저동 10-2", region: "대전시 서구 관저동",   area: 880,  status: "READY" },
   { id: 303, address: "관저동 11-7", region: "대전시 서구 관저동",   area: 1240, status: "COMPLETED" },
-];
+]; */
 
 // 소속 조종사 (대기 중인 조종사만 선택 가능 - ADM_017)
-const PILOTS = [
+/* const PILOTS = [
   { id: "P01", name: "김조종", status: "대기" },
   { id: "P02", name: "박비행", status: "대기" },
   { id: "P03", name: "이파일럿", status: "대기" },
   { id: "P04", name: "최운항", status: "작업 중" },
-];
+]; */
+
+
+let farms = [];    // 미배정 농지 목록 (백엔드 API 연결 후 채움)
+let PILOTS = [];   // 배정 가능한 조종사 목록 (백엔드 API 연결 후 채움)
 
 /* ===== 화면 상태 ===== */
 let keywords = [];

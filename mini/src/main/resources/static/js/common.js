@@ -5,18 +5,8 @@
 // - 로그아웃 (USER_012)
 // ⚠️ 각 페이지에서 페이지 전용 JS보다 "먼저" 불러오세요.
 
-// 로그인 검사 켜기/끄기 (로그인이 안 될 때 화면만 보려면 false, 완성 후에는 꼭 true)
-const LOGIN_GUARD = false;
 
-// LOGIN_GUARD = false 일 때 쓰는 가짜 사용자 (role을 "LEADER"로 바꾸면 단장으로 확인 가능)
-const DEV_USER = {
-  userId: "pilot@test.com",
-  userName: "김조종",
-  role: "LEADER",
-  teamName: "대전 유성 방제단",
-  inviteCode: "DR789A",
-  phone: "010-1234-5678",
-};
+
 
 // 권한별 메인 화면 (대시보드가 없는 동안 단장을 작업 배정으로 보내려면 "task-assignment.html")
 const MAIN_PAGE = { ADMIN: "task-assignment.html", LEADER: "task-assignment.html", PILOT: "pilot-dashboard.html" };
@@ -100,10 +90,6 @@ function userReady(user) {
 
 // 로그인·권한 검사
 async function checkAccess() {
-  if (!LOGIN_GUARD) {
-    setTimeout(() => userReady(DEV_USER)); // 페이지 JS가 다 준비된 뒤 실행
-    return;
-  }
 
   const required = document.body.dataset.role; // 이 화면에 필요한 역할
 
@@ -119,7 +105,6 @@ async function checkAccess() {
     const role = String(user.role || "").toUpperCase();
 
     if (required && !required.split(" ").includes(role)) {
-      console.log("status 응답:", user, "필요 권한:", required, "내 권한:", role);
       alert("접근 권한이 없는 화면입니다.");
       location.href = MAIN_PAGE[role] || "login.html";
       return;

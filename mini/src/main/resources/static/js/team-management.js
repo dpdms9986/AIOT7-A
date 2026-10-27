@@ -6,57 +6,8 @@
     const $$ = (selector, root = document) =>
         Array.from(root.querySelectorAll(selector));
 
-    // 화면 확인용 예시 데이터. 실제 DB 데이터가 아님.
-    const members = [
-        {
-            id: "PILOT-001",
-            name: "김조종",
-            phone: "010-1234-5678",
-            drone: "DR-001",
-            tank: 30,
-            status: "online",
-            currentTask: "유성구 봉명동 123-4",
-            completed: 3,
-            skill: "베테랑",
-            weight: 1.5
-        },
-        {
-            id: "PILOT-002",
-            name: "이민수",
-            phone: "010-2345-6789",
-            drone: "DR-002",
-            tank: 40,
-            status: "online",
-            currentTask: "-",
-            completed: 2,
-            skill: "중급",
-            weight: 1.2
-        },
-        {
-            id: "PILOT-003",
-            name: "박지훈",
-            phone: "010-3456-7890",
-            drone: "DR-003",
-            tank: 30,
-            status: "working",
-            currentTask: "대덕구 신탄진동 88-1",
-            completed: 1,
-            skill: "베테랑",
-            weight: 1.5
-        },
-        {
-            id: "PILOT-004",
-            name: "최서연",
-            phone: "010-4567-8901",
-            drone: "DR-004",
-            tank: 20,
-            status: "offline",
-            currentTask: "-",
-            completed: 1,
-            skill: "초급",
-            weight: 0.8
-        }
-    ];
+    // 조종사 목록 (백엔드 API 연결 후 서버에서 받아서 채움)
+    let members = [];
 
     const statusInfo = {
         online: { label: "접속 중", className: "online" },
@@ -406,7 +357,6 @@
         closeModal(profileModal);
         renderMembers();
 
-        alert("시연용 목록에 프로필을 추가했습니다.");
     });
 
     // 목록 버튼: 상세보기 / 재배정 / 가중치 저장
@@ -445,20 +395,18 @@
                 member.weight = weight;
 
                 renderMembers();
-                alert("시연용 숙련도 및 가중치 설정을 반영했습니다.");
                 break;
             }
         }
     });
 
-    // 재배정 시연
+        // 재배정 (백엔드 API 연결 후 구현)
     $("#team-reassign-form").addEventListener("submit", event => {
         event.preventDefault();
 
         const form = event.currentTarget;
         const source = getMember(form.elements.sourceId.value);
         const target = getMember(form.elements.targetId.value);
-        const land = form.elements.land.value;
 
         if (!source || !target) {
             alert("재배정 대상을 확인해 주세요.");
@@ -466,29 +414,29 @@
         }
 
         if (target.status !== "online") {
-            alert("현재 접속 중인 조종사만 시연용 재배정 대상으로 선택할 수 있습니다.");
+            alert("현재 접속 중인 조종사만 재배정 대상으로 선택할 수 있습니다.");
             return;
         }
 
-        // UI 시연: 실제 DB의 농지 배정 정보는 변경되지 않음.
-        target.currentTask = land;
-
-        closeModal(reassignModal);
-        renderMembers();
-
-        alert(
-            `시연 화면에 반영했습니다.\n` +
-            `${source.name} → ${target.name}\n` +
-            `농지: ${land}\n\n` +
-            `실제 재배정 저장은 백엔드 API 연동이 필요합니다.`
-        );
+        // TODO: 재배정 API 호출 (source, target, land)
+        alert("재배정 기능은 서버 연결 후 사용할 수 있습니다.");
     });
 
-    // 초대 안내
-    $("#invite-pilot-btn").addEventListener("click", () => {
-        alert(
-            "방제단 초대 기능은 공통 JS의 초대 코드 기능 또는 초대 API와 연결해야 합니다."
-        );
+    // 초대 코드 복사
+    $("#invite-pilot-btn").addEventListener("click", async () => {
+        const code = window.currentUser?.inviteCode;
+
+        if (!code) {
+            alert("초대 코드를 불러올 수 없습니다.");
+            return;
+        }
+
+        try {
+            await navigator.clipboard.writeText(code);
+            alert(`초대 코드 ${code}가 복사되었습니다.`);
+        } catch (error) {
+            alert(`초대 코드: ${code}`);
+        }
     });
 
     // 모달 닫기
