@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관제 대시보드</title>
+    
+    <!-- 기존 FE 팀 CSS -->
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/header.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/control-dashboard.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+
+</head>
+
+<body class="dash-body notice-detail-page" data-role="ADMIN">
+
+  <!-- ===== 공통 헤더 ===== -->
+  <header class="dash-header">
+      <a href="#" class="dash-logo"><span>🌱</span>
+        스마트 농업 관제 시스템</a>
+
+    <nav class="dash-topnav" id="gnb-menu"></nav>
+      <div class="dash-header-right">
+
+        <span class="gnb-team" id="team-name">방제단</span>
+        <button type="button" class="gnb-invite" id="invite-btn" hidden>
+            초대 코드 <b id="invite-code">------</b> 📋
+        </button>
+
+        <span class="dash-role" id="user-role">-</span>
+        <a href="mypage.html" class="gnb-user" title="마이페이지"><span class="dash-avatar">👤</span><span id="user-name">사용자</span></a>
+        <button type="button" class="dash-btn-outline gnb-logout" id="logout-btn">
+            로그아웃
+
+        </button>
+      </div>
+  </header>
+
+  <div class="dash-layout">
+    <!-- ===== 왼쪽 사이드바 ===== -->
+   <aside class="dash-sidebar">
+    <nav class="dash-sidenav" id="gnb-side" aria-label="사이드 메뉴">
+    </nav>
+
+    <div class="dash-side-promo">
+        <strong>🌱 더 스마트한 농업의 시작</strong>
+        <p>데이터로 만드는 건강한 농작물, 스마트 농업 관제 시스템</p>
+    </div>
+</aside>
+
+    <main class="dash-main control-main">
+    <div class="control-title-row">
+      <div>
+        <h1>🗺 관제 대시보드</h1>
+        <p>행정구역별 농지 현황과 소속 조종사 상태를 확인합니다.</p>
+      </div>
+    </div>
+
+     <section class="control-layout">
+      <!-- 좌측 70%: 행정구역 검색 + 지도 -->
+      <article class="control-card">
+        <div class="control-card-head">
+          <h2>농지 지도 관제</h2>
+          <span id="map-status" class="count-label">지도 준비 완료</span>
+        </div>
+        <form class="control-search" id="region-search-form">
+          <input id="region-query" type="search" placeholder="행정구역 검색 (예: 대전시 중구 어남동)" aria-label="행정구역 검색">
+          <button type="submit">지역 검색</button>
+        </form>
+        <div id="admin-map" aria-label="농지 관제 지도"></div>
+        <div class="map-legend">
+          <span><i class="legend-dot" style="background:#238451"></i>READY 미배정</span>
+          <span><i class="legend-dot" style="background:#f2b705"></i>ASSIGNED 배정</span>
+          <span><i class="legend-dot" style="background:#2f80ed"></i>IN_PROGRESS 진행 중</span>
+          <span><i class="legend-dot" style="background:#8a8f8c"></i>COMPLETED 완료</span>
+        </div>
+      </article>
+
+      <!-- 우측 30%: 위 미배정 농지 / 아래 소속 조종사 -->
+      <aside class="control-side">
+        <section class="control-card">
+          <div class="control-card-head">
+            <h2>📋 미배정 농지</h2>
+            <span class="count-label" id="farm-count">3개</span>
+          </div>
+          <div class="side-content">
+            <p class="panel-caption">선택한 지역의 배정 대기 농지</p>
+            <ul class="farm-list" id="unassigned-farm-list"></ul>
+          </div>
+        </section>
+
+        <section class="control-card">
+          <div class="control-card-head">
+            <h2>👨‍🌾 소속 조종사</h2>
+            <span class="count-label" id="pilot-count">3명</span>
+          </div>
+          <div class="side-content">
+            <p class="panel-caption">소속 조종사의 현재 상태</p>
+            <ul class="pilot-list" id="pilot-status-list"></ul>
+          </div>
+        </section>
+      </aside>
+    </section>
+  </main>
+    
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="js/common.js"></script>
+    <script>
+         // 화면 배치 확인용 예시 데이터입니다. 실제 적용 시 LAND 및 조종사 API로 교체하세요.
+    const farms = [
+      { id: 1, address: '대전시 중구 어남동 123-4', area: 1.8, status: 'READY', lat: 36.3058, lng: 127.4212 },
+      { id: 2, address: '대전시 중구 어남동 125-1', area: 2.4, status: 'READY', lat: 36.3090, lng: 127.4260 },
+      { id: 3, address: '대전시 중구 어남동 128-2', area: 1.2, status: 'READY', lat: 36.3019, lng: 127.4300 },
+      { id: 4, address: '대전시 중구 어남동 130-7', area: 3.1, status: 'ASSIGNED', lat: 36.3130, lng: 127.4170 },
+      { id: 5, address: '대전시 중구 어남동 131-2', area: 2.0, status: 'IN_PROGRESS', lat: 36.2980, lng: 127.4160 },
+      { id: 6, address: '대전시 중구 어남동 133-9', area: 1.5, status: 'COMPLETED', lat: 36.2940, lng: 127.4270 }
+    ];
+    const pilots = [
+      { name: '김조종사', team: '1팀', state: '대기', type: 'ready' },
+      { name: '이조종사', team: '1팀', state: '작업 중', type: 'busy' },
+      { name: '박조종사', team: '1팀', state: '오프라인', type: 'offline' }
+    ];
+    const statusColor = { READY: '#238451', ASSIGNED: '#f2b705', IN_PROGRESS: '#2f80ed', COMPLETED: '#8a8f8c' };
+    const statusLabel = { READY: '미배정', ASSIGNED: '배정', IN_PROGRESS: '진행 중', COMPLETED: '완료' };
+
+    const adminMap = L.map('admin-map').setView([36.3058, 127.4212], 14);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(adminMap);
+
+    farms.forEach(farm => {
+      const marker = L.circleMarker([farm.lat, farm.lng], {
+        radius: 8, color: '#fff', weight: 2, fillColor: statusColor[farm.status], fillOpacity: 1
+      }).addTo(adminMap);
+      marker.bindPopup(`<strong>${farm.address}</strong><br>면적: ${farm.area}ha<br>상태: ${statusLabel[farm.status]}`);
+    });
+
+    function renderFarms(query = '') {
+      const list = document.querySelector('#unassigned-farm-list');
+      const filtered = farms.filter(f => f.status === 'READY' && f.address.includes(query));
+      document.querySelector('#farm-count').textContent = `${filtered.length}개`;
+      list.innerHTML = filtered.length ? filtered.map(f => `
+        <li class="farm-item" data-farm-id="${f.id}" tabindex="0">
+          <div class="item-main"><strong>${f.address}</strong><small>면적 ${f.area}ha · 농지 번호 ${f.id}</small></div>
+          <span class="status-pill status-ready">미배정</span>
+        </li>`).join('') : '<li class="empty-state">해당 지역의 미배정 농지가 없습니다.</li>';
+      list.querySelectorAll('[data-farm-id]').forEach(item => {
+        const selectFarm = () => {
+          const farm = farms.find(f => f.id === Number(item.dataset.farmId));
+          if (farm) { adminMap.setView([farm.lat, farm.lng], 16); }
+        };
+        item.addEventListener('click', selectFarm);
+        item.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') selectFarm(); });
+      });
+    }
+
+    function renderPilots() {
+      const list = document.querySelector('#pilot-status-list');
+      document.querySelector('#pilot-count').textContent = `${pilots.length}명`;
+      list.innerHTML = pilots.map(p => `
+        <li class="pilot-item"><div class="item-main"><strong>${p.name}</strong><small>${p.team}</small></div>
+        <span class="pilot-state ${p.type}"><i></i>${p.state}</span></li>`).join('');
+    }
+
+    document.querySelector('#region-search-form').addEventListener('submit', event => {
+      event.preventDefault();
+      const query = document.querySelector('#region-query').value.trim();
+      if (!query) {
+        document.querySelector('#map-status').textContent = '검색어를 입력하세요';
+        return;
+      }
+      // 현재는 어남동 예시 좌표만 사용합니다. 실제 주소 검색 API 연동 시 검색 결과 좌표로 이동하도록 교체하세요.
+      if (/대전|중구|어남동/.test(query)) {
+        adminMap.setView([36.3058, 127.4212], 14);
+        renderFarms('어남동');
+        document.querySelector('#map-status').textContent = '대전시 중구 어남동';
+      } else {
+        renderFarms(query);
+        document.querySelector('#map-status').textContent = '예시 데이터에 일치하는 지역이 없습니다';
+      }
+    });
+
+    renderFarms('어남동');
+    renderPilots();
+    // Leaflet 지도가 레이아웃 계산 전에 생성되는 경우를 대비해 크기를 재계산합니다.
+    setTimeout(() => adminMap.invalidateSize(), 100);
+    </script>
+</body>
+</html>
