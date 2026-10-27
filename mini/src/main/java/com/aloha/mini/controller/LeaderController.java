@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+
 import com.aloha.mini.domain.CustomUser;
 import com.aloha.mini.domain.Lands;
 import com.aloha.mini.dto.AssignRequest;
@@ -85,4 +88,16 @@ public class LeaderController {
         
         return ResponseEntity.ok(formData);
     }
+
+    // 작업 중단 시 농지 상태 초기화
+    @PutMapping("/lands/{landNo}/reset-status")
+    public ResponseEntity<String> resetLandStatus(
+            @PathVariable Long landNo
+    ) {
+        workAssignmentService.resetLandStatus(landNo);
+
+        return ResponseEntity.ok(
+                "농지 상태가 READY로 초기화되었습니다."
+        );
+}
 }
