@@ -32,7 +32,6 @@ document.addEventListener("DOMContentLoaded", () => {
         const response = await fetch("/api/auth/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          // 2. body에 autoLogin 추가 (팀원분이 지정한 DTO 필드명에 맞추세요)
           body: JSON.stringify({ 
             userId, 
             password, 

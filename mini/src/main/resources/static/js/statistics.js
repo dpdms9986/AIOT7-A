@@ -6,20 +6,9 @@
     const $ = selector => document.querySelector(selector);
     const $$ = selector => Array.from(document.querySelectorAll(selector));
 
-    // 화면 확인용 예시 데이터. 실제 DB 데이터가 아님.
-    const history = [
-        { id: 1, address: "봉명동 123-4", region: "유성구", pilot: "김조종", assigned: "2026-10-20 09:10", completed: "2026-10-20 10:05", area: 1200, status: "COMPLETED" },
-        { id: 2, address: "구암동 55-3", region: "유성구", pilot: "이민수", assigned: "2026-10-20 10:20", completed: "2026-10-20 11:00", area: 850, status: "COMPLETED" },
-        { id: 3, address: "신탄진동 88-1", region: "대덕구", pilot: "박지훈", assigned: "2026-10-21 08:30", completed: "2026-10-21 09:15", area: 1600, status: "COMPLETED" },
-        { id: 4, address: "관평동 17-2", region: "유성구", pilot: "김조종", assigned: "2026-10-22 13:00", completed: "2026-10-22 13:50", area: 950, status: "COMPLETED" },
-        { id: 5, address: "법동 201-1", region: "대덕구", pilot: "이민수", assigned: "2026-10-23 09:00", completed: "2026-10-23 09:45", area: 1100, status: "COMPLETED" },
-        { id: 6, address: "둔산동 32-8", region: "서구", pilot: "김조종", assigned: "2026-10-24 10:00", completed: "2026-10-24 10:40", area: 700, status: "COMPLETED" },
-        { id: 7, address: "송강동 61-2", region: "유성구", pilot: "박지훈", assigned: "2026-10-24 13:20", completed: "2026-10-24 14:10", area: 1400, status: "COMPLETED" },
-        { id: 8, address: "월평동 45-1", region: "서구", pilot: "이민수", assigned: "2026-10-25 08:40", completed: "2026-10-25 09:30", area: 900, status: "COMPLETED" },
-        { id: 9, address: "전민동 15-6", region: "유성구", pilot: "김조종", assigned: "2026-10-26 09:10", completed: "", area: 1300, status: "IN_PROGRESS" },
-        { id: 10, address: "오정동 90-3", region: "대덕구", pilot: "박지훈", assigned: "2026-10-26 09:40", completed: "", area: 750, status: "ASSIGNED" }
-    ];
-
+    // 백엔드 API 연동을 위한 빈 배열 선언
+    const STATS_API = "/api/statistics";
+    let history = [];
     let currentTab = "history";
 
     const number = value => Number(value).toLocaleString("ko-KR");
@@ -335,5 +324,19 @@
         });
     }
 
-    render();
+    // 서버에서 통계 데이터를 불러오는 비동기 함수
+    async function loadStatisticsData() {
+        try {
+            const res = await fetch(STATS_API);
+            if (!res.ok) throw new Error(`서버 응답 오류: ${res.status}`);
+            history = await res.json();
+        } catch (error) {
+            console.error("통계 데이터 조회 실패:", error);
+            body.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:20px; color:#666;">통계 데이터를 불러오지 못했습니다.</td></tr>`;
+            return;
+        }
+        render();
+    }
+
+    loadStatisticsData();
 })();

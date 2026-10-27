@@ -6,7 +6,8 @@
     const $$ = (selector, root = document) =>
         Array.from(root.querySelectorAll(selector));
 
-    // 조종사 목록 (백엔드 API 연결 후 서버에서 받아서 채움)
+    // 백엔드 API 엔드 포인트 설정
+    const TEAM_API = "api/team/members";
     let members = [];
 
     const statusInfo = {
@@ -460,5 +461,20 @@
         }
     });
 
-    renderMembers();
+    // 서버에서 팀원 목록을 불러오는 비동기 초기화 함수
+    async function initTeamData() {
+        try {
+            const res = await fetch(TEAM_API);
+            if (!res.ok) throw new Error(`서버 응답 오류: ${res.status}`);
+            members = await res.json();
+        } catch (error) {
+            console.error("팀원 목록 조회 실패:", error);
+            tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding:20px; color:#666;">팀원 데이터를 불러오지 못했습니다.</td></tr>`;
+            return;
+        }
+        renderMembers();
+    }
+
+    initTeamData();
+})();
 })();

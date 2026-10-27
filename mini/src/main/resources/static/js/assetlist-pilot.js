@@ -366,9 +366,39 @@ const currentStatus = droneStatus[row.dataset.status] || {
             `${maintenanceRows.length}건`;
     }
 
-    updateSummary();
+    // 백엔드 API에서 자산 목록을 비동기 조회하여 테이블을 채우는 함수
+    async function loadPilotAssets() {
+        try {
+            const res = await fetch("/api/assets/pilot"); // 자산 조회 API
+            if (!res.ok) throw new Error("서버 응답 오류");
+            const assets = await res.json();
+
+            // 서버에서 받은 데이터로 <tr> 태그들을 동적 생성
+            tbody.innerHTML = assets.map(asset => `
+                <tr data-asset-type="${asset.type}" data-asset-id="${asset.id}" data-status="${asset.status}" data-maintenance="${asset.maintenance}">
+                    <td>${asset.type === 'drone' ? '🚁 드론' : '🧪 약제'}</td>
+                    <td>
+                        <strong>${escapeHTML(asset.name)}</strong>
+                        <small>${escapeHTML(asset.subText)}</small>
+                    </td>
+                    <td><span class="asset-pilot-badge ${asset.status}">${asset.statusText}</span></td>
+                    <td>${escapeHTML(asset.recentDate || '기록 확인 필요')}</td>
+                    <td>
+                        <button type="button" class="asset-pilot-detail-button">상세보기</button>
+                    </td>
+                </tr>
+            `).join("");
+
+            // 행이 동적으로 생성되었으므로 rows 갱신
+            rows = Array.from(tbody.querySelectorAll("tr"));
+            updateSummary();
+            selectTab("all");
+        } catch (error) {
+            console.error("자산 데이터 로딩 실패:", error);
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px; color:#666;">자산 데이터를 불러오지 못했습니다.</td></tr>`;
+        }
+    }
 
     document.getElementById("pilot-asset-detail-card").hidden = true;
-
-    selectTab("all");
+    loadPilotAssets();
 })();
