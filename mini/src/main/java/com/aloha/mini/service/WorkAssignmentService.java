@@ -85,4 +85,27 @@ public AssignmentFormResponse getAssignmentFormData(Long teamNo) {
             .lands(landInfos)
             .build();
 }
+
+// 작업 중단 시 농지 상태 초기화
+@Transactional
+public void resetLandStatus(Long landNo) {
+    Lands land = landRepository.findByNoWithPessimisticLock(landNo)
+            .orElseThrow(() ->
+                    new IllegalArgumentException(
+                            "해당 농지를 찾을 수 없습니다: " + landNo
+                    )
+            );
+
+    String status = land.getStatus();
+
+    if (!"ASSIGNED".equals(status) && !"IN_PROGRESS".equals(status)) {
+        throw new IllegalStateException(
+                "배정되었거나 작업 중인 농지만 초기화할 수 있습니다."
+        );
+    }
+
+    // lands 테이블의 농지 상태만 READY로 변경
+    // 작업 배정 상태는 변경하지 않음
+    land.updateStatus("READY");
+}
 }

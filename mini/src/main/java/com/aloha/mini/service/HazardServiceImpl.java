@@ -16,6 +16,7 @@ import com.aloha.mini.dto.HazardUpdateRequest;
 import com.aloha.mini.repository.HazardCommentRepository;
 import com.aloha.mini.repository.HazardImageRepository;
 import com.aloha.mini.repository.HazardReportRepository;
+import com.aloha.mini.repository.RegionRepository;
 
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
@@ -36,7 +37,6 @@ public class HazardServiceImpl implements HazardService {
     public HazardResponse create(HazardCreateRequest request, Long userNo) {
 
         Users user = entityManager.find(Users.class, userNo);
-
         if (user == null) {
             throw new ResponseStatusException(
                     HttpStatus.NOT_FOUND, "작성자를 찾을 수 없습니다.");
@@ -53,12 +53,18 @@ public class HazardServiceImpl implements HazardService {
         hazardReport.setStatus("ACTIVE");
 
         if (request.getRegionNo() != null) {
+
             Regions region = entityManager.find(
                     Regions.class, request.getRegionNo());
 
             if (region == null) {
                 throw new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "지역을 찾을 수 없습니다.");
+            }
+
+            // 무결성 검증 추가: 폐지되거나 비활성화된 지역인지 확인
+            if (!region.getIsActive()) {
+                throw new IllegalStateException("현재 유효하지 않은 행정구역에는 등록할 수 없습니다.");
             }
 
             hazardReport.setRegion(region);
@@ -91,13 +97,12 @@ public class HazardServiceImpl implements HazardService {
 
     // 지역별 위험 게시글 목록 조회
     @Override
-    public List<HazardResponse> findByRegion(Long regionNo) {
-
-        return hazardReportRepository
-                .findByRegion_NoOrderByCreatedAtDesc(regionNo)
-                .stream()
-                .map(this::toResponse)
-                .toList();
+    public List<HazardResponse> findByRegion(String regionCode) {
+    List<HazardReports> reports = hazardReportRepository.findByRegion_RegionCode(regionCode);
+    
+    return reports.stream()
+            .map(this::toResponse) // 기존에 작성하신 DTO 변환 메서드
+            .toList();
     }
 
     // 위험 게시글 수정
@@ -117,19 +122,15 @@ public class HazardServiceImpl implements HazardService {
         if (request.getTitle() != null) {
             hazardReport.setTitle(request.getTitle());
         }
-
         if (request.getContent() != null) {
             hazardReport.setContent(request.getContent());
         }
-
         if (request.getHazardType() != null) {
             hazardReport.setHazardType(request.getHazardType());
         }
-
         if (request.getLatitude() != null) {
             hazardReport.setLatitude(request.getLatitude());
         }
-
         if (request.getLongitude() != null) {
             hazardReport.setLongitude(request.getLongitude());
         }
@@ -143,7 +144,6 @@ public class HazardServiceImpl implements HazardService {
                 throw new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "지역을 찾을 수 없습니다.");
             }
-
             hazardReport.setRegion(region);
         }
 
