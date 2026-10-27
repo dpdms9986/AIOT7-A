@@ -22,6 +22,7 @@ import com.aloha.mini.dto.HazardUpdateRequest;
 import com.aloha.mini.service.HazardService;
 
 import lombok.RequiredArgsConstructor;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/hazards")
@@ -33,7 +34,7 @@ public class HazardController {
     // 위험 게시글 등록
     @PostMapping
     public ResponseEntity<HazardResponse> create(
-            @RequestBody HazardCreateRequest request,
+            @Valid @RequestBody HazardCreateRequest request,
             @AuthenticationPrincipal CustomUser customUser) {
 
         Long userNo = customUser.getUser().getNo();
@@ -60,7 +61,7 @@ public class HazardController {
     // 지역별 위험 게시글 조회
     @GetMapping("/region/{regionNo}")
     public ResponseEntity<List<HazardResponse>> findByRegion(
-            @PathVariable("no") Long regionNo) {
+            @PathVariable("regionNo") Long regionNo) {
 
         return ResponseEntity.ok(hazardService.findByRegion(regionNo));
     }
@@ -69,7 +70,7 @@ public class HazardController {
     @PutMapping("/{no}")
     public ResponseEntity<HazardResponse> update(
             @PathVariable("no") Long no,
-            @RequestBody HazardUpdateRequest request,
+            @Valid @RequestBody HazardUpdateRequest request,
             @AuthenticationPrincipal CustomUser customUser) {
 
         Long userNo = customUser.getUser().getNo();

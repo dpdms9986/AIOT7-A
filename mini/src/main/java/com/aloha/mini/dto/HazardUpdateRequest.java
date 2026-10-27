@@ -3,6 +3,7 @@ package com.aloha.mini.dto;
 
 import lombok.Getter;
 import lombok.Setter;
+import jakarta.validation.constraints.Pattern;
 
 @Getter
 @Setter
@@ -15,6 +16,8 @@ public class HazardUpdateRequest {
     private String content;
 
     // 위험 요소 유형
+    // 위험도: 고위험, 중위험, 저위험 중 선택
+    @Pattern(regexp = "고위험|중위험|저위험")
     private String hazardType;
 
     // 위험 요소 위치

@@ -3,13 +3,10 @@ package com.aloha.mini.service;
 
 import java.util.List;
 
-import org.springframework.stereotype.Service;
-
 import com.aloha.mini.dto.HazardCreateRequest;
 import com.aloha.mini.dto.HazardResponse;
 import com.aloha.mini.dto.HazardUpdateRequest;
 
-@Service 
 public interface HazardService {
 
     // 위험 게시글 등록
