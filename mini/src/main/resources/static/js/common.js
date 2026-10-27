@@ -25,7 +25,7 @@ const ROLE_NAME = { ADMIN: "관리자", LEADER: "방제단장", PILOT: "조종�
 // 권한별 메뉴 (GNB_004) - <nav id="gnb-menu"></nav> 가 있는 화면에서 자동으로 그림
 const MENUS = {
   LEADER: [
-    ["#", "관제 대시보드", "🏠"],
+    ["control-dashboard.html", "관제 대시보드", "🏠"],
     ["task-assignment.html", "작업 배정", "📋"],
     ["farmlist.html", "농지 관리", "🌱"],
     ["team-management.html", "방제단 관리", "👥"],
@@ -35,7 +35,7 @@ const MENUS = {
   ],
   PILOT: [
     ["pilot-dashboard.html", "내 할당 필지", "📍"],
-    ["#", "작업 이력", "🕘"],
+    ["control-dashboard.html", "작업 이력", "🕘"],
     ["team-management.html", "방제단 관리", "👥"],
     ["assetlist-pilot.html", "드론 · 자산", "🚁"],
     ["statistics.html", "통계/리포트", "📊"],
