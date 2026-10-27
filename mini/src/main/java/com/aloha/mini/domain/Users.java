@@ -32,7 +32,7 @@ public class Users {
     private String username; // 사용자 실명
 
     @Column(nullable = false, length = 20)
-    private String role; // ADMIN /LEADER / PILOT 
+    private String role; // ADMIN / LEADER / PILOT 
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "team_id")

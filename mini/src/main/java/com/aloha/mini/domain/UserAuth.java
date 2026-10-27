@@ -34,7 +34,7 @@ public class UserAuth {
   private Users user;
 
   @Column(nullable = false, length = 100)
-   // ⭐ 회원 권한 : ROLE_PILOT, ROLE_ADMIN, RILE_LEADER 등
+   // ⭐ 회원 권한 : ROLE_PILOT, ROLE_ADMIN, ROLE_LEADER 등
   private String auth;           
   
 }

@@ -10,7 +10,7 @@ public class UserResponse {
     private Long userNo;       // users.no
     private String userId;     // 이메일
     private String userName;   // 실명
-    private String role;       // ADMIN / PILOT
+    private String role;       // LEADER / PILOT
     private Long teamNo;       // 소속 방제단 번호
     private String teamName;   // 소속 방제단 명칭
     private String inviteCode; // 방제단 초대코드 (단장인 경우 표시용)

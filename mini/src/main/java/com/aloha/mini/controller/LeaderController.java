@@ -17,7 +17,7 @@ import com.aloha.mini.dto.AssignRequest;
 import com.aloha.mini.dto.AssignmentFormResponse;
 import com.aloha.mini.dto.DashboardResponse;
 import com.aloha.mini.dto.UserResponse;
-import com.aloha.mini.service.AdminService;
+import com.aloha.mini.service.LeaderService;
 import com.aloha.mini.service.WorkAssignmentService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,7 +29,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class LeaderController {
 
-    private final AdminService adminService;
+    private final LeaderService adminService;
     private final WorkAssignmentService workAssignmentService;
 
 
@@ -53,7 +53,7 @@ public class LeaderController {
         
         // 2) 단장(LEADER) 권한 확인
         UserResponse loginUser = (UserResponse) session.getAttribute("LOGIN_USER");
-        if (!"LEARDER".equals(loginUser.getRole())) {
+        if (!"LEADER".equals(loginUser.getRole())) {
             return ResponseEntity.status(403).body("단장(LEADER) 권한이 필요합니다.");
         }
 

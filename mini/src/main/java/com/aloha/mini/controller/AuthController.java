@@ -1,5 +1,7 @@
 package com.aloha.mini.controller;
 
+import java.util.Map;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -21,11 +23,12 @@ import com.aloha.mini.dto.UserResponse;
 import com.aloha.mini.service.AuthService;
 import com.aloha.mini.service.CustomUserDetailsService;
 
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import java.util.Map;
 
 @RestController
 @Slf4j 
@@ -56,13 +59,30 @@ public class AuthController {
     // 3. 로그인 및 세션 생성 (USER_008, USER_009)
     // POST /api/auth/login
     @PostMapping("/login")
-    public ResponseEntity<UserResponse> login(@RequestBody LoginRequest req, HttpServletRequest request) {
+    public ResponseEntity<UserResponse> login(
+        @RequestBody LoginRequest req, 
+        HttpServletRequest request,
+        HttpServletResponse httpResponse
+    ) {
 
         // request.getSession(true) : 기존 세션이 있으면 반환, 없으면 새로 생성
         HttpSession session = request.getSession(true);
         UserResponse response = authService.login(req, session);
 
-        // 👇 [여기서부터 추가되는 세션 유지 코드] 👇
+        // 자동 로그인이 체크된 경우: 세션 및 브라우저 쿠키를 7일간 유지
+    if (req.isRememberMe()) {
+        int maxAge = 60 * 60 * 24 * 14; // 14일 (초 단위)
+        session.setMaxInactiveInterval(maxAge);
+
+        // 브라우저를 닫았다 열어도 세션이 풀리지 않도록 JSESSIONID 쿠키에 만료 시간 부여
+        Cookie sessionCookie = new Cookie("JSESSIONID", session.getId());
+        sessionCookie.setPath("/");
+        sessionCookie.setHttpOnly(true);
+        sessionCookie.setMaxAge(maxAge);
+        httpResponse.addCookie(sessionCookie);
+    }
+    
+        // 👇 [여기서부터 세션 유지 코드] 👇
         // 3. DB에서 유저 정보와 권한(ROLE_PILOT 등)을 시큐리티 규격(UserDetails)으로 불러옴
         UserDetails userDetails = customUserDetailsService.loadUserByUsername(req.getUserId());
 
@@ -78,7 +98,6 @@ public class AuthController {
 
         // 6. 서버 세션(HttpSession)에 장부를 저장 (이 줄이 있어야 다음 요청에서도 로그인 상태가 유지됨)
         session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, securityContext);
-        // 👆 [여기까지 추가] 👆
 
         return ResponseEntity.ok(response);
     }
