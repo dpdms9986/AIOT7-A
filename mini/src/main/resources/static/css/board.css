@@ -240,87 +240,25 @@ body:has(#hazard-tbody) #write-hazard:hover {
 }
 
 /* 검색 필터 카드 */
-.hazard-filter-card {
-    margin-bottom: var(--card-gap);
-    padding: 16px;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-card);
-    background: var(--color-card);
-    box-shadow: var(--shadow-card);
-}
 
-.hazard-filter {
-    display: grid;
-    grid-template-columns: 145px 145px minmax(180px, 1fr) auto;
-    align-items: end;
-    gap: 12px;
-}
 
-.hazard-filter .filter-group {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    gap: 8px;
-    min-width: 0;
-}
 
-.hazard-filter .filter-group label {
-    font-size: 12px;
-    font-weight: 600;
-    line-height: 1.4;
-}
 
-.hazard-filter select,
-.hazard-filter input {
-    display: block;
-    width: 100%;
-    min-width: 0;
-    height: var(--input-height);
-    margin: 0;
-    padding: 0 12px;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm);
-    background: var(--color-card);
-    color: var(--color-text);
-    font: inherit;
-}
 
-.hazard-filter select:focus,
-.hazard-filter input:focus {
-    border-color: var(--color-primary);
-    outline: 2px solid var(--color-primary-light);
-}
 
-.filter-actions {
-    display: flex;
-    gap: 8px;
-}
 
-body:has(#hazard-tbody) .filter-actions .button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: var(--input-height);
-    margin: 0;
-    padding: 0 16px;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm);
-    background: var(--color-card);
-    color: var(--color-text);
-    font: inherit;
-    white-space: nowrap;
-    cursor: pointer;
-}
 
-body:has(#hazard-tbody) .filter-actions .primary-button {
-    border-color: var(--color-primary);
-    background: var(--color-primary);
-    color: #fff;
-}
 
-body:has(#hazard-tbody) .filter-actions .button:hover {
-    border-color: var(--color-primary);
-}
+
+
+
+
+
+
+
+
+
+
 
 /* 위험 목록 표 카드 */
 .hazard-table-card {
@@ -458,13 +396,9 @@ body:has(#hazard-tbody) .filter-actions .button:hover {
         overflow-x: auto;
     }
 
-    .hazard-filter {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
+    
 
-    .filter-actions {
-        grid-column: 1 / -1;
-    }
+    
 }
 
 @media (max-width: 700px) {
@@ -498,13 +432,9 @@ body:has(#hazard-tbody) .filter-actions .button:hover {
         flex-direction: column;
     }
 
-    .hazard-filter {
-        grid-template-columns: minmax(0, 1fr);
-    }
+    
 
-    .filter-actions {
-        grid-column: auto;
-    }
+    
 }
 
 /* 위험 목록: 상단 헤더 */
@@ -1855,6 +1785,1160 @@ body:has(.hazard-detail-page) .hazard-detail-content {
 }
 
 
+/* ========================================
+   위험 요소 게시판 통합 스타일
+   파일: board.css
+======================================== */
+
+/* 위험 목록 / 통합 게시판 */
+.hazard-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.hazard-toolbar-title {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.hazard-toolbar-title h2 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.hazard-toolbar-title > span,
+.hazard-table-card .table-heading > span {
+    color: var(--color-text-sub);
+    font-size: 13px;
+}
+
+.hazard-toolbar-title strong,
+.hazard-table-card .table-heading strong {
+    color: var(--color-primary);
+}
+
+
+
+
+
+
+/* ===== 검색 필터 통합 ===== */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* 검색 / 초기화 버튼 */
+
+
+
+
+
+
+
+
+/* 중간 화면 */
+@media (max-width: 1200px) {
+    
+
+    
+}
+
+/* 모바일 */
+@media (max-width: 700px) {
+    
+
+    
+
+    
+}
+
+
+/* 위험 / 공지 통합 목록 테이블 */
+.hazard-table-card {
+    overflow: hidden;
+}
+
+.hazard-table-card .table-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 18px 20px;
+}
+
+.hazard-table-card .table-heading h2 {
+    margin: 0;
+    font-size: 17px;
+}
+
+.hazard-table-card .table-scroll {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.hazard-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--color-card);
+    white-space: nowrap;
+}
+
+.hazard-table th,
+.hazard-table td {
+    padding: 13px 15px;
+    border-bottom: 1px solid var(--color-border);
+    text-align: left;
+    vertical-align: middle;
+    line-height: 1.5;
+}
+
+.hazard-table th {
+    background: #f1f5f9;
+    color: var(--color-text-sub);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.hazard-table td {
+    font-size: 13px;
+}
+
+.hazard-table tbody tr {
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.hazard-table tbody tr:hover {
+    background: #f4faf6;
+}
+
+.hazard-table tbody tr:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: -2px;
+}
+
+.hazard-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+/* 공지 행 강조 */
+.hazard-table tbody tr[data-category="notice"] {
+    background: #fff8f8;
+}
+
+.hazard-table tbody tr[data-category="notice"]:hover {
+    background: #fff0f0;
+}
+
+/* 위험도 표시 */
+.hazard-severity {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 58px;
+    padding: 5px 9px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.hazard-severity.high {
+    background: #fdebec;
+    color: #d92d3a;
+}
+
+.hazard-severity.medium {
+    background: #fff3d9;
+    color: #9a6700;
+}
+
+.hazard-severity.low {
+    background: #e6f6ee;
+    color: #168451;
+}
+
+/* 공지 유형 표시 */
+.notice-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 48px;
+    padding: 5px 9px;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.notice-badge.urgent {
+    background: #fde8e8;
+    color: #d92d3a;
+}
+
+.notice-badge.general {
+    background: #e8eef5;
+    color: #475569;
+}
+
+.hazard-empty {
+    padding: 24px;
+    color: var(--color-text-sub);
+    text-align: center;
+}
+
+.hazard-table-help {
+    margin: 14px 20px 16px;
+    color: var(--color-text-sub);
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+/* 위험 상세 화면 */
+body.hazard-detail-page {
+    background: var(--color-bg);
+    color: var(--color-text);
+}
+
+.hazard-detail-page {
+    min-width: 0;
+}
+
+.hazard-detail-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 16px;
+}
+
+.hazard-detail-card,
+.hazard-comment-card {
+    padding: 22px;
+}
+
+.hazard-detail-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.hazard-detail-title-group {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    min-width: 0;
+}
+
+.hazard-detail-title-group h2 {
+    margin: 0;
+    font-size: 21px;
+    line-height: 1.5;
+}
+
+.hazard-detail-type {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 10px;
+    border-radius: 6px;
+    background: var(--color-primary-light);
+    color: var(--color-primary);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.hazard-detail-actions {
+    display: flex;
+    flex-shrink: 0;
+    gap: 8px;
+    margin-left: auto;
+}
+
+.hazard-detail-actions button {
+    padding: 7px 13px;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.hazard-edit-button {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.hazard-delete-button {
+    border-color: #ef4444 !important;
+    background: #ef4444;
+    color: #fff;
+}
+
+.hazard-detail-meta {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.hazard-detail-meta div {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+.hazard-detail-meta span {
+    color: var(--color-text-sub);
+    font-size: 12px;
+}
+
+.hazard-detail-meta strong {
+    overflow-wrap: anywhere;
+    font-size: 14px;
+}
+
+.hazard-detail-content {
+    padding-top: 20px;
+}
+
+.hazard-detail-content h3 {
+    margin: 0 0 12px;
+    font-size: 15px;
+}
+
+.hazard-detail-content p {
+    margin: 0;
+    color: var(--color-text-sub);
+    font-size: 14px;
+    line-height: 1.8;
+    white-space: pre-line;
+}
+
+/* 댓글 및 현장 의견 */
+.hazard-comment-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.hazard-comment-heading h2 {
+    margin: 0;
+    font-size: 17px;
+}
+
+.hazard-comment-heading h2 span {
+    margin-left: 5px;
+    color: var(--color-primary);
+    font-size: 13px;
+}
+
+.hazard-comment-heading > span {
+    color: var(--color-text-sub);
+    font-size: 13px;
+}
+
+.hazard-comment-form {
+    display: block;
+    width: 100%;
+}
+
+.hazard-comment-input-wrap {
+    width: 100%;
+    min-width: 0;
+}
+
+.hazard-comment-form label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.hazard-comment-form textarea {
+    box-sizing: border-box;
+    display: block;
+    width: 100%;
+    min-height: 90px;
+    padding: 12px;
+    border: 1px solid var(--color-border);
+    border-radius: 7px;
+    background: #fff;
+    color: var(--color-text);
+    font: inherit;
+    font-size: 13px;
+    resize: vertical;
+}
+
+.hazard-comment-form textarea:focus {
+    border-color: var(--color-primary);
+    outline: 2px solid var(--color-primary-light);
+}
+
+.hazard-comment-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.hazard-comment-preview:empty {
+    display: none;
+}
+
+.hazard-comment-preview-item {
+    position: relative;
+    width: 100px;
+    max-width: 100%;
+}
+
+.hazard-comment-preview-item img {
+    display: block;
+    width: 100%;
+    height: 80px;
+    border-radius: 6px;
+    object-fit: cover;
+}
+
+.hazard-comment-preview-item button {
+    width: 100%;
+    margin-top: 4px;
+    cursor: pointer;
+}
+
+.hazard-comment-form-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.hazard-image-button {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    margin: 0 !important;
+    padding: 9px 13px;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px !important;
+}
+
+.hazard-image-button:hover {
+    border-color: var(--color-primary);
+    background: var(--color-primary-light);
+}
+
+#hazard-image-count {
+    margin-right: auto;
+    color: var(--color-text-sub);
+    font-size: 12px;
+}
+
+.hazard-comment-form .primary-button {
+    min-height: 38px;
+    padding: 0 18px;
+    border: 0;
+    border-radius: 7px;
+    background: var(--color-primary);
+    color: #fff;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.hazard-comment-list {
+    width: 100%;
+    min-width: 0;
+    margin-top: 20px;
+    border-top: 1px solid var(--color-border);
+}
+
+.hazard-comment-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px 4px;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.hazard-comment-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 40px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #e9eff5;
+    font-size: 20px;
+}
+
+.hazard-comment-body {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+.hazard-comment-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.hazard-comment-meta strong {
+    font-size: 13px;
+}
+
+.hazard-comment-role,
+.hazard-comment-date {
+    color: var(--color-text-sub);
+    font-size: 11px;
+}
+
+.hazard-comment-text {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+}
+
+.hazard-comment-item img {
+    max-width: 220px;
+    max-height: 160px;
+    margin-top: 10px;
+    border-radius: 7px;
+    object-fit: contain;
+}
+
+.hazard-comment-actions {
+    display: flex;
+    flex-shrink: 0;
+    gap: 6px;
+}
+
+.hazard-comment-actions button,
+.hazard-comment-delete {
+    padding: 5px 9px;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    background: #fff;
+    font-size: 11px;
+    cursor: pointer;
+}
+
+.hazard-comment-delete {
+    color: #c9363e;
+}
+
+.hazard-comment-empty {
+    margin: 0;
+    padding: 24px 0;
+    color: var(--color-text-sub);
+    font-size: 13px;
+    text-align: center;
+}
+
+/* 현장 이미지 */
+.hazard-image-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+    margin-top: 14px;
+}
+
+.hazard-image-item {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 4 / 3;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+}
+
+.hazard-image-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.hazard-image-remove {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    padding: 5px 8px;
+    border: 0;
+    border-radius: 5px;
+    background: rgba(31, 41, 55, 0.85);
+    color: #fff;
+    cursor: pointer;
+}
+
+/* 반응형 */
+@media (max-width: 1000px) {
+    
+
+    
+}
+
+@media (max-width: 700px) {
+    .hazard-toolbar {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    
+
+    
+
+    .hazard-detail-card,
+    .hazard-comment-card {
+        padding: 16px;
+    }
+
+    .hazard-detail-heading {
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .hazard-detail-actions {
+        margin-left: 0;
+    }
+
+    .hazard-detail-meta {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 16px;
+    }
+
+    .hazard-comment-item {
+        flex-wrap: wrap;
+    }
+
+    .hazard-comment-actions {
+        margin-left: 48px;
+    }
+
+    .hazard-comment-form-footer {
+        justify-content: flex-start;
+    }
+
+    #hazard-image-count {
+        margin-right: 0;
+    }
+}
+
+/* =========================================
+   위험요소 통합 게시판 보강
+   HTML 구조 유지 / board.css 하단에 추가
+========================================= */
+
+.hazard-board-page {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    padding: 24px 28px 32px;
+    color: #203653;
+}
+
+.hazard-board-page *,
+.hazard-board-page *::before,
+.hazard-board-page *::after {
+    box-sizing: border-box;
+}
+
+/* 페이지 제목 */
+.hazard-board-page > .page-heading {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 0 0 22px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+}
+
+.hazard-board-page .page-heading-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 60px;
+    width: 60px;
+    height: 60px;
+    border-radius: 14px;
+    background: #e1f5eb;
+    font-size: 30px;
+}
+
+.hazard-board-page .page-heading h1 {
+    margin: 0 0 7px;
+    color: #102d55;
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1.3;
+}
+
+.hazard-board-page .page-heading p {
+    margin: 0;
+    color: #71829a;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.hazard-board-heading-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.hazard-board-heading-actions .button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    padding: 0 17px;
+    border: 1px solid #d5e1ed;
+    border-radius: 8px;
+    background: #fff;
+    color: #17375c;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.hazard-board-heading-actions .primary-button {
+    border-color: #168b59;
+    background: #168b59;
+    color: #fff;
+}
+
+.hazard-board-heading-actions .button:hover {
+    filter: brightness(.97);
+}
+
+/* 검색 및 필터 카드 */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* 게시글 목록 카드 */
+.hazard-board-page .hazard-table-card {
+    overflow: hidden;
+    margin: 0 0 18px;
+    padding: 0;
+    border: 1px solid #dfe8f1;
+    border-radius: 12px;
+    background: #fff;
+    box-shadow: 0 2px 8px rgb(30 58 90 / 3%);
+}
+
+.hazard-board-page .table-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 20px 22px;
+    border-bottom: 1px solid #e8eef5;
+    background: #fff;
+}
+
+.hazard-board-page .table-heading h2 {
+    margin: 0 0 5px;
+    color: #17345b;
+    font-size: 21px;
+    font-weight: 800;
+}
+
+.hazard-board-page .table-heading p {
+    margin: 0;
+    color: #8190a5;
+    font-size: 12px;
+}
+
+.hazard-board-page .table-heading > span {
+    flex-shrink: 0;
+    color: #71829a;
+    font-size: 13px;
+}
+
+.hazard-board-page .table-heading strong {
+    color: #168b59;
+    font-weight: 800;
+}
+
+/* 표 */
+.hazard-board-page .table-scroll {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.hazard-board-page .hazard-table {
+    width: 100%;
+    min-width: 900px;
+    margin: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+    table-layout: auto;
+    color: #243c5b;
+    font-size: 13px;
+}
+
+.hazard-board-page .hazard-table thead th {
+    height: 44px;
+    padding: 12px 14px;
+    border-bottom: 1px solid #e1e9f2;
+    background: #f1f5f9;
+    color: #4e6481;
+    font-size: 12px;
+    font-weight: 700;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.hazard-board-page .hazard-table tbody td {
+    height: 58px;
+    padding: 10px 14px;
+    border-bottom: 1px solid #e9eff5;
+    background: #fff;
+    vertical-align: middle;
+}
+
+.hazard-board-page .hazard-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+/* 공지 행은 옅은 붉은색으로 구분 */
+.hazard-board-page .hazard-table tbody tr.hazard-notice-row td {
+    background: #fff7f7;
+}
+
+.hazard-board-page .hazard-table tbody tr:hover td {
+    background: #f2faf6;
+}
+
+.hazard-board-page .hazard-table tbody tr.hazard-notice-row:hover td {
+    background: #fff0f0;
+}
+
+.hazard-board-page .hazard-table tbody tr[tabindex="0"] {
+    cursor: pointer;
+}
+
+.hazard-board-page .hazard-table tbody tr:focus-visible td {
+    outline: 2px solid #219568;
+    outline-offset: -2px;
+}
+
+.hazard-board-page .hazard-table td strong {
+    display: block;
+    margin-bottom: 4px;
+    color: #19385e;
+    font-size: 13px;
+    font-weight: 750;
+    line-height: 1.45;
+}
+
+.hazard-board-page .hazard-table td small {
+    display: block;
+    color: #7a8ca5;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+.hazard-board-page .hazard-table td:nth-child(2) {
+    min-width: 240px;
+}
+
+.hazard-board-page .hazard-table td:nth-child(3),
+.hazard-board-page .hazard-table td:nth-child(4),
+.hazard-board-page .hazard-table td:nth-child(5) {
+    white-space: nowrap;
+}
+
+/* 공지 / 위험 배지 */
+.hazard-board-page .notice-badge,
+.hazard-board-page .hazard-type-badge,
+.hazard-board-page .hazard-severity {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 54px;
+    min-height: 28px;
+    padding: 5px 10px;
+    border: 0;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1.3;
+    white-space: nowrap;
+}
+
+.hazard-board-page .notice-badge.urgent {
+    background: #ffe4e6;
+    color: #dc3545;
+}
+
+.hazard-board-page .notice-badge.general {
+    background: #e7edf5;
+    color: #526780;
+}
+
+.hazard-board-page .hazard-type-badge {
+    background: #e2f6ed;
+    color: #168b59;
+}
+
+.hazard-board-page .hazard-severity.high {
+    background: #ffe5e5;
+    color: #df3434;
+}
+
+.hazard-board-page .hazard-severity.medium {
+    background: #fff0d8;
+    color: #b87509;
+}
+
+.hazard-board-page .hazard-severity.low {
+    background: #e0f6eb;
+    color: #138754;
+}
+
+/* 상세보기 버튼 */
+.hazard-board-page .hazard-detail-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 72px;
+    min-height: 32px;
+    padding: 5px 10px;
+    border: 1px solid #d5e1ee;
+    border-radius: 6px;
+    background: #fff;
+    color: #244365;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.hazard-board-page .hazard-detail-button:hover {
+    border-color: #168b59;
+    color: #168b59;
+}
+
+/* 검색 결과 없음 / 안내 문구 */
+.hazard-board-page .hazard-empty {
+    margin: 0;
+    padding: 28px 16px;
+    color: #8796aa;
+    font-size: 13px;
+    text-align: center;
+}
+
+.hazard-board-page .hazard-table-help {
+    margin: 0;
+    padding: 12px 20px 16px;
+    color: #8493a7;
+    font-size: 12px;
+}
+
+/* 페이지네이션 */
+.hazard-board-page .notice-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 18px 12px 20px;
+    border-top: 1px solid #edf1f6;
+    background: #fff;
+}
+
+.hazard-board-page .notice-pagination button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 10px;
+    border: 1px solid #dce5ef;
+    border-radius: 7px;
+    background: #fff;
+    color: #35506e;
+    font-family: inherit;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.hazard-board-page .notice-pagination button.active {
+    border-color: #168b59;
+    background: #168b59;
+    color: #fff;
+}
+
+.hazard-board-page .notice-pagination button:disabled {
+    color: #aab6c5;
+    cursor: not-allowed;
+}
+
+/* 하단 위험도 안내 */
+.hazard-board-page .hazard-legend-card {
+    display: grid;
+    grid-template-columns: minmax(190px, 1.3fr) repeat(4, minmax(130px, 1fr));
+    align-items: center;
+    gap: 18px;
+    margin: 0;
+    padding: 20px;
+    border: 1px solid #dfe8f1;
+    border-radius: 12px;
+    background: #fff;
+}
+
+.hazard-board-page .hazard-legend-card > div:first-child h2 {
+    margin: 0 0 7px;
+    color: #17345b;
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.hazard-board-page .hazard-legend-card > div:first-child p {
+    margin: 0;
+    color: #7c8da4;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.hazard-board-page .hazard-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-width: 0;
+}
+
+.hazard-board-page .hazard-legend-item > span:last-child {
+    color: #61758e;
+    font-size: 11px;
+    line-height: 1.6;
+}
+
+/* 반응형 */
+@media (max-width: 1200px) {
+    .hazard-board-page {
+        padding: 20px;
+    }
+
+    
+
+    
+
+    .hazard-board-page .hazard-legend-card {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .hazard-board-page .hazard-legend-card > div:first-child {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 700px) {
+    .hazard-board-page {
+        padding: 14px;
+    }
+
+    .hazard-board-page > .page-heading {
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .hazard-board-page .page-heading-icon {
+        flex-basis: 46px;
+        width: 46px;
+        height: 46px;
+        font-size: 24px;
+    }
+
+    .hazard-board-page .page-heading h1 {
+        font-size: 22px;
+    }
+
+    .hazard-board-heading-actions {
+        width: 100%;
+        margin-left: 0;
+    }
+
+    .hazard-board-heading-actions .button {
+        flex: 1;
+        padding: 0 8px;
+        font-size: 12px;
+    }
+
+    
+
+    
+
+    
+
+    .hazard-board-page .table-heading {
+        padding: 16px;
+    }
+
+    .hazard-board-page .table-heading h2 {
+        font-size: 18px;
+    }
+
+    .hazard-board-page .hazard-legend-card {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 14px;
+    }
+
+    .hazard-board-page .hazard-legend-card > div:first-child {
+        grid-column: auto;
+    }
+}
 
 
 /* ===== 공지사항 목록 ===== */
@@ -2790,3 +3874,145 @@ body.sidebar-collapsed:has(#sidebar-toggle) .sidebar-notice {
     margin: 0;
     font-size: 18px;
 }
+
+
+/* ===== 위험요소 게시판 검색 필터: 중복 규칙 통합본 ===== */
+.hazard-board-page .hazard-filter-card {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    margin: 0 0 18px;
+    padding: 18px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    background: var(--color-card);
+    box-shadow: var(--shadow-card);
+}
+
+.hazard-board-page .hazard-filter {
+    display: grid;
+    grid-template-columns:
+        minmax(105px, 0.85fr)
+        minmax(130px, 1fr)
+        minmax(125px, 0.95fr)
+        minmax(120px, 0.9fr)
+        minmax(180px, 1.35fr)
+        auto;
+    align-items: end;
+    gap: 10px;
+    width: 100%;
+    margin: 0;
+}
+
+.hazard-board-page .hazard-filter .filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    min-width: 0;
+}
+
+.hazard-board-page .hazard-filter .filter-group label {
+    color: var(--color-text);
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.4;
+}
+
+.hazard-board-page .hazard-filter .filter-group select,
+.hazard-board-page .hazard-filter .filter-group input {
+    box-sizing: border-box;
+    display: block;
+    width: 100%;
+    min-width: 0;
+    height: var(--input-height);
+    margin: 0;
+    padding: 0 12px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-card);
+    color: var(--color-text);
+    font: inherit;
+    font-size: 13px;
+}
+
+.hazard-board-page .hazard-filter .filter-group select:focus,
+.hazard-board-page .hazard-filter .filter-group input:focus {
+    border-color: var(--color-primary);
+    outline: 2px solid var(--color-primary-light);
+    outline-offset: 1px;
+}
+
+.hazard-board-page .hazard-filter .filter-actions {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    min-width: max-content;
+}
+
+.hazard-board-page .hazard-filter .filter-actions .button {
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 68px;
+    min-height: var(--input-height);
+    margin: 0;
+    padding: 0 14px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-card);
+    color: var(--color-text);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.hazard-board-page .hazard-filter .filter-actions .primary-button {
+    border-color: var(--color-primary);
+    background: var(--color-primary);
+    color: #fff;
+}
+
+.hazard-board-page .hazard-filter .filter-actions .button:hover {
+    border-color: var(--color-primary);
+}
+
+@media (max-width: 1250px) {
+    .hazard-board-page .hazard-filter {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .hazard-board-page .hazard-filter .filter-actions {
+        grid-column: 1 / -1;
+        justify-content: flex-end;
+    }
+}
+
+@media (max-width: 800px) {
+    .hazard-board-page .hazard-filter {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .hazard-board-page .hazard-filter .filter-actions {
+        grid-column: 1 / -1;
+        justify-content: flex-start;
+    }
+}
+
+@media (max-width: 520px) {
+    .hazard-board-page .hazard-filter {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .hazard-board-page .hazard-filter .filter-actions {
+        grid-column: auto;
+        width: 100%;
+    }
+
+    .hazard-board-page .hazard-filter .filter-actions .button {
+        flex: 1;
+    }
+}
+
