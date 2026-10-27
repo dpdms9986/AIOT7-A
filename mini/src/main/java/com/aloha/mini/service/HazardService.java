@@ -1,4 +1,3 @@
-
 package com.aloha.mini.service;
 
 import java.util.List;
