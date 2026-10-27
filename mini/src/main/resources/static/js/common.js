@@ -29,16 +29,13 @@ const MENUS = {
     ["task-assignment.html", "작업 배정", "📋"],
     ["farmlist.html", "농지 관리", "🌱"],
     ["team-management.html", "방제단 관리", "👥"],
-    ["assetlist-pilot.html", "드론 · 자산", "🚁"],
-    ["statistics.html", "통계/리포트", "📊"],
+    ["assetlist-leader.html", "드론 · 자산", "🚁"],
     ["hazardlist.html", "게시판", "⚠️"],
   ],
   PILOT: [
     ["pilot-dashboard.html", "내 할당 필지", "📍"],
-    ["#", "작업 이력", "🕘"],
-    ["team-management.html", "방제단 관리", "👥"],
+    ["pilot-history.html", "작업 이력", "🕘"],
     ["assetlist-pilot.html", "드론 · 자산", "🚁"],
-    ["statistics.html", "통계/리포트", "📊"],
     ["hazardlist.html", "게시판", "⚠️"],
   ],
 };
