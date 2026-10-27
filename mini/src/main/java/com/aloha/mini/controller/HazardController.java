@@ -52,7 +52,7 @@ public class HazardController {
     // 위험 게시글 상세 조회
     @GetMapping("/{no}")
     public ResponseEntity<HazardResponse> findById(
-            @PathVariable Long no) {
+            @PathVariable("no") Long no) {
 
         return ResponseEntity.ok(hazardService.findById(no));
     }
@@ -60,7 +60,7 @@ public class HazardController {
     // 지역별 위험 게시글 조회
     @GetMapping("/region/{regionNo}")
     public ResponseEntity<List<HazardResponse>> findByRegion(
-            @PathVariable Long regionNo) {
+            @PathVariable("no") Long regionNo) {
 
         return ResponseEntity.ok(hazardService.findByRegion(regionNo));
     }
@@ -68,7 +68,7 @@ public class HazardController {
     // 위험 게시글 수정
     @PutMapping("/{no}")
     public ResponseEntity<HazardResponse> update(
-            @PathVariable Long no,
+            @PathVariable("no") Long no,
             @RequestBody HazardUpdateRequest request,
             @AuthenticationPrincipal CustomUser customUser) {
 
@@ -87,7 +87,7 @@ public class HazardController {
     // 위험 게시글 삭제
     @DeleteMapping("/{no}")
     public ResponseEntity<Void> delete(
-            @PathVariable Long no,
+            @PathVariable("no") Long no,
             @AuthenticationPrincipal CustomUser customUser) {
 
         Long userNo = customUser.getUser().getNo();
