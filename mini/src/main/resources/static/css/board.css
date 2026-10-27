@@ -4016,3 +4016,88 @@ body.sidebar-collapsed:has(#sidebar-toggle) .sidebar-notice {
     }
 }
 
+/* 위험요소 게시판: 공지·위험 배지와 표 열 정렬 보정 */
+.hazard-table {
+    table-layout: auto;
+    width: 100%;
+}
+
+.hazard-table tbody tr {
+    display: table-row;
+}
+
+.hazard-table tbody td {
+    display: table-cell;
+    position: static;
+    vertical-align: middle;
+}
+
+.hazard-table .notice-badge,
+.hazard-table .hazard-type-badge,
+.hazard-table .hazard-severity {
+    position: static;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
+    white-space: nowrap;
+    transform: none;
+}
+
+/* 구분 배지와 제목을 각자 자기 열 안에 유지 */
+.hazard-table tbody td:first-child {
+    min-width: 80px;
+    white-space: nowrap;
+}
+
+.hazard-table tbody td:nth-child(2) {
+    min-width: 220px;
+    white-space: normal;
+}
+
+.hazard-table tbody td strong,
+.hazard-table tbody td small {
+    display: block;
+}
+
+/* 표 바깥으로 배지가 튀어나오는 현상 방지 */
+.hazard-table tbody td::before,
+.hazard-table tbody td::after {
+    position: static;
+}
+
+/* 게시판 표의 행과 셀 정렬 강제 복구 */
+body:has(#hazard-tbody) .hazard-table {
+    display: table;
+    width: 100%;
+    table-layout: auto;
+    border-collapse: collapse;
+}
+
+body:has(#hazard-tbody) .hazard-table thead {
+    display: table-header-group;
+}
+
+body:has(#hazard-tbody) .hazard-table tbody {
+    display: table-row-group;
+}
+
+body:has(#hazard-tbody) .hazard-table tr {
+    display: table-row;
+}
+
+body:has(#hazard-tbody) .hazard-table th,
+body:has(#hazard-tbody) .hazard-table td {
+    display: table-cell;
+    position: static;
+    vertical-align: middle;
+    transform: none;
+}
+
+body:has(#hazard-tbody) .hazard-table td .notice-badge,
+body:has(#hazard-tbody) .hazard-table td .hazard-type-badge {
+    display: inline-flex;
+    position: static;
+    vertical-align: middle;
+    transform: none;
+}
