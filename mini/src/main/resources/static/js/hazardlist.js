@@ -13,34 +13,37 @@ const hazardEmpty = document.getElementById("hazard-empty");
 
 function filterHazards() {
     const category = hazardCategory?.value || "";
-    const region = hazardRegion.value;
-    const type = hazardType.value;
+    const region = hazardRegion?.value || "";
+    const type = hazardType?.value || "";
     const severity = hazardSeverityFilter?.value || "";
-    const keyword = hazardSearch.value.trim().toLowerCase();
+    const keyword = hazardSearch?.value.trim().toLowerCase() || "";
 
     let visibleCount = 0;
 
     hazardTbody.querySelectorAll("tr[data-hazard-id]").forEach(row => {
         const rowCategory = row.dataset.category || "hazard";
+        const rowRegion = row.dataset.region || "";
+        const rowType = row.dataset.type || "";
+        const rowSeverity = row.dataset.severity || "";
 
         const matchesCategory =
             !category || rowCategory === category;
 
         const matchesRegion =
-            !region || row.dataset.region === region;
+            !region || rowRegion.trim() === region;
 
         const matchesType =
-            !type || row.dataset.type === type;
+            !type || rowType === type;
 
         const matchesSeverity =
-            !severity || row.dataset.severity === severity;
+            !severity || rowSeverity === severity;
 
         const searchableText = [
             row.dataset.title,
             row.dataset.content,
             row.dataset.writer,
-            row.dataset.region,
-            row.dataset.type
+            rowRegion,
+            rowType
         ].join(" ").toLowerCase();
 
         const matchesKeyword =
@@ -80,13 +83,27 @@ hazardSearchForm?.addEventListener("submit", event => {
 
 hazardResetButton?.addEventListener("click", () => {
     if (hazardCategory) hazardCategory.value = "";
-    hazardRegion.value = "";
-    hazardType.value = "";
+    if (hazardRegion) hazardRegion.value = "";
+    if (hazardType) hazardType.value = "";
     if (hazardSeverityFilter) hazardSeverityFilter.value = "";
-    hazardSearch.value = "";
+    if (hazardSearch) hazardSearch.value = "";
+
 
     filterHazards();
 });
+
+// 필터 변경 시 즉시 적용
+[
+    hazardCategory,
+    hazardRegion,
+    hazardType,
+    hazardSeverityFilter
+].forEach(element => {
+    element?.addEventListener("change", filterHazards);
+});
+
+// 검색어 입력 후 Enter로 검색
+hazardSearch?.addEventListener("input", filterHazards);
 
 hazardTbody?.addEventListener("click", event => {
     const button = event.target.closest("[data-detail-id]");
