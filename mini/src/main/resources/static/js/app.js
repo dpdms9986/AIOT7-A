@@ -3,13 +3,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* ===== 로그인 (login.html) ===== */
   const loginForm = document.querySelector("#login-form");
+
   if (loginForm) {
     const userIdInput = document.querySelector("#userId");
     const passwordInput = document.querySelector("#password");
     const rememberCheck = document.querySelector("#remember-id");
+    const autoLoginCheck = document.querySelector("#remember-me")
 
     // 아이디 기억하기
     const savedId = localStorage.getItem("savedUserId");
+
     if (savedId) {
       userIdInput.value = savedId;
       rememberCheck.checked = true;
@@ -26,11 +29,16 @@ document.addEventListener("DOMContentLoaded", () => {
         localStorage.removeItem("savedUserId");
       }
 
+      const isAutoLogin = autoLoginCheck ? autoLoginCheck.checked : false;
       try {
         const response = await fetch("/api/auth/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId, password }),
+          body: JSON.stringify({ 
+            userId, 
+            password, 
+            rememberMe: isAutoLogin
+          }),
         });
 
         if (response.ok) {
@@ -169,7 +177,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 역할에 따라 입력칸 보이기
     signupForm.querySelectorAll('input[name="role"]').forEach((radio) => {
       radio.addEventListener("change", () => {
-        const isLeader = radio.value === "ADMIN";
+        const isLeader = radio.value === "LEADER";
         teamField.hidden = !isLeader;
         teamInput.required = isLeader;
         inviteField.hidden = isLeader;
@@ -177,6 +185,15 @@ document.addEventListener("DOMContentLoaded", () => {
         phoneInput.required = !isLeader;
       });
     });
+
+    const roleParam = new URLSearchParams(location.search).get("role");
+    if (["LEADER", "PILOT"].includes(roleParam)) {
+      const target = signupForm.querySelector(`input[name="role"][value="${roleParam}"]`);
+      if (target) {
+        target.checked = true;
+        target.dispatchEvent(new Event("change"));
+      }
+    }
 
     // 회원가입
     signupForm.addEventListener("submit", async (event) => {
@@ -201,7 +218,7 @@ document.addEventListener("DOMContentLoaded", () => {
         password: data.password,
         userName: data.userName.trim(),
         role: data.role,
-        teamName: data.role === "ADMIN" ? data.teamName.trim() : null,
+        teamName: data.role === "LEADER" ? data.teamName.trim() : null,
         inviteCode: data.role === "PILOT" ? data.inviteCode.toUpperCase() : null,
         phone: data.role === "PILOT" ? data.phone.trim() : null,
       };
@@ -211,6 +228,9 @@ document.addEventListener("DOMContentLoaded", () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body),
+        
+        
+        
         });
 
         if (response.ok) {

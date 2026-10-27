@@ -20,7 +20,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class AdminService {
+public class LeaderService {
 
     private final LandRepository landRepository;
     private final UserRepository userRepository;

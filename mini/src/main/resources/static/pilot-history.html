@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>작업 이력</title>
+    
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/header.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/task.css">
+</head>
+<body class="dash-body" data-role="PILOT">
+
+    <header class="dash-header">
+        <a href="#" class="dash-logo"><span>🌱</span>스마트 농업 관제 시스템</a>
+        <nav class="dash-topnav" id="gnb-menu"></nav>
+        <div class="dash-header-right">
+            <span class="gnb-team" id="team-name">방제단</span>
+            <button type="button" class="gnb-invite" 
+            id="invite-btn" hidden>초대코드
+            <b id="invite-code">-------</b>📋
+        </button>
+        <span class="dash-role" id="user-role">-</span>
+        <a href="mypage.html" class="gnb-user" title="마이페이지">
+            <span class="dash-avatar">👤</span>
+        <span id="user-name">사용자</span>
+        </a>
+        <button class="dash-btn-outline gnb-logout" id="logout-btn">로그아웃</button>
+        </div>
+    </header>
+    
+    <main class="dash-main">
+        <div class="dash-title-row">
+            <div>
+                <h1>🕘 작업 이력</h1>
+                <p>작업을 시작하고, 끝나면 완료 보고를 하고, 끝낸 작업의 기록을 확인하세요.</p>
+            </div>
+        </div>
+
+        <section class="pilot-layout">
+
+            <!-- 왼쪽 : 내 작업 목록 -->
+             <article class="dash-card">
+                <div class="dash-card-head">
+                    <h2>📋 내 작업 <span class="task-count" id="ph-count">-</span></h2>
+                </div>
+
+                <div class="pilot-tabs" id="ph-tabs">
+                    <button type="button" class="active" data-filter="all">전체</button>
+                    <button type="button" data-filter="active">진행 중</button>
+                    <button type="button" data-filter="done">완료</button>
+                </div>
+
+                
+                <p class="task-history-sum" id="ph-sum"></p>
+                <ul class="pilot-task-list" id="ph-list"></ul>
+             </article>
+
+             <!-- 오른쪽: 선택한 작업 상세 -->
+              <article class="dash-card">
+                <div class="dash-card-head">
+                    <h2>🔎 작업 상세</h2>
+                </div>
+                <div class="pilot-detail" id="ph-detail"></div>
+              </article>
+        </section>
+    </main>
+
+    <script src="js/common.js"></script>
+    <script src="js/pilot-history.js"></script>
+</body>
+</html>

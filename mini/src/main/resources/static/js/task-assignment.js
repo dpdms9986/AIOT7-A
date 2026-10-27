@@ -1,28 +1,12 @@
 // 작업 배정 화면 (task-assignment.html) - 기능정의서 ADM_002~005, ADM_016~022
-// ⚠️ 농지·조종사 데이터는 화면 확인용 임시 데이터입니다. 백엔드 API 연결 후 교체하세요.
 
-/* ===== 1. 임시 데이터 ===== */
-const farms = [
-  { id: 101, address: "어남동 12-3", region: "대전시 유성구 어남동", area: 800,  status: "READY" },
-  { id: 102, address: "어남동 12-5", region: "대전시 유성구 어남동", area: 980,  status: "READY" },
-  { id: 103, address: "어남동 14-2", region: "대전시 유성구 어남동", area: 1100, status: "READY" },
-  { id: 104, address: "어남동 15-6", region: "대전시 유성구 어남동", area: 1330, status: "READY" },
-  { id: 105, address: "어남동 17-1", region: "대전시 유성구 어남동", area: 1870, status: "ASSIGNED" },
-  { id: 201, address: "노은동 2-6",  region: "대전시 유성구 노은동", area: 600,  status: "READY" },
-  { id: 202, address: "노은동 2-8",  region: "대전시 유성구 노은동", area: 750,  status: "READY" },
-  { id: 203, address: "노은동 3-1",  region: "대전시 유성구 노은동", area: 920,  status: "IN_PROGRESS" },
-  { id: 301, address: "관저동 9-4",  region: "대전시 서구 관저동",   area: 1050, status: "READY" },
-  { id: 302, address: "관저동 10-2", region: "대전시 서구 관저동",   area: 880,  status: "READY" },
-  { id: 303, address: "관저동 11-7", region: "대전시 서구 관저동",   area: 1240, status: "COMPLETED" },
-];
+/* ===== 서버 API 엔드포인트 ===== */
+const FARMS_API = "/api/admin/farms/ready"; // 미배정 농지 목록 API (백엔드 구현 필요)
+const PILOTS_API = "/api/admin/pilots/ready"; // 대기 중인 조종사 목록 API (백엔드 구현 필요)
+const ASSIGN_API = "/api/admin/assign-team";  // 배정 확정 API (백엔드 구현 필요)
 
-// 소속 조종사 (대기 중인 조종사만 선택 가능 - ADM_017)
-const PILOTS = [
-  { id: "P01", name: "김조종", status: "대기" },
-  { id: "P02", name: "박비행", status: "대기" },
-  { id: "P03", name: "이파일럿", status: "대기" },
-  { id: "P04", name: "최운항", status: "작업 중" },
-];
+let farms = [];    // 미배정 농지 목록 (백엔드 API 연결)
+let PILOTS = [];   // 배정 가능한 조종사 목록 (백엔드 API 연결)
 
 /* ===== 화면 상태 ===== */
 let keywords = [];
@@ -99,7 +83,7 @@ function renderTable() {
         <td><input type="checkbox" ${checked ? "checked" : ""} aria-label="${f.address} 선택"></td>
         <td>${f.address}</td>
         <td>${f.region}</td>
-        <td>${f.area.toLocaleString()}</td>
+        <td>${Number(f.area || 0).toLocaleString()}</td>
         <td><span class="pilot-status st-ready">READY</span></td>
       </tr>
     `;
@@ -110,7 +94,7 @@ function renderTable() {
 function renderSelection() {
   const list = selectedFarms();
   const count = list.length;
-  const area = list.reduce((sum, f) => sum + f.area, 0).toLocaleString();
+  const area = list.reduce((sum, f) => sum + (Number(f.area) || 0), 0).toLocaleString();
   document.querySelector("#sel-count").textContent = count;
   document.querySelector("#sel-area").textContent = area;
   document.querySelector("#modal-count").textContent = count;
@@ -251,7 +235,7 @@ document.querySelector("#even-btn").addEventListener("click", () => {
 });
 
 /* ===== 배정 확정 (ADM_021~022) ===== */
-assignForm.addEventListener("submit", (event) => {
+assignForm.addEventListener("submit", async (event) => {
   event.preventDefault();
 
   const pickedFarms = selectedFarms();
@@ -278,28 +262,35 @@ assignForm.addEventListener("submit", (event) => {
 
   console.log("배정 요청 데이터:", assignments);
 
-  // 나중에 백엔드 연결: POST /api/admin/assign-team
-  // const res = await fetch("/api/admin/assign-team", {
-  //   method: "POST",
-  //   headers: { "Content-Type": "application/json" },
-  //   body: JSON.stringify(assignments),
-  // });
-  // if (!res.ok) { alert("배정에 실패했습니다."); return; }
-  // ※ await를 쓰려면 위의 (event) => 를 async (event) => 로 바꿔야 합니다.
+  try {
+    const res = await fetch(ASSIGN_API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(assignments),
+    });
 
-  // READY → ASSIGNED (ADM_022)
-  pickedFarms.forEach((f) => (f.status = "ASSIGNED"));
+    if (!res.ok) {
+      alert("배정에 실패했습니다.");
+      return;
+    }
 
-  document.querySelector("#done-desc").textContent =
-    `${pickedFarms.length}필지가 ${pilots.length}명의 조종사에게 정상적으로 배정되었습니다.`;
+    // READY → ASSIGNED (ADM_022)
+    pickedFarms.forEach((f) => (f.status = "ASSIGNED"));
 
-  selectedFarmIds.clear();
-  checkedPilotIds.clear();
-  evenDistribute();
-  renderAll();
+    document.querySelector("#done-desc").textContent =
+      `${pickedFarms.length}필지가 ${pilots.length}명의 조종사에게 정상적으로 배정되었습니다.`;
 
-  assignModal.hidden = true;
-  doneModal.hidden = false;
+    selectedFarmIds.clear();
+    checkedPilotIds.clear();
+    evenDistribute();
+    renderAll();
+
+    assignModal.hidden = true;
+    doneModal.hidden = false;
+  } catch (error) {
+    console.error("배정 통신 에러:", error);
+    alert("서버와 통신할 수 없습니다.");
+  }
 });
 
 /* ===== 팝업 닫기 (×, 취소, 확인, 바깥 클릭, Esc) ===== */
@@ -330,5 +321,26 @@ tabs.forEach((tab) => {
   });
 });
 
-/* ===== 시작 ===== */
-renderAll();
+/* ===== 초기 실행 (서버 데이터 페치 연동) ===== */
+document.addEventListener("DOMContentLoaded", async () => {
+  try {
+    const [farmRes, pilotRes] = await Promise.all([
+      fetch(FARMS_API),
+      fetch(PILOTS_API)
+    ]);
+
+    if (farmRes.ok) {
+      farms = await farmRes.json();
+    }
+    if (pilotRes.ok) {
+      PILOTS = await pilotRes.json();
+    }
+  } catch (error) {
+    console.error("데이터 초기 로딩 실패:", error);
+    tbody.innerHTML = `<tr><td colspan="5" 
+    class="task-empty-cell" 
+    style="color:#666;">서버에서 데이터를 불러오지 못했습니다.</td></tr>`;
+  }
+
+  renderAll();
+});
