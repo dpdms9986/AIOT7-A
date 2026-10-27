@@ -3,13 +3,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* ===== 로그인 (login.html) ===== */
   const loginForm = document.querySelector("#login-form");
+
   if (loginForm) {
     const userIdInput = document.querySelector("#userId");
     const passwordInput = document.querySelector("#password");
     const rememberCheck = document.querySelector("#remember-id");
+    const autoLoginCheck = document.querySelector("#remember-me");
 
     // 아이디 기억하기
     const savedId = localStorage.getItem("savedUserId");
+
     if (savedId) {
       userIdInput.value = savedId;
       rememberCheck.checked = true;
@@ -30,7 +33,11 @@ document.addEventListener("DOMContentLoaded", () => {
         const response = await fetch("/api/auth/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId, password }),
+          body: JSON.stringify({
+          userId,
+          password,
+          rememberMe: autoLoginCheck.checked
+}),
         });
 
         if (response.ok) {
@@ -220,6 +227,9 @@ document.addEventListener("DOMContentLoaded", () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body),
+        
+        
+        
         });
 
         if (response.ok) {
