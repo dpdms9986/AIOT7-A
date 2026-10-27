@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.aloha.mini.domain.CustomUser;
@@ -21,8 +22,8 @@ import com.aloha.mini.dto.HazardResponse;
 import com.aloha.mini.dto.HazardUpdateRequest;
 import com.aloha.mini.service.HazardService;
 
-import lombok.RequiredArgsConstructor;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/hazards")
@@ -45,10 +46,17 @@ public class HazardController {
     }
 
     // 전체 위험 게시글 조회
-    @GetMapping
-    public ResponseEntity<List<HazardResponse>> findAll() {
-        return ResponseEntity.ok(hazardService.findAll());
+     @GetMapping
+    public ResponseEntity<List<HazardResponse>> getHazards(
+        @RequestParam(name = "regionCode", required = false) String regionCode) {
+    
+    if (regionCode != null && !regionCode.trim().isEmpty()) {
+        // 지역별 필터링 서비스 호출
+        return ResponseEntity.ok(hazardService.findByRegion(regionCode));
     }
+    // 파라미터가 없으면 전체 목록 반환
+    return ResponseEntity.ok(hazardService.findAll());
+}
 
     // 위험 게시글 상세 조회
     @GetMapping("/{no}")
@@ -59,11 +67,11 @@ public class HazardController {
     }
 
     // 지역별 위험 게시글 조회
-    @GetMapping("/region/{regionNo}")
+    @GetMapping("/region/{regionCode}")
     public ResponseEntity<List<HazardResponse>> findByRegion(
-            @PathVariable("regionNo") Long regionNo) {
+            @PathVariable("regionCode") String regionCode) {
 
-        return ResponseEntity.ok(hazardService.findByRegion(regionNo));
+        return ResponseEntity.ok(hazardService.findByRegion(regionCode));
     }
 
     // 위험 게시글 수정
@@ -101,4 +109,5 @@ public class HazardController {
 
         return ResponseEntity.noContent().build();
     }
+
 }

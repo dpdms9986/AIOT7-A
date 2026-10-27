@@ -97,13 +97,12 @@ public class HazardServiceImpl implements HazardService {
 
     // 지역별 위험 게시글 목록 조회
     @Override
-    public List<HazardResponse> findByRegion(Long regionNo) {
-
-        return hazardReportRepository
-                .findByRegion_NoOrderByCreatedAtDesc(regionNo)
-                .stream()
-                .map(this::toResponse)
-                .toList();
+    public List<HazardResponse> findByRegion(String regionCode) {
+    List<HazardReports> reports = hazardReportRepository.findByRegion_RegionCode(regionCode);
+    
+    return reports.stream()
+            .map(this::toResponse) // 기존에 작성하신 DTO 변환 메서드
+            .toList();
     }
 
     // 위험 게시글 수정
