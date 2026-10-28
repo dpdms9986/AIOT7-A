@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="ko">
 <head>
@@ -44,41 +43,18 @@
 
     <div class="dash-layout">
 
-    <section class="asset-pilot-summary" aria-label="내 자산 요약">
-        <article class="asset-pilot-stat">
-            <div class="asset-pilot-stat-icon drone">🚁</div>
-            <div>
-                <span>내 드론 기체</span>
-                <strong id="pilot-drone-count">0대</strong>
-                <small>배정된 기체</small>
-            </div>
-        </article>
-        <article class="asset-pilot-stat">
-            <div class="asset-pilot-stat-icon chemical">🧪</div>
-            <div>
-                <span>담당 약제 품목</span>
-                <strong id="pilot-chemical-count">0종</strong>
-                <small>내 담당 재고</small>
-            </div>
-        </article>
-        <article class="asset-pilot-stat">
-            <div class="asset-pilot-stat-icon maintenance">🔧</div>
-            <div>
-                <span>정비 필요</span>
-                <strong id="pilot-maintenance-count">0건</strong>
-                <small>확인이 필요한 기체</small>
-            </div>
-        </article>
-    </section>
+        <!-- 사이드바 -->
+        <aside class="dash-sidebar">
+            <nav class="dash-sidenav" id="gnb-side" aria-label="사이드 메뉴"></nav>
 
-    <section class="asset-pilot-list-card">
-        <div class="asset-pilot-list-heading">
-            <div>
-                <h2 id="pilot-list-title">전체 자산</h2>
-                <p>방제단에 등록된 전체 자산과 담당 조종사를 확인합니다.</p>
+            <div class="dash-side-promo">
+                <strong>🌱 더 스마트한 농업의 시작</strong>
+                <p>데이터로 만드는 건강한 농작물, 스마트 농업 관제 시스템</p>
             </div>
-            <span>총 <strong id="pilot-visible-count">0</strong>건</span>
-        </div>
+        </aside>
+
+        <!-- 단장 자산관리 메인 -->
+        <main class="main-content asset-page-main asset-team-page">
 
             <!-- 페이지 제목 -->
             <section class="page-heading asset-page-heading">
@@ -175,6 +151,10 @@
                         담당 조종사
                         <select id="pilot-asset-owner">
                             <option value="">전체 조종사</option>
+                            <option value="김조종">김조종</option>
+                            <option value="이조종">이조종</option>
+                            <option value="서조종">서조종</option>
+                            <option value="박조종">박조종</option>
                         </select>
                     </label>
 
@@ -209,23 +189,36 @@
 
                 </form>
 
-        <div class="asset-pilot-table-scroll">
-            <table class="asset-pilot-table">
-                <thead>
-                    <tr>
-                        <th>자산 유형</th>
-                        <th>이름 / 모델명</th>
-                        <th>담당 조종사</th>     
-                        <th>상태</th>                                           
-                        <th>최근 관리일</th>
-                        <th>관리</th>
-                    </tr>
-                </thead>
-                <tbody id="pilot-asset-tbody">
-                    <!-- 자산 목록은 assetlist-pilot.js 가 서버에서 받아와서 채움 -->
-                </tbody>
-            </table>
-        </div>
+                <!-- 자산 테이블 -->
+                <div class="asset-pilot-table-scroll">
+                    <table class="asset-pilot-table">
+                        <thead>
+                            <tr>
+                                <th>자산 유형</th>
+                                <th>이름 / 모델명</th>
+                                <th>담당 조종사</th>
+                                <th>상태</th>
+                                <th>최근 관리일</th>
+                                <th>관리</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="pilot-asset-tbody">
+
+                            <!-- 드론 -->
+                            <tr
+                                data-asset-type="drone"
+                                data-asset-id="DR-001"
+                                data-status="normal"
+                                data-maintenance="false"
+                                data-owner="김조종">
+
+                                <td>🚁 드론</td>
+
+                                <td>
+                                    <strong>DJI Agras T30</strong>
+                                    <small>기체 코드 DR-001</small>
+                                </td>
 
                                 <td>김조종</td>
 

@@ -51,9 +51,10 @@
                     <div class="filter-card">
                         <div class="filter-group">
                             <label for="region-filter">행정구역</label>
-                            <select id="region-filter">
+                                <select id="region-filter">
                                 <option value="">전체 행정구역</option>
-                                <!-- 행정구역 목록은 서버 데이터로 채움 -->
+                                <option value="전민동">대전광역시 유성구 전민동</option>
+                                <option value="노은동">대전광역시 유성구 노은동</option>
                             </select>
                         </div>
 
@@ -70,7 +71,7 @@
                     <div class="table-card">
                         <div class="table-heading">
                             <h2>농지 목록</h2>
-                            <span>총 <strong id="farm-count">0</strong>건</span>
+                            <span>총 <strong id="farm-count">2</strong>건</span>
                         </div>
 
                         <div class="table-scroll">
@@ -84,8 +85,47 @@
                                         <th>관리</th>
                                     </tr>
                                 </thead>
-                                <tbody id="farm-tbody">
-                                    <!-- 농지 목록은 farm.js 가 서버에서 받아와서 채움 -->
+                                <tbody>
+                                    <tr
+                                        data-farm-id="1"
+                                        data-address="전민동 15-2"
+                                        data-city="대전광역시"
+                                        data-region="유성구"
+                                        data-dong="전민동"
+                                        data-status="대기"
+                                        data-latitude=""
+                                        data-longitude=""
+                                    >
+                                        <td>
+                                            <input type="checkbox" class="farm-select" aria-label="전민동 농지 선택">
+                                        </td>
+                                        <td>전민동 15-2</td>
+                                        <td>유성구 전민동</td>
+                                        <td><span class="status-badge">대기</span></td>
+                                        <td>
+                                            <button type="button" class="button detail-button" data-farm-id="1">상세</button>
+                                        </td>
+                                    </tr>
+                                    <tr
+                                        data-farm-id="2"
+                                        data-address="노은동 2-8"
+                                        data-city="대전광역시"
+                                        data-region="유성구"
+                                        data-dong="노은동"
+                                        data-status="대기"
+                                        data-latitude=""
+                                        data-longitude=""
+                                    >
+                                        <td>
+                                            <input type="checkbox" class="farm-select" aria-label="노은동 농지 선택">
+                                        </td>
+                                        <td>노은동 2-8</td>
+                                        <td>유성구 노은동</td>
+                                        <td><span class="status-badge">대기</span></td>
+                                        <td>
+                                            <button type="button" class="button detail-button" data-farm-id="2">상세</button>
+                                        </td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>

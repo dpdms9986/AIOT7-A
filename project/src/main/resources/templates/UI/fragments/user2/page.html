@@ -1,0 +1,38 @@
+<th:block th:fragment="page">
+  <!-- 페이지네이션 -->
+  <nav aria-label="Page navigation" class="d-flex justify-content-center my-5" 
+      th:object="${pagination}">
+      <ul class="pagination">
+          <!-- [첫] -->
+          <li class="page-item">
+              <a class="page-link" th:href="@{ ${pageUri} + '&page=' + *{first} + '#products' }" aria-label="First">
+                  <span aria-hidden="true">&laquo;</span>
+              </a>
+          </li>
+          <!-- [이전] -->
+          <li class="page-item" th:if="${ pagination.page != pagination.first }">
+              <a class="page-link" th:href="@{ ${pageUri} + '&page=' + *{prev} + '#products' }" aria-label="Previous">
+                  <span aria-hidden="true">&lsaquo;</span>
+              </a>
+          </li>
+          <!-- [번호] -->
+          <th:block th:each="page : *{ #numbers.sequence( start, end )}">
+              <li class="page-item" th:classappend="${ pagination.page == page } ? 'active' : '' ">
+                  <a class="page-link" th:href="@{ ${pageUri} + '&page=' + ${page} + '#products' }" th:text="${page}">1</a>           
+              </li>
+          </th:block>
+          <!-- [다음] -->
+          <li class="page-item" th:if="${ pagination.page != pagination.last }">
+              <a class="page-link" th:href="@{ ${pageUri} + '&page=' + *{next} + '#products' }" aria-label="Next">
+                  <span aria-hidden="true">&rsaquo;</span>
+              </a>
+          </li>
+          <!-- [마지막] -->
+          <li class="page-item">
+              <a class="page-link" th:href="@{ ${pageUri} + '&page=' + *{last} + '#products' }" aria-label="Last">
+                  <span aria-hidden="true">&raquo;</span>
+              </a>
+          </li>
+      </ul>
+  </nav>
+</th:block>

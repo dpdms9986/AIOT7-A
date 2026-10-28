@@ -1,0 +1,32 @@
+<th:block th:fragment="side">
+
+  <aside class="p-3 rounded shadow-sm mb-4">
+    <h5 class="mb-3">
+      <a href="/my">MY</a>
+    </h5>
+    <ul class="nav flex-column">
+      <li class="nav-item">
+        <a class="nav-link text-dark" href="/my/edit">회원정보 수정</a>
+      </li>
+      <hr>
+      <li class="nav-item">
+        <a class="nav-link text-danger" href="/my/delete">회원 탈퇴</a>
+      </li>
+      <hr>
+      <li class="nav-item">
+        <form action="/logout" method="post">
+          <!-- 💍 CSRF TOKEN -->
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+          <button type="submit" class="nav-link text-dark d-flex align-items-center">
+            <span>로그아웃</span>
+          </button>
+        </form>
+      </li>
+    </ul>
+  </aside>
+
+
+</th:block>
+
+
+  

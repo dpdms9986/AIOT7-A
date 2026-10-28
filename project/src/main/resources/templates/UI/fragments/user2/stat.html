@@ -1,0 +1,17 @@
+<th:block th:fragment="stat">
+
+  <div class="d-flex justify-content-between align-items-center border-bottom p-1">
+    <div class="d-flex">
+      <a href="/" class="d-flex align-items-center justify-content-center p-2">
+        <span class="material-icons">home</span>
+      </a>
+    </div>
+
+    <div>
+      <div class="p-2 fw-bold">
+        <span th:text="|${#authentication.principal.username} 님|">사용자</span>
+      </div>
+    </div>
+  </div>
+
+</th:block>

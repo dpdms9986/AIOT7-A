@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{UI/layouts/admin/admin_layout}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>팝업 등록</title>
+</head>
+<body layout:fragment="content">
+  <main class="main-wrapper">
+    <div class="main-content">
+      <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
+        <div class="breadcrumb-title pe-3">
+          <i class="fadeIn animated bx bx-home"></i>
+          팝업관리
+        </div>
+        <div class="ps-3">
+          <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0 p-0">
+              <li class="breadcrumb-item active" aria-current="page">등록하기</li>
+            </ol>
+          </nav>
+        </div>
+      </div>
+
+      <div class="row justify-content-center">
+        <div class="col-lg-10">
+          <div class="card">
+            <div class="card-body p-4">
+              <h5 class="mb-4">팝업 정보 입력</h5>
+              <form id="popupForm" class="needs-validation" novalidate>
+                <!-- CSRF TOKEN -->
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <!-- Popup ID (미리 생성된 UUID) -->
+                <input type="hidden" id="popupId" name="id" th:value="${popupId}">
+                
+                <div class="row g-3">
+
+                  
+                  <!-- 팝업 타입 -->
+                  <div class="col-md-6">
+                    <label for="type" class="form-label">팝업 타입 <span class="text-danger">*</span></label>
+                    <select class="form-select" id="type" name="type" required>
+                      <option value="">타입을 선택하세요</option>
+                      <option value="MAIN">메인</option>
+                    </select>
+                    <div class="invalid-feedback">팝업 타입을 선택해주세요.</div>
+                  </div>
+
+                  <!-- 팝업명 -->
+                  <div class="col-md-6">
+                    <label for="name" class="form-label">팝업명 <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="name" name="name" required 
+                           maxlength="100" placeholder="팝업명을 입력하세요">
+                    <div class="invalid-feedback">팝업명을 입력해주세요.</div>
+                  </div>
+
+                  <!-- 이미지 등록 방식 선택 -->
+                  <div class="col-12">
+                    <label class="form-label">이미지 등록 방식 <span class="text-danger">*</span></label>
+                    <div class="btn-group w-100" role="group">
+                      <input type="radio" class="btn-check" name="imageInputType" id="imageTypeUrl" value="url" checked>
+                      <label class="btn btn-outline-primary" for="imageTypeUrl">URL 입력</label>
+                      
+                      <input type="radio" class="btn-check" name="imageInputType" id="imageTypeUpload" value="upload">
+                      <label class="btn btn-outline-primary" for="imageTypeUpload">파일 업로드</label>
+                    </div>
+                  </div>
+
+                  <!-- 이미지 URL 입력 -->
+                  <div class="col-12" id="imageUrlSection">
+                    <label for="imageUrl" class="form-label">이미지 URL <span class="text-danger">*</span></label>
+                    <input type="url" class="form-control" id="imageUrl" name="imageUrl" 
+                           maxlength="500" placeholder="https://example.com/image.jpg" required>
+                    <div class="invalid-feedback">이미지 URL을 입력해주세요.</div>
+                    <div class="form-text">팝업에 표시할 이미지의 URL을 입력하세요.</div>
+                  </div>
+
+                  <!-- 이미지 파일 업로드 -->
+                  <div class="col-12 d-none" id="imageUploadSection">
+                    <label for="imageFile" class="form-label">이미지 파일 <span class="text-danger">*</span></label>
+                    <input type="file" class="form-control" id="imageFile" accept="image/*">
+                    <div class="invalid-feedback">이미지 파일을 선택해주세요.</div>
+                    <div class="form-text">JPG, PNG, GIF 형식의 이미지 파일을 업로드하세요.</div>
+                    
+                    <!-- 이미지 미리보기 -->
+                    <div id="imagePreview" class="mt-3 d-none">
+                      <img id="previewImage" src="" alt="미리보기" style="max-width: 100%; max-height: 300px; border: 1px solid #dee2e6; border-radius: 4px;">
+                      <button type="button" class="btn btn-sm btn-danger mt-2" onclick="removeImagePreview()">
+                        <i class="bx bx-trash"></i> 이미지 제거
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- 링크 URL -->
+                  <div class="col-md-6">
+                    <label for="link" class="form-label">링크 URL</label>
+                    <input type="url" class="form-control" id="link" name="link" 
+                           maxlength="500" placeholder="https://example.com">
+                    <div class="form-text">팝업 클릭 시 이동할 URL (선택사항)</div>
+                  </div>
+
+                  <!-- 노출 순서 -->
+                  <div class="col-md-6">
+                    <label for="seq" class="form-label">노출 순서</label>
+                    <input type="number" class="form-control" id="seq" name="seq" min="1" max="9999" placeholder="숫자가 작을수록 먼저 노출됩니다.">
+                    <div class="form-text">숫자가 작을수록 먼저 노출 (선택사항)</div>
+                  </div>
+
+                  <!-- 표시 기간 -->
+                  <div class="col-md-6">
+                    <label for="startedAt" class="form-label">시작일시</label>
+                    <input type="datetime-local" class="form-control" id="startedAt" name="startedAt">
+                  </div>
+                  <div class="col-md-6">
+                    <label for="endedAt" class="form-label">종료일시</label>
+                    <input type="datetime-local" class="form-control" id="endedAt" name="endedAt">
+                  </div>
+
+                  <!-- 팝업 내용 -->
+                  <div class="col-12">
+                    <label for="content" class="form-label">팝업 내용</label>
+                    <textarea class="form-control" id="content" name="content" rows="6" 
+                              maxlength="1000" placeholder="팝업에 표시할 내용을 입력하세요"></textarea>
+                    <div class="form-text">최대 1000자까지 입력 가능합니다.</div>
+                  </div>
+
+                  <!-- 표시 여부 -->
+                  <div class="col-12">
+                    <div class="form-check form-switch">
+                      <input class="form-check-input" type="checkbox" id="isShow" name="isShow" value="true" checked>
+                      <label class="form-check-label" for="isShow">팝업 표시</label>
+                    </div>
+                  </div>
+
+                  <!-- 버튼 영역 -->
+                  <div class="col-12 mt-4">
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                      <button type="button" class="btn btn-secondary" onclick="history.back()">취소</button>
+                      <button type="submit" class="btn btn-lg btn-primary px-5">등록하기</button>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+
+    // 이미지 등록 방식 전환
+    document.querySelectorAll('input[name="imageInputType"]').forEach(radio => {
+      radio.addEventListener('change', function() {
+        const imageUrlSection = document.getElementById('imageUrlSection');
+        const imageUploadSection = document.getElementById('imageUploadSection');
+        const imageUrlInput = document.getElementById('imageUrl');
+        const imageFileInput = document.getElementById('imageFile');
+        
+        if (this.value === 'url') {
+          // URL 입력 방식
+          imageUrlSection.classList.remove('d-none');
+          imageUploadSection.classList.add('d-none');
+          imageUrlInput.required = true;
+          imageFileInput.required = false;
+          imageFileInput.value = '';
+          removeImagePreview();
+        } else {
+          // 파일 업로드 방식
+          imageUrlSection.classList.add('d-none');
+          imageUploadSection.classList.remove('d-none');
+          imageUrlInput.required = false;
+          imageUrlInput.value = '';
+          imageFileInput.required = true;
+        }
+      });
+    });
+
+    // 이미지 파일 선택 시 미리보기
+    document.getElementById('imageFile').addEventListener('change', function(event) {
+      const file = event.target.files[0];
+      if (file) {
+        // 파일 타입 체크
+        if (!file.type.startsWith('image/')) {
+          $alert('파일 타입 오류', '이미지 파일만 업로드 가능합니다.', 'warning');
+          event.target.value = '';
+          return;
+        }
+        
+        // 미리보기 표시
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById('previewImage').src = e.target.result;
+          document.getElementById('imagePreview').classList.remove('d-none');
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // 이미지 미리보기 제거
+    function removeImagePreview() {
+      document.getElementById('imageFile').value = '';
+      document.getElementById('previewImage').src = '';
+      document.getElementById('imagePreview').classList.add('d-none');
+    }
+
+    // 폼 제출
+    document.getElementById('popupForm').addEventListener('submit', async function(event) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      // 폼 유효성 검사
+      if (!this.checkValidity()) {
+        this.classList.add('was-validated');
+        return;
+      }
+
+      const imageInputType = document.querySelector('input[name="imageInputType"]:checked').value;
+      const popupId = document.getElementById('popupId').value;
+      let imageUrl = '';
+
+      try {
+        // 1. 이미지 처리 (업로드 또는 URL 가져오기)
+        if (imageInputType === 'upload') {
+          // 파일 업로드 방식
+          const imageFile = document.getElementById('imageFile').files[0];
+          if (!imageFile) {
+            $alert('오류', '이미지 파일을 선택해주세요.', 'warning');
+            return;
+          }
+
+          // 이미지 업로드
+          const mediaFormData = new FormData();
+          mediaFormData.append('file', imageFile);
+          mediaFormData.append('parentId', popupId);
+          mediaFormData.append('type', '이미지');
+          mediaFormData.append('domain', 'popups');
+          mediaFormData.append('isMain', 'true');
+
+          const mediaResponse = await fetch('/api/common/media/upload', {
+            method: 'POST',
+            headers: {
+              'X-CSRF-TOKEN': document.querySelector('input[name="_csrf"]').value
+            },
+            body: mediaFormData
+          });
+
+          if (!mediaResponse.ok) {
+            throw new Error('이미지 업로드 실패');
+          }
+
+          const mediaData = await mediaResponse.json();
+          imageUrl = mediaData.content || mediaData.path;
+
+        } else {
+          // URL 입력 방식
+          imageUrl = document.getElementById('imageUrl').value;
+          if (!imageUrl) {
+            $alert('오류', '이미지 URL을 입력해주세요.', 'warning');
+            return;
+          }
+        }
+
+        // 2. 팝업 데이터 수집
+        const formData = new FormData(this);
+        const popupData = {
+          id: popupId,
+          url: imageUrl  // 이미지 URL을 url 필드에 설정
+        };
+        
+        for (let [key, value] of formData.entries()) {
+          if (key === 'isShow') {
+            popupData[key] = value === 'true';
+          } else if (key !== 'imageInputType' && key !== 'imageUrl') {
+            popupData[key] = value;
+          }
+        }
+
+        // isShow 체크박스가 체크되지 않은 경우 false로 설정
+        if (!popupData.isShow) {
+          popupData.isShow = false;
+        }
+
+        // 3. 팝업 등록
+        await $ajax({
+          url: '/api/admin/popup',
+          type: 'POST',
+          data: popupData
+        });
+
+        $alert('성공', '팝업이 성공적으로 등록되었습니다.', 'success').then(() => {
+          window.location.href = '/admin/popups';
+        });
+
+      } catch (error) {
+        console.error('팝업 등록 오류:', error);
+        $alert('오류', '등록 중 오류가 발생했습니다. 다시 시도해주세요.', 'error');
+      }
+    });
+
+    // Bootstrap validation
+    (function() {
+      'use strict';
+      window.addEventListener('load', function() {
+        const forms = document.getElementsByClassName('needs-validation');
+        Array.prototype.filter.call(forms, function(form) {
+          form.addEventListener('submit', function(event) {
+            if (form.checkValidity() === false) {
+              event.preventDefault();
+              event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+          }, false);
+        });
+      }, false);
+    })();
+  </script>
+
+</body>
+</html>

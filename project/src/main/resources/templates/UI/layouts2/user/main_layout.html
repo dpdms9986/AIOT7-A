@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- [META] -->
+    <th:block th:replace="~{UI/fragments/user/meta::meta}"></th:block>
+    <!-- [LINK] -->
+    <th:block th:replace="~{UI/fragments/user/link::link}"></th:block>
+    <!-- [SCRIPT] -->
+    <th:block th:replace="~{UI/fragments/user/script::script}"></th:block>
+</head>
+<body>
+    <!-- [HEADER] -->
+    <th:block th:replace="~{UI/fragments/user/header::header}"></th:block>
+    <!-- [CONTENT]-->
+    <th:block layout:fragment="content"></th:block>
+    <!-- [FOOTER]-->
+    <th:block th:replace="~{UI/fragments/user/footer::footer}"></th:block>
+    
+    <!-- <th:block th:replace="~{UI/fragments/user/call::call}"></th:block> -->
+
+
+</body>
+</html>
