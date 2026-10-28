@@ -11,7 +11,7 @@ import org.springframework.security.web.SecurityFilterChain;
 
 import com.aloha.mini.handler.CustomAccessDeniedHandler;
 import com.aloha.mini.handler.LogoutSuccessHandler;
-import com.aloha.mini.service.CustomUserDetailsService;
+import com.aloha.mini.service.inter.users.CustomUserDetailsService;
 
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
