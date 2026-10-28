@@ -9,7 +9,7 @@
 
 
 
-const LOGIN_CHECK = false; // true: 로그인 검사 / false: 로그인 없이 바로 화면
+const LOGIN_CHECK = true; // true: 로그인 검사 / false: 로그인 없이 바로 화면
 
 // 권한별 메인 화면 (대시보드가 없는 동안 단장을 작업 배정으로 보내려면 "task-assignment.html")
 const MAIN_PAGE = { ADMIN: "task-assignment.html", LEADER: "task-assignment.html", PILOT: "pilot-dashboard.html" };
