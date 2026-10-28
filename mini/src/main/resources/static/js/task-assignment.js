@@ -1,9 +1,9 @@
 // 작업 배정 화면 (task-assignment.html) - 기능정의서 ADM_002~005, ADM_016~022
 
 /* ===== 서버 API 엔드포인트 ===== */
-const FARMS_API = "/api/admin/farms/ready"; // 미배정 농지 목록 API (백엔드 구현 필요)
-const PILOTS_API = "/api/admin/pilots/ready"; // 대기 중인 조종사 목록 API (백엔드 구현 필요)
-const ASSIGN_API = "/api/admin/assign-team";  // 배정 확정 API (백엔드 구현 필요)
+const FARMS_API = "/api/leader/farms/ready"; // 미배정 농지 목록 API (백엔드 구현 필요)
+const PILOTS_API = "/api/leader/pilots/ready"; // 대기 중인 조종사 목록 API (백엔드 구현 필요)
+const ASSIGN_API = "/api/leader/assign-team";  // 배정 확정 API (백엔드 구현 필요)
 
 let farms = [];    // 미배정 농지 목록 (백엔드 API 연결)
 let PILOTS = [];   // 배정 가능한 조종사 목록 (백엔드 API 연결)

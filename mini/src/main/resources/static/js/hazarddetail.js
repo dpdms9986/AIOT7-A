@@ -1,73 +1,51 @@
 
-/* ===== 위험 상세 데이터 ===== */
+/* ===== 위험 상세 (서버에서 조회) ===== */
+// 백엔드 주소에 맞게 수정: GET /api/hazards/{id}
+// 응답 예: { title, type, severity, region, author, date, description, action }
 
-const hazardData = {
-    "3": {
-        title: "논 주변 고압선 주의",
-        type: "고압선",
-        severity: "고위험",
-        region: "대전 유성구 신성동",
-        author: "김조종",
-        date: "2026-10-22",
-        description: "농지 주변에 고압선이 설치되어 있습니다.\n드론 비행 및 방제 작업 시 전선과의 접촉에 주의해야 합니다.",
-        action: "작업 전 주변 전선의 위치를 확인하고 안전거리를 확보해 주세요."
-    },
-    "2": {
-        title: "통신탑 근처 비행 주의",
-        type: "통신탑",
-        severity: "중위험",
-        region: "대전 대덕구 송촌동",
-        author: "이조종",
-        date: "2026-10-21",
-        description: "통신탑 주변에서는 전파 간섭 및 구조물 충돌 위험이 있습니다.",
-        action: "비행 전 통신탑 위치와 주변 장애물을 확인하고 충분한 안전거리를 유지해 주세요."
-    },
-    "1": {
-        title: "농지 진입로 벼락 주의",
-        type: "진입로",
-        severity: "저위험",
-        region: "대전 동구 어남동",
-        author: "박조종",
-        date: "2026-10-20",
-        description: "농지 진입로 주변의 차량과 작업자 이동에 주의해야 합니다.",
-        action: "작업 전 진입로의 차량 통행과 작업자 이동 동선을 확인해 주세요."
-    }
-};
+const hazardApi = (id) => `/api/hazards/${encodeURIComponent(id)}`;
 
-function renderHazardDetail() {
-    const hazardId = new URLSearchParams(window.location.search).get("id");
-    const hazard = hazardData[hazardId];
+// 위험도: 서버가 HIGH/MEDIUM/LOW 로 줘도, 고위험/중위험/저위험 으로 줘도 처리
+const SEVERITY_TEXT = { HIGH: "고위험", MEDIUM: "중위험", LOW: "저위험" };
+const SEVERITY_CLASS = { "고위험": "high", "중위험": "medium", "저위험": "low" };
 
-    if (!hazard) {
-    // 공지사항 상세 페이지에서는 위험 데이터가 없어도 정상
-    if (document.body.classList.contains("notice-detail-page")) {
-        return;
-    }
-
-    console.warn("해당 ID의 위험 데이터가 없습니다:", hazardId);
-    return;
+function setDetailText(id, value) {
+    const element = document.getElementById(id);
+    if (element) element.textContent = value ?? "-";
 }
 
-    document.getElementById("hazard-title").textContent = hazard.title;
-    document.getElementById("hazard-type").textContent = hazard.type;
-    document.getElementById("hazard-severity").textContent = hazard.severity;
-    document.getElementById("hazard-region").textContent = hazard.region;
-    document.getElementById("hazard-author").textContent = hazard.author;
-    document.getElementById("hazard-date").textContent = hazard.date;
-    document.getElementById("hazard-description").textContent = hazard.description;
-    document.getElementById("hazard-action").textContent = hazard.action;
+async function renderHazardDetail() {
+    // 공지사항 상세 화면이면 위험 상세는 건너뜀
+    if (document.body.classList.contains("notice-detail-page")) return;
 
-    const severityElement = document.getElementById("hazard-severity");
+    const hazardId = new URLSearchParams(location.search).get("id");
+    if (!hazardId) return;
 
-    severityElement.classList.remove("high", "medium", "low");
+    try {
+        const res = await fetch(hazardApi(hazardId));
+        if (!res.ok) throw new Error(`서버 응답 ${res.status}`);
+        const hazard = await res.json();
 
-    const severityClasses = {
-        "고위험": "high",
-        "중위험": "medium",
-        "저위험": "low"
-    };
+        const severity = SEVERITY_TEXT[hazard.severity] || hazard.severity || "-";
 
-    severityElement.classList.add(severityClasses[hazard.severity]);
+        setDetailText("hazard-title", hazard.title);
+        setDetailText("hazard-type", hazard.type);
+        setDetailText("hazard-severity", severity);
+        setDetailText("hazard-region", hazard.region);
+        setDetailText("hazard-author", hazard.author);
+        setDetailText("hazard-date", hazard.date);
+        setDetailText("hazard-description", hazard.description);
+        setDetailText("hazard-action", hazard.action);
+
+        const severityElement = document.getElementById("hazard-severity");
+        if (severityElement) {
+            severityElement.classList.remove("high", "medium", "low");
+            if (SEVERITY_CLASS[severity]) severityElement.classList.add(SEVERITY_CLASS[severity]);
+        }
+    } catch (error) {
+        console.error("위험 상세 조회 실패:", error);
+        setDetailText("hazard-title", "게시글을 불러오지 못했습니다.");
+    }
 }
 
 renderHazardDetail();
@@ -141,83 +119,67 @@ function renderCommentImagePreview() {
         `첨부 이미지 ${commentImages.length}개`;
 }
 
-/* ===== 공지사항 상세 처리 ===== */
+/* ===== 공지사항 상세 (서버에서 조회) ===== */
+// 백엔드 주소에 맞게 수정: GET /api/notices/{id}
+// 응답 예: { title, type, pinned, author, date, content, alerts: [], attachment, attachmentSize }
 
-const noticeData = {
-    "56": {
-        title: "[기상특보] 10월 23일 강풍 주의보 발령",
-        type: "긴급",
-        pinned: true,
-        author: "관리자",
-        date: "2026-10-22 14:32",
-        content:
-            "기상청 예보에 따라 10월 23일 해당 지역에 강풍 주의보가 발령되었습니다. 안전한 방제 작업을 위해 아래 내용을 준수해 주시기 바랍니다.",
-        alerts: [
-            "10월 23일 전 지역 드론 비행 금지",
-            "최대 풍속 5m/s 이상 예상",
-            "현장 풍속 3m/s 이상 점검",
-            "추가 변동 사항은 추후 공지 예정"
-        ],
-        attachment: "기상특보_강풍주의보.pdf",
-        attachmentSize: "245KB"
-    }
-};
+const noticeApi = (id) => `/api/notices/${encodeURIComponent(id)}`;
 
-function renderNoticeDetail() {
+async function renderNoticeDetail() {
+    // 공지사항 상세 화면에서만 실행
+    if (!document.body.classList.contains("notice-detail-page")) return;
+
     const noticeId = new URLSearchParams(location.search).get("id");
+    if (!noticeId) return;
 
-    // 공지 ID가 아니면 기존 위험 상세 로직을 사용
-    if (!noticeId || !noticeData[noticeId]) {
+    let notice;
+    try {
+        const res = await fetch(noticeApi(noticeId));
+        if (!res.ok) throw new Error(`서버 응답 ${res.status}`);
+        notice = await res.json();
+    } catch (error) {
+        console.error("공지사항 조회 실패:", error);
+        setDetailText("notice-title", "공지사항을 불러오지 못했습니다.");
         return;
     }
 
-    const notice = noticeData[noticeId];
-
-    const setText = (id, value) => {
-        const element = document.getElementById(id);
-        if (element) element.textContent = value;
-    };
-
-    setText("notice-title", notice.title);
-    setText("notice-type", notice.type);
-    setText("notice-author", notice.author);
-    setText("notice-date", notice.date);
-    setText("notice-content", notice.content);
+    setDetailText("notice-title", notice.title);
+    setDetailText("notice-type", notice.type);
+    setDetailText("notice-author", notice.author);
+    setDetailText("notice-date", notice.date);
+    setDetailText("notice-content", notice.content);
 
     const pin = document.getElementById("notice-pin");
     if (pin) pin.hidden = !notice.pinned;
 
     const alertList = document.getElementById("notice-alert-list");
-
     if (alertList) {
         alertList.replaceChildren();
-
-        notice.alerts.forEach(message => {
+        (notice.alerts || []).forEach((message) => {
             const li = document.createElement("li");
             li.textContent = message;
             alertList.appendChild(li);
         });
     }
 
-    const attachmentList =
-        document.getElementById("notice-attachment-list");
-
+    const attachmentList = document.getElementById("notice-attachment-list");
     if (attachmentList) {
         attachmentList.replaceChildren();
+        if (notice.attachment) {
+            const item = document.createElement("div");
+            item.className = "notice-attachment-item";
 
-        const item = document.createElement("div");
-        item.className = "notice-attachment-item";
+            const name = document.createElement("span");
+            name.className = "notice-attachment-name";
+            name.textContent = notice.attachment;
 
-        const name = document.createElement("span");
-        name.className = "notice-attachment-name";
-        name.textContent = notice.attachment;
+            const size = document.createElement("span");
+            size.className = "notice-attachment-size";
+            size.textContent = notice.attachmentSize ? `(${notice.attachmentSize})` : "";
 
-        const size = document.createElement("span");
-        size.className = "notice-attachment-size";
-        size.textContent = `(${notice.attachmentSize})`;
-
-        item.append(name, size);
-        attachmentList.appendChild(item);
+            item.append(name, size);
+            attachmentList.appendChild(item);
+        }
     }
 }
 

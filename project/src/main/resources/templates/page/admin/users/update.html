@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{UI/layouts/admin/admin_layout}">
+<head>
+  <meta charset="UTF-8">
+  <title>회원 수정</title>
+</head>
+<body layout:fragment="content">
+  <main class="main-wrapper">
+    <div class="main-content">
+      <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
+        <div class="breadcrumb-title pe-3"><i class="fadeIn animated bx bx-home"></i> 회원관리</div>
+        <div class="ps-3">
+          <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0 p-0">
+              <li class="breadcrumb-item active" aria-current="page">수정하기</li>
+            </ol>
+          </nav>
+        </div>
+      </div>
+
+      <div class="row justify-content-center">
+        <div class="col-lg-10">
+          <div class="card">
+            <div class="card-body p-4">
+              <div class="position-absolute top-10 right-10">
+                <button id="deleteBtn" type="button" class="btn btn-danger btn-lg">
+                  <i class="fadeIn animated bx bx-trash font-20"></i>
+                </button>
+              </div>
+              <input type="hidden" id="userId" th:value="${user.id}">
+              <h5 class="mb-4">회원 기본 정보</h5>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label for="username" class="form-label">아이디 <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" id="username" name="username" th:value="${user.username}" readonly>
+                </div>
+                <div class="col-md-6">
+                  <label for="name" class="form-label">이름 <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" id="name" name="name" th:value="${user.name}" required>
+                </div>
+                <div class="col-md-6">
+                  <label for="tel" class="form-label">전화번호</label>
+                  <input type="text" class="form-control" id="tel" name="tel" th:value="${user.tel}">
+                </div>
+                <div class="col-md-6">
+                  <label for="email" class="form-label">이메일</label>
+                  <input type="email" class="form-control" id="email" name="email" th:value="${user.email}">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">활성화 여부</label>
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="enabled" name="enabled" th:checked="${user.enabled}">
+                    <label class="form-check-label" for="enabled">활성화</label>
+                  </div>
+                </div>
+
+                <!-- 수정하기, 삭제하기 버튼 -->
+                <div class="row">
+                  <div class="col-12">
+                    <div class="row g-3">
+                      <div class="col-12">
+                        <div class="d-grid">
+                        <button id="updateBtn" type="button" class="btn btn-primary btn-lg">수정하기</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const token  = $('meta[name="_csrf"]').attr('content');
+    const header = $('meta[name="_csrf_header"]').attr('content');
+
+    // ✅ CSRF 헤더 자동 적용
+    $.ajaxSetup({
+      beforeSend: function (xhr) {
+        if (token && header) xhr.setRequestHeader(header, token);
+      }
+    });
+
+    $('#updateBtn').on('click', function () {
+      const id = $('#userId').val();
+
+      const data = {
+        id,
+        username: $('#username').val(),
+        name: $('#name').val()?.trim(),
+        tel: $('#tel').val()?.trim(),
+        email: $('#email').val()?.trim(),
+        enabled: $('#enabled').is(':checked')
+      };
+
+      if (!data.name) {
+        $alert('입력오류', '이름은 필수입니다.', 'warning');
+        return;
+      }
+
+      $confirm('회원 수정', '수정하시겠습니까?', 'warning', '수정', '취소')
+        .then(function (result) {
+          if (!result.isConfirmed) return;
+
+          $('#updateBtn').prop('disabled', true);
+
+          $ajax({
+            url: '/api/users/user',
+            type: 'PUT',
+            data: data,
+            success: function () {
+              $alert('회원 수정','회원이 성공적으로 수정되었습니다.', 'success')
+                .then(() => location.href = '/admin/users');
+            },
+            error: function (xhr) {
+              $('#submitBtn').prop('disabled', false);
+
+              console.error('User update failed:', xhr.status, xhr.responseText);
+              $alert('실패', '회원 수정에 실패했습니다.', 'error');
+            }
+          });
+        });
+    });
+
+    function deleteUser() {
+      const id = $('#userId').val();
+
+      $confirm('회원 삭제', '삭제하시겠습니까?', 'warning', '삭제', '취소')
+        .then(function (result) {
+          if (!result.isConfirmed) return;
+
+          $ajax({
+            url: '/api/users/user/' + id,
+            type: 'DELETE',
+            success: function (res) {
+              if (res) {
+                $alert('회원 삭제','회원이 성공적으로 삭제되었습니다.', 'success')
+                  .then(() => location.href = '/admin/users');
+              } else {
+                $alert('회원 삭제','삭제에 실패했습니다.', 'error');
+              }
+            },
+            error: function (xhr) {
+              $('#submitBtn').prop('disabled', false);
+
+              console.error('User delete failed:', xhr.status, xhr.responseText);
+              $alert('회원 삭제', '회원 삭제에 실패했습니다.', 'error');
+            }
+          });
+        });
+    }
+
+    $('#deleteBtn').on('click', function() {
+      deleteUser();
+    });
+  </script>
+
+
+
+</body>
+</html>

@@ -1,0 +1,21 @@
+<th:block th:fragment="header">
+    <header class="home-header">
+        <a href="/" class="home-logo"><span class="icon-leaf" aria-hidden="true">🌱</span><span>스마트 농업 관제 시스템</span></a>
+        <nav class="home-nav">
+          <a href="/intro">시스템 소개</a>
+          <a href="/features">주요 기능</a>
+          <a href="/guide">이용 안내</a>
+        </nav>
+
+        <!-- 🔐 로그인 ❌ -->
+        <th:block sec:authorize="isAnonymous()">
+          <div class="home-auth">
+            <a href="/signup" class="home-btn home-btn-outline">회원가입</a>
+            <a href="/login" class="home-btn home-btn-primary">로그인</a>
+            <!-- <a href="/dashboard" class="home-btn home-btn-outline">대시보드</a> -->
+          </div>
+        </th:block>
+    </header>
+</th:block>
+
+

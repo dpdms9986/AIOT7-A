@@ -1,0 +1,519 @@
+<th:block th:fragment="header">
+  <!--start header-->
+  <header class="top-header">
+    <nav class="navbar navbar-expand align-items-center gap-4">
+      <div class="btn-toggle">
+        <a href="javascript:;"><i class="material-icons-outlined">menu</i></a>
+      </div>
+      <!-- 검색창 -->
+      <div class="search-bar flex-grow-1">
+        <div class="position-relative">
+          <!-- <input class="form-control rounded-5 px-5 search-control d-lg-block d-none" type="text" placeholder="검색어를 입력하세요...">
+          <span class="material-icons-outlined position-absolute d-lg-block d-none ms-3 translate-middle-y start-0 top-50">search</span>
+          <span class="material-icons-outlined position-absolute me-3 translate-middle-y end-0 top-50 search-close">close</span>
+          <div class="search-popup p-3">
+            <div class="card rounded-4 overflow-hidden">
+              <div class="card-header d-lg-none">
+                <div class="position-relative">
+                  <input class="form-control rounded-5 px-5 mobile-search-control" type="text" placeholder="Search">
+                  <span class="material-icons-outlined position-absolute ms-3 translate-middle-y start-0 top-50">search</span>
+                  <span class="material-icons-outlined position-absolute me-3 translate-middle-y end-0 top-50 mobile-search-close">close</span>
+                 </div>
+              </div>
+              <div class="card-body search-content">
+                <p class="search-title">Recent Searches</p>
+                <div class="d-flex align-items-start flex-wrap gap-2 kewords-wrapper">
+                  <a href="javascript:;" class="kewords"><span>Angular Template</span><i
+                      class="material-icons-outlined fs-6">search</i></a>
+                  <a href="javascript:;" class="kewords"><span>Dashboard</span><i
+                      class="material-icons-outlined fs-6">search</i></a>
+                  <a href="javascript:;" class="kewords"><span>Admin Template</span><i
+                      class="material-icons-outlined fs-6">search</i></a>
+                  <a href="javascript:;" class="kewords"><span>Bootstrap 5 Admin</span><i
+                      class="material-icons-outlined fs-6">search</i></a>
+                  <a href="javascript:;" class="kewords"><span>Html eCommerce</span><i
+                      class="material-icons-outlined fs-6">search</i></a>
+                  <a href="javascript:;" class="kewords"><span>Sass</span><i
+                      class="material-icons-outlined fs-6">search</i></a>
+                  <a href="javascript:;" class="kewords"><span>laravel 9</span><i
+                      class="material-icons-outlined fs-6">search</i></a>
+                </div>
+                <hr>
+                <p class="search-title">Tutorials</p>
+                <div class="search-list d-flex flex-column gap-2">
+                  <div class="search-list-item d-flex align-items-center gap-3">
+                    <div class="list-icon">
+                      <i class="material-icons-outlined fs-5">play_circle</i>
+                    </div>
+                    <div class="">
+                      <h5 class="mb-0 search-list-title ">Wordpress Tutorials</h5>
+                    </div>
+                  </div>
+                  <div class="search-list-item d-flex align-items-center gap-3">
+                    <div class="list-icon">
+                      <i class="material-icons-outlined fs-5">shopping_basket</i>
+                    </div>
+                    <div class="">
+                      <h5 class="mb-0 search-list-title">eCommerce Website Tutorials</h5>
+                    </div>
+                  </div>
+  
+                  <div class="search-list-item d-flex align-items-center gap-3">
+                    <div class="list-icon">
+                      <i class="material-icons-outlined fs-5">laptop</i>
+                    </div>
+                    <div class="">
+                      <h5 class="mb-0 search-list-title">Responsive Design</h5>
+                    </div>
+                  </div>
+                </div>
+  
+                <hr>
+                <p class="search-title">Members</p>
+  
+                <div class="search-list d-flex flex-column gap-2">
+                  <div class="search-list-item d-flex align-items-center gap-3">
+                    <div class="memmber-img">
+                      <img src="assets/images/avatars/01.png" width="32" height="32" class="rounded-circle" alt="">
+                    </div>
+                    <div class="">
+                      <h5 class="mb-0 search-list-title ">Andrew Stark</h5>
+                    </div>
+                  </div>
+  
+                  <div class="search-list-item d-flex align-items-center gap-3">
+                    <div class="memmber-img">
+                      <img src="assets/images/avatars/02.png" width="32" height="32" class="rounded-circle" alt="">
+                    </div>
+                    <div class="">
+                      <h5 class="mb-0 search-list-title ">Snetro Jhonia</h5>
+                    </div>
+                  </div>
+  
+                  <div class="search-list-item d-flex align-items-center gap-3">
+                    <div class="memmber-img">
+                      <img src="assets/images/avatars/03.png" width="32" height="32" class="rounded-circle" alt="">
+                    </div>
+                    <div class="">
+                      <h5 class="mb-0 search-list-title">Michle Clark</h5>
+                    </div>
+                  </div>
+  
+                </div>
+              </div>
+              <div class="card-footer text-center bg-transparent">
+                <a href="javascript:;" class="btn w-100">See All Search Results</a>
+              </div>
+            </div>
+          </div> -->
+        </div>
+      </div>
+      <ul class="navbar-nav gap-1 nav-right-links align-items-center">
+        <!-- <li class="nav-item d-lg-none mobile-search-btn">
+          <a class="nav-link" href="javascript:;"><i class="material-icons-outlined">search</i></a>
+        </li> -->
+
+        <!-- 사용자 홈 -->
+        <li class="nav-item">
+          <a class="nav-link" href="/"
+                  data-bs-toggle="tooltip" data-bs-placement="bottom"
+                  data-bs-custom-class="custom-tooltip"
+                  data-bs-title="사용자홈">
+            <i class="fadeIn animated font-30 bx bx-home-heart font-26"></i>
+          </a>
+          
+        </li>
+        
+        <!-- 미니 메뉴 -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle dropdown-toggle-nocaret" data-bs-auto-close="outside"
+            data-bs-toggle="dropdown" href="javascript:;"><i class="material-icons-outlined">apps</i></a>
+          <div class="dropdown-menu dropdown-menu-end dropdown-apps shadow-lg p-3">
+            <div class="border rounded-4 overflow-hidden">
+              <div class="row row-cols-3 g-0 border-bottom">
+          <div class="col border-end">
+            <a href="/admin" class="text-decoration-none">
+              <div class="app-wrapper d-flex flex-column gap-2 text-center">
+                <div class="app-icon">
+            <i class="fadeIn animated font-30 bx bx-home"></i>
+                </div>
+                <div class="app-name">
+            <p class="mb-0">대시보드</p>
+                </div>
+              </div>
+            </a>
+          </div>
+
+          <div class="col border-end">
+            <a href="/admin/users" class="text-decoration-none">
+              <div class="app-wrapper d-flex flex-column gap-2 text-center">
+                <div class="app-icon">
+            <i class="fadeIn animated font-30 bx bx-user"></i>
+                </div>
+                <div class="app-name">
+            <p class="mb-0">회원관리</p>
+                </div>
+              </div>
+            </a>
+          </div>
+
+          <div class="col">
+            <a href="/admin/users" class="text-decoration-none">
+              <div class="app-wrapper d-flex flex-column gap-2 text-center">
+                <div class="app-icon">
+            <i class="fadeIn animated font-30 bx bx-user"></i>
+                </div>
+                <div class="app-name">
+            <p class="mb-0">회원관리</p>
+                </div>
+              </div>
+            </a>
+          </div>
+          
+      </div><!--end row-->
+
+        <div class="row row-cols-3 g-0">
+          <div class="col border-end">
+            <a href="/admin/users" class="text-decoration-none">
+              <div class="app-wrapper d-flex flex-column gap-2 text-center">
+                <div class="app-icon">
+            <i class="fadeIn animated font-30 bx bx-user"></i>
+                </div>
+                <div class="app-name">
+            <p class="mb-0">회원관리</p>
+                </div>
+              </div>
+            </a>
+          </div>
+          <div class="col border-end">
+            <a href="/admin/users" class="text-decoration-none">
+              <div class="app-wrapper d-flex flex-column gap-2 text-center">
+                <div class="app-icon">
+            <i class="fadeIn animated font-30 bx bx-user"></i>
+                </div>
+                <div class="app-name">
+            <p class="mb-0">회원관리</p>
+                </div>
+              </div>
+            </a>
+          </div>
+          <div class="col">
+            <a href="/admin/users" class="text-decoration-none">
+              <div class="app-wrapper d-flex flex-column gap-2 text-center">
+                <div class="app-icon">
+            <i class="fadeIn animated font-30 bx bx-user"></i>
+                </div>
+                <div class="app-name">
+            <p class="mb-0">회원관리</p>
+                </div>
+              </div>
+            </a>
+          </div>
+        </div><!--end row-->
+      </div>
+    </div>
+  </li>
+
+        <!-- 알림 -->
+        <!-- <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle dropdown-toggle-nocaret position-relative" data-bs-auto-close="outside"
+            data-bs-toggle="dropdown" href="javascript:;"><i class="material-icons-outlined">notifications</i>
+            <span class="badge-notify">5</span>
+          </a>
+          <div class="dropdown-menu dropdown-notify dropdown-menu-end shadow">
+            <div class="px-3 py-1 d-flex align-items-center justify-content-between border-bottom">
+              <h5 class="notiy-title mb-0">Notifications</h5>
+              <div class="dropdown">
+                <button class="btn btn-secondary dropdown-toggle dropdown-toggle-nocaret option" type="button"
+                  data-bs-toggle="dropdown" aria-expanded="false">
+                  <span class="material-icons-outlined">
+                    more_vert
+                  </span>
+                </button>
+                <div class="dropdown-menu dropdown-option dropdown-menu-end shadow">
+                  <div><a class="dropdown-item d-flex align-items-center gap-2 py-2" href="javascript:;"><i
+                        class="material-icons-outlined fs-6">inventory_2</i>Archive All</a></div>
+                  <div><a class="dropdown-item d-flex align-items-center gap-2 py-2" href="javascript:;"><i
+                        class="material-icons-outlined fs-6">done_all</i>Mark all as read</a></div>
+                  <div><a class="dropdown-item d-flex align-items-center gap-2 py-2" href="javascript:;"><i
+                        class="material-icons-outlined fs-6">mic_off</i>Disable Notifications</a></div>
+                  <div><a class="dropdown-item d-flex align-items-center gap-2 py-2" href="javascript:;"><i
+                        class="material-icons-outlined fs-6">grade</i>What's new ?</a></div>
+                  <div>
+                    <hr class="dropdown-divider">
+                  </div>
+                  <div><a class="dropdown-item d-flex align-items-center gap-2 py-2" href="javascript:;"><i
+                        class="material-icons-outlined fs-6">leaderboard</i>Reports</a></div>
+                </div>
+              </div>
+            </div>
+            <div class="notify-list">
+              <div>
+                <a class="dropdown-item border-bottom py-2" href="javascript:;">
+                  <div class="d-flex align-items-center gap-3">
+                    <div class="">
+                      <img src="assets/images/avatars/01.png" class="rounded-circle" width="45" height="45" alt="">
+                    </div>
+                    <div class="">
+                      <h5 class="notify-title">Congratulations Jhon</h5>
+                      <p class="mb-0 notify-desc">Many congtars jhon. You have won the gifts.</p>
+                      <p class="mb-0 notify-time">Today</p>
+                    </div>
+                    <div class="notify-close position-absolute end-0 me-3">
+                      <i class="material-icons-outlined fs-6">close</i>
+                    </div>
+                  </div>
+                </a>
+              </div>
+              <div>
+                <a class="dropdown-item border-bottom py-2" href="javascript:;">
+                  <div class="d-flex align-items-center gap-3">
+                    <div class="user-wrapper bg-primary text-primary bg-opacity-10">
+                      <span>RS</span>
+                    </div>
+                    <div class="">
+                      <h5 class="notify-title">New Account Created</h5>
+                      <p class="mb-0 notify-desc">From USA an user has registered.</p>
+                      <p class="mb-0 notify-time">Yesterday</p>
+                    </div>
+                    <div class="notify-close position-absolute end-0 me-3">
+                      <i class="material-icons-outlined fs-6">close</i>
+                    </div>
+                  </div>
+                </a>
+              </div>
+              <div>
+                <a class="dropdown-item border-bottom py-2" href="javascript:;">
+                  <div class="d-flex align-items-center gap-3">
+                    <div class="">
+                      <img src="assets/images/apps/13.png" class="rounded-circle" width="45" height="45" alt="">
+                    </div>
+                    <div class="">
+                      <h5 class="notify-title">Payment Recived</h5>
+                      <p class="mb-0 notify-desc">New payment recived successfully</p>
+                      <p class="mb-0 notify-time">1d ago</p>
+                    </div>
+                    <div class="notify-close position-absolute end-0 me-3">
+                      <i class="material-icons-outlined fs-6">close</i>
+                    </div>
+                  </div>
+                </a>
+              </div>
+              <div>
+                <a class="dropdown-item border-bottom py-2" href="javascript:;">
+                  <div class="d-flex align-items-center gap-3">
+                    <div class="">
+                      <img src="assets/images/apps/14.png" class="rounded-circle" width="45" height="45" alt="">
+                    </div>
+                    <div class="">
+                      <h5 class="notify-title">New Order Recived</h5>
+                      <p class="mb-0 notify-desc">Recived new order from michle</p>
+                      <p class="mb-0 notify-time">2:15 AM</p>
+                    </div>
+                    <div class="notify-close position-absolute end-0 me-3">
+                      <i class="material-icons-outlined fs-6">close</i>
+                    </div>
+                  </div>
+                </a>
+              </div>
+              <div>
+                <a class="dropdown-item border-bottom py-2" href="javascript:;">
+                  <div class="d-flex align-items-center gap-3">
+                    <div class="">
+                      <img src="assets/images/avatars/06.png" class="rounded-circle" width="45" height="45" alt="">
+                    </div>
+                    <div class="">
+                      <h5 class="notify-title">Congratulations Jhon</h5>
+                      <p class="mb-0 notify-desc">Many congtars jhon. You have won the gifts.</p>
+                      <p class="mb-0 notify-time">Today</p>
+                    </div>
+                    <div class="notify-close position-absolute end-0 me-3">
+                      <i class="material-icons-outlined fs-6">close</i>
+                    </div>
+                  </div>
+                </a>
+              </div>
+              <div>
+                <a class="dropdown-item py-2" href="javascript:;">
+                  <div class="d-flex align-items-center gap-3">
+                    <div class="user-wrapper bg-danger text-danger bg-opacity-10">
+                      <span>PK</span>
+                    </div>
+                    <div class="">
+                      <h5 class="notify-title">New Account Created</h5>
+                      <p class="mb-0 notify-desc">From USA an user has registered.</p>
+                      <p class="mb-0 notify-time">Yesterday</p>
+                    </div>
+                    <div class="notify-close position-absolute end-0 me-3">
+                      <i class="material-icons-outlined fs-6">close</i>
+                    </div>
+                  </div>
+                </a>
+              </div>
+            </div>
+          </div>
+        </li> -->
+        
+        <!-- 최신 모임 -->
+        <li class="nav-item d-md-flex d-none">
+          <a class="nav-link position-relative" data-bs-toggle="offcanvas" href="#offcanvasCart">
+            <!-- <i class="material-icons-outlined">shopping_cart</i> -->
+            <i class="fadeIn animated font-30 bx bx-calendar-star font-26"></i>
+            <!-- <span class="badge-notify">8</span> -->
+          </a>
+        </li>
+        <li class="nav-item dropdown">
+          <a href="javascrpt:;" class="dropdown-toggle dropdown-toggle-nocaret" data-bs-toggle="dropdown">
+             <img src="/img/admin.png" class="rounded-circle p-1 border" width="45" height="45" alt="">
+          </a>
+          <div class="dropdown-menu dropdown-user dropdown-menu-end shadow">
+            <a class="dropdown-item  gap-2 py-2" href="javascript:;">
+              <div class="text-center">
+                <img src="/img/admin.png" class="rounded-circle p-1 shadow mb-3" width="90" height="90"
+                  alt="">
+                <h5 class="user-name mb-0 fw-bold">관리자</h5>
+              </div>
+            </a>
+            <hr class="dropdown-divider">
+            <a class="dropdown-item d-flex align-items-center gap-2 py-2" th:href="@{/admin/users/update/{id}(id=${session.user != null ? session.user.id : ''})}">
+              <i class="material-icons-outlined">person_outline</i>
+              프로필
+            </a>
+            <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="javascript:;" data-bs-toggle="offcanvas" data-bs-target="#staticBackdrop">
+              <i class="material-icons-outlined">tune</i>
+              테마
+            </a>
+            <hr class="dropdown-divider">
+            <form action="/logout" method="post">
+              <!-- 💍 CSRF TOKEN -->
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+              <button type="submit" class="dropdown-item d-flex align-items-center gap-2 py-2">
+                <i class="material-icons-outlined">power_settings_new</i>
+                로그아웃
+              </button>
+            </form>
+          </div>
+        </li>
+      </ul>
+
+    </nav>
+  </header>
+  <!--end top header-->
+
+  <!-- 최신 모임 비동기 로딩 스크립트 -->
+  <script>
+    $(document).ready(function() {
+      // offcanvas가 열릴 때마다 최신 데이터 로드
+      $('#offcanvasCart').on('show.bs.offcanvas', function () {
+        loadRecentParties();
+      });
+    });
+
+    async function loadRecentParties() {
+      const orderList = document.querySelector('#offcanvasCart .order-list');
+      
+      // 로딩 표시
+      orderList.innerHTML = `
+        <div class="text-center p-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <p class="mt-2 text-muted">최신 모임을 불러오는 중...</p>
+        </div>
+      `;
+
+      try {
+        const response = await $ajax({
+          url: '/api/party',
+          type: 'GET',
+          data: { page: 1, size: 10 }
+        });
+
+        if (response && response.list && response.list.length > 0) {
+          // 데이터가 있을 때
+          let html = '';
+          response.list.forEach(party => {
+            const iconClass = party.type === '와인파티' 
+              ? 'bx-wine text-wine'
+              : 'bx-coffee-togo text-coffee';
+            const icon = `<i class="fadeIn animated bx ${iconClass} font-30"></i>`;
+            
+            const statusBadgeClass = party.status === '모임시작' 
+              ? 'bg-success'
+              : 'bg-secondary';
+            const statusBadge = `<span class="badge ${statusBadgeClass}">${party.status}</span>`;
+            
+            const matchingBadgeClass = party.matchingResult === '매칭완료'
+              ? 'bg-primary'
+              : 'bg-warning text-dark';
+            const matchingBadge = `<span class="badge ${matchingBadgeClass} ms-1">${party.matchingResult || ''}</span>`;
+            
+            const formattedDate = new Date(party.date).toLocaleDateString('ko-KR', {
+              year: 'numeric',
+              month: '2-digit',
+              day: '2-digit'
+            }).replace(/\. /g, '-').replace(/\.$/, '');
+
+            html += `
+              <div class="order-item d-flex align-items-center gap-3 p-3 border-bottom">
+                <div class="order-img">
+                  <div class="bg-light rounded-3 d-flex align-items-center justify-content-center" 
+                       style="width: 75px; height: 75px;">
+                    ${icon}
+                  </div>
+                </div>
+                <div class="order-info flex-grow-1">
+                  <h6 class="mb-1 order-title">${party.name}</h6>
+                  <p class="mb-0 text-muted small">
+                    <span>${party.type}</span>
+                    <span class="mx-1">•</span>
+                    <span>${formattedDate}</span>
+                  </p>
+                  <p class="mb-0 mt-1">
+                    ${statusBadge}
+                    ${matchingBadge}
+                  </p>
+                </div>
+                <div class="d-flex flex-column gap-2">
+                  <a href="/admin/party/basic/${party.id}" 
+                     class="text-success" 
+                     title="상세보기">
+                    <i class="fadeIn animated bx bx-search font-20"></i>
+                  </a>
+                  <a href="/admin/party/update/${party.id}" 
+                     class="text-primary" 
+                     title="수정">
+                    <i class="fadeIn animated bx bx-edit font-20"></i>
+                  </a>
+                </div>
+              </div>
+            `;
+          });
+          orderList.innerHTML = html;
+        } else {
+          // 데이터가 없을 때
+          orderList.innerHTML = `
+            <div class="order-item d-flex align-items-center gap-3 p-5 border-bottom">
+              <div class="text-center w-100 text-muted">
+                <i class="fadeIn animated bx bx-calendar-x font-50 mb-2"></i>
+                <p class="mb-0">최근 모임이 없습니다.</p>
+              </div>
+            </div>
+          `;
+        }
+      } catch (error) {
+        console.error('최신 모임 로딩 실패:', error);
+        orderList.innerHTML = `
+          <div class="order-item d-flex align-items-center gap-3 p-5 border-bottom">
+            <div class="text-center w-100 text-danger">
+              <i class="fadeIn animated bx bx-error font-50 mb-2"></i>
+              <p class="mb-0">데이터를 불러오는데 실패했습니다.</p>
+            </div>
+          </div>
+        `;
+      }
+    }
+  </script>
+
+
+</th:block>
