@@ -1,4 +1,4 @@
-package com.aloha.mini.service.impl.users;
+package com.aloha.mini.service.impl.common;
 
 import java.util.List;
 
