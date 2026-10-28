@@ -8,10 +8,7 @@
     <link rel="stylesheet" href="css/header.css">
     <link rel="stylesheet" href="css/dashboard.css">
     <link rel="stylesheet" href="css/farm.css">
-
-    <!-- 지도(Leaflet): 상세 패널 지도용 -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body class="dash-body">
     <header class="dash-header">
@@ -119,12 +116,15 @@
             </button>
         </div>
 
-        <div class="drawer-content">
-            <!-- 실제 Leaflet 지도 -->
-            <div class="farm-detail-map-wrap">
-                <div id="farm-detail-map"></div>
-                <span id="farm-detail-map-status" class="farm-map-status">지도 로딩 중</span>
-            </div>
+    <div class="drawer-content">
+        <!-- 실제 Leaflet 지도 -->
+<div class="farm-detail-map-wrap">
+    <div id="farm-detail-map"></div>
+    <span id="farm-detail-map-status" class="farm-map-status">
+        지도 로딩 중
+    </span>
+</div>
+
 
             <section class="drawer-info-card">
                 <h3>기본 정보</h3>
@@ -168,7 +168,8 @@
         </div>
     </aside>
 
-    <script src="js/common.js"></script>
-    <script src="js/farm.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="js/common.js"></script>
+<script src="js/farm.js"></script>
 </body>
 </html>
