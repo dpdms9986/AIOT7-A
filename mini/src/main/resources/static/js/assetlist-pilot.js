@@ -78,7 +78,11 @@ function selectAsset(row) {
         item.classList.toggle("selected", item === row);
     });
 
-    document.getElementById("pilot-asset-detail-card").hidden = false;
+    const detailCard = document.getElementById("pilot-asset-detail-card");
+
+if (detailCard) {
+    detailCard.hidden = false;
+}
 
     const type = row.dataset.assetType;
     const cells = row.querySelectorAll("td");
@@ -399,6 +403,9 @@ const currentStatus = droneStatus[row.dataset.status] || {
         }
     }
 
-    document.getElementById("pilot-asset-detail-card").hidden = true;
-    loadPilotAssets();
+    const detailCard = document.getElementById("pilot-asset-detail-card");
+
+if (detailCard) {
+    detailCard.hidden = true;
+}
 })();

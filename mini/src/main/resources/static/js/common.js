@@ -29,6 +29,7 @@ const MENUS = {
     ["hazardlist.html", "게시판", "⚠️"],
   ],
 };
+
 MENUS.ADMIN = MENUS.LEADER;
 
 // 헤더 채우기

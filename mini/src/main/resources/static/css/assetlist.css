@@ -1363,3 +1363,211 @@ button.asset-role-chip:focus-visible {
         gap: 12px;
     }
 }
+
+/* ========================================
+   단장용 자산 상세보기
+   기존 HTML 구조 유지
+======================================== */
+
+#pilot-asset-detail-card {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    margin: 24px 0 16px;
+    padding: 24px;
+
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 3px 12px rgba(31, 50, 70, 0.04);
+
+    color: #203246;
+}
+
+/* 상세보기 전 숨김 */
+#pilot-asset-detail-card[hidden] {
+    display: none !important;
+}
+
+/* 상세 영역 제목 */
+#pilot-asset-detail-card h2 {
+    margin: 0 0 20px;
+    padding-bottom: 16px;
+
+    border-bottom: 1px solid #e8edf2;
+
+    color: #203246;
+    font-size: 19px;
+    font-weight: 700;
+}
+
+/* 상세 정보 본문 */
+#pilot-asset-detail {
+    min-width: 0;
+    color: #46576a;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+/* 상세 정보 내부 문단 */
+#pilot-asset-detail > p {
+    margin: 0;
+    padding: 24px 0;
+
+    color: #8491a0;
+    text-align: center;
+}
+
+/* 상세 정보 그리드 */
+#pilot-asset-detail .asset-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+
+    margin: 16px 0 24px;
+}
+
+/* 개별 정보 카드 */
+#pilot-asset-detail .asset-detail-info {
+    box-sizing: border-box;
+    min-width: 0;
+    padding: 16px;
+
+    background: #f8fafc;
+    border: 1px solid #e8edf2;
+    border-radius: 10px;
+}
+
+/* 항목명 */
+#pilot-asset-detail .asset-detail-info span {
+    display: block;
+    margin-bottom: 9px;
+
+    color: #7b8794;
+    font-size: 12px;
+}
+
+/* 항목 값 */
+#pilot-asset-detail .asset-detail-info strong {
+    display: block;
+    overflow-wrap: anywhere;
+
+    color: #203246;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+/* 상세 영역 소제목 */
+#pilot-asset-detail h3,
+#pilot-asset-detail h4 {
+    margin: 20px 0 12px;
+    color: #203246;
+    font-weight: 700;
+}
+
+#pilot-asset-detail h3 {
+    font-size: 18px;
+}
+
+#pilot-asset-detail h4 {
+    font-size: 15px;
+}
+
+/* 상세 정보 표 */
+#pilot-asset-detail table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+#pilot-asset-detail th,
+#pilot-asset-detail td {
+    padding: 12px;
+    border-bottom: 1px solid #e9eef2;
+    text-align: left;
+}
+
+#pilot-asset-detail th {
+    background: #f3f6f8;
+    color: #405064;
+    font-weight: 700;
+}
+
+#pilot-asset-detail td {
+    color: #344456;
+}
+
+/* 상태 표시 */
+#pilot-asset-detail .asset-detail-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    padding: 8px 12px;
+    border-radius: 7px;
+
+    background: #eaf7ef;
+    color: #16834a;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+/* 단장 자산관리 탭 전환 보정 */
+.asset-pilot-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.asset-pilot-tab {
+    cursor: pointer;
+}
+
+.asset-pilot-tab.active {
+    color: #238451;
+    background: #e8f5ed;
+    border-color: #238451;
+    font-weight: 700;
+}
+
+.asset-pilot-table tbody tr[hidden],
+#pilot-asset-empty[hidden],
+#pilot-asset-detail-card[hidden] {
+    display: none !important;
+}
+
+/* 단장 자산관리: 탭 전환 시 숨겨진 행을 확실히 감춤 */
+.asset-pilot-table tbody tr[hidden] {
+    display: none !important;
+}
+
+#pilot-asset-empty[hidden],
+#pilot-asset-detail-card[hidden] {
+    display: none !important;
+}
+
+/* 반응형 */
+@media (max-width: 900px) {
+    #pilot-asset-detail-card {
+        padding: 18px;
+    }
+
+    #pilot-asset-detail .asset-detail-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 600px) {
+    #pilot-asset-detail-card {
+        padding: 14px;
+    }
+
+    #pilot-asset-detail .asset-detail-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    #pilot-asset-detail table {
+        min-width: 480px;
+    }
+}
