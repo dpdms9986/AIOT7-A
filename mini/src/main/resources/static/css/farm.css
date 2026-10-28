@@ -673,3 +673,116 @@ body.farm-drawer-open {
     box-shadow: 0 1px 5px #0002;
     font-size: 11px;
 }
+
+/* ===== 농지 상세 패널 레이아웃 보정 ===== */
+
+#farm-detail-drawer.farm-detail-drawer {
+    position: fixed !important;
+    top: var(--header-height, 64px) !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    z-index: 1001 !important;
+
+    display: flex;
+    flex-direction: column;
+
+    width: min(440px, 94vw) !important;
+    height: calc(100vh - var(--header-height, 64px)) !important;
+    max-height: calc(100vh - var(--header-height, 64px));
+
+    box-sizing: border-box;
+    background: #fff;
+    box-shadow: -8px 0 28px rgba(20, 40, 55, 0.15);
+
+    transform: translateX(105%);
+    visibility: hidden;
+    transition: transform 0.25s ease, visibility 0.25s ease;
+}
+
+#farm-detail-drawer.farm-detail-drawer.is-open {
+    transform: translateX(0);
+    visibility: visible;
+}
+
+#farm-detail-drawer[hidden],
+#farm-detail-backdrop[hidden] {
+    display: none !important;
+}
+
+#farm-detail-backdrop.farm-detail-backdrop {
+    position: fixed;
+    inset: var(--header-height, 64px) 0 0;
+    z-index: 1000;
+    background: rgba(24, 39, 52, 0.22);
+}
+
+#farm-detail-drawer .drawer-content {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+#farm-detail-drawer .drawer-footer {
+    display: flex;
+    flex: 0 0 auto;
+    gap: 8px;
+    padding: 14px 16px;
+    border-top: 1px solid var(--color-border, #dce4e9);
+    background: #fff;
+}
+
+#farm-detail-drawer .drawer-footer .button {
+    flex: 1 1 0;
+    width: auto;
+    min-width: 0;
+    min-height: 40px;
+    padding: 0 10px;
+    border-radius: 7px;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+#farm-detail-drawer .drawer-footer .drawer-delete {
+    border-color: #ef4444;
+    color: #dc2626;
+    background: #fff;
+}
+
+#farm-detail-drawer .drawer-footer .primary-button {
+    border-color: var(--color-primary, #238451);
+    background: var(--color-primary, #238451);
+    color: #fff;
+}
+
+/* 지도 영역 */
+#farm-detail-drawer .farm-detail-map-wrap {
+    position: relative;
+    flex: 0 0 220px;
+    height: 220px;
+    width: 100%;
+    margin-bottom: 18px;
+    overflow: hidden;
+    border: 1px solid var(--color-border, #dce4e9);
+    border-radius: 10px;
+    background: #e8eee8;
+}
+
+#farm-detail-drawer #farm-detail-map {
+    display: block;
+    width: 100%;
+    height: 220px;
+    min-height: 220px;
+}
+
+#farm-detail-drawer .farm-map-status {
+    position: absolute;
+    right: 8px;
+    bottom: 8px;
+    z-index: 500;
+    padding: 5px 8px;
+    border-radius: 5px;
+    background: #fff;
+    box-shadow: 0 1px 5px #0002;
+    font-size: 11px;
+}
