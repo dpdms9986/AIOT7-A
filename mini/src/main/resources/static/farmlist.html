@@ -39,7 +39,7 @@
             <!-- 농지 목록 -->
             <section id="farm-list" class="tab-content">
                 <div class="farm-page-title">
-                    <h1>농지 관리</h1>
+                    <h1>🌱 농지 관리</h1>
                 </div>
 
                 <p class="page-description">
@@ -114,50 +114,86 @@
                 </div>
             </section>
 
-            <!-- 농지 상세 -->
-            <section id="farm-detail" class="tab-content" hidden>
-                <div class="detail-header">
-                    <div>
-                        <div class="breadcrumb">
-                            홈　/　농지 관리　/　농지 상세
-                        </div>
-                        <h1>농지 상세 정보</h1>
-                    </div>
+    <!-- 농지 상세 사이드 패널 -->
+<div id="farm-detail-backdrop" class="farm-detail-backdrop" hidden></div>
 
-                    <button
-                        type="button"
-                        class="button"
-                        id="back-to-list"
-                    >
-                        목록으로 돌아가기
-                    </button>
-                </div>
+<aside id="farm-detail-drawer"
+       class="farm-detail-drawer"
+       aria-labelledby="drawer-title"
+       aria-hidden="true"
+       inert>
 
-                <dl class="farm-info">
-                    <dt>주소</dt>
-                    <dd id="detail-address">-</dd>
-
-                    <dt>면적</dt>
-                    <dd id="detail-area">-</dd>
-
-                    <dt>행정구역</dt>
-                    <dd id="detail-region">-</dd>
-
-                    <dt>상태</dt>
-                    <dd id="detail-status">-</dd>
-                </dl>
-
-                <h2 class="section-title">작업 이력</h2>
-
-                <div class="history-placeholder">
-                    작업 이력은 추후 연결
-                </div>
-            </section>
-
+    <div class="drawer-header">
+        <div>
+            <p class="drawer-eyebrow">FARMLAND MANAGEMENT</p>
+            <h2 id="drawer-title">농지 상세</h2>
         </div>
-    </main>
+        <button type="button" id="close-farm-detail"
+                class="drawer-close" aria-label="상세 패널 닫기">
+        </button>
     </div>
 
-    <script src="js/common.js"></script>
+    <div class="drawer-content">
+        <!-- 실제 Leaflet 지도 -->
+<div class="farm-detail-map-wrap">
+    <div id="farm-detail-map"></div>
+    <span id="farm-detail-map-status" class="farm-map-status">
+        지도 로딩 중
+    </span>
+</div>
+</div>
+
+        <section class="drawer-info-card">
+            <h3>기본 정보</h3>
+            <dl class="drawer-info">
+                <dt>주소</dt>
+                <dd id="drawer-address">-</dd>
+
+                <dt>행정구역</dt>
+                <dd id="drawer-region">-</dd>
+
+                <dt>농지 상태</dt>
+                <dd><span id="drawer-status" class="status-badge">-</span></dd>
+
+                <dt>농지 ID</dt>
+                <dd id="drawer-id">-</dd>
+
+                <dt>위도 / 경도</dt>
+                <dd id="drawer-coordinates">미등록</dd>
+            </dl>
+        </section>
+
+        <section class="drawer-info-card">
+            <h3>작업 정보</h3>
+            <dl class="drawer-info">
+                <dt>배정 조종사</dt>
+                <dd id="drawer-pilot">미배정</dd>
+
+                <dt>배정 일시</dt>
+                <dd id="drawer-assigned-at">-</dd>
+
+                <dt>작업 상태</dt>
+                <dd id="drawer-work-status">대기</dd>
+            </dl>
+        </section>
+    </div>
+
+    <div class="drawer-footer">
+        <button type="button" id="edit-farm-button" class="button">
+            수정
+        </button>
+        <button type="button" id="delete-farm-button"
+                class="button drawer-delete">
+            삭제
+        </button>
+        <button type="button" id="assign-farm-button"
+                class="button primary-button">
+            작업 배정
+        </button>
+    </div>
+</aside>
+
+<script src="js/common.js"></script>
+<script src="js/farm.js"></script>
 </body>
 </html>

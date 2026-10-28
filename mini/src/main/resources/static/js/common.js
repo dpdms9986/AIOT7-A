@@ -34,6 +34,7 @@ const MENUS = {
     ["support.html", "고객센터", "💬"],
   ],
 };
+
 MENUS.ADMIN = MENUS.LEADER;
 
 // 헤더 채우기
