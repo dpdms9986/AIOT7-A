@@ -52,7 +52,7 @@
                         <label for="region-filter">행정구역</label>
                         <select id="region-filter">
                             <option value="">전체 행정구역</option>
-                            <option value="유성구">유성구</option>
+                            <!-- 행정구역 목록은 서버 데이터로 채움 -->
                         </select>
                     </div>
 
@@ -90,7 +90,7 @@
                 <div class="table-card">
                     <div class="table-heading">
                         <h2>농지 목록</h2>
-                        <span>총 <strong id="farm-count">2</strong>건</span>
+                        <span>총 <strong id="farm-count">0</strong>건</span>
                     </div>
 
                     <div class="table-scroll">
@@ -106,56 +106,8 @@
                                 </tr>
                             </thead>
 
-                            <tbody>
-                                <tr data-farm-id="1">
-                                    <td>
-                                        <input
-                                            type="checkbox"
-                                            class="farm-select"
-                                            aria-label="전민동 농지 선택"
-                                        >
-                                    </td>
-                                    <td>전민동 15-2</td>
-                                    <td>800</td>
-                                    <td>유성구</td>
-                                    <td>
-                                        <span class="status-badge">대기</span>
-                                    </td>
-                                    <td>
-                                        <button
-                                            type="button"
-                                            class="button detail-button"
-                                            data-farm-id="1"
-                                        >
-                                            상세
-                                        </button>
-                                    </td>
-                                </tr>
-
-                                <tr data-farm-id="2">
-                                    <td>
-                                        <input
-                                            type="checkbox"
-                                            class="farm-select"
-                                            aria-label="노은동 농지 선택"
-                                        >
-                                    </td>
-                                    <td>노은동 2-8</td>
-                                    <td>600</td>
-                                    <td>유성구</td>
-                                    <td>
-                                        <span class="status-badge">대기</span>
-                                    </td>
-                                    <td>
-                                        <button
-                                            type="button"
-                                            class="button detail-button"
-                                            data-farm-id="2"
-                                        >
-                                            상세
-                                        </button>
-                                    </td>
-                                </tr>
+                            <tbody id="farm-tbody">
+                                <!-- 농지 목록은 서버에서 받아와서 채움 -->
                             </tbody>
                         </table>
                     </div>

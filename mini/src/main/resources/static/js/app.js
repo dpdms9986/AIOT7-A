@@ -56,8 +56,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
           // 권한별 메인으로 이동
           const role = String(user.role || "").toUpperCase();
-          // location.href = role === "PILOT" ? "pilot-dashboard.html" : "dashboard.html";
-          location.href = role === "PILOT" ? "pilot-dashboard.html" : "task-assignment.html";
+          const HOME = { ADMIN: "task-assignment.html", LEADER: "leader-dashboard.html", PILOT: "pilot-dashboard.html" };
+          location.href = HOME[role] || "login.html";
         } else {
           alert("이메일이나 비밀번호가 틀렸습니다.");
         }

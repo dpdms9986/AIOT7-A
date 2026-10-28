@@ -4,102 +4,110 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>고객센터 | 스마트 농업 관제 시스템</title>
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/header.css">
+  <link rel="stylesheet" href="css/dashboard.css">
   <link rel="stylesheet" href="css/info.css">
 </head>
-<body>
-  <header class="pub-header">
-    <a href="index.html" class="pub-logo"><span>🌱</span>스마트 농업 관제 시스템</a>
-    <nav class="pub-nav">
-      <a href="intro.html">시스템 소개</a>
-      <a href="features.html">주요 기능</a>
-      <a href="guide.html">이용 안내</a>
-      <a href="support.html">고객센터</a>
-    </nav>
-    <div class="pub-auth">
-      <a href="login.html" class="pub-btn pub-btn-outline">로그인</a>
-      <a href="signup.html" class="pub-btn pub-btn-primary">회원가입</a>
+<body class="dash-body" data-role="LEADER PILOT ADMIN">
+
+  <!-- ===== 공통 헤더 ===== -->
+  <header class="dash-header">
+    <a href="#" class="dash-logo"><span>🌱</span>스마트 농업 관제 시스템</a>
+    <nav class="dash-topnav" id="gnb-menu"></nav>
+    <div class="dash-header-right">
+      <span class="gnb-team" id="team-name">방제단</span>
+      <button type="button" class="gnb-invite" id="invite-btn" hidden>초대 코드 <b id="invite-code">------</b> 📋</button>
+      <span class="dash-role" id="user-role">-</span>
+      <a href="mypage.html" class="gnb-user" title="마이페이지"><span class="dash-avatar">👤</span><span id="user-name">사용자</span></a>
+      <button type="button" class="dash-btn-outline gnb-logout" id="logout-btn">로그아웃</button>
     </div>
   </header>
 
-  <main class="pub-section">
-    <p class="pub-kicker">고객센터</p>
-    <h1 class="pub-title">고객센터</h1>
-    <p class="pub-desc">궁금한 점이 있으시면 언제든지 문의해 주세요.</p>
+  <div class="dash-layout">
 
-    <div class="support-layout">
-      <div>
-        <div class="search">
-          <span>🔍</span>
-          <input type="text" placeholder="무엇을 도와드릴까요?" aria-label="검색">
-        </div>
+    <!-- ===== 왼쪽 사이드바 ===== -->
+    <aside class="dash-sidebar">
+      <nav class="dash-sidenav" id="gnb-side" aria-label="사이드 메뉴"></nav>
+      <div class="dash-side-promo">
+        <strong>🌱 더 스마트한 농업의 시작</strong>
+        <p>데이터로 만드는 건강한 농작물, 스마트 농업 관제 시스템</p>
+      </div>
+    </aside>
 
-        <div class="card">
-          <h2>자주 묻는 질문</h2>
-          <details>
-            <summary>회원가입은 어떻게 하나요?</summary>
-            <p>회원가입 화면에서 방제단장 또는 드론 조종사를 선택하고 안내에 따라 입력하면 됩니다.</p>
-          </details>
-          <details>
-            <summary>초대 코드는 어디서 확인하나요?</summary>
-            <p>방제단장으로 로그인하면 화면 상단에 초대 코드가 표시됩니다.</p>
-          </details>
-          <details>
-            <summary>작업 배정은 어떻게 이루어지나요?</summary>
-            <p>작업 배정 화면에서 농지를 선택하고 조종사별로 나눠서 배정합니다.</p>
-          </details>
-          <details>
-            <summary>드론 조종사도 농지 등록이 가능한가요?</summary>
-            <p>농지 등록은 방제단장만 할 수 있습니다. 조종사는 할당받은 농지를 확인하고 작업을 보고합니다.</p>
-          </details>
-          <details>
-            <summary>시스템 사용 중 오류가 발생했어요.</summary>
-            <p>잠시 후 다시 시도해 주세요. 계속 발생하면 아래 문의하기로 알려 주세요.</p>
-          </details>
+    <!-- ===== 본문 (support.html 내용) ===== -->
+    <main class="main-content">
+      <div class="pub-section">
+        <p class="pub-kicker">고객센터</p>
+        <h1 class="pub-title">고객센터</h1>
+        <p class="pub-desc">궁금한 점이 있으시면 언제든지 문의해 주세요.</p>
+
+        <div class="support-layout">
+          <div>
+            <div class="search">
+              <span>🔍</span>
+              <input type="text" placeholder="무엇을 도와드릴까요?" aria-label="검색">
+            </div>
+
+            <div class="card">
+              <h2>자주 묻는 질문</h2>
+              <details>
+                <summary>회원가입은 어떻게 하나요?</summary>
+                <p>회원가입 화면에서 방제단장 또는 드론 조종사를 선택하고 안내에 따라 입력하면 됩니다.</p>
+              </details>
+              <details>
+                <summary>초대 코드는 어디서 확인하나요?</summary>
+                <p>방제단장으로 로그인하면 화면 상단에 초대 코드가 표시됩니다.</p>
+              </details>
+              <details>
+                <summary>작업 배정은 어떻게 이루어지나요?</summary>
+                <p>작업 배정 화면에서 농지를 선택하고 조종사별로 나눠서 배정합니다.</p>
+              </details>
+              <details>
+                <summary>드론 조종사도 농지 등록이 가능한가요?</summary>
+                <p>농지 등록은 방제단장만 할 수 있습니다. 조종사는 할당받은 농지를 확인하고 작업을 보고합니다.</p>
+              </details>
+              <details>
+                <summary>시스템 사용 중 오류가 발생했어요.</summary>
+                <p>잠시 후 다시 시도해 주세요. 계속 발생하면 아래 문의하기로 알려 주세요.</p>
+              </details>
+            </div>
+          </div>
+
+          <aside class="card">
+            <h2>문의하기</h2>
+            <div class="contact-row"><span>📞</span>전화<small>[추후 입력]</small></div>
+            <div class="contact-row"><span>✉️</span>이메일<small>[추후 입력]</small></div>
+            <div class="contact-row"><span>🕘</span>운영 시간<small>[추후 입력]</small></div>
+
+            <h2 style="margin-top: 24px;">문의 양식</h2>
+            <form class="form" id="support-form">
+              <label for="name">이름</label>
+              <input type="text" id="name" name="name" placeholder="이름을 입력해 주세요" required>
+
+              <label for="email">이메일</label>
+              <input type="email" id="email" name="email" placeholder="이메일을 입력해 주세요" required>
+
+              <label for="type">문의 유형</label>
+              <select id="type" name="type" required>
+                <option value="">선택해 주세요</option>
+                <option value="account">계정 · 로그인</option>
+                <option value="field">농지 · 작업 배정</option>
+                <option value="drone">드론 · 기체</option>
+                <option value="etc">기타</option>
+              </select>
+
+              <label for="content">문의 내용</label>
+              <textarea id="content" name="content" placeholder="문의 내용을 입력해 주세요" required></textarea>
+
+              <button type="submit" class="pub-btn pub-btn-primary pub-btn-block">보내기</button>
+            </form>
+          </aside>
         </div>
       </div>
+    </main>
+  </div>
 
-      <aside class="card">
-        <h2>문의하기</h2>
-        <div class="contact-row"><span>📞</span>전화<small>[추후 입력]</small></div>
-        <div class="contact-row"><span>✉️</span>이메일<small>[추후 입력]</small></div>
-        <div class="contact-row"><span>🕘</span>운영 시간<small>[추후 입력]</small></div>
-
-        <h2 style="margin-top: 24px;">문의 양식</h2>
-        <form class="form" id="support-form">
-          <label for="name">이름</label>
-          <input type="text" id="name" name="name" placeholder="이름을 입력해 주세요" required>
-
-          <label for="email">이메일</label>
-          <input type="email" id="email" name="email" placeholder="이메일을 입력해 주세요" required>
-
-          <label for="type">문의 유형</label>
-          <select id="type" name="type" required>
-            <option value="">선택해 주세요</option>
-            <option value="account">계정 · 로그인</option>
-            <option value="field">농지 · 작업 배정</option>
-            <option value="drone">드론 · 기체</option>
-            <option value="etc">기타</option>
-          </select>
-
-          <label for="content">문의 내용</label>
-          <textarea id="content" name="content" placeholder="문의 내용을 입력해 주세요" required></textarea>
-
-          <button type="submit" class="pub-btn pub-btn-primary pub-btn-block">보내기</button>
-        </form>
-      </aside>
-    </div>
-  </main>
-
-  <footer class="pub-footer">
-    <div class="pub-footer-inner">
-      <div class="pub-logo small"><span>🌱</span>스마트 농업 관제 시스템</div>
-      <p>© 2026 스마트 농업 관제 시스템. All rights reserved.</p>
-      <div class="pub-footer-links">
-        <a href="support.html">고객센터</a>
-        <a href="#">이용약관</a>
-        <a href="#">개인정보처리방침</a>
-      </div>
-    </div>
-  </footer>
+  <script src="js/common.js"></script>
 </body>
 </html>
