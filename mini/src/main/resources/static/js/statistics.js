@@ -324,6 +324,21 @@
         });
     }
 
+        // 받아온 이력에서 지역·조종사 목록을 뽑아 필터 <select>에 채움
+    function fillFilterOptions() {
+        const fill = (selector, values) => {
+            const select = $(selector);
+            const first = select.options[0]; // "전체 지역" / "전체 조종사" 는 유지
+            select.replaceChildren(first);
+            [...new Set(values.filter(Boolean))]
+                .sort((a, b) => a.localeCompare(b, "ko"))
+                .forEach(value => select.add(new Option(value, value)));
+        };
+
+        fill("#stats-region", history.map(item => item.region));
+        fill("#stats-pilot", history.map(item => item.pilot));
+    }
+
     // 서버에서 통계 데이터를 불러오는 비동기 함수
     async function loadStatisticsData() {
         try {
@@ -335,6 +350,7 @@
             body.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:20px; color:#666;">통계 데이터를 불러오지 못했습니다.</td></tr>`;
             return;
         }
+        fillFilterOptions();
         render();
     }
 

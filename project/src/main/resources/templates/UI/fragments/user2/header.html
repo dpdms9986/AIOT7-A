@@ -1,0 +1,238 @@
+<th:block th:fragment="header">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  
+  <header class="brand-header">
+    <!-- Utility Bar -->
+    <div class="util-bar">
+      <div class="container-fluid d-flex justify-content-between align-items-center py-2">
+        <!-- Menu & Logo Section -->
+        <div class="d-flex align-items-center">
+          <button class="btn-menu me-4" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar">
+            <span class="material-icons">menu</span>
+          </button>
+        </div>
+        
+        <!-- Right Actions -->
+        <div class="d-flex align-items-center gap-2">
+          <!-- <a href="/my/carts" class="btn-cart">
+            <span class="material-icons">shopping_bag</span>
+          </a> -->
+          
+          <!-- 🔐 로그인 ❌ -->
+          <th:block sec:authorize="isAnonymous()">
+            <a href="/login" class="btn btn-brand-dark btn-sm">로그인</a>
+            <a href="/join" class="btn btn-brand-outline btn-sm">회원가입</a>
+          </th:block>
+          
+          <!-- 🔐 로그인 ⭕ -->
+          <th:block sec:authorize="isAuthenticated()">
+            <a href="/my" class="btn-menu"><span class="material-icons">person</span></a>
+            <!-- 로그아웃 -->
+            <th:block sec:authorize="isAuthenticated()">
+              <a href="javascript:;" class="btn-menu" onclick="logout()"><span class="material-icons">logout</span></a>
+            </th:block>
+            <th:block sec:authorize="hasRole('ADMIN')">
+              <a href="/admin" class="btn btn-brand-danger btn-sm d-flex align-items-center justify-content-center p-2">
+                <span class="material-icons">admin_panel_settings</span>
+              </a>
+            </th:block>
+
+          </th:block>
+
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Logo Section -->
+    <div class="logo-section text-center py-4">
+      <a href="/" class="text-decoration-none">
+        <!-- <img src="/img/logo.png" alt="💛START💛" class="brand-logo animate__animated animate__fadeInUp animate__delay-1s"> -->
+        <img src="/img/logo.png" alt="💛START💛" class="brand-logo">
+      </a>
+    </div>
+
+    <!-- Offcanvas Menu -->
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
+      <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="offcanvasNavbarLabel">💛START💛</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      </div>
+      <div class="offcanvas-body">
+        <nav>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item border-0">
+              <a class="text-decoration-none text-dark" href="/">Home</a>
+            </li>
+            <li class="list-group-item border-0">
+              <a class="text-decoration-none text-dark" href="/my">My</a>
+            </li>
+            <li class="list-group-item border-0">
+              <a class="text-decoration-none text-dark" href="/">Menu1</a>
+            </li>
+            <li class="list-group-item border-0">
+              <a class="text-decoration-none text-dark" href="/">Menu2</a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <style>
+    .brand-header {
+      background: #ffffff;
+      border-bottom: 1px solid #dee2e6;
+    }
+
+    .util-bar {
+      background: #ffffff;
+      height: 80px;
+    }
+
+    .btn-menu, .btn-cart {
+      background: none;
+      border: none;
+      padding: 12px;
+      border-radius: 50%;
+      transition: background-color 0.3s;
+    }
+
+    .btn-menu:hover, .btn-cart:hover {
+      background-color: #f8f9fa;
+    }
+
+    .btn-menu .material-icons, .btn-cart .material-icons {
+      font-size: 24px;
+      color: #000;
+    }
+
+    .btn-brand-dark {
+      background-color: #212529;
+      color: white;
+      border: 1px solid #212529;
+      padding: 6px 12px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 16px;
+      transition: all 0.3s;
+    }
+
+    .btn-brand-dark:hover {
+      background-color: #000;
+      color: white;
+    }
+
+    .btn-brand-outline {
+      background-color: transparent;
+      color: #212529;
+      border: 1px solid #212529;
+      padding: 6px 12px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 16px;
+      transition: all 0.3s;
+    }
+
+    .btn-brand-outline:hover {
+      background-color: #212529;
+      color: white;
+    }
+
+    .btn-brand-danger {
+      background-color: #B02A37;
+      color: white;
+      border: 1px solid #A52834;
+      padding: 6px 12px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 16px;
+      transition: all 0.3s;
+    }
+
+    .btn-brand-danger:hover {
+      background-color: #A52834;
+      color: white;
+    }
+
+    .logo-section {
+      background: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .brand-logo {
+      width: 100px;
+    }
+
+    .country-bar {
+      background: #ffffff;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .country-text {
+      font-family: 'Helvetica Neue', sans-serif;
+      font-size: 20px;
+      font-weight: 400;
+      color: #000;
+      letter-spacing: 0.1em;
+    }
+
+    .navbar .nav-link {
+      color: #000 !important;
+      font-weight: 500;
+      padding: 8px 16px;
+      transition: color 0.3s;
+    }
+
+    .navbar .nav-link:hover {
+      color: #666666 !important;
+    }
+
+    .offcanvas-title {
+      font-size: 20px;
+      font-weight: 500;
+      color: #000;
+    }
+
+    .list-group-item {
+      padding: 12px 16px;
+      border-bottom: 1px solid #dee2e6 !important;
+    }
+
+    .list-group-item:last-child {
+      border-bottom: none !important;
+    }
+
+    .list-group-item a {
+      color: rgba(33, 37, 41, 0.75);
+      font-size: 16px;
+      transition: color 0.3s;
+    }
+
+    .list-group-item a:hover {
+      color: #000;
+    }
+
+    .placeholder-glow .placeholder {
+      display: inline-block;
+      height: 1.5em;
+      background: #e0e0e0;
+      border-radius: 0.3em;
+      animation: placeholder-glow 1.2s infinite linear;
+    }
+
+    @keyframes placeholder-glow {
+      0% { opacity: 0.5; }
+      50% { opacity: 1; }
+      100% { opacity: 0.5; }
+    }
+  </style>
+</th:block>
+
+

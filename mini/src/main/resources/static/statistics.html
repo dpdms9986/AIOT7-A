@@ -75,18 +75,14 @@
                     지역
                     <select id="stats-region">
                         <option value="">전체 지역</option>
-                        <option value="유성구">유성구</option>
-                        <option value="대덕구">대덕구</option>
-                        <option value="서구">서구</option>
+                        <!-- 지역 목록은 서버 데이터로 채움 -->
                     </select>
                 </label>
                 <label>
                     담당 조종사
                     <select id="stats-pilot">
                         <option value="">전체 조종사</option>
-                        <option value="김조종">김조종</option>
-                        <option value="이민수">이민수</option>
-                        <option value="박지훈">박지훈</option>
+                        <!-- 조종사 목록은 서버 데이터로 채움 -->
                     </select>
                 </label>
                 <div class="stats-filter-actions">
@@ -103,7 +99,7 @@
             <span class="stats-kpi-icon green">▤</span>
             <div>
                 <span>방제 완료 필지</span>
-                <strong id="stats-total-count">0건></strong>
+                <strong id="stats-total-count">0건</strong>
                 <small>선택 조건 기준</small>
             </div>
         </article>
@@ -208,33 +204,7 @@
             ※ 화면 확인용 예시 데이터입니다. 실제 이력은 백엔드 API 연결 후 제공됩니다.
         </p>
     </div>
-</section>
-
-
-    <div class="stats-table-wrap">
-            <table class="stats-table">
-                <thead>
-                    <tr>
-                        <th>농지 주소</th>
-                        <th>지역</th>
-                        <th>담당 조종사</th>
-                        <th>배정 일시</th>
-                        <th>완료 일시</th>
-                        <th>방제 면적(㎡)</th>
-                        <th>상태</th>
-                    </tr>
-                </thead>
-                <tbody id="stats-history-body"></tbody>
-            </table>
-        </div>
-
-     <p id="stats-empty" class="stats-empty" hidden>
-            조건에 맞는 방제 이력이 없습니다.
-        </p>
-        <p class="stats-demo-note">
-            ※ 현재는 화면 확인용 예시 데이터입니다. 실제 이력과 집계는 백엔드 API 연결 후 제공됩니다.
-        </p>
-    </section>
+  </section>
 </main>
 
   <script src="js/common.js"></script>

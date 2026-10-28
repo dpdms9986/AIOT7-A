@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{UI/layouts/admin/admin_layout}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>게시글 수정</title>
+</head>
+<body layout:fragment="content">
+  <main class="main-wrapper">
+    <div class="main-content">
+      <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
+        <div class="breadcrumb-title pe-3">
+          <i class="fadeIn animated bx bx-home"></i>
+          게시판관리
+        </div>
+        <div class="ps-3">
+          <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0 p-0">
+              <li class="breadcrumb-item active" aria-current="page">수정하기</li>
+            </ol>
+          </nav>
+        </div>
+      </div>
+
+      <div class="row justify-content-center">
+        <div class="col-lg-10">
+          <div class="card">
+            <div class="card-body p-4">
+              <h5 class="mb-4">게시글 정보 수정</h5>
+              <form id="boardUpdateForm" class="needs-validation" novalidate th:object="${board}">
+                <!-- CSRF TOKEN -->
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                <!-- 원본 번호 (수정 시 참조용) -->
+                <input type="hidden" th:field="*{no}" id="originalNo">
+                
+                <div class="row g-3">
+                  
+                  <!-- 게시글 ID (읽기 전용) -->
+                  <div class="col-md-6">
+                    <label for="id" class="form-label">게시글 ID</label>
+                    <input type="text" class="form-control" th:field="*{id}" readonly>
+                  </div>
+
+                  <!-- 게시판 타입 -->
+                  <div class="col-md-6">
+                    <label for="type" class="form-label">게시판 타입 <span class="text-danger">*</span></label>
+                    <select class="form-select" th:field="*{type}" required>
+                      <option value="공지사항">공지사항</option>
+                      <option value="커뮤니티">커뮤니티</option>
+                    </select>
+                    <div class="invalid-feedback">게시판 타입을 선택해주세요.</div>
+                  </div>
+
+                  <!-- 제목 -->
+                  <div class="col-12">
+                    <label for="title" class="form-label">제목 <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" th:field="*{title}" required 
+                           maxlength="200" placeholder="제목을 입력하세요">
+                    <div class="invalid-feedback">제목을 입력해주세요.</div>
+                  </div>
+
+                  <!-- 내용 -->
+                  <div class="col-12">
+                    <label for="fm_post" class="form-label">내용 <span class="text-danger">*</span></label>
+                    <textarea id="fm_post" name="content" th:text="${board.content}"></textarea>
+                    <div class="invalid-feedback">내용을 입력해주세요.</div>
+                  </div>
+
+                  <!-- 노출 순서 -->
+                  <div class="col-md-6">
+                    <label for="seq" class="form-label">노출 순서</label>
+                    <input type="number" class="form-control" th:field="*{seq}" 
+                           min="1" max="9999" placeholder="숫자가 작을수록 먼저 노출됩니다.">
+                    <div class="form-text">숫자가 작을수록 먼저 노출됩니다. (선택사항)</div>
+                  </div>
+
+                  <!-- 조회수 (읽기 전용) -->
+                  <div class="col-md-6">
+                    <label for="views" class="form-label">조회수</label>
+                    <input type="number" class="form-control" th:field="*{views}" readonly>
+                    <div class="form-text">조회수는 자동으로 집계됩니다.</div>
+                  </div>
+
+                  <!-- 버튼 영역 -->
+                  <div class="col-12 mt-4">
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                      <button type="button" class="btn btn-secondary" onclick="history.back()">취소</button>
+                      <button type="submit" class="btn btn-lg btn-primary px-5">수정하기</button>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Jodit Editor -->
+  <link rel="stylesheet" href="/jodit/jodit.min.css">
+  <script src="/jodit/jodit.min.js"></script>
+  <script type="text/javascript">
+    // Jodit 초기화 (이미지는 게시글 ID(parentId)와 함께 업로드)
+    const boardId = document.getElementById('id').value;
+    const csrfToken = document.querySelector('#boardUpdateForm input[name="_csrf"]').value;
+
+    const editor = Jodit.make('#fm_post', {
+      height: 400,
+      language: 'ko',
+      toolbarAdaptive: false,
+      buttons: [
+        'source', '|', 'bold', 'italic', 'underline', 'strikethrough', '|',
+        'ul', 'ol', '|', 'font', 'fontsize', 'brush', '|',
+        'paragraph', 'align', '|', 'image', 'link', 'table', '|',
+        'undo', 'redo', '|', 'hr', 'eraser', 'fullsize'
+      ],
+      uploader: {
+        url: '/api/common/editor/upload',
+        format: 'json',
+        headers: { 'X-CSRF-TOKEN': csrfToken },
+        filesVariableName: function () { return 'files'; },
+        prepareData: function (formData) {
+          formData.append('parentId', boardId);
+          return formData;
+        },
+        insertImageAsBase64URI: false,
+        imagesExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webp']
+      }
+    });
+  </script>
+
+  <script>
+    // 폼 제출
+    document.getElementById('boardUpdateForm').addEventListener('submit', async function(event) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      // Jodit 내용 동기화
+      const content = editor.value;
+      document.getElementById('fm_post').value = content;
+
+      // 폼 유효성 검사
+      if (!this.checkValidity()) {
+        this.classList.add('was-validated');
+        return;
+      }
+
+      // 내용 입력 확인 (태그 제외 텍스트 또는 이미지)
+      if (editor.text.trim() === '' && !/<img\s/i.test(content)) {
+        $alert('입력 확인', '내용을 입력해주세요.', 'warning');
+        return;
+      }
+
+      try {
+        // 폼 데이터 수집
+        const formData = new FormData(this);
+        const boardData = {};
+        
+        for (let [key, value] of formData.entries()) {
+          boardData[key] = value;
+        }
+
+        // 수정 요청
+        await $ajax({
+          url: '/api/common/board',
+          type: 'PUT',
+          data: boardData
+        });
+
+        $alert('성공', '게시글이 성공적으로 수정되었습니다.', 'success').then(() => {
+          window.location.href = '/admin/board';
+        });
+
+      } catch (error) {
+        console.error('게시글 수정 오류:', error);
+        $alert('오류', '수정 중 오류가 발생했습니다. 다시 시도해주세요.', 'error');
+      }
+    });
+
+    // Bootstrap validation
+    (function() {
+      'use strict';
+      window.addEventListener('load', function() {
+        const forms = document.getElementsByClassName('needs-validation');
+        Array.prototype.filter.call(forms, function(form) {
+          form.addEventListener('submit', function(event) {
+            if (form.checkValidity() === false) {
+              event.preventDefault();
+              event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+          }, false);
+        });
+      }, false);
+    })();
+  </script>
+
+</body>
+</html>

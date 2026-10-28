@@ -25,16 +25,17 @@ a { color: inherit; text-decoration: none; }
 /* ----- 헤더 ----- */
 .pub-header {
   position: sticky; top: 0; z-index: 10;
-  display: flex; align-items: center; gap: 32px;
-  height: 68px; padding: 0 40px;
+  display: flex; align-items: center; justify-content: space-between; gap: 32px;
+  height: 68px; padding: 0 48px;
   background: #fff; border-bottom: 1px solid var(--border);
 }
+
 .pub-logo {
   display: flex; align-items: center; gap: 8px;
   font-size: 17px; font-weight: 800; white-space: nowrap;
 }
 .pub-logo.small { font-size: 14px; }
-.pub-nav { display: flex; gap: 28px; flex: 1; font-size: 14px; }
+.pub-nav { display: flex; gap: 36px; font-size: 13px; }
 .pub-nav a:hover { color: var(--green); }
 .pub-auth { display: flex; gap: 8px; }
 
@@ -235,3 +236,11 @@ details p { margin: 10px 0 0; color: var(--sub); font-size: 14px; }
 }
 
 
+/* 히어로 이미지: 가장자리를 배경색에 자연스럽게 녹이기 */
+.hero-img {
+  border-radius: 0;
+  box-shadow: none;
+  background: none;
+  -webkit-mask-image: radial-gradient(ellipse 70% 65% at center, #000 55%, transparent 100%);
+  mask-image: radial-gradient(ellipse 70% 65% at center, #000 55%, transparent 100%);
+}

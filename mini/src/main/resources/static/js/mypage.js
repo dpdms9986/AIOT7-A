@@ -1,17 +1,29 @@
 // 마이페이지 (mypage.html) - GNB_007, USER_011
-// ⚠️ 실적·기체 정보는 화면 확인용 임시 데이터입니다. 백엔드 API 연결 후 교체하세요.
 
 const DRONE_MODELS = ["DJI Agras T40", "DJI Agras T30", "DJI Agras T25", "XAG P100", "기타"];
 
-// 실적 (조종사는 내 실적, 단장은 방제단 전체 실적)
-const RECORDS = {
-  PILOT:  { title: "📊 내 방제 실적",  month: 6,  total: 42,  area: 38400,  used: 41.5 },
-  LEADER: { title: "📊 방제단 실적",   month: 21, total: 186, area: 172300, used: 180.2 },
-};
-RECORDS.ADMIN = RECORDS.LEADER;
+// 실적 제목 (조종사는 내 실적, 단장은 방제단 전체 실적)
+const RECORD_TITLE = { PILOT: "📊 내 방제 실적", LEADER: "📊 방제단 실적", ADMIN: "📊 방제단 실적" };
 
-// 내 기체 정보 (임시)
-const myDrone = { model: "DJI Agras T40", tank: 40 };
+// 실적 API (백엔드 주소에 맞게 수정)
+// 응답 예: { month: 6, total: 42, area: 38400, used: 41.5 }
+const RECORDS_API = "/api/users/me/records";
+
+// 실적 불러오기
+async function loadRecords() {
+  try {
+    const res = await fetch(RECORDS_API);
+    if (!res.ok) throw new Error(`서버 응답 ${res.status}`);
+    const rec = await res.json();
+    $("#rec-month").textContent = rec.month ?? 0;
+    $("#rec-total").textContent = rec.total ?? 0;
+    $("#rec-area").textContent = Number(rec.area || 0).toLocaleString();
+    $("#rec-used").textContent = rec.used ?? 0;
+  } catch (error) {
+    console.error("실적 조회 실패:", error);
+    ["#rec-month", "#rec-total", "#rec-area", "#rec-used"].forEach((s) => ($(s).textContent = "-"));
+  }
+}
 
 const $ = (selector) => document.querySelector(selector);
 let currentRole = "";
@@ -37,12 +49,8 @@ function initMyPage(user) {
   }
 
   // 실적 (GNB_007)
-  const rec = RECORDS[currentRole] || RECORDS.PILOT;
-  $("#record-title").textContent = rec.title;
-  $("#rec-month").textContent = rec.month;
-  $("#rec-total").textContent = rec.total;
-  $("#rec-area").textContent = rec.area.toLocaleString();
-  $("#rec-used").textContent = rec.used;
+  $("#record-title").textContent = RECORD_TITLE[currentRole] || RECORD_TITLE.PILOT;
+  loadRecords();
 
   // 정보 수정 기본값
   $("#info-email").value = user.userId || "";
@@ -53,8 +61,9 @@ function initMyPage(user) {
   if (currentRole === "PILOT") {
     $("#drone-fields").hidden = false;
     $("#info-drone").innerHTML = DRONE_MODELS.map((m) => `<option value="${m}">${m}</option>`).join("");
-    $("#info-drone").value = myDrone.model;
-    $("#info-tank").value = myDrone.tank;
+    // 기체 정보는 로그인 사용자 정보에서 (백엔드 필드 이름에 맞게 수정)
+    $("#info-drone").value = user.droneModel || DRONE_MODELS[0];
+    $("#info-tank").value = user.tankCapacity || "";
     $("#info-tank").required = true;
   }
 }

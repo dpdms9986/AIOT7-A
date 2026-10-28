@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="css/header.css">
     <link rel="stylesheet" href="css/dashboard.css">
     <link rel="stylesheet" href="css/farm.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 </head>
 <body class="dash-body">
     <header class="dash-header">
@@ -33,179 +34,182 @@
             </div>
         </aside>
 
-    <main class="app-layout">
-        <div class="main-content">
+        <main class="app-layout">
+            <div class="main-content">
 
-            <!-- 농지 목록 -->
-            <section id="farm-list" class="tab-content">
-                <div class="farm-page-title">
-                    <h1>농지 관리</h1>
-                </div>
-
-                <p class="page-description">
-                    등록된 농지의 현황을 확인하고 관리합니다.
-                </p>
-
-                <!-- 검색 필터 -->
-                <div class="filter-card">
-                    <div class="filter-group">
-                        <label for="region-filter">행정구역</label>
-                        <select id="region-filter">
-                            <option value="">전체 행정구역</option>
-                            <option value="유성구">유성구</option>
-                        </select>
+                <!-- 농지 목록 -->
+                <section id="farm-list" class="tab-content">
+                    <div class="farm-page-title">
+                        <h1>🌱 농지 관리</h1>
                     </div>
 
-                    <div class="filter-group">
-                        <label for="status-filter">상태</label>
-                        <select id="status-filter">
-                            <option value="">전체 상태</option>
-                            <option value="대기">대기</option>
-                        </select>
-                    </div>
+                    <p class="page-description">
+                        등록된 농지의 현황을 확인하고 관리합니다.
+                    </p>
 
-                    <div class="filter-group search-group">
-                        <label for="farm-search">검색</label>
-                        <input
-                            type="search"
-                            id="farm-search"
-                            placeholder="주소 또는 행정구역 검색"
-                        >
-                    </div>
-
-                    <button type="button" id="search-button" class="button">
-                        검색
-                    </button>
-
-                    <button
-                        type="button"
-                        id="register-button"
-                        class="button primary-button"
-                    >
-                        + 농지 등록
-                    </button>
-                </div>
-
-                <!-- 농지 목록 테이블 -->
-                <div class="table-card">
-                    <div class="table-heading">
-                        <h2>농지 목록</h2>
-                        <span>총 <strong id="farm-count">2</strong>건</span>
-                    </div>
-
-                    <div class="table-scroll">
-                        <table class="farm-table">
-                            <thead>
-                                <tr>
-                                    <th>선택</th>
-                                    <th>주소</th>
-                                    <th>면적(㎡)</th>
-                                    <th>행정구역</th>
-                                    <th>상태</th>
-                                    <th>관리</th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                <tr data-farm-id="1">
-                                    <td>
-                                        <input
-                                            type="checkbox"
-                                            class="farm-select"
-                                            aria-label="전민동 농지 선택"
-                                        >
-                                    </td>
-                                    <td>전민동 15-2</td>
-                                    <td>800</td>
-                                    <td>유성구</td>
-                                    <td>
-                                        <span class="status-badge">대기</span>
-                                    </td>
-                                    <td>
-                                        <button
-                                            type="button"
-                                            class="button detail-button"
-                                            data-farm-id="1"
-                                        >
-                                            상세
-                                        </button>
-                                    </td>
-                                </tr>
-
-                                <tr data-farm-id="2">
-                                    <td>
-                                        <input
-                                            type="checkbox"
-                                            class="farm-select"
-                                            aria-label="노은동 농지 선택"
-                                        >
-                                    </td>
-                                    <td>노은동 2-8</td>
-                                    <td>600</td>
-                                    <td>유성구</td>
-                                    <td>
-                                        <span class="status-badge">대기</span>
-                                    </td>
-                                    <td>
-                                        <button
-                                            type="button"
-                                            class="button detail-button"
-                                            data-farm-id="2"
-                                        >
-                                            상세
-                                        </button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
-            <!-- 농지 상세 -->
-            <section id="farm-detail" class="tab-content" hidden>
-                <div class="detail-header">
-                    <div>
-                        <div class="breadcrumb">
-                            홈　/　농지 관리　/　농지 상세
+                    <!-- 검색 필터 -->
+                    <div class="filter-card">
+                        <div class="filter-group">
+                            <label for="region-filter">행정구역</label>
+                                <select id="region-filter">
+                                <option value="">전체 행정구역</option>
+                                <option value="전민동">대전광역시 유성구 전민동</option>
+                                <option value="노은동">대전광역시 유성구 노은동</option>
+                            </select>
                         </div>
-                        <h1>농지 상세 정보</h1>
+
+                        <div class="filter-group search-group">
+                            <label for="farm-search">검색</label>
+                            <input type="search" id="farm-search" placeholder="주소 또는 행정구역 검색">
+                        </div>
+
+                        <button type="button" id="search-button" class="button">검색</button>
+                        <button type="button" id="register-button" class="button primary-button">+ 농지 등록</button>
                     </div>
 
-                    <button
-                        type="button"
-                        class="button"
-                        id="back-to-list"
-                    >
-                        목록으로 돌아가기
-                    </button>
-                </div>
+                    <!-- 농지 목록 테이블 -->
+                    <div class="table-card">
+                        <div class="table-heading">
+                            <h2>농지 목록</h2>
+                            <span>총 <strong id="farm-count">2</strong>건</span>
+                        </div>
 
-                <dl class="farm-info">
+                        <div class="table-scroll">
+                            <table class="farm-table">
+                                <thead>
+                                    <tr>
+                                        <th>선택</th>
+                                        <th>주소</th>
+                                        <th>행정구역</th>
+                                        <th>상태</th>
+                                        <th>관리</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr
+                                        data-farm-id="1"
+                                        data-address="전민동 15-2"
+                                        data-city="대전광역시"
+                                        data-region="유성구"
+                                        data-dong="전민동"
+                                        data-status="대기"
+                                        data-latitude=""
+                                        data-longitude=""
+                                    >
+                                        <td>
+                                            <input type="checkbox" class="farm-select" aria-label="전민동 농지 선택">
+                                        </td>
+                                        <td>전민동 15-2</td>
+                                        <td>유성구 전민동</td>
+                                        <td><span class="status-badge">대기</span></td>
+                                        <td>
+                                            <button type="button" class="button detail-button" data-farm-id="1">상세</button>
+                                        </td>
+                                    </tr>
+                                    <tr
+                                        data-farm-id="2"
+                                        data-address="노은동 2-8"
+                                        data-city="대전광역시"
+                                        data-region="유성구"
+                                        data-dong="노은동"
+                                        data-status="대기"
+                                        data-latitude=""
+                                        data-longitude=""
+                                    >
+                                        <td>
+                                            <input type="checkbox" class="farm-select" aria-label="노은동 농지 선택">
+                                        </td>
+                                        <td>노은동 2-8</td>
+                                        <td>유성구 노은동</td>
+                                        <td><span class="status-badge">대기</span></td>
+                                        <td>
+                                            <button type="button" class="button detail-button" data-farm-id="2">상세</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+            </div><!-- /.main-content -->
+        </main>
+    </div><!-- /.dash-layout -->
+
+    <!-- 농지 상세 사이드 패널 -->
+    <div id="farm-detail-backdrop" class="farm-detail-backdrop" hidden></div>
+
+    <aside id="farm-detail-drawer"
+           class="farm-detail-drawer"
+           aria-labelledby="drawer-title"
+           aria-hidden="true"
+           inert>
+
+        <div class="drawer-header">
+            <div>
+                <p class="drawer-eyebrow">FARMLAND MANAGEMENT</p>
+                <h2 id="drawer-title">농지 상세</h2>
+            </div>
+            <button type="button" id="close-farm-detail"
+                    class="drawer-close" aria-label="상세 패널 닫기">
+                &times;
+            </button>
+        </div>
+
+    <div class="drawer-content">
+        <!-- 실제 Leaflet 지도 -->
+<div class="farm-detail-map-wrap">
+    <div id="farm-detail-map"></div>
+    <span id="farm-detail-map-status" class="farm-map-status">
+        지도 로딩 중
+    </span>
+</div>
+
+
+            <section class="drawer-info-card">
+                <h3>기본 정보</h3>
+                <dl class="drawer-info">
                     <dt>주소</dt>
-                    <dd id="detail-address">-</dd>
-
-                    <dt>면적</dt>
-                    <dd id="detail-area">-</dd>
+                    <dd id="drawer-address">-</dd>
 
                     <dt>행정구역</dt>
-                    <dd id="detail-region">-</dd>
+                    <dd id="drawer-region">-</dd>
 
-                    <dt>상태</dt>
-                    <dd id="detail-status">-</dd>
+                    <dt>농지 상태</dt>
+                    <dd><span id="drawer-status" class="status-badge">-</span></dd>
+
+                    <dt>농지 ID</dt>
+                    <dd id="drawer-id">-</dd>
+
+                    <dt>위도 / 경도</dt>
+                    <dd id="drawer-coordinates">미등록</dd>
                 </dl>
-
-                <h2 class="section-title">작업 이력</h2>
-
-                <div class="history-placeholder">
-                    작업 이력은 추후 연결
-                </div>
             </section>
 
-        </div>
-    </main>
-    </div>
+            <section class="drawer-info-card">
+                <h3>작업 정보</h3>
+                <dl class="drawer-info">
+                    <dt>배정 조종사</dt>
+                    <dd id="drawer-pilot">미배정</dd>
 
-    <script src="js/common.js"></script>
+                    <dt>배정 일시</dt>
+                    <dd id="drawer-assigned-at">-</dd>
+
+                    <dt>작업 상태</dt>
+                    <dd id="drawer-work-status">대기</dd>
+                </dl>
+            </section>
+        </div><!-- /.drawer-content -->
+
+        <div class="drawer-footer">
+            <button type="button" id="edit-farm-button" class="button">수정</button>
+            <button type="button" id="delete-farm-button" class="button drawer-delete">삭제</button>
+            <button type="button" id="assign-farm-button" class="button primary-button">작업 배정</button>
+        </div>
+    </aside>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="js/common.js"></script>
+<script src="js/farm.js"></script>
 </body>
 </html>

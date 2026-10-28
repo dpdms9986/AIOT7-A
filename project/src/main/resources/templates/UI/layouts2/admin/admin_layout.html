@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html data-bs-theme="light">
+<head>
+    <th:block th:replace="~{UI/fragments/admin/meta::meta}"></th:block>
+    <th:block th:replace="~{UI/fragments/admin/link::link}"></th:block>
+    <th:block th:replace="~{UI/fragments/admin/script::script}"></th:block>
+</head>
+<body>
+
+    <!-- [HEADER] -->
+    <th:block th:replace="~{UI/fragments/admin/header::header}"></th:block>
+    <!-- [SIDE] -->
+    <th:block th:replace="~{UI/fragments/admin/side::side}"></th:block>
+    
+    <!-- [CONTENT] -->
+    <th:block layout:fragment="content"></th:block>
+    
+
+    <!-- [RECENT] -->
+    <th:block th:replace="~{UI/fragments/admin/recent::recent}"></th:block>
+    <!-- [THEME SWITCHER] -->
+    <th:block th:replace="~{UI/fragments/admin/switcher::switcher}"></th:block>
+</body>
+</html>
