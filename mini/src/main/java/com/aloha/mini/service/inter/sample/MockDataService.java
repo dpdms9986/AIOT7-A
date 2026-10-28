@@ -1,4 +1,4 @@
-package com.aloha.mini.service;
+package com.aloha.mini.service.inter.sample;
 
 import java.util.ArrayList;
 import java.util.List;

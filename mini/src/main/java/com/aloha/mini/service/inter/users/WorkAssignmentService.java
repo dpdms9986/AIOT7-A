@@ -1,4 +1,4 @@
-package com.aloha.mini.service;
+package com.aloha.mini.service.inter.users;
 
 import java.util.List;
 import java.util.stream.Collectors;

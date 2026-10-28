@@ -20,7 +20,7 @@ import com.aloha.mini.domain.CustomUser;
 import com.aloha.mini.dto.HazardCreateRequest;
 import com.aloha.mini.dto.HazardResponse;
 import com.aloha.mini.dto.HazardUpdateRequest;
-import com.aloha.mini.service.HazardService;
+import com.aloha.mini.service.inter.common.HazardService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

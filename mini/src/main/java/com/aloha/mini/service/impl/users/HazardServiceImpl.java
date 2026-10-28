@@ -1,4 +1,4 @@
-package com.aloha.mini.service;
+package com.aloha.mini.service.impl.users;
 
 import java.util.List;
 
@@ -17,6 +17,7 @@ import com.aloha.mini.repository.HazardCommentRepository;
 import com.aloha.mini.repository.HazardImageRepository;
 import com.aloha.mini.repository.HazardReportRepository;
 import com.aloha.mini.repository.RegionRepository;
+import com.aloha.mini.service.inter.common.HazardService;
 
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;

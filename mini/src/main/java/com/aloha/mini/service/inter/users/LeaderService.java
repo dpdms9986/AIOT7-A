@@ -1,4 +1,4 @@
-package com.aloha.mini.service;
+package com.aloha.mini.service.inter.users;
 
 import com.aloha.mini.dto.LandUpdateRequest;
 

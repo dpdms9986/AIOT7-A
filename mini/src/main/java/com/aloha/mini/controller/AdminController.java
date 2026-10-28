@@ -9,8 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.DeleteMapping;
 
 import com.aloha.mini.dto.LandUpdateRequest;
-import com.aloha.mini.service.AdminService;
-
+import com.aloha.mini.service.inter.AdminService;
 
 import lombok.RequiredArgsConstructor;
 

@@ -16,8 +16,8 @@ import com.aloha.mini.dto.PilotAssignmentResponse;
 import com.aloha.mini.dto.StatusUpdateRequest;
 import com.aloha.mini.dto.UserResponse;
 import com.aloha.mini.dto.WorkActionRequest;
-import com.aloha.mini.service.PilotService;
-import com.aloha.mini.service.WorkAssignmentService;
+import com.aloha.mini.service.inter.users.PilotService;
+import com.aloha.mini.service.inter.users.WorkAssignmentService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;

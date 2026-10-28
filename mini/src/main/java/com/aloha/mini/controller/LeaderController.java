@@ -20,8 +20,8 @@ import com.aloha.mini.dto.AssignRequest;
 import com.aloha.mini.dto.AssignmentFormResponse;
 import com.aloha.mini.dto.DashboardResponse;
 import com.aloha.mini.dto.UserResponse;
-import com.aloha.mini.service.LeaderService;
-import com.aloha.mini.service.WorkAssignmentService;
+import com.aloha.mini.service.inter.users.LeaderService;
+import com.aloha.mini.service.inter.users.WorkAssignmentService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;

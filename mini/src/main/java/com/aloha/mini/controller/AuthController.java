@@ -20,8 +20,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.aloha.mini.dto.LoginRequest;
 import com.aloha.mini.dto.SignUpRequest;
 import com.aloha.mini.dto.UserResponse;
-import com.aloha.mini.service.AuthService;
-import com.aloha.mini.service.CustomUserDetailsService;
+import com.aloha.mini.service.inter.AuthService;
+import com.aloha.mini.service.inter.CustomUserDetailsService;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
