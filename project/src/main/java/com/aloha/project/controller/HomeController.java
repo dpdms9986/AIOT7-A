@@ -39,13 +39,6 @@ public class HomeController {
       return "page/signup";
   }
 
-//   // HomeController.java 안에 임시 추가
-// @GetMapping("/leader/dashboard")
-// public String testLeaderDashboard() {
-//     log.info(">>>> HomeController가 /leader/dashboard 요청을 정상적으로 받았습니다!");
-//     return "page/leader/dashboard";
-// }
-
   // 임시: 등록된 방제단과 초대코드 목록 전체 반환 (Thunder Client 테스트용)
     @GetMapping("/api/test/invite-codes")
     @ResponseBody

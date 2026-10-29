@@ -1,8 +1,10 @@
-package com.aloha.mini.domain;
+package com.aloha.project.domain.tasks;
 
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
+
+import com.aloha.project.domain.users.Users;
 
 // 조종사(또는 단장)가 운용하는 드론 기체 정보입니다. 
 // 소유자인 Users를 통해 소속 방제단(Teams)이 자연스럽게 식별
