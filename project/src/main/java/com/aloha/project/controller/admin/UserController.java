@@ -3,9 +3,7 @@ package com.aloha.project.controller.admin;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.aloha.project.domain.common.Pagination;
@@ -62,14 +60,14 @@ public class UserController {
     }
 
    
-    /**
-     * 회원 수정 페이지
-     */
-    @GetMapping("/update/{id}")
-    public String updateForm(@PathVariable("id") String id, Model model) {
-        Users user = userService.selectById(id);
-        model.addAttribute("user", user);
-        return "page/admin/users/update";
-    }
+    // /**
+    //  * 회원 수정 페이지
+    //  */
+    // @GetMapping("/update/{id}")
+    // public String updateForm(@PathVariable("id") String id, Model model) {
+    //     Users user = userService.selectById(id);
+    //     model.addAttribute("user", user);
+    //     return "page/admin/users/update";
+    // }
 
 }

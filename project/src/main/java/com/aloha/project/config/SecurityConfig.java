@@ -23,7 +23,6 @@ import com.aloha.project.security.handler.CustomRememberMeServices;
 import com.aloha.project.security.handler.LoginFailureHandler;
 import com.aloha.project.security.handler.LoginSuccessHandler;
 import com.aloha.project.service.impl.users.CustomDetailsService;
-import com.aloha.project.service.impl.users.CustomOAuth2UserService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -47,11 +46,13 @@ public class SecurityConfig {
 
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, CustomOAuth2UserService customOAuth2UserService) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         // HTTP 보안 설정 시작
         http
                 .authorizeHttpRequests(authorize -> authorize
-                                .requestMatchers("/static/**").permitAll()              // "/static/**" 경로에 대한 모든 요청을 허용
+                                .requestMatchers(
+                                    "/static/**", "/css/**", "/js/**", "/images/**", "/fonts/**"
+                                ).permitAll()              // "/static/**" 경로에 대한 모든 요청을 허용
                                 .requestMatchers("/admin/**").hasRole("ADMIN")      // "/admin/**" 경로에 대한 요청은 ADMIN 권한 필요
                                 .requestMatchers("/users/**").hasRole("USER")      // "/users/**" 경로에 대한 요청은 USER 권한 필요
                                 .requestMatchers("/my/**").hasRole("USER")      // "/users/**" 경로에 대한 요청은 USER 권한 필요
@@ -81,13 +82,13 @@ public class SecurityConfig {
                                 .authenticationSuccessHandler(customAuthenticationSuccessHandler)
                                 .tokenValiditySeconds(60 * 60 * 24 * 30) // 30일
                 )
-                // 소셜 로그인 설정 (Google, Naver, Kakao)
-                .oauth2Login(oauth2 -> oauth2
-                                .loginPage("/login")
-                                .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
-                                .successHandler(loginSuccessHandler)
-                                .failureHandler(loginFailureHandler)
-                )
+                // // 소셜 로그인 설정 (Google, Naver, Kakao)
+                // .oauth2Login(oauth2 -> oauth2
+                //                 .loginPage("/login")
+                //                 .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
+                //                 .successHandler(loginSuccessHandler)
+                //                 .failureHandler(loginFailureHandler)
+                // )
                 // 로그아웃 설정
                 .logout(logout -> logout
                                 .logoutUrl("/logout") // 로그아웃 URL
