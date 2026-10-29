@@ -1,52 +1,86 @@
 package com.aloha.project.domain.users;
 
+import jakarta.persistence.*;
+import lombok.*;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
-import org.hibernate.annotations.DynamicInsert;
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
-
-import com.aloha.project.domain.Base;
-
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
-
-
-@Getter
-@Setter
-@ToString
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
-@DynamicInsert
 @Table(name = "users")
-public class Users extends Base {
+@Getter 
+@Setter 
+@Builder
+@AllArgsConstructor 
+@NoArgsConstructor
+public class Users {
 
-  private String username; // 아이디  
-  private String password; // 비밀번호
-  @Transient private String newPassword;        // 새 비밀번호
-  @Transient private String confirmPassword;    // 새 비밀번호 확인
+    @Id 
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long no; // 시스템 고유 식별자 (PK)
 
+    @Column(nullable = false, unique = true, updatable = false, length = 36)
+    private String id; // UUID (UK)
 
-  private String name;     // 이름
-  private String tel;      // 전화번호
-  private String email;    // 이메일
-  private Boolean enabled; // 계정 활성화 여부
+    // [정리 1] 로그인 이메일(아이디) -> DTO와 동일하게 'username'으로 통일
+    @Column(name = "user_name", nullable = false, unique = true, length = 100)
+    private String userName; 
 
-  // 권한 목록 (user_auth.user_no -> users.no, 조회 전용)
-  @ToString.Exclude
-  @OneToMany(fetch = FetchType.EAGER)
-  @JoinColumn(name = "userNo", referencedColumnName = "no", insertable = false, updatable = false)
-  @Fetch(FetchMode.SUBSELECT)
-  List<UserAuth> authList;
-  
+    @Column(nullable = false)
+    private String password; // BCrypt 암호화된 비밀번호
+
+    // [정리 2] 사용자 실명 -> DTO와 동일하게 'name'으로 통일
+    @Column(name = "name", nullable = false, length = 50)
+    private String name; 
+
+    // [정리 3] DTO의 phone(비상연락처) 저장을 위해 필드 추가
+    @Column(length = 20)
+    private String phone; 
+
+    @Column(nullable = false, length = 20)
+    private String role; // ADMIN / LEADER / PILOT 
+
+    // 소속 방제단 매핑
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "team_id")
+    private Teams team; 
+
+    @Builder.Default
+    @Column(nullable = false)
+    private Boolean enabled = true;
+
+    // [정리 4] 중복되었던 userAuths 제거하고 authList 하나로 통일!
+    @Builder.Default
+    @OneToMany(
+        mappedBy = "user", 
+        cascade = CascadeType.ALL, 
+        fetch = FetchType.EAGER, 
+        orphanRemoval = true
+    )
+    private List<UserAuth> authList = new ArrayList<>();
+
+    // 시큐리티 권한 등록 편의 메서드
+    public void addAuth(UserAuth userAuth) {
+        userAuth.setUser(this);
+        this.authList.add(userAuth);
+    }
+
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        this.id = UUID.randomUUID().toString(); // UUID 자동 생성
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
 }

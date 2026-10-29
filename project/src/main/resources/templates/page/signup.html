@@ -1,0 +1,70 @@
+<!doctype html>
+<!-- [변경 1] 타임리프 네임스페이스(xmlns:th) 선언 -->
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>회원가입 | 스마트 농업 관제 시스템</title>
+  <!-- [변경 2] 정적 리소스(static/css) 경로를 타임리프 @{/...} 문법으로 연결 -->
+  <link rel="stylesheet" th:href="@{/css/reset.css}">
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+  <main class="signup-page">
+    <section class="signup-card">
+      <h1 class="signup-title">회원가입</h1>
+
+      <form class="signup-form" id="signup-form" th:action="@{/signup}" method="post">
+        <div class="signup-fields">
+          <!-- 이메일 = 로그인 아이디 + 중복확인 -->
+          <div class="signup-id-row">
+            <input type="email" id="signup-userId" name="username" placeholder="이메일 (로그인 아이디)" required>
+            <button type="button" class="btn-mini" id="check-userId-btn">중복확인</button>
+          </div>
+
+          <!-- 비밀번호 + 실시간 일치 확인 -->
+          <input type="password" id="signup-pw" name="password" placeholder="비밀번호" aria-label="비밀번호" required>
+          <input type="password" id="signup-pw2" name="passwordConfirm" placeholder="비밀번호 확인" aria-label="비밀번호 확인" required>
+          <p class="signup-hint" id="pw-msg"></p>
+
+          <input type="text" name="name" placeholder="이름 (실명)" required>
+        </div>
+
+        <!-- 역할 선택: URL 파라미터(?role=LEADER 등)가 넘어왔을 때 타임리프에서도 초기 체크 가능 -->
+        <div class="signup-role">
+          <label class="signup-role-option">
+            <input type="radio" name="role" value="LEADER"
+                   th:checked="${param.role != null and param.role[0] == 'LEADER'}" required>
+            <span><strong>방제단장</strong><small>새 방제단 만들기</small></span>
+          </label>
+          <label class="signup-role-option">
+            <input type="radio" name="role" value="PILOT"
+                   th:checked="${param.role != null and param.role[0] == 'PILOT'}">
+            <span><strong>드론 조종사</strong><small>초대 코드로 가입</small></span>
+          </label>
+        </div>
+
+        <!-- 단장 선택 시 -->
+        <div class="signup-extra-fields" id="field-team" hidden>
+          <input type="text" name="teamName" id="signup-team" placeholder="새 방제단 이름 (예: 대전 유성 방제단)" aria-label="방제단 이름">
+        </div>
+
+        <!-- 조종사 선택 시 -->
+        <div class="signup-extra-fields" id="field-invite" hidden>
+          <input type="text" name="inviteCode" id="signup-invite" placeholder="(필수) 초대 코드 6자리 (예: DR789A)"
+                 aria-label="초대 코드 (필수)" maxlength="6">
+          <input type="tel" name="phone" id="signup-phone" placeholder="비상 연락처 (예: 010-1234-5678)"
+                 aria-label="비상 연락처" maxlength="13">
+        </div>
+
+        <button class="signup-submit" type="submit">회원가입</button>
+      </form>
+
+      <!-- [변경 3] login.html 정적 파일 대신 로그인 컨트롤러 URL(@{/login})로 이동 -->
+      <div class="signup-footer">이미 계정이 있으신가요?<a th:href="@{/login}">로그인</a></div>
+    </section>
+  </main>
+  <!-- [변경 4] JS 파일 경로도 @{/js/users/signup.js} 로 지정 -->
+ <script th:src="@{/js/users/signup.js}"></script>
+</body>
+</html>
