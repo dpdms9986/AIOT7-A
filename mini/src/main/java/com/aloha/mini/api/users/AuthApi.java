@@ -1,4 +1,4 @@
-package com.aloha.mini.controller;
+package com.aloha.mini.api.users;
 
 import java.util.Map;
 
@@ -34,7 +34,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j 
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
-public class AuthController {
+public class AuthApi {
 
     private final AuthService authService;
     private final CustomUserDetailsServiceImpl customUserDetailsService;

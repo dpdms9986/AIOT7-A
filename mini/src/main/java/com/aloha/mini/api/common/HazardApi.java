@@ -1,5 +1,5 @@
 
-package com.aloha.mini.controller;
+package com.aloha.mini.api.common;
 
 import java.util.List;
 
@@ -28,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/hazards")
 @RequiredArgsConstructor
-public class HazardController {
+public class HazardApi {
 
     private final HazardService hazardService;
 

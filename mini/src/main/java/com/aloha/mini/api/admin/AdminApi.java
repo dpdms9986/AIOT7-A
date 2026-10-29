@@ -1,4 +1,4 @@
-package com.aloha.mini.controller;
+package com.aloha.mini.api.admin;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -16,7 +16,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/admin") // ROLE_ADMIN만 접근 가능
 @RequiredArgsConstructor
-public class AdminController {
+public class AdminApi {
 
     private final AdminService adminService;
 
