@@ -41,7 +41,7 @@ public class CustomUser implements UserDetails, OAuth2User  {
 
   @Override
   public String getName() {
-      return user.getUsername();
+      return user.getUserName();
   }
 
 
@@ -67,7 +67,7 @@ public class CustomUser implements UserDetails, OAuth2User  {
 
   @Override
   public String getUsername() {
-      return user.getUsername();
+      return user.getUserName();
   }
 
   @Override
@@ -85,9 +85,9 @@ public class CustomUser implements UserDetails, OAuth2User  {
       return true;
   }
 
-  @Override
-  public boolean isEnabled() {
-      return user.getEnabled();
-  }
+      @Override
+      public boolean isEnabled() {
+          return Boolean.TRUE.equals(user.getEnabled());
+      }
   
 }
