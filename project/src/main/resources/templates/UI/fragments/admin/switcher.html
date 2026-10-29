@@ -1,0 +1,131 @@
+<th:block th:fragment="switcher">
+  <!--Theme Switcher-->
+    <button id="themeSwitcherBtn" class="btn btn-grd btn-grd-primary position-fixed bottom-0 end-0 m-3 d-flex align-items-center justify-content-center rounded-circle" style="width: 56px; height: 56px;" type="button" data-bs-toggle="offcanvas" data-bs-target="#staticBackdrop">
+      <i class="material-icons-outlined">tune</i>
+    </button>
+    
+    <div class="offcanvas offcanvas-end" data-bs-scroll="true" tabindex="-1" id="staticBackdrop">
+      <div class="offcanvas-header border-bottom h-70">
+        <div class="">
+          <h5 class="mb-0">테마 선택</h5>
+          <p class="mb-0">테마를 커스텀하세요!</p>
+        </div>
+        <a href="javascript:;" class="primaery-menu-close" data-bs-dismiss="offcanvas">
+          <i class="material-icons-outlined">close</i>
+        </a>
+      </div>
+      <div class="offcanvas-body">
+        <div>
+          <p>테마 선택</p>
+
+          <div class="row g-3">
+            <div class="col-12 col-xl-6">
+              <input type="radio" class="btn-check" name="theme-options" id="LightTheme" data="light">
+              <label class="btn btn-outline-secondary d-flex flex-column gap-1 align-items-center justify-content-center p-4" for="LightTheme">
+                <span class="material-icons-outlined">light_mode</span>
+                <span>라이트</span>
+              </label>
+            </div>
+            <div class="col-12 col-xl-6">
+              <input type="radio" class="btn-check" name="theme-options" id="DarkTheme" data="dark">
+              <label class="btn btn-outline-secondary d-flex flex-column gap-1 align-items-center justify-content-center p-4" for="DarkTheme">
+                <span class="material-icons-outlined">dark_mode</span>
+                <span>다크</span>
+              </label>
+            </div>
+            <div class="col-12 col-xl-6">
+              <input type="radio" class="btn-check" name="theme-options" id="SemiDarkTheme" data="semi-dark">
+              <label class="btn btn-outline-secondary d-flex flex-column gap-1 align-items-center justify-content-center p-4" for="SemiDarkTheme">
+                <span class="material-icons-outlined">contrast</span>
+                <span>세미 다크</span>
+              </label>
+            </div>
+            <div class="col-12 col-xl-6">
+              <input type="radio" class="btn-check" name="theme-options" id="BlueTheme" data="blue-theme">
+              <label class="btn btn-outline-secondary d-flex flex-column gap-1 align-items-center justify-content-center p-4" for="BlueTheme">
+                <span class="material-icons-outlined">contactless</span>
+                <span>블루</span>
+              </label>
+            </div>
+            <!-- <div class="col-12 col-xl-6">
+              <input type="radio" class="btn-check" name="theme-options" id="BoderedTheme" data="bordered">
+              <label class="btn btn-outline-secondary d-flex flex-column gap-1 align-items-center justify-content-center p-4" for="BoderedTheme">
+                <span class="material-icons-outlined">border_style</span>
+                <span>테두리 스타일</span>
+              </label>
+            </div> -->
+          </div><!--end row-->
+
+        </div>
+      </div>
+    </div>
+    <!--Theme Switcher-->
+
+    <script>
+      // Theme Switcher Script
+      document.addEventListener('DOMContentLoaded', function() {
+        const themeRadios = document.querySelectorAll('input[name="theme-options"]');
+        const themeSwitcherBtn = document.getElementById('themeSwitcherBtn');
+        
+        // Function to update button icon based on theme
+        function updateButtonIcon(themeId) {
+          const iconElement = themeSwitcherBtn.querySelector('i');
+          
+          switch(themeId) {
+            case 'LightTheme':
+              iconElement.textContent = 'light_mode';
+              break;
+            case 'DarkTheme':
+              iconElement.textContent = 'dark_mode';
+              break;
+            case 'SemiDarkTheme':
+              iconElement.textContent = 'contrast';
+              break;
+            case 'BlueTheme':
+              iconElement.textContent = 'contactless';
+              break;
+            default:
+              iconElement.textContent = 'tune';
+          }
+        }
+        
+        themeRadios.forEach(radio => {
+          radio.addEventListener('change', function() {
+            const htmlElement = document.documentElement;
+            
+            switch(this.id) {
+              case 'BlueTheme':
+                htmlElement.setAttribute('data-bs-theme', 'blue-theme');
+                break;
+              case 'LightTheme':
+                htmlElement.setAttribute('data-bs-theme', 'light');
+                break;
+              case 'DarkTheme':
+                htmlElement.setAttribute('data-bs-theme', 'dark');
+                break;
+              case 'SemiDarkTheme':
+                htmlElement.setAttribute('data-bs-theme', 'semi-dark');
+                break;
+            }
+            
+            // Save theme preference
+            localStorage.setItem('selectedTheme', this.id);
+            
+            // Update button icon
+            updateButtonIcon(this.id);
+          });
+        });
+        
+        // Load saved theme
+        const savedTheme = localStorage.getItem('selectedTheme');
+        if (savedTheme) {
+          document.getElementById(savedTheme).checked = true;
+          document.getElementById(savedTheme).dispatchEvent(new Event('change'));
+        } else {
+          // If no saved theme, update button icon to default (BlueTheme is checked by default)
+          updateButtonIcon('');
+        }
+      });
+
+    </script>
+  </th:block>

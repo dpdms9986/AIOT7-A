@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{UI/layouts/admin/admin_layout}">
+<head>
+  <meta charset="UTF-8">
+  <title>회원 등록</title>
+</head>
+<body layout:fragment="content">
+  <main class="main-wrapper">
+    <div class="main-content">
+      <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
+        <div class="breadcrumb-title pe-3">
+          <i class="fadeIn animated bx bx-home"></i>
+          회원관리
+        </div>
+        <div class="ps-3">
+          <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0 p-0">
+              <li class="breadcrumb-item active" aria-current="page">등록하기</li>
+            </ol>
+          </nav>
+        </div>
+      </div>
+
+      <div class="row justify-content-center">
+        <div class="col-lg-10">
+          <div class="card">
+            <div class="card-body p-4">
+              <h5 class="mb-4">회원 기본 정보</h5>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label for="username" class="form-label">아이디 <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" id="username" name="username" placeholder="아이디를 입력하세요." required>
+                </div>
+                <div class="col-md-6">
+                  <label for="password" class="form-label">비밀번호 <span class="text-danger">*</span></label>
+                  <input type="password" class="form-control" id="password" name="password" placeholder="비밀번호를 입력하세요" required>
+                </div>
+                <div class="col-md-6">
+                  <label for="name" class="form-label">이름 <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" id="name" name="name" placeholder="이름을 입력하세요" required>
+                </div>
+                <div class="col-md-6">
+                  <label for="tel" class="form-label">전화번호</label>
+                  <input type="text" class="form-control" id="tel" name="tel" placeholder="01012345678 (- 기호없이)" >
+                </div>
+                <div class="col-md-6">
+                  <label for="email" class="form-label">이메일</label>
+                  <input type="email" class="form-control" id="email" name="email" placeholder="이메일을 입력하세요">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">활성화 여부</label>
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="enabled" name="enabled" checked>
+                    <label class="form-check-label" for="enabled">활성화</label>
+                  </div>
+                </div>
+                <div class="col-12 mt-4">
+                  <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button type="button" class="btn btn-secondary" onclick="history.back()">취소</button>
+                    <button type="button" class="btn btn-lg btn-primary px-5" id="submitBtn">등록하기</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+<script>
+
+  $('#submitBtn').click(function () {
+    const user = {
+      username: $('#username').val()?.trim(),
+      password: $('#password').val(),
+      name: $('#name').val()?.trim(),
+      tel: $('#tel').val()?.trim(),
+      email: $('#email').val()?.trim(),
+      enabled: $('#enabled').is(':checked')
+    };
+
+    // 1) 간단 필수값 검증
+    if (!user.username || !user.password || !user.name) {
+      $alert('입력오류', '필수 항목(아이디/비밀번호/이름)을 모두 입력해주세요.', 'warning');
+      return;
+    }
+
+    // 2) confirm (Promise 방식)
+    $confirm(
+      '회원 등록',
+      '정말로 등록하시겠습니까?',
+      'warning',
+      '등록',
+      '취소'
+    ).then(function(result) {
+      if (!result.isConfirmed) return;
+
+      // 3) 버튼 잠금
+      $('#submitBtn').prop('disabled', true);
+
+      // 4) AJAX 요청
+      $ajax({
+        url: '/api/users/user',
+        type: 'POST',
+        data: user,
+        success: function (msg) {
+          $alert('회원 등록 성공', '회원이 등록되었습니다.', 'success')
+            .then(() => {
+              location.href = '/admin/users';
+            });
+        },
+        error: function (xhr) {
+          $('#submitBtn').prop('disabled', false);
+
+          console.error('User create failed:', xhr.status, xhr.responseText);
+          $alert('회원 등록 실패', '회원 등록에 실패했습니다.', 'error');
+        }
+      });
+    });
+  });
+</script>
+
+</body>
+</html>

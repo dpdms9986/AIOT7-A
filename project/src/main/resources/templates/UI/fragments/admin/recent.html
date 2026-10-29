@@ -1,0 +1,28 @@
+<th:block th:fragment="recent">
+  <!--최신데이터-->
+  <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasCart">
+    <div class="offcanvas-header border-bottom h-70">
+      <h5 class="mb-0" id="offcanvasRightLabel">최신데이터</h5>
+      <a href="javascript:;" class="primaery-menu-close" data-bs-dismiss="offcanvas">
+        <i class="material-icons-outlined">close</i>
+      </a>
+    </div>
+    <div class="offcanvas-body p-0">
+      <!-- JavaScript로 동적으로 채워질 영역 -->
+      <div class="order-list">
+        <div class="text-center p-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <p class="mt-2 text-muted">최신 데이터를 불러오는 중...</p>
+        </div>
+      </div>
+    </div>
+    <div class="offcanvas-footer h-70 p-3 border-top">
+      <div class="d-grid">
+        <a href="/admin" class="btn btn-grd btn-grd-primary">더 보기</a>
+      </div>
+    </div>
+  </div>
+  <!--end 최신데이터-->
+</th:block>

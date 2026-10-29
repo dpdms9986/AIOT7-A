@@ -1,0 +1,78 @@
+<th:block th:fragment="side">
+  <!--start sidebar-->
+  <aside class="sidebar-wrapper" data-simplebar="true">
+    <div class="sidebar-header">
+      <div class="logo-icon">
+        <a href="/admin">
+          <img src="/assets/images/logo-icon.png" class="logo-img" alt="">
+        </a>
+      </div>
+      <div class="logo-name flex-grow-1">
+        <a href="/admin">
+          <h5 class="mb-0">ALOHAPROJECT</h5>
+        </a>
+      </div>
+      <div class="sidebar-close">
+        <span class="material-icons-outlined">close</span>
+      </div>
+    </div>
+    <div class="sidebar-nav">
+        <!--navigation-->
+        <ul class="metismenu" id="sidenav">
+          <li class="menu-label">관리자</li>
+          <li>
+            <a href="/admin">
+              <div class="parent-icon">
+                <i class="fadeIn animated bx bx-home font-20"></i>
+              </div>
+              <div class="menu-title">대시보드</div>
+            </a>
+          </li>
+          <li>
+            <a href="/admin/users">
+              <div class="parent-icon">
+                <i class="fadeIn animated bx bx-user"></i>
+              </div>
+              <div class="menu-title">회원관리</div>
+            </a>
+          </li>
+          <li>
+            <a href="/admin/popups">
+              <div class="parent-icon">
+                <i class="fadeIn animated bx bx-card"></i>
+              </div>
+              <div class="menu-title">팝업관리</div>
+            </a>
+          </li>
+          <li>
+            <a href="/admin/board">
+              <div class="parent-icon">
+                <i class="fadeIn animated bx bx-table"></i>
+              </div>
+              <div class="menu-title">게시글관리</div>
+            </a>
+          </li>
+          <li class="menu-label">추가 관리</li>
+          <li>
+            <a class="has-arrow" href="javascript:;">
+              <div class="parent-icon">
+                <i class="fadeIn animated bx bx-code-block"></i>
+              </div>
+              <div class="menu-title">추가 메뉴</div>
+            </a>
+            <ul>
+              <li>
+                <a href="/admin/menu1"><i class="material-icons-outlined">arrow_right</i>추가메뉴</a>
+              </li>
+              <li>
+                <a href="/admin/menu2"><i class="material-icons-outlined">arrow_right</i>추가메뉴</a>
+              </li>
+            </ul>
+          </li>
+          
+        </ul>
+        <!--end navigation-->
+    </div>
+  </aside>
+  <!--end sidebar-->
+</th:block>

@@ -1,0 +1,286 @@
+<th:block th:fragment="call">
+
+  <!-- Fixed 통화 배너 -->
+  <div class="fixed-call-banner d-none d-md-block">
+    <div class="call-banner-content">
+      <div class="call-info">
+        <h4>수경시설 공사 설계 및 견적 문의</h4>
+        <div class="call-numbers">
+          <a href="tel:0413548001" class="call-number primary">
+            <span class="material-icons md-48">phone</span> 
+            <span>041-354-8001</span>
+          </a>
+          <a href="tel:01076628001" class="call-number mobile">
+            <span class="material-icons md-48">smartphone</span> 
+            <span>010-7662-8001</span>
+          </a>
+        </div>
+        <p class="call-subtitle">전문 상담사가 친절히 안내해드립니다</p>
+      </div>
+      <div class="call-close">
+        <button type="button" class="btn-close-call">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 모바일용 플로팅 통화 버튼 -->
+  <div class="floating-call-btn d-block d-md-none">
+    <a href="tel:01076628001" class="btn btn-call">
+      <span class="material-icons">phone</span> 
+      <span class="call-text">견적문의</span>
+    </a>
+  </div>
+
+  <style>
+    /* Fixed 통화 배너 스타일 */
+    .fixed-call-banner {
+      position: fixed;
+      top: 50px;
+      right: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      z-index: 1000;
+      max-width: 350px;
+      animation: slideInRight 0.5s ease-out;
+      transition: all 0.3s ease;
+    }
+
+    .fixed-call-banner:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    .call-banner-content {
+      display: flex;
+      align-items: center;
+      padding: 20px;
+      color: white;
+      position: relative;
+    }
+
+    .call-icon {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 15px;
+      animation: pulse 2s infinite;
+    }
+
+    .call-icon i {
+      font-size: 24px;
+      color: white;
+    }
+
+    .call-info {
+      flex: 1;
+    }
+
+    .call-info h4 {
+      font-size: 16px;
+      font-weight: 600;
+      margin: 0 0 10px 0;
+      color: white;
+    }
+
+    .call-numbers {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .call-number {
+      display: flex;
+      align-items: center;
+      color: white;
+      text-decoration: none;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 8px 12px;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      font-weight: 500;
+      gap: 5px;
+    }
+
+    .call-number:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      transform: translateX(5px);
+    }
+
+    .call-number i {
+      margin-right: 8px;
+      width: 16px;
+    }
+
+    .call-number.primary {
+      border-left: 3px solid #ffd700;
+    }
+
+    .call-number.mobile {
+      border-left: 3px solid #00ff88;
+    }
+
+    .call-subtitle {
+      font-size: 12px;
+      margin: 0;
+      opacity: 0.9;
+      font-style: italic;
+    }
+
+    .call-close {
+      position: absolute;
+      top: -40px;
+      right: 10px;
+    }
+
+    .btn-close-call {
+      background: rgba(255, 255, 255, 0.4);
+      border: none;
+      color: black;
+      font-size: 18px;
+      cursor: pointer;
+      opacity: 0.8;
+      transition: all 0.3s ease;
+      padding: 8px;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-close-call:hover {
+      opacity: 1;
+      background: rgba(255, 255, 255, 0.2);
+      transform: scale(1.1);
+    }
+
+    .btn-close-call .material-icons {
+      font-size: 18px;
+    }
+
+    /* 모바일 플로팅 버튼 */
+    .floating-call-btn {
+      position: fixed;
+      bottom: 40px;
+      left: 20px;
+      z-index: 1000;
+    }
+
+    .btn-call {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      border-radius: 25px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none;
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      text-decoration: none;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+      animation: pulse 2s infinite;
+      transition: all 0.3s ease;
+      min-width: 120px;
+      justify-content: center;
+    }
+
+    .btn-call:hover {
+      background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+      color: white;
+      transform: scale(1.05);
+      text-decoration: none;
+    }
+
+    .btn-call .material-icons {
+      font-size: 20px;
+    }
+
+    .call-text {
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    /* 애니메이션 */
+    @keyframes slideInRight {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.05);
+      }
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    /* 반응형 */
+    @media (max-width: 1200px) {
+      .fixed-call-banner {
+        right: 10px;
+        max-width: 300px;
+      }
+      
+      .call-banner-content {
+        padding: 15px;
+      }
+      
+      .call-info h4 {
+        font-size: 14px;
+      }
+    }
+
+    /* 배너 숨김 상태 */
+    .fixed-call-banner.hidden {
+      transform: translateX(100%);
+      opacity: 0;
+      pointer-events: none;
+    }
+  </style>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // 배너 닫기 기능
+      const closeBtn = document.querySelector('.btn-close-call');
+      const banner = document.querySelector('.fixed-call-banner');
+      
+      if (closeBtn && banner) {
+        closeBtn.addEventListener('click', function() {
+          banner.classList.add('hidden');
+        });
+      }
+      
+      // 전화번호 클릭시 추적 (선택사항)
+      const callNumbers = document.querySelectorAll('.call-number');
+      callNumbers.forEach(function(callNumber) {
+        callNumber.addEventListener('click', function() {
+          console.log('전화 클릭:', this.querySelector('span').textContent);
+        });
+      });
+    });
+  </script>
+
+
+</th:block>
