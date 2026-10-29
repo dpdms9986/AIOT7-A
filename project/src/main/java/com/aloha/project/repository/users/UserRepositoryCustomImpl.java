@@ -25,10 +25,9 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
     BooleanBuilder where = new BooleanBuilder();
     String search = queryParams.getSearch();
     if (StringUtils.hasText(search)) {
-      where.and(users.username.contains(search)
+      where.and(users.userName.contains(search)
           .or(users.name.contains(search))
-          .or(users.email.contains(search))
-          .or(users.tel.contains(search)));
+          .or(users.phone.contains(search)));
     }
 
     long page = queryParams.getPage();
@@ -52,14 +51,14 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
   @Override
   public Users findEnabledByNameAndEmail(String name, String email) {
     return queryFactory.selectFrom(users)
-        .where(users.name.eq(name), users.email.eq(email), users.enabled.isTrue())
+        .where(users.name.eq(name), users.userName.eq(email), users.enabled.isTrue())
         .fetchFirst();
   }
 
   @Override
   public Users findEnabledByUsernameAndEmail(String username, String email) {
     return queryFactory.selectFrom(users)
-        .where(users.username.eq(username), users.email.eq(email), users.enabled.isTrue())
+        .where(users.userName.eq(username), users.userName.eq(email), users.enabled.isTrue())
         .fetchFirst();
   }
 
