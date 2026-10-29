@@ -1,0 +1,28 @@
+<th:block th:fragment="header">
+    <header class="dash-header">
+      <a href="#" class="dash-logo"><span>🌱</span>스마트 농업 관제 시스템</a>
+      <nav class="dash-topnav" id="gnb-menu">
+        <a href="/leader/dashboard" class="active">관제 대시보드</a>
+        <a href="/leader/task-assignment">작업 배정</a>
+        <a href="/leader/farmlist">농지 관리</a>
+        <a href="/leader/team-management">방제단 관리</a>
+        <a href="/leader/assetlist">드론 · 자산</a>
+        <a href="/hazardlist">게시판</a>
+        <a href="/support">고객센터</a>
+      </nav>
+      <div class="dash-header-right">
+          <span class="gnb-team" id="team-name">방제단</span>
+          <button type="button" class="gnb-invite" id="invite-btn" hidden>초대 코드 <b id="invite-code">------</b> 📋</button>
+          <span class="dash-role" id="user-role">-</span>
+          
+          <a href="/mypage" class="gnb-user" title="마이페이지"><span class="dash-avatar">👤</span><span id="user-name">사용자</span></a>
+          <form th:action="@{/logout}" method="post">
+          <div class="d-grid gap-2">
+              <button type="submit" class="dash-btn-outline gnb-logout">로그아웃</button>
+          </div>
+      </form>
+      </div>
+    </header>
+</th:block>
+
+
