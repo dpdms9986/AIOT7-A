@@ -1,157 +1,64 @@
-package com.aloha.mini.api.users;
+package com.aloha.project.api.users; // 패키지 경로 확인
 
 import java.util.Map;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.aloha.mini.dto.LoginRequest;
-import com.aloha.mini.dto.SignUpRequest;
-import com.aloha.mini.dto.UserResponse;
-import com.aloha.mini.service.impl.users.CustomUserDetailsServiceImpl;
-import com.aloha.mini.service.inter.users.AuthService;
+import com.aloha.project.domain.Users;
+import com.aloha.project.domain.users.CustomUser;
+import com.aloha.project.service.UserService;
 
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
-@Slf4j 
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthApi {
 
-    private final AuthService authService;
-    private final CustomUserDetailsServiceImpl customUserDetailsService;
+    private final UserService userService;
 
-    // 1. 이메일 중복 확인 (USER_002)
-    // GET /api/auth/check-email?userId=test@test.com
+    /**
+     * 1. 이메일(아이디) 중복확인 (회원가입 화면에서 비동기 fetch 호출)
+     * GET /api/auth/check-email?userName=test@test.com
+     */
     @GetMapping("/check-email")
-    public ResponseEntity<Boolean> checkUserIdDuplicate(@RequestParam("userId") String userId) {
-        boolean isDuplicate = authService.checkUserIdDuplicate(userId);
+    public ResponseEntity<Boolean> checkEmailDuplicate(@RequestParam("userName") String userName) {
+        log.info("이메일 중복확인 요청: {}", userName);
+        
+        // 우리가 만든 userService의 조회 메서드 활용
+        Users user = userService.selectByUsername(userName.trim());
+        boolean isDuplicate = (user != null); // 이미 있으면 true(중복), 없으면 false(사용가능)
+
         return ResponseEntity.ok(isDuplicate);
     }
 
-    // 2. 회원가입 (USER_007)
-    // POST /api/auth/signup
-    @PostMapping("/signup")
-    public ResponseEntity<UserResponse> signUp(@RequestBody SignUpRequest req) {
-        UserResponse response = authService.signUp(req);
-        log.info("📌 회원가입 요청 들어옴! 이메일: {}", req.getUserId()); // 👈 이 줄 추가
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
-
-    // 3. 로그인 및 세션 생성 (USER_008, USER_009)
-    // POST /api/auth/login
-    @PostMapping("/login")
-    public ResponseEntity<UserResponse> login(
-        @RequestBody LoginRequest req, 
-        HttpServletRequest request,
-        HttpServletResponse httpResponse
-    ) {
-
-        // request.getSession(true) : 기존 세션이 있으면 반환, 없으면 새로 생성
-        HttpSession session = request.getSession(true);
-        UserResponse response = authService.login(req, session);
-
-        // 자동 로그인이 체크된 경우: 세션 및 브라우저 쿠키를 14일간 유지
-    if (req.isRememberMe()) {
-        int maxAge = 60 * 60 * 24 * 14; // 14일 (초 단위)
-        session.setMaxInactiveInterval(maxAge);
-
-        // 브라우저를 닫았다 열어도 세션이 풀리지 않도록 JSESSIONID 쿠키에 만료 시간 부여
-        Cookie sessionCookie = new Cookie("JSESSIONID", session.getId());
-        sessionCookie.setPath("/");
-        sessionCookie.setHttpOnly(true);
-        sessionCookie.setMaxAge(maxAge);
-        httpResponse.addCookie(sessionCookie);
-    }
-    
-        // 👇 [여기서부터 세션 유지 코드] 👇
-        // 3. DB에서 유저 정보와 권한(ROLE_PILOT 등)을 시큐리티 규격(UserDetails)으로 불러옴
-        UserDetails userDetails = customUserDetailsService.loadUserByUsername(req.getUserId());
-
-        // 4. 시큐리티 인증 도장(Authentication) 생성
-        Authentication authentication = new UsernamePasswordAuthenticationToken(
-                userDetails, null, userDetails.getAuthorities()
-        );
-
-        // 5. 시큐리티 장부(SecurityContext)에 인증 도장 등록
-        SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
-        securityContext.setAuthentication(authentication);
-        SecurityContextHolder.setContext(securityContext);
-
-        // 6. 서버 세션(HttpSession)에 장부를 저장 (이 줄이 있어야 다음 요청에서도 로그인 상태가 유지됨)
-        session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, securityContext);
-
-        return ResponseEntity.ok(response);
-    }
-
-    // 4. 로그아웃 (USER_012)
-    // POST /api/auth/logout
-    @PostMapping("/logout")
-    public ResponseEntity<String> logout(HttpServletRequest request) {
-        // request.getSession(false) : 세션이 있으면 반환, 없으면 null 반환 (새로 만들지 않음)
-        HttpSession session = request.getSession(false);
-        if (session != null) {
-            authService.logout(session);
+    /**
+     * 2. 현재 로그인한 사용자 정보 조회 (지도 관제 및 웹소켓 연결 시 사용)
+     * GET /api/auth/me
+     */
+    @GetMapping("/me") // 👈 백엔드 팀의 /api/auth/api/auth/me URL 오타 수정!
+    public ResponseEntity<?> getMyInfo(@AuthenticationPrincipal CustomUser customUser) {
+        // 로그인하지 않은 상태면 401 응답
+        if (customUser == null) {
+            return ResponseEntity.status(401).body("로그인이 필요합니다.");
         }
-        return ResponseEntity.ok("로그아웃 되었습니다.");
+
+        Users loginUser = customUser.getUser();
+
+        // 프론트엔드 관제 화면에 필요한 핵심 정보만 JSON으로 반환
+        return ResponseEntity.ok(Map.of(
+            "no", loginUser.getNo(),
+            "username", loginUser.getUserName(),
+            "name", loginUser.getName(),
+            "role", loginUser.getRole(),
+            "teamName", loginUser.getTeam() != null ? loginUser.getTeam().getTeamName() : ""
+        ));
     }
-    
-    // 5. 로그인 상태 체크 (프론트엔드 새로고침 시 세션 유지 확인용)
-    // GET /api/auth/status
-    @GetMapping("/status")
-    public ResponseEntity<UserResponse> checkStatus(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-        if (session != null && session.getAttribute("LOGIN_USER") != null) {
-            UserResponse user = (UserResponse) session.getAttribute("LOGIN_USER");
-            return ResponseEntity.ok(user);
-        }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-    }
-
-    @GetMapping("/check-id")
-    public ResponseEntity<?> checkIdDuplicate(@RequestParam("userId") String userId) {
-    boolean isDuplicate = authService.checkIdDuplicate(userId);
-    
-    // 중복이면 true, 사용 가능하면 false를 JSON으로 응답
-    return ResponseEntity.ok(Map.of(
-            "isDuplicate", isDuplicate,
-            "message", isDuplicate ? "이미 사용 중인 아이디입니다." : "사용 가능한 아이디입니다."
-    ));
-}
-
-// 예시: HttpSession 또는 SecurityContext에서 로그인 유저 정보를 꺼내 반환하는 API
-    @GetMapping("/api/auth/me")
-    public ResponseEntity<?> getMyInfo(HttpSession session) {
-    // 1. 세션에서 로그인 시 저장해둔 유저 정보(또는 DTO)를 꺼냅니다.
-    UserResponse loginUser = (UserResponse) session.getAttribute("LOGIN_USER");
-
-    // 2. 로그인이 안 된 상태로 접근했다면 401(권한 없음) 에러를 보냅니다.
-    if (loginUser == null) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
-    }
-
-    // 3. 로그인된 상태라면 유저 정보(userNo, userName, role, teamNo, inviteCode 등)를 반환합니다.
-    return ResponseEntity.ok(loginUser);
-}
-
-// 🌻 FE 팀은 leader.html이나 pilot.html이 열릴 때 $.get('/api/auth/me')를 호출하기만 하면, 
-//    누가 로그인했는지 바로 알아내어 웹소켓 연결까지 자동으로 실행할 수 있고, 로그인 안 한 사람이 주소창에 치고 들어오면 login.html로 쫓아낼 수 있습니다.
 }
