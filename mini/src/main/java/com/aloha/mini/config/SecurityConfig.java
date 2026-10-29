@@ -11,7 +11,7 @@ import org.springframework.security.web.SecurityFilterChain;
 
 import com.aloha.mini.handler.CustomAccessDeniedHandler;
 import com.aloha.mini.handler.LogoutSuccessHandler;
-import com.aloha.mini.service.inter.users.CustomUserDetailsService;
+import com.aloha.mini.service.impl.users.CustomUserDetailsServiceImpl;
 
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final CustomUserDetailsService customUserDetailsService;
+    private final CustomUserDetailsServiceImpl customUserDetailsService;
     private final LogoutSuccessHandler logoutSuccessHandler;
     private final CustomAccessDeniedHandler accessDeniedHandler;
 

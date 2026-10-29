@@ -20,8 +20,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.aloha.mini.dto.LoginRequest;
 import com.aloha.mini.dto.SignUpRequest;
 import com.aloha.mini.dto.UserResponse;
+import com.aloha.mini.service.impl.users.CustomUserDetailsServiceImpl;
 import com.aloha.mini.service.inter.users.AuthService;
-import com.aloha.mini.service.inter.users.CustomUserDetailsService;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -37,7 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 public class AuthController {
 
     private final AuthService authService;
-    private final CustomUserDetailsService customUserDetailsService;
+    private final CustomUserDetailsServiceImpl customUserDetailsService;
 
     // 1. 이메일 중복 확인 (USER_002)
     // GET /api/auth/check-email?userId=test@test.com
