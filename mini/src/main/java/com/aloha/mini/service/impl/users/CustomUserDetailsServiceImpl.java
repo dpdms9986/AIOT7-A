@@ -3,17 +3,19 @@ package com.aloha.mini.service.impl.users;
 import com.aloha.mini.domain.CustomUser;
 import com.aloha.mini.domain.Users;
 import com.aloha.mini.repository.UserRepository;
+import com.aloha.mini.service.inter.users.CustomUserDetailsService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class CustomUserDetailsServiceImpl implements UserDetailsService {
+public class CustomUserDetailsServiceImpl implements CustomUserDetailsService {
 
     private final UserRepository userRepository;
 
