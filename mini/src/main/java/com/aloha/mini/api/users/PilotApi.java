@@ -1,4 +1,4 @@
-package com.aloha.mini.controller;
+package com.aloha.mini.api.users;
 
 import java.util.List;
 import java.util.Map;
@@ -26,7 +26,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/pilot")
 @RequiredArgsConstructor
-public class PilotController {
+public class PilotApi {
 
     private final PilotService pilotService;
     private final WorkAssignmentService workAssignmentService;

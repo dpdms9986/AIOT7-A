@@ -1,4 +1,4 @@
-package com.aloha.mini.controller;
+package com.aloha.mini.api.users;
 
 import java.util.List;
 
@@ -30,7 +30,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/leader")
 @RequiredArgsConstructor
-public class LeaderController {
+public class LeaderApi {
 
     private final LeaderService adminService;
     private final WorkAssignmentService workAssignmentService;

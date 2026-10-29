@@ -1,4 +1,4 @@
-package com.aloha.mini.controller;
+package com.aloha.mini.api.common;
 
 import com.aloha.mini.domain.Regions;
 import com.aloha.mini.repository.RegionRepository;
@@ -11,7 +11,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/regions")
 @RequiredArgsConstructor
-public class RegionController {
+public class RegionApi {
 
     private final RegionRepository regionRepository;
 

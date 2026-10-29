@@ -1,4 +1,4 @@
-package com.aloha.mini.controller;
+package com.aloha.mini.api;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -11,7 +11,7 @@ import com.aloha.mini.service.inter.sample.MockDataService;
 @RestController
 @RequestMapping("/api/mock")
 @RequiredArgsConstructor
-public class MockController {
+public class MockApi {
 
 private final MockDataService mockDataService;
 
