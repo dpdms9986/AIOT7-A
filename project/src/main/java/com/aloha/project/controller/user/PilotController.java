@@ -23,10 +23,4 @@ public class PilotController {
         return "page/pilot/history";
     }
 
-    // 3. 드론 자산
-    @GetMapping("/assetlist")
-    public String getAssetList() {
-        return "page/pilot/assetlist";
-    }
-
 }
