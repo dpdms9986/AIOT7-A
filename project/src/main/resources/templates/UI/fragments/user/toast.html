@@ -1,21 +1,51 @@
 <th:block th:fragment="toast">
-  <!-- 로그인 직후 1번만 뜨는 팝업 (LoginSuccessHandler 의 loginMessage) -->
-  <div class="login-popup-backdrop" id="login-popup" th:if="${loginMessage}">
-    <div class="login-popup" role="dialog" aria-modal="true" aria-labelledby="login-popup-text">
-      <div class="login-popup-icon">✓</div>
-      <p id="login-popup-text" th:text="${loginMessage}">○○님, 로그인되었습니다.</p>
-      <button type="button" class="login-popup-btn" id="login-popup-ok">확인</button>
-    </div>
-  </div>
-
-  <script th:if="${loginMessage}">
+  <!--
+    공통 팝업
+    - JS 어디서든 showPopup("메시지") 또는 showPopup("메시지", "warn") 으로 띄움
+    - 서버가 보낸 1회용 메시지(flash)도 자동으로 띄움
+        loginMessage  : 로그인 성공 (LoginSuccessHandler)
+        signupSuccess : 회원가입 완료 (HomeController)
+  -->
+  <script th:inline="javascript">
     (() => {
-      const popup = document.getElementById("login-popup");
-      const close = () => popup.remove();                 // 닫으면 화면에서 제거
-      document.getElementById("login-popup-ok").addEventListener("click", close);
-      popup.addEventListener("click", (e) => { if (e.target === popup) close(); });   // 바깥 클릭
-      document.addEventListener("keydown", (e) => { if (e.key === "Escape" || e.key === "Enter") close(); }, { once: true });
-      document.getElementById("login-popup-ok").focus();  // Enter 로 바로 닫히게
+      // ----- 팝업 띄우는 함수 (type: "ok" = 초록 체크, "warn" = 주황 느낌표) -----
+      window.showPopup = (message, type = "ok", onClose) => {
+        document.getElementById("login-popup")?.remove();   // 이미 떠 있으면 지우고 새로
+
+        const backdrop = document.createElement("div");
+        backdrop.className = "login-popup-backdrop";
+        backdrop.id = "login-popup";
+        backdrop.innerHTML = `
+          <div class="login-popup" role="dialog" aria-modal="true">
+            <div class="login-popup-icon ${type === "warn" ? "warn" : ""}">${type === "warn" ? "!" : "✓"}</div>
+            <p></p>
+            <button type="button" class="login-popup-btn">확인</button>
+          </div>`;
+        backdrop.querySelector("p").textContent = message;   // 글자는 textContent 로 (안전)
+        document.body.appendChild(backdrop);
+
+        const btn = backdrop.querySelector(".login-popup-btn");
+        const onKey = (e) => { if (e.key === "Escape" || e.key === "Enter") { e.preventDefault(); close(); } };
+        const close = () => {
+          backdrop.remove();
+          document.removeEventListener("keydown", onKey);
+          if (onClose) onClose();                            // 닫은 뒤 할 일 (예: 입력칸으로 커서 이동)
+        };
+
+        btn.addEventListener("click", close);
+        backdrop.addEventListener("click", (e) => { if (e.target === backdrop) close(); });   // 바깥 클릭
+        document.addEventListener("keydown", onKey);
+        btn.focus();                                         // Enter 로 바로 닫히게
+      };
+
+      // ----- 서버가 보낸 1회용 메시지 자동 표시 -----
+      const loginMessage  = /*[[${loginMessage}]]*/ null;
+      const signupSuccess = /*[[${signupSuccess}]]*/ false;
+
+      document.addEventListener("DOMContentLoaded", () => {
+        if (loginMessage)  showPopup(loginMessage);
+        if (signupSuccess) showPopup("회원가입이 완료되었습니다. 로그인해 주세요.");
+      });    
     })();
   </script>
-</th:block>
+</th:block> 

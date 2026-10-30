@@ -3,6 +3,16 @@ document.addEventListener("DOMContentLoaded", () => {
   const signupForm = document.querySelector("#signup-form");
   if (!signupForm) return;
 
+  // 공통 팝업(toast.html 의 showPopup) 사용. 혹시 없으면 기본 alert 로
+  const popup = (msg, type = "ok", onClose) => {
+    if (window.showPopup) {
+      window.showPopup(msg, type, onClose);
+    } else {
+      alert(msg);
+      if (onClose) onClose();
+    }
+  };
+
   const emailInput = document.querySelector("#signup-userId");
   const checkBtn = document.querySelector("#check-userId-btn");
   const pwInput = document.querySelector("#signup-pw");
@@ -27,16 +37,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const userName = emailInput.value.trim();
 
     if (!isEmail(userName)) {
-      alert("올바른 이메일 형식으로 입력하세요. (예: user@example.com)");
+      popup("올바른 이메일 형식으로 입력하세요. (예: user@example.com)", "warn", () => emailInput.focus());
       return;
     }
 
     try {
-      // 주소를 /check-username 으로 일치시킵니다!
       const response = await fetch(`/check-username?userName=${encodeURIComponent(userName)}`);
 
       if (!response.ok) {
-        alert(`중복확인을 할 수 없습니다. (서버 응답: ${response.status})`);
+        popup(`중복확인을 할 수 없습니다. (서버 응답: ${response.status})`, "warn");
         return;
       }
 
@@ -44,17 +53,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // 서버 응답: true(중복), false(사용 가능)
       if (result === true) {
-        alert("이미 사용 중인 이메일입니다.");
+        popup("이미 사용 중인 이메일입니다.", "warn", () => emailInput.focus());
         checkedUserName = "";
       } else if (result === false) {
-        alert("사용 가능한 이메일입니다.");
+        popup("사용 가능한 이메일입니다.");
         checkedUserName = userName; // 성공한 이메일 기록
       } else {
-        alert("서버 응답 형식이 예상과 다릅니다.");
+        popup("서버 응답 형식이 예상과 다릅니다.", "warn");
       }
     } catch (error) {
       console.error("중복확인 에러:", error);
-      alert("서버와 연결할 수 없습니다.");
+      popup("서버와 연결할 수 없습니다.", "warn");
     }
   });
 
@@ -96,8 +105,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // 4. [타임리프 연동 핵심] 폼 제출 이벤트
-  // 비동기 fetch 호출이 전혀 없습니다! 검사만 통과하면 브라우저가 form의 th:action으로 바로 전송합니다.
+  // 4. 폼 제출 전 검사 → 통과하면 th:action 으로 그대로 전송
   signupForm.addEventListener("submit", (event) => {
     const userNameVal = emailInput.value.trim();
     const pwVal = pwInput.value;
@@ -106,15 +114,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 검증 1: 중복확인 여부
     if (userNameVal !== checkedUserName) {
-      alert("이메일 중복확인을 해주세요.");
-      event.preventDefault(); // 전송 중단
+      event.preventDefault();
+      popup("이메일 중복확인을 해주세요.", "warn", () => emailInput.focus());
       return;
     }
 
     // 검증 2: 비밀번호 일치 여부
     if (pwVal !== pw2Val) {
-      alert("비밀번호가 일치하지 않습니다.");
-      event.preventDefault(); // 전송 중단
+      event.preventDefault();
+      popup("비밀번호가 일치하지 않습니다.", "warn", () => pw2Input.focus());
       return;
     }
 
@@ -122,13 +130,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (selectedRole === "PILOT") {
       const code = inviteInput.value.trim();
       if (!/^[A-Za-z0-9]{6}$/.test(code)) {
-        alert("초대 코드는 영문·숫자 6자리입니다.");
-        event.preventDefault(); // 전송 중단
+        event.preventDefault();
+        popup("초대 코드는 영문·숫자 6자리입니다.", "warn", () => inviteInput.focus());
         return;
       }
     }
-
-    // 모든 검증을 통과하면 event.preventDefault()를 부르지 않으므로,
-    // 스프링 컨트롤러의 @PostMapping("/signup")으로 자동 폼 전송됩니다!
   });
 });
