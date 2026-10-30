@@ -215,7 +215,7 @@
   </section>
 
   <!-- =====================================================
-       [이력 탭]  ← 추가
+       [이력 탭]
        ===================================================== -->
   <section class="task-panel" th:if="${tab == 'history'}">
     <article class="dash-card">
@@ -258,8 +258,8 @@
       <p class="page-flash is-error" th:if="${dateError}">시작일이 종료일보다 늦을 수 없습니다.</p>
 
       <p class="task-history-sum" th:unless="${#lists.isEmpty(history)}"
-         th:text="|총 ${#lists.size(history)}건 · 면적 ${#numbers.formatDecimal(hArea, 0, 'COMMA', 0, 'POINT')}㎡ · 약제 사용량 ${#numbers.formatDecimal(hUsed, 1, 1)}L|">
-        총 5건 · 면적 10,700㎡ · 약제 사용량 12.3L
+         th:text="|총 ${#lists.size(history)}건 · 면적 ${#numbers.formatDecimal(hArea, 0, 'COMMA', 0, 'POINT')}㎡|">
+        총 5건 · 면적 10,700㎡
       </p>
 
       <div class="task-table-wrap">
@@ -273,7 +273,6 @@
               <th>담당 조종사</th>
               <th>배정 일시</th>
               <th>사용 약제</th>
-              <th>사용량(L)</th>
             </tr>
           </thead>
           <tbody>
@@ -285,10 +284,9 @@
               <td th:text="${h.pilotName}">박지훈</td>
               <td th:text="${#temporals.format(h.assignedAt, 'yyyy-MM-dd HH:mm')}">2026-10-28 14:00</td>
               <td th:text="${h.chemicalName}">살균제 A</td>
-              <td th:text="${h.usedAmount}">1.4</td>
             </tr>
             <tr th:if="${#lists.isEmpty(history)}">
-              <td colspan="8" class="task-empty-cell">조건에 맞는 작업 이력이 없습니다.</td>
+              <td colspan="7" class="task-empty-cell">조건에 맞는 작업 이력이 없습니다.</td>
             </tr>
           </tbody>
         </table>

@@ -150,7 +150,6 @@ public class LeaderController {
 
         model.addAttribute("history", history);
         model.addAttribute("hArea", hArea);
-        model.addAttribute("hUsed", hUsed);
         model.addAttribute("historyPilots", historyPilots);
         model.addAttribute("dateError", dateError);
         model.addAttribute("from", from);
@@ -174,7 +173,7 @@ public class LeaderController {
         List<PilotTaskDto> rows = filterHistory(from, to, hRegion, hPilot);
 
         StringBuilder sb = new StringBuilder("\uFEFF");   // 엑셀 한글 깨짐 방지
-        sb.append("완료 일시,주소,행정구역,면적(㎡),담당 조종사,배정 일시,사용 약제,사용량(L)\r\n");
+        sb.append("완료 일시,주소,행정구역,면적(㎡),담당 조종사,배정 일시,사용 약제\r\n");
         for (PilotTaskDto r : rows) {
             sb.append(String.join(",",
                     csv(r.getCompletedAt() == null ? "" : r.getCompletedAt().format(DT)),
@@ -183,8 +182,7 @@ public class LeaderController {
                     csv(r.getAreaSize()),
                     csv(r.getPilotName()),
                     csv(r.getAssignedAt() == null ? "" : r.getAssignedAt().format(DT)),
-                    csv(r.getChemicalName()),
-                    csv(r.getUsedAmount())))
+                    csv(r.getChemicalName())))
               .append("\r\n");
         }
 

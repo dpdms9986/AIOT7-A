@@ -77,17 +77,10 @@ public class PilotController {
                 })
                 .toList();
 
-        // 2) 탭 개수 + 완료 요약
+        // 2) 탭 개수 + 완료 요약 (약제 사용량은 받지 않기로 함)
         long activeCount = all.stream().filter(t -> !t.isDone()).count();
         List<PilotTaskDto> done = all.stream().filter(PilotTaskDto::isDone).toList();
         double doneArea = done.stream().mapToDouble(t -> t.getAreaSize() == null ? 0 : t.getAreaSize()).sum();
-        double doneUsed = done.stream().mapToDouble(t -> {
-            try {
-                return (t.getUsedAmount() != null) ? Double.parseDouble(t.getUsedAmount()) : 0.0;
-            } catch (Exception e) {
-                return 0.0;
-            }
-        }).sum();
 
         // 3) 상세로 보여줄 작업: 주소의 no → 없으면 진행 중 → 없으면 첫 번째
         PilotTaskDto selected = Optional.ofNullable(no)
@@ -107,7 +100,6 @@ public class PilotController {
         model.addAttribute("activeCount", activeCount);
         model.addAttribute("doneCount", done.size());
         model.addAttribute("doneArea", doneArea);
-        model.addAttribute("doneUsed", doneUsed);
         model.addAttribute("selected", selected);
         model.addAttribute("drones", drones);
         model.addAttribute("chemicals", chemicals);
@@ -117,7 +109,7 @@ public class PilotController {
 
     /**
      * 작업 시작 (대기 → 진행 중)
-     * POST /pilot/history/{no}/start  (droneNo, chemicalNo, sprayRate)
+     * POST /pilot/history/{no}/start  (droneNo, chemicalNo)
      */
     @PostMapping("/history/{no}/start")
     public String startWork(@PathVariable("no") Long no,
@@ -128,10 +120,9 @@ public class PilotController {
         // 돌아갈 주소에 ?no=번호 붙이기 → 보던 작업이 다시 선택됨
         redirectAttributes.addAttribute("no", no);
 
-        // 서버 검증
-        if (req.getDroneNo() == null || req.getChemicalNo() == null
-                || req.getSprayRate() == null || req.getSprayRate() <= 0) {
-            redirectAttributes.addFlashAttribute("errorMessage", "드론, 약제, 살포량을 모두 입력하세요.");
+        // 서버 검증 (살포량은 받지 않기로 함)
+        if (req.getDroneNo() == null || req.getChemicalNo() == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "드론과 약제를 선택하세요.");
             return "redirect:/pilot/history";
         }
 
@@ -143,22 +134,16 @@ public class PilotController {
 
     /**
      * 작업 완료 보고 (진행 중 → 완료)
-     * POST /pilot/history/{no}/complete  (usedAmount)
+     * POST /pilot/history/{no}/complete  (입력값 없음)
      */
     @PostMapping("/history/{no}/complete")
     public String completeWork(@PathVariable("no") Long no,
-                               @RequestParam("usedAmount") Double usedAmount,
                                RedirectAttributes redirectAttributes) {
-        log.info("완료 보고 요청: no={}, usedAmount={}", no, usedAmount);
+        log.info("완료 보고 요청: no={}", no);
 
         redirectAttributes.addAttribute("no", no);
 
-        if (usedAmount == null || usedAmount <= 0) {
-            redirectAttributes.addFlashAttribute("errorMessage", "실제 약제 사용량을 입력하세요.");
-            return "redirect:/pilot/history";
-        }
-
-        // TODO(백엔드): workAssignmentService.complete(로그인 조종사, no, usedAmount)
+        // TODO(백엔드): workAssignmentService.complete(로그인 조종사, no)
         //   ※ 내 작업인지, IN_PROGRESS 상태인지 확인 → COMPLETED 로 변경, 완료 시각 저장
         redirectAttributes.addFlashAttribute("message", "작업 완료를 보고했습니다. (샘플)");
         return "redirect:/pilot/history";
