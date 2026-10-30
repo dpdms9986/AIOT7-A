@@ -71,14 +71,42 @@
                     <button type="button" data-filter="done">완료</button>
                 </div>
 
-                <ul class="pilot-task-list" id="pilot-task-list"></ul>
+                <!-- [추가] 내 작업 목록: 서버가 전부 그리고, 탭 필터는 JS가 보였다/숨겼다 -->
+                <ul class="pilot-task-list" id="pilot-task-list" th:data-selected="${selectedNo}">
+                    <li th:each="t : ${myTasks}"
+                        th:data-group="${t.status == 'COMPLETED'} ? 'done' : 'active'">
+                        <button type="button" class="pilot-task"
+                                th:classappend="${t.no == selectedNo} ? 'selected'"
+                                th:data-no="${t.no}"
+                                th:data-address="${t.address}"
+                                th:data-status="${t.statusLabel}"
+                                th:data-area="${t.areaSize}"
+                                th:data-lat="${t.latitude}"
+                                th:data-lng="${t.longitude}"
+                                th:data-color="${t.stColor}">
+                            <span class="pilot-dot" th:classappend="${t.stClass}"></span>
+                            <span class="pilot-task-body">
+                                <strong th:text="${t.address}">전민동 31-7</strong>
+                                <small th:text="${#numbers.formatDecimal(t.areaSize, 0, 'COMMA', 0, 'POINT')} + '㎡ · ' + ${#temporals.format(t.assignedAt, 'MM-dd HH:mm')}">4,800㎡ · 10-29 08:00</small>
+                            </span>
+                            <span class="pilot-status" th:classappend="${t.stClass}" th:text="${t.statusLabel}">작업 중</span>
+                        </button>
+                    </li>
+                </ul>
+                <p class="pilot-empty" id="pilot-task-empty" th:hidden="${not #lists.isEmpty(myTasks)}">해당하는 작업이 없습니다.</p>
             </article>
         </section>
     </main>
 
+    <!-- [추가] 지도에만 표시할 주변 미배정 농지 → JS 배열로 넘김 -->
+    <script th:inline="javascript">
+        const OTHER_FARMS = /*[[${otherFarms}]]*/ [];
+    </script>
+
     <!-- 순서 중요: 지도·웹소켓(map 생성) → 작업 목록(map 사용) -->
     <script th:src="@{/js/pilot/pilot-gps.js}"></script>
-    <script th:src="@{/js/pilot-dashboard.js}"></script>
+    <!-- [교체] 없는 파일(pilot-dashboard.js) 대신 새로 만든 파일 -->
+    <script th:src="@{/js/pilot/pilot-tasks.js}"></script>
 </th:block>
 
 </body>

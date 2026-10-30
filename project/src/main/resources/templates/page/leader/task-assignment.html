@@ -1,15 +1,303 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{UI/layouts/user/leader_layout}"
-      >
+      layout:decorate="~{UI/layouts/user/leader_layout}">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>스마트 농업 관제 시스템</title>
+  <title>작업 배정 | 스마트 농업 관제 시스템</title>
 </head>
 <body layout:fragment="content">
 
-  <h1>작업 배정</h1>
+<main class="dash-main">
+
+  <div class="dash-title-row">
+    <div class="task-title">
+      <span class="task-title-icon">📋</span>
+      <div>
+        <h1>작업 배정</h1>
+        <p>지역을 검색해 미배정 농지를 선택하고, 조종사에게 나눠 배정합니다.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 처리 결과 메시지 (redirect 후 1회) -->
+  <p class="page-flash" th:if="${message}" th:text="${message}">성공 메시지</p>
+  <p class="page-flash is-error" th:if="${errorMessage}" th:text="${errorMessage}">실패 메시지</p>
+
+  <!-- ===== 탭: 주소로 이동 ===== -->
+  <div class="task-tabs">
+    <a class="task-tab" th:classappend="${tab == 'assign'} ? 'active'"
+       th:href="@{/leader/task-assignment(tab='assign')}">📋 작업 배정</a>
+    <a class="task-tab" th:classappend="${tab == 'status'} ? 'active'"
+       th:href="@{/leader/task-assignment(tab='status')}">📄 배정 현황</a>
+    <a class="task-tab" th:classappend="${tab == 'history'} ? 'active'"
+       th:href="@{/leader/task-assignment(tab='history')}">🕘 작업 이력</a>
+  </div>
+
+  <!-- =====================================================
+       [배정 탭]
+       ===================================================== -->
+  <section class="task-panel" th:if="${tab == 'assign'}">
+    <article class="dash-card">
+      <div class="dash-card-head task-map-head">
+        <h2>🌱 미배정 농지 목록 <span class="task-count" th:text="${#lists.size(readyLands)} + '건'">0건</span></h2>
+
+        <form class="task-search" th:action="@{/leader/task-assignment}" method="get">
+          <input type="hidden" name="tab" value="assign">
+          <input type="text" class="dash-input" name="region" th:value="${region}"
+                 placeholder="🔍 행정구역 검색 (예: 유성구, 전민동)">
+          <button type="submit" class="dash-btn-primary">검색</button>
+          <a class="dash-btn-outline" th:href="@{/leader/task-assignment}">전체</a>
+        </form>
+      </div>
+
+      <form id="assign-form" th:action="@{/leader/task-assignment}" method="post">
+
+        <div class="task-table-wrap">
+          <table class="task-table">
+            <thead>
+              <tr>
+                <th><input type="checkbox" id="check-all" aria-label="전체 선택"></th>
+                <th>주소</th>
+                <th>행정구역</th>
+                <th>면적(㎡)</th>
+                <th>상태</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="land : ${readyLands}">
+                <td>
+                  <input type="checkbox" class="land-check" name="landNos"
+                         th:value="${land.no}"
+                         th:data-area="${land.areaSize}"
+                         th:checked="${land.no == landNo}"
+                         th:attr="aria-label=${land.address} + ' 선택'">
+                </td>
+                <td th:text="${land.address}">전민동 15-2</td>
+                <td th:text="${land.region} + ' ' + ${land.dong}">유성구 전민동</td>
+                <td th:text="${#numbers.formatDecimal(land.areaSize, 0, 'COMMA', 0, 'POINT')}">3,300</td>
+                <td><span class="pilot-status st-ready">READY</span></td>
+              </tr>
+              <tr th:if="${#lists.isEmpty(readyLands)}">
+                <td colspan="5" class="task-empty-cell">해당 지역에 미배정 농지가 없습니다.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="task-select-bar">
+          <p>선택한 농지 <strong id="sel-count">0</strong>필지 · 총 <strong id="sel-area">0</strong>㎡</p>
+          <button type="button" class="dash-btn-primary" id="open-assign">👥 분배 설정</button>
+        </div>
+
+        <div class="task-modal" id="assign-modal" hidden>
+          <div class="task-modal-box task-assign-box" role="dialog" aria-modal="true" aria-labelledby="assign-title">
+            <button type="button" class="task-modal-close" data-close aria-label="닫기">✖</button>
+            <h3 id="assign-title">공동 방제단 구성</h3>
+            <p class="task-assign-sum">선택 농지 <strong id="modal-count">0</strong>필지 · 총 <strong id="modal-area">0</strong>㎡</p>
+
+            <div class="task-box-head">
+              <h4>투입 조종사</h4>
+              <button type="button" class="dash-btn-outline task-mini-btn" id="even-btn">균등 분배</button>
+            </div>
+
+            <ul class="task-pilot-list">
+              <li class="task-pilot" th:each="p : ${pilots}"
+                  th:classappend="${p.status == 'working'} ? 'busy'">
+                <label>
+                  <input type="checkbox" class="task-pilot-check"
+                         th:value="${p.no}"
+                         th:disabled="${p.status == 'working'}">
+                  <span th:text="${p.name}">김민수</span>
+                  <small th:switch="${p.status}">
+                    <th:block th:case="'online'">대기</th:block>
+                    <th:block th:case="'working'">작업 중</th:block>
+                    <th:block th:case="*">오프라인</th:block>
+                  </small>
+                </label>
+                <span class="task-quota-box">
+                  <input type="number" class="task-quota-input" min="0" value="0" disabled
+                         th:name="|quotas[${p.no}]|"> 필지
+                </span>
+              </li>
+            </ul>
+            <p class="task-quota" id="quota-msg">조종사를 선택하면 자동으로 균등 분배됩니다.</p>
+
+            <div class="task-modal-actions">
+              <button type="button" class="dash-btn-outline" data-close>취소</button>
+              <button type="submit" class="dash-btn-primary">배정 확정</button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </article>
+  </section>
+
+  <!-- =====================================================
+       [현황 탭]
+       ===================================================== -->
+  <section class="task-panel" th:if="${tab == 'status'}">
+
+    <div class="task-pilot-summary">
+      <div class="task-pilot-card" th:each="p : ${pilots}">
+        <div>
+          <strong>
+            <span th:text="${p.name}">김민수</span>
+            <small th:text="${p.status == 'working'} ? '· 작업 중' : (${p.status == 'online'} ? '· 대기' : '· 오프라인')">· 대기</small>
+          </strong>
+          <small>담당 <b th:text="${countByPilot.get(p.name) ?: 0}">0</b>필지</small>
+        </div>
+      </div>
+    </div>
+
+    <article class="dash-card">
+      <div class="dash-card-head task-map-head">
+        <h2>📄 배정 현황 <span class="task-count" th:text="${#lists.size(assigned)} + ' / ' + ${assignedTotal} + '건'">0건</span></h2>
+
+        <form class="task-search" th:action="@{/leader/task-assignment}" method="get">
+          <input type="hidden" name="tab" value="status">
+          <select class="task-select" name="status" aria-label="상태" onchange="this.form.submit()">
+            <option value="">전체 상태</option>
+            <option value="ASSIGNED"    th:selected="${status == 'ASSIGNED'}">배정됨 (대기)</option>
+            <option value="IN_PROGRESS" th:selected="${status == 'IN_PROGRESS'}">작업 중</option>
+          </select>
+          <select class="task-select" name="pilot" aria-label="담당 조종사" onchange="this.form.submit()">
+            <option value="">전체 조종사</option>
+            <option th:each="p : ${pilots}"
+                    th:value="${p.name}" th:text="${p.name}"
+                    th:selected="${p.name == pilot}">김민수</option>
+          </select>
+        </form>
+      </div>
+
+      <div class="task-table-wrap">
+        <table class="task-table plain">
+          <thead>
+            <tr>
+              <th>주소</th>
+              <th>행정구역</th>
+              <th>면적(㎡)</th>
+              <th>담당 조종사</th>
+              <th>배정 일시</th>
+              <th>상태</th>
+              <th>관리</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="land : ${assigned}">
+              <td th:text="${land.address}">노은동 2-8</td>
+              <td th:text="${land.region} + ' ' + ${land.dong}">유성구 노은동</td>
+              <td th:text="${#numbers.formatDecimal(land.areaSize, 0, 'COMMA', 0, 'POINT')}">2,150</td>
+              <td th:text="${land.pilotName}">이서연</td>
+              <td th:text="${#temporals.format(land.assignedAt, 'yyyy-MM-dd HH:mm')}">2026-10-29 09:30</td>
+              <td>
+                <span class="pilot-status"
+                      th:classappend="${land.status == 'ASSIGNED'} ? 'st-assigned' : 'st-progress'"
+                      th:text="${land.statusLabel}">배정됨</span>
+              </td>
+              <td>
+                <form th:if="${land.cancellable}"
+                      th:action="@{/leader/task-assignment/cancel}" method="post"
+                      onsubmit="return confirm('이 농지의 배정을 취소할까요?');">
+                  <input type="hidden" name="landNo" th:value="${land.no}">
+                  <button type="submit" class="task-cancel-btn">배정 취소</button>
+                </form>
+                <span th:unless="${land.cancellable}">-</span>
+              </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(assigned)}">
+              <td colspan="7" class="task-empty-cell">조건에 맞는 배정 내역이 없습니다.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </article>
+  </section>
+
+  <!-- =====================================================
+       [이력 탭]  ← 추가
+       ===================================================== -->
+  <section class="task-panel" th:if="${tab == 'history'}">
+    <article class="dash-card">
+      <div class="dash-card-head">
+        <h2>🕘 작업 이력 <span class="task-count" th:text="${#lists.size(history)} + '건'">0건</span></h2>
+        <!-- 지금 검색 조건 그대로 CSV 받기 -->
+        <a class="dash-btn-outline"
+           th:href="@{/leader/task-assignment/history.csv(from=${from}, to=${to}, hRegion=${hRegion}, hPilot=${hPilot})}">⬇ CSV 다운로드</a>
+      </div>
+
+      <!-- 검색 (GET) -->
+      <form class="task-filter" th:action="@{/leader/task-assignment}" method="get">
+        <input type="hidden" name="tab" value="history">
+        <label class="task-field">
+          <span>시작일</span>
+          <input type="date" name="from" th:value="${from}">
+        </label>
+        <label class="task-field">
+          <span>종료일</span>
+          <input type="date" name="to" th:value="${to}">
+        </label>
+        <label class="task-field">
+          <span>행정구역</span>
+          <input type="text" name="hRegion" th:value="${hRegion}" placeholder="예: 유성구, 노은동">
+        </label>
+        <label class="task-field">
+          <span>담당 조종사</span>
+          <select name="hPilot">
+            <option value="">전체</option>
+            <option th:each="n : ${historyPilots}" th:value="${n}" th:text="${n}"
+                    th:selected="${n == hPilot}">김민수</option>
+          </select>
+        </label>
+        <div class="task-filter-btns">
+          <button type="submit" class="dash-btn-primary">검색</button>
+          <a class="dash-btn-outline" th:href="@{/leader/task-assignment(tab='history')}">초기화</a>
+        </div>
+      </form>
+
+      <p class="page-flash is-error" th:if="${dateError}">시작일이 종료일보다 늦을 수 없습니다.</p>
+
+      <p class="task-history-sum" th:unless="${#lists.isEmpty(history)}"
+         th:text="|총 ${#lists.size(history)}건 · 면적 ${#numbers.formatDecimal(hArea, 0, 'COMMA', 0, 'POINT')}㎡ · 약제 사용량 ${#numbers.formatDecimal(hUsed, 1, 1)}L|">
+        총 5건 · 면적 10,700㎡ · 약제 사용량 12.3L
+      </p>
+
+      <div class="task-table-wrap">
+        <table class="task-table plain">
+          <thead>
+            <tr>
+              <th>완료 일시</th>
+              <th>주소</th>
+              <th>행정구역</th>
+              <th>면적(㎡)</th>
+              <th>담당 조종사</th>
+              <th>배정 일시</th>
+              <th>사용 약제</th>
+              <th>사용량(L)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="h : ${history}">
+              <td th:text="${#temporals.format(h.completedAt, 'yyyy-MM-dd HH:mm')}">2026-10-28 15:10</td>
+              <td th:text="${h.address}">노은동 112</td>
+              <td th:text="${h.region}">유성구 노은동</td>
+              <td th:text="${#numbers.formatDecimal(h.areaSize, 0, 'COMMA', 0, 'POINT')}">1,200</td>
+              <td th:text="${h.pilotName}">박지훈</td>
+              <td th:text="${#temporals.format(h.assignedAt, 'yyyy-MM-dd HH:mm')}">2026-10-28 14:00</td>
+              <td th:text="${h.chemicalName}">살균제 A</td>
+              <td th:text="${h.usedAmount}">1.4</td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(history)}">
+              <td colspan="8" class="task-empty-cell">조건에 맞는 작업 이력이 없습니다.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </article>
+  </section>
+
+</main>
+
+<script th:src="@{/js/leader/task-assignment.js}"></script>
 </body>
 </html>

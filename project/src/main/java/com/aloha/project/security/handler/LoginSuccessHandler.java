@@ -8,6 +8,10 @@ import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.savedrequest.SavedRequest;
 import org.springframework.stereotype.Component;
+import org.springframework.web.servlet.FlashMap;
+import org.springframework.web.servlet.support.SessionFlashMapManager;
+import org.springframework.web.servlet.FlashMap;
+import org.springframework.web.servlet.support.SessionFlashMapManager;
 
 import com.aloha.project.domain.users.CustomUser;
 
@@ -32,6 +36,9 @@ public class LoginSuccessHandler extends SavedRequestAwareAuthenticationSuccessH
       CustomUser customUser = (CustomUser) authentication.getPrincipal();
       HttpSession session = request.getSession();
       session.setAttribute("user", customUser.getUser());
+      FlashMap flashMap = new FlashMap();
+      flashMap.put("loginMessage", customUser.getUser().getName() + "님, 로그인되었습니다.");
+      new SessionFlashMapManager().saveOutputFlashMap(flashMap, request, response);
 
       // 아이디 저장
       String rememberId = request.getParameter("remember-id");    // ✅ 아이디 저장 여부
