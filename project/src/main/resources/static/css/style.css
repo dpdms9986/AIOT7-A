@@ -5149,10 +5149,7 @@ body.hazard-detail-page {
         padding: 20px;
     }
 
-    
-
-    
-
+ㄴ
     .hazard-board-page .hazard-legend-card {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -10379,3 +10376,260 @@ details p { margin: 10px 0 0; color: var(--sub); font-size: 14px; }
 .pin-2 { color: #238451; }
 .pin-3 { color: #2f80ed; }
 .pin-4 { color: #8a8f8c; }
+
+
+
+
+/* =========================================================
+   작업 배정 (2026-10-29)
+   ========================================================= */
+
+/* ⚠️ 팝업이 처음부터 떠 있는 문제 방지 */
+.task-modal[hidden] {
+  display: none !important;
+}
+
+/* 탭이 <a> 링크가 됨 → 밑줄 제거 + 버튼처럼 가운데 정렬 */
+a.task-tab {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+/* "전체" 버튼도 <a> */
+.task-search a.dash-btn-outline {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+/* 탭과 카드 사이 간격 */
+.task-tabs {
+  margin-bottom: 16px;
+}
+
+/* 실패 메시지 (빨간색) */
+.page-flash.is-error {
+  background: #fdeaea;
+  color: #b42318;
+}
+
+
+/* ===== 로그인 안내 (2026-10-29) ===== */
+.page-flash.is-info {
+  background: #e4efff;
+  color: #246ac0;
+}
+.login-card .page-flash {
+  margin: 0 0 16px;
+  font-size: 14px;
+}
+
+
+/* ===== 로그인 직후 팝업 (2026-10-29) ===== */
+.login-popup-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  display: grid;
+  place-items: center;
+  background: rgba(15, 23, 42, 0.45);
+}
+.login-popup {
+  width: min(360px, 90vw);
+  padding: 28px 24px 22px;
+  border-radius: 14px;
+  background: #fff;
+  text-align: center;
+  box-shadow: 0 18px 60px rgba(15, 23, 42, 0.2);
+}
+.login-popup-icon {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 14px;
+  border-radius: 50%;
+  background: #e5f4e9;
+  color: #238451;
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 52px;
+}
+.login-popup p {
+  margin: 0 0 20px;
+  color: #203246;
+  font-size: 16px;
+  font-weight: 600;
+}
+.login-popup-btn {
+  width: 100%;
+  height: 44px;
+  border: 0;
+  border-radius: 8px;
+  background: #238451;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.login-popup-btn:hover {
+  filter: brightness(0.95);
+}
+
+
+/* ===== 조종사 대시보드 (2026-10-29) ===== */
+.st-completed {
+  --st: #8a8f8c;
+  --st-bg: #edf0f1;
+  --st-text: #68747b;
+}
+.pilot-task-list li[hidden],
+#pilot-task-empty[hidden] {
+  display: none !important;
+}
+
+
+/* ===== 조종사 작업 이력 (2026-10-29) ===== */
+
+/* 탭이 <a> 링크 → 버튼과 같은 모양 */
+.pilot-tabs a {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--color-text-sub);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}
+.pilot-tabs a.active {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: #ffffff;
+}
+
+/* 목록 항목이 <a> 링크 */
+a.pilot-task {
+  box-sizing: border-box;
+  text-decoration: none;
+}
+
+
+/* ===== 단장 작업 이력 (2026-10-29) ===== */
+.dash-card-head a.dash-btn-outline,
+.task-filter-btns a.dash-btn-outline {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+
+/* ===== 드론·자산 관리 (2026-10-29) ===== */
+
+/* 없던 상태 배지 색 */
+.asset-pilot-badge.operating      { background: #e4efff; color: #246ac0; }
+.asset-pilot-badge.maintenance    { background: #fff3cf; color: #926900; }
+.asset-pilot-badge.in-maintenance { background: #f1e8ff; color: #6b3fb5; }
+
+/* 탭, 초기화, 상세보기가 <a> 링크 */
+a.asset-pilot-tab,
+a.asset-pilot-reset-button,
+a.asset-pilot-detail-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+/* 선택된 줄 */
+.asset-pilot-table tbody tr.selected {
+  background: var(--color-primary-light);
+}
+
+/* 상세 카드의 상태 변경 줄 */
+.asset-status-form {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  margin: 16px 0;
+}
+.asset-status-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.asset-status-form select {
+  height: 38px;
+  padding: 0 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+}
+
+
+/* ===== 드론·자산: 검색 줄 6칸 한 줄로 ===== */
+.asset-pilot-filters {
+  grid-template-columns: 150px 160px 140px minmax(220px, 1fr) auto auto;
+}
+@media (max-width: 900px) {
+  .asset-pilot-filters {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 480px) {
+  .asset-pilot-filters {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* ===== 드론·자산 (조종사): 검색 줄 5칸 한 줄로 ===== */
+.asset-pilot-filters.is-pilot {
+  grid-template-columns: 150px minmax(220px, 1fr) 140px auto auto;
+}
+@media (max-width: 900px) {
+  .asset-pilot-filters.is-pilot {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 480px) {
+  .asset-pilot-filters.is-pilot {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* ===== 단장 관제 대시보드 (2026-10-29) ===== */
+.assign-panel[hidden],
+#ap-assign-form[hidden],
+#ap-cancel-form[hidden],
+#ap-note[hidden] {
+  display: none !important;
+}
+#ap-cancel-form {
+  margin-top: 8px;
+}
+#ap-cancel-form button {
+  width: 100%;
+}
+
+
+/* ===== 농지 관리: 검색 줄 5칸 한 줄로 ===== */
+#farm-list form.filter-card {
+  grid-template-columns: 220px minmax(240px, 1fr) auto auto auto;
+}
+#farm-list form.filter-card > .button {
+  width: auto;
+}
+@media (max-width: 900px) {
+  #farm-list form.filter-card {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  }
+  #farm-list form.filter-card > .button {
+    width: 100%;
+  }
+}

@@ -1,6 +1,5 @@
 package com.aloha.project.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -13,8 +12,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.aloha.project.domain.users.UserAuth;
-import com.aloha.project.domain.users.Users;
 import com.aloha.project.dto.SignupRequest;
 import com.aloha.project.repository.users.TeamRepository;
 import com.aloha.project.service.inter.users.UserService;
@@ -50,20 +47,6 @@ public class HomeController {
         return ResponseEntity.ok(teamRepository.findAll());
     }
 
-  /**
-     * 💻 아이디(이메일) 중복확인 비동기 API
-     */
-    @GetMapping("/check-username")
-    @ResponseBody // 👈 HTML 뷰가 아니라 JSON 데이터(true/false)를 반환하도록 지정!
-    public ResponseEntity<Boolean> checkUsername(@RequestParam("userName") String userName) {
-        log.info("아이디 중복확인 요청: {}", userName);
-        
-        // DB에 해당 userName(이메일)이 있는지 조회
-        Users user = userService.selectByUsername(userName.trim());
-        boolean isDuplicate = (user != null); // 이미 존재하면 true(중복), 없으면 false(사용가능)
-        
-        return ResponseEntity.ok(isDuplicate);
-    }
 
    // [깔끔하게 정리된 버전]
     @PostMapping("/signup")

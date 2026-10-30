@@ -1,16 +1,151 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{UI/layouts/user/pilot_layout}"
-      >
+      layout:decorate="~{UI/layouts/user/pilot_layout}">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>스마트 농업 관제 시스템</title>
+  <title>작업 이력 | 스마트 농업 관제 시스템</title>
 </head>
 <body layout:fragment="content">
 
-  <h1>작업 이력</h1>
+<main class="dash-main">
+  <div class="dash-title-row">
+    <div>
+      <h1>🕘 작업 이력</h1>
+      <p>작업을 시작하고, 끝나면 완료 보고를 하고, 끝낸 작업의 기록을 확인하세요.</p>
+    </div>
+  </div>
+
+  <!-- 처리 결과 메시지 (redirect 후 1회) -->
+  <p class="page-flash" th:if="${message}" th:text="${message}">성공</p>
+  <p class="page-flash is-error" th:if="${errorMessage}" th:text="${errorMessage}">실패</p>
+
+  <section class="pilot-layout">
+
+    <!-- ===================== 왼쪽: 내 작업 목록 ===================== -->
+    <article class="dash-card">
+      <div class="dash-card-head">
+        <h2>📋 내 작업 <span class="task-count" th:text="${allCount} + '건'">0건</span></h2>
+      </div>
+
+      <!-- 탭: 링크. 지금 보던 작업(no)은 유지 -->
+      <div class="pilot-tabs">
+        <a th:href="@{/pilot/history(filter='all', no=${selected?.no})}"
+           th:classappend="${filter == 'all'} ? 'active'"
+           th:text="|전체 (${allCount})|">전체</a>
+        <a th:href="@{/pilot/history(filter='active', no=${selected?.no})}"
+           th:classappend="${filter == 'active'} ? 'active'"
+           th:text="|진행 중 (${activeCount})|">진행 중</a>
+        <a th:href="@{/pilot/history(filter='done', no=${selected?.no})}"
+           th:classappend="${filter == 'done'} ? 'active'"
+           th:text="|완료 (${doneCount})|">완료</a>
+      </div>
+
+      <!-- 완료 요약 -->
+      <p class="task-history-sum" th:if="${doneCount > 0}"
+         th:text="|완료 ${doneCount}건 · 면적 ${#numbers.formatDecimal(doneArea, 0, 'COMMA', 0, 'POINT')}㎡ · 약제 사용량 ${#numbers.formatDecimal(doneUsed, 1, 1)}L|">
+        완료 2건 · 면적 3,700㎡ · 약제 사용량 4.4L
+      </p>
+
+      <!-- 목록: 각 작업이 상세를 여는 링크 -->
+      <ul class="pilot-task-list">
+        <li th:each="t : ${tasks}">
+          <a class="pilot-task"
+             th:href="@{/pilot/history(filter=${filter}, no=${t.no})}"
+             th:classappend="${selected != null and t.no == selected.no} ? 'selected'">
+            <span class="pilot-dot" th:classappend="${t.stClass}"></span>
+            <span class="pilot-task-body">
+              <strong th:text="${t.address}">전민동 31-7</strong>
+              <small th:text="${#numbers.formatDecimal(t.areaSize, 0, 'COMMA', 0, 'POINT')} + '㎡ · ' + ${#temporals.format(t.assignedAt, 'MM-dd HH:mm')}">4,800㎡ · 10-29 08:00</small>
+            </span>
+            <span class="pilot-status" th:classappend="${t.stClass}" th:text="${t.statusLabel}">진행 중</span>
+          </a>
+        </li>
+        <li class="pilot-empty" th:if="${#lists.isEmpty(tasks)}">해당하는 작업이 없습니다.</li>
+      </ul>
+    </article>
+
+    <!-- ===================== 오른쪽: 작업 상세 ===================== -->
+    <article class="dash-card">
+      <div class="dash-card-head">
+        <h2>🔎 작업 상세</h2>
+      </div>
+
+      <div class="pilot-detail" th:if="${selected == null}">
+        <p class="pilot-empty">목록에서 작업을 선택하세요.</p>
+      </div>
+
+      <!-- th:object : 이 안에서는 *{필드} 가 selected.필드 -->
+      <div class="pilot-detail" th:if="${selected != null}" th:object="${selected}">
+        <h3 th:text="*{address}">전민동 31-7</h3>
+
+        <dl>
+          <dt>면적</dt>
+          <dd th:text="*{#numbers.formatDecimal(areaSize, 0, 'COMMA', 0, 'POINT')} + ' ㎡'">4,800 ㎡</dd>
+          <dt>배정 일시</dt>
+          <dd th:text="*{#temporals.format(assignedAt, 'yyyy-MM-dd HH:mm')}">2026-10-29 08:00</dd>
+          <dt>상태</dt>
+          <dd><span class="pilot-status" th:classappend="*{stClass}" th:text="*{statusLabel}">진행 중</span></dd>
+
+          <!-- 시작한 작업(진행 중, 완료)만 -->
+          <th:block th:if="*{status != 'ASSIGNED'}">
+            <dt>드론</dt>      <dd th:text="*{droneName}">DJI T40-01</dd>
+            <dt>약제</dt>      <dd th:text="*{chemicalName}">살균제 A</dd>
+            <dt>살포량</dt>    <dd th:text="*{sprayRate} + ' L/ha'">12 L/ha</dd>
+            <dt>시작 일시</dt> <dd th:text="*{#temporals.format(startedAt, 'yyyy-MM-dd HH:mm')}">2026-10-29 09:10</dd>
+          </th:block>
+
+          <!-- 완료한 작업만 -->
+          <th:block th:if="*{done}">
+            <dt>완료 일시</dt>   <dd th:text="*{#temporals.format(completedAt, 'yyyy-MM-dd HH:mm')}">2026-10-28 10:25</dd>
+            <dt>실제 사용량</dt> <dd th:text="*{usedAmount} + ' L'">1.8 L</dd>
+          </th:block>
+        </dl>
+
+        <!-- [대기] → 작업 시작 폼 -->
+        <form th:if="*{status == 'ASSIGNED'}"
+              th:action="@{/pilot/history/{no}/start(no=*{no})}" method="post">
+          <div class="pilot-form">
+            <p class="pilot-form-title">드론 및 약제 선택</p>
+            <label class="task-field">
+              <span>드론</span>
+              <select name="droneNo" required>
+                <option value="">드론 선택</option>
+                <option th:each="d : ${drones}" th:value="${d.id}" th:text="${d.label}">DJI T40-01</option>
+              </select>
+            </label>
+            <label class="task-field">
+              <span>약제</span>
+              <select name="chemicalNo" required>
+                <option value="">약제 선택</option>
+                <option th:each="c : ${chemicals}" th:value="${c.id}" th:text="${c.label}">살균제 A</option>
+              </select>
+            </label>
+            <label class="task-field">
+              <span>살포량 (L/ha)</span>
+              <input type="number" name="sprayRate" value="12" min="1" max="50" step="0.1" required>
+            </label>
+          </div>
+          <button type="submit" class="dash-btn-primary">작업 시작</button>
+        </form>
+
+        <!-- [진행 중] → 완료 보고 폼 -->
+        <form th:if="*{status == 'IN_PROGRESS'}"
+              th:action="@{/pilot/history/{no}/complete(no=*{no})}" method="post"
+              onsubmit="return confirm('작업 완료를 보고할까요?');">
+          <div class="pilot-form">
+            <p class="pilot-form-title">방제 완료 보고</p>
+            <label class="task-field">
+              <span>실제 약제 사용량 (L)</span>
+              <input type="number" name="usedAmount" min="0.1" step="0.1" placeholder="예: 1.2" required>
+            </label>
+          </div>
+          <button type="submit" class="dash-btn-primary">작업 완료 보고</button>
+        </form>
+      </div>
+    </article>
+  </section>
+</main>
 
 </body>
 </html>

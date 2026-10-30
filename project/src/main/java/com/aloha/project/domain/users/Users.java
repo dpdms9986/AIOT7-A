@@ -42,7 +42,7 @@ public class Users {
     private String role; // ADMIN / LEADER / PILOT 
 
     // 소속 방제단 매핑
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "team_id")
     private Teams team; 
 

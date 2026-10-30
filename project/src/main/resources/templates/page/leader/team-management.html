@@ -1,16 +1,216 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{UI/layouts/user/leader_layout}"
-      >
+      layout:decorate="~{UI/layouts/user/leader_layout}">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>스마트 농업 관제 시스템</title>
+  <title>방제단 관리 | 스마트 농업 관제 시스템</title>
+  <!-- 이 화면 전용 CSS (레이아웃 head 에 합쳐짐) -->
+  <link rel="stylesheet" th:href="@{/css/team-management.css}">
 </head>
 <body layout:fragment="content">
 
-  <h1>방제단 관리</h1>
+<main class="main-content team-management-page">
 
+  <!-- ===== 제목 + 초대코드 ===== -->
+  <section class="team-page-heading">
+    <div>
+      <h1 th:text="${headerTeamName}">방제단 관리</h1>
+      <p>소속 조종사의 접속 상태와 작업 현황, 배정 정보를 관리합니다.</p>
+    </div>
+    <div class="team-heading-actions">
+      <span class="team-invite-code">
+        초대 코드 <strong id="invite-code" th:text="${headerInviteCode}">ABC123</strong>
+      </span>
+      <button type="button" class="team-btn team-btn-outline" id="invite-pilot-btn">초대 코드 복사</button>
+    </div>
+  </section>
+
+  <!-- ===== 처리 결과 메시지 (redirect 후 1회) ===== -->
+  <p class="team-flash" th:if="${message}" th:text="${message}">메시지</p>
+
+  <!-- ===== 요약 카드 ===== -->
+  <section class="team-summary" aria-label="방제단 현황">
+    <article class="team-summary-card">
+      <span class="team-summary-icon blue">👥</span>
+      <div>
+        <span>전체 조종사</span>
+        <strong th:text="${totalCount} + '명'">0명</strong>
+        <small>등록된 프로필</small>
+      </div>
+    </article>
+    <article class="team-summary-card">
+      <span class="team-summary-icon green">●</span>
+      <div>
+        <span>접속 중</span>
+        <strong th:text="${onlineCount} + '명'">0명</strong>
+        <small>현재 접속 상태</small>
+      </div>
+    </article>
+    <article class="team-summary-card">
+      <span class="team-summary-icon orange">🚁</span>
+      <div>
+        <span>작업 중</span>
+        <strong th:text="${workingCount} + '명'">0명</strong>
+        <small>진행 중인 작업</small>
+      </div>
+    </article>
+    <article class="team-summary-card">
+      <span class="team-summary-icon purple">✓</span>
+      <div>
+        <span>금일 완료</span>
+        <strong th:text="${completedSum} + '건'">0건</strong>
+        <small>오늘 완료한 작업</small>
+      </div>
+    </article>
+  </section>
+
+  <!-- ===== 조종사 목록 ===== -->
+  <section class="team-panel" id="team-members-panel">
+    <div class="team-panel-heading">
+      <div>
+        <h2>소속 조종사 목록</h2>
+        <p>접속 상태, 담당 기체, 탱크 용량 및 당일 작업량을 확인합니다.</p>
+      </div>
+      <span class="team-result-count">총 <strong th:text="${#lists.size(members)}">0</strong>명</span>
+    </div>
+
+    <!-- 검색: GET 전송 → 서버가 걸러서 다시 그림 -->
+    <form class="team-filters" th:action="@{/leader/team-management}" method="get">
+      <label class="team-search-field">
+        이름 또는 연락처
+        <input type="search" name="keyword" th:value="${keyword}" placeholder="조종사 이름, 연락처 검색">
+      </label>
+
+      <label>
+        접속 상태
+        <select name="status">
+          <option value="">전체 상태</option>
+          <option value="online"  th:selected="${status == 'online'}">접속 중</option>
+          <option value="working" th:selected="${status == 'working'}">작업 중</option>
+          <option value="offline" th:selected="${status == 'offline'}">오프라인</option>
+        </select>
+      </label>
+
+      <label>
+        숙련도
+        <select name="skill">
+          <option value="">전체 숙련도</option>
+          <option value="초급"   th:selected="${skill == '초급'}">초급</option>
+          <option value="중급"   th:selected="${skill == '중급'}">중급</option>
+          <option value="베테랑" th:selected="${skill == '베테랑'}">베테랑</option>
+        </select>
+      </label>
+
+      <button type="submit" class="team-btn team-btn-primary">검색</button>
+      <a class="team-btn team-btn-outline" th:href="@{/leader/team-management}">초기화</a>
+    </form>
+
+    <div class="team-table-wrap">
+      <table class="team-table">
+        <thead>
+          <tr>
+            <th>조종사</th>
+            <th>연락처</th>
+            <th>접속 상태</th>
+            <th>담당 기체</th>
+            <th>탱크 용량</th>
+            <th>현재 작업</th>
+            <th>금일 작업량</th>
+            <th>숙련도</th>
+            <th>관리</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="member : ${members}">
+            <td>
+              <div class="team-member-cell">
+                <span class="team-avatar" th:text="${#strings.substring(member.name, 0, 1)}">김</span>
+                <div>
+                  <div class="team-member-name" th:text="${member.name}">김민수</div>
+                  <div class="team-member-meta" th:text="${member.username}">pilot@test.com</div>
+                </div>
+              </div>
+            </td>
+
+            <td th:text="${member.phone}">010-0000-0000</td>
+
+            <td>
+              <span class="team-status"
+                    th:classappend="${member.status}"
+                    th:switch="${member.status}">
+                <th:block th:case="'online'">접속 중</th:block>
+                <th:block th:case="'working'">작업 중</th:block>
+                <th:block th:case="*">오프라인</th:block>
+              </span>
+            </td>
+
+            <td th:text="${member.drone} ?: '미배정'">DJI T40</td>
+            <td th:text="${member.tank != null} ? ${member.tank} + ' L' : '미등록'">40 L</td>
+            <td th:text="${member.currentTask}">-</td>
+            <td th:text="${member.completed} + '건'">0건</td>
+
+            <td>
+              <span class="team-skill"
+                    th:classappend="${member.skill == '베테랑'} ? 'veteran' : (${member.skill == '중급'} ? 'intermediate' : 'beginner')"
+                    th:text="${member.skill}">중급</span>
+            </td>
+
+            <td>
+              <div class="team-row-actions">
+                <!-- 상세보기: 값을 data- 속성에 심어두고 JS가 모달에 표시 -->
+                <button type="button" class="team-row-btn btn-detail"
+                        th:data-name="${member.name}"
+                        th:data-username="${member.username}"
+                        th:data-phone="${member.phone}"
+                        th:data-drone="${member.drone} ?: '미배정'"
+                        th:data-tank="${member.tank != null} ? ${member.tank} + ' L' : '미등록'"
+                        th:data-skill="${member.skill}"
+                        th:data-task="${member.currentTask}"
+                        th:data-completed="${member.completed} + '건'">상세보기</button>
+
+                <!-- 재배정: 오프라인이 아닌 조종사만 -->
+                <form th:if="${member.status != 'offline'}"
+                      th:action="@{/leader/team-management/{no}/reassign(no=${member.no})}"
+                      method="post" class="team-reassign-form"
+                      onsubmit="return confirm('미완료 농지를 재배정하시겠습니까?');">
+                  <select name="targetNo" required>
+                    <option value="">대상 선택</option>
+                    <option th:each="target : ${onlineMembers}"
+                            th:unless="${target.no == member.no}"
+                            th:value="${target.no}"
+                            th:text="${target.name}">이서연</option>
+                  </select>
+                  <button type="submit" class="team-row-btn reassign">재배정</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+
+          <tr th:if="${#lists.isEmpty(members)}">
+            <td colspan="9" class="team-empty">검색 조건에 맞는 조종사가 없습니다.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </section>
+
+  <!-- ===== 상세보기 모달 (mini 와 같은 구조) ===== -->
+  <div class="team-modal-backdrop" id="team-detail-modal" hidden>
+    <section class="team-modal" role="dialog" aria-modal="true" aria-labelledby="team-detail-title">
+      <div class="team-modal-heading">
+        <div>
+          <h2 id="team-detail-title">조종사 상세 정보</h2>
+          <p>조종사 프로필과 작업 현황</p>
+        </div>
+        <button type="button" class="team-modal-close" data-close-modal aria-label="닫기">×</button>
+      </div>
+      <div class="team-detail-grid" id="team-detail-content"></div>
+    </section>
+  </div>
+</main>
+
+<script th:src="@{/js/leader/team-management.js}"></script>
 </body>
 </html>
