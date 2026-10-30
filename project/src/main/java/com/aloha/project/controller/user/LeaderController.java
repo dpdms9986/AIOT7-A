@@ -3,7 +3,6 @@ package com.aloha.project.controller.user;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,7 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * 방제단장(LEADER) 화면 컨트롤러
  * - 주소가 /leader 로 시작하는 요청을 처리
- * - 지금은 샘플 데이터 사용 → TODO(백엔드) 부분을 서비스 호출로 교체 예정
+ * - 데이터는 TODO(백엔드) 부분을 서비스 호출로 연결 예정 (지금은 빈 목록)
  */
 @Slf4j
 @Controller
@@ -69,8 +68,8 @@ public class LeaderController {
             Model model) {
 
         // TODO(백엔드): landService / teamService 로 교체
-        List<LandDto> allLands = sampleLands();
-        List<TeamMemberDto> pilots = sampleMembers();
+        List<LandDto> allLands = new ArrayList<>();
+        List<TeamMemberDto> pilots = new ArrayList<>();
 
         /* ----- [배정 탭] 미배정(READY) 농지 + 지역 검색 ----- */
         String[] words = region.trim().isEmpty() ? new String[0] : region.trim().split("\\s+");
@@ -96,8 +95,7 @@ public class LeaderController {
         List<PilotTaskDto> history = dateError ? List.of() : filterHistory(from, to, hRegion, hPilot);
         double hArea = history.stream().mapToDouble(h -> h.getAreaSize() == null ? 0 : h.getAreaSize()).sum();
         double hUsed = history.stream().mapToDouble(h -> h.getUsedAmount() == null ? 0 : h.getUsedAmount()).sum();
-        List<String> historyPilots = sampleTeamHistory().stream()
-                .map(PilotTaskDto::getPilotName).distinct().sorted().toList();
+        List<String> historyPilots = new ArrayList<>();   // TODO(백엔드): 팀 조종사 이름 목록
 
         /* ----- 화면으로 보낼 값 ----- */
         model.addAttribute("tab", tab);
@@ -203,6 +201,7 @@ public class LeaderController {
 
     /* =========================================================
        방제단 관리
+       - 팀 이름, 초대 코드는 GlobalModelAdvice 의 headerTeamName, headerInviteCode 사용
        ========================================================= */
     @GetMapping("/team-management")
     public String getTeamManagement(
@@ -211,7 +210,7 @@ public class LeaderController {
             @RequestParam(value = "skill",   defaultValue = "") String skill,
             Model model) {
 
-        List<TeamMemberDto> allMembers = sampleMembers();   // TODO(백엔드)
+        List<TeamMemberDto> allMembers = new ArrayList<>();   // TODO(백엔드): teamService.getMembers(로그인 단장)
 
         String kw = keyword.trim();
         List<TeamMemberDto> members = allMembers.stream()
@@ -231,8 +230,6 @@ public class LeaderController {
                 .filter(m -> "online".equals(m.getStatus()))
                 .toList();
 
-        model.addAttribute("teamName", "대전 유성 방제단");   // TODO(백엔드)
-        model.addAttribute("inviteCode", "DR789A");           // TODO(백엔드)
         model.addAttribute("members", members);
         model.addAttribute("onlineMembers", onlineMembers);
         model.addAttribute("totalCount", allMembers.size());
@@ -265,7 +262,7 @@ public class LeaderController {
             @RequestParam(value = "keyword", defaultValue = "") String keyword,
             Model model) {
 
-        List<LandDto> allLands = sampleLands();   // TODO(백엔드)
+        List<LandDto> allLands = new ArrayList<>();   // TODO(백엔드): landService.getLands(로그인 단장의 팀)
 
         String kw = keyword.trim();
         List<LandDto> lands = allLands.stream()
@@ -315,15 +312,13 @@ public class LeaderController {
         return "redirect:/leader/task-assignment?tab=history";
     }
 
-    
-
     /* =========================================================
        작업 이력 검색 (화면 + CSV 같이 사용)
        ========================================================= */
     private List<PilotTaskDto> filterHistory(LocalDate from, LocalDate to, String region, String pilot) {
         // TODO(백엔드): workAssignmentService.getTeamHistory(로그인 단장의 팀, from, to, region, pilot)
         String[] words = region.trim().isEmpty() ? new String[0] : region.trim().split("\\s+");
-        return sampleTeamHistory().stream()
+        return new ArrayList<PilotTaskDto>().stream()
                 .filter(h -> from == null || !h.getCompletedAt().toLocalDate().isBefore(from))
                 .filter(h -> to == null   || !h.getCompletedAt().toLocalDate().isAfter(to))
                 .filter(h -> Arrays.stream(words)
@@ -337,79 +332,5 @@ public class LeaderController {
     private String csv(Object value) {
         String s = value == null ? "" : String.valueOf(value);
         return "\"" + s.replace("\"", "\"\"") + "\"";
-    }
-
-    /* =========================================================
-       샘플 데이터 (백엔드 연결 전까지만 사용)
-       ========================================================= */
-    private List<TeamMemberDto> sampleMembers() {
-        List<TeamMemberDto> list = new ArrayList<>();
-        list.add(TeamMemberDto.builder().no(1L).name("김민수").username("pilot1@test.com")
-                .phone("010-1234-5678").status("working").drone("DJI T40-01").tank(40)
-                .currentTask("유성구 3번 농지 방제").completed(3).skill("베테랑").build());
-        list.add(TeamMemberDto.builder().no(2L).name("이서연").username("pilot2@test.com")
-                .phone("010-2345-6789").status("online").drone("DJI T30-02").tank(30)
-                .currentTask("-").completed(2).skill("중급").build());
-        list.add(TeamMemberDto.builder().no(3L).name("박지훈").username("pilot3@test.com")
-                .phone("010-3456-7890").status("online").drone(null).tank(null)
-                .currentTask("-").completed(1).skill("초급").build());
-        list.add(TeamMemberDto.builder().no(4L).name("최유진").username("pilot4@test.com")
-                .phone("010-4567-8901").status("offline").drone("DJI T25-03").tank(20)
-                .currentTask("-").completed(0).skill("중급").build());
-        return list;
-    }
-
-    private List<LandDto> sampleLands() {
-        List<LandDto> list = new ArrayList<>();
-        list.add(LandDto.builder().no(1L).city("대전광역시").region("유성구").dong("전민동")
-                .address("전민동 15-2").latitude(36.3912).longitude(127.4035).areaSize(3300.0)
-                .status("READY").build());
-        list.add(LandDto.builder().no(2L).city("대전광역시").region("유성구").dong("노은동")
-                .address("노은동 2-8").latitude(36.3741).longitude(127.3189).areaSize(2150.0)
-                .status("ASSIGNED").pilotName("이서연")
-                .assignedAt(LocalDateTime.of(2026, 10, 29, 9, 30)).build());
-        list.add(LandDto.builder().no(3L).city("대전광역시").region("유성구").dong("전민동")
-                .address("전민동 31-7").latitude(36.3890).longitude(127.4071).areaSize(4800.0)
-                .status("IN_PROGRESS").pilotName("김민수")
-                .assignedAt(LocalDateTime.of(2026, 10, 29, 8, 0)).build());
-        list.add(LandDto.builder().no(4L).city("대전광역시").region("유성구").dong("노은동")
-                .address("노은동 112").latitude(null).longitude(null).areaSize(1200.0)
-                .status("COMPLETED").pilotName("박지훈")
-                .assignedAt(LocalDateTime.of(2026, 10, 28, 14, 0)).build());
-        list.add(LandDto.builder().no(5L).city("대전광역시").region("유성구").dong("전민동")
-                .address("전민동 42-1").latitude(36.3931).longitude(127.4012).areaSize(2600.0)
-                .status("READY").build());
-        list.add(LandDto.builder().no(6L).city("대전광역시").region("유성구").dong("노은동")
-                .address("노은동 77-3").latitude(36.3769).longitude(127.3151).areaSize(1850.0)
-                .status("READY").build());
-        list.add(LandDto.builder().no(7L).city("대전광역시").region("유성구").dong("구즉동")
-                .address("구즉동 9-4").latitude(36.4210).longitude(127.3902).areaSize(5100.0)
-                .status("READY").build());
-        return list;
-    }
-
-    private List<PilotTaskDto> sampleTeamHistory() {
-        List<PilotTaskDto> list = new ArrayList<>();
-        list.add(PilotTaskDto.builder().no(4L).address("노은동 112").region("유성구 노은동").areaSize(1200.0)
-                .status("COMPLETED").pilotName("박지훈").chemicalName("살균제 A").usedAmount(1.4)
-                .assignedAt(LocalDateTime.of(2026, 10, 28, 14, 0))
-                .completedAt(LocalDateTime.of(2026, 10, 28, 15, 10)).build());
-        list.add(PilotTaskDto.builder().no(10L).address("전민동 8-11").region("유성구 전민동").areaSize(1500.0)
-                .status("COMPLETED").pilotName("김민수").chemicalName("살충제 B").usedAmount(1.8)
-                .assignedAt(LocalDateTime.of(2026, 10, 28, 9, 0))
-                .completedAt(LocalDateTime.of(2026, 10, 28, 10, 25)).build());
-        list.add(PilotTaskDto.builder().no(11L).address("구즉동 5-3").region("유성구 구즉동").areaSize(2200.0)
-                .status("COMPLETED").pilotName("김민수").chemicalName("살균제 A").usedAmount(2.6)
-                .assignedAt(LocalDateTime.of(2026, 10, 27, 13, 0))
-                .completedAt(LocalDateTime.of(2026, 10, 27, 14, 20)).build());
-        list.add(PilotTaskDto.builder().no(12L).address("노은동 30-1").region("유성구 노은동").areaSize(3100.0)
-                .status("COMPLETED").pilotName("이서연").chemicalName("살충제 B").usedAmount(3.5)
-                .assignedAt(LocalDateTime.of(2026, 10, 20, 8, 30))
-                .completedAt(LocalDateTime.of(2026, 10, 20, 10, 5)).build());
-        list.add(PilotTaskDto.builder().no(13L).address("전민동 66").region("유성구 전민동").areaSize(2700.0)
-                .status("COMPLETED").pilotName("이서연").chemicalName("살균제 A").usedAmount(3.0)
-                .assignedAt(LocalDateTime.of(2026, 9, 30, 9, 0))
-                .completedAt(LocalDateTime.of(2026, 9, 30, 10, 40)).build());
-        return list;
     }
 }
