@@ -1,5 +1,7 @@
 -- Active: 1788828725682@@127.0.0.1@3306@project
 
+SELECT * FROM work_assignments;
+
 CREATE DATABASE IF NOT EXISTS `project`
     DEFAULT CHARACTER SET = 'utf8mb4';
 

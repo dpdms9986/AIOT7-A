@@ -32,6 +32,7 @@ import com.aloha.project.dto.LandDto;
 import com.aloha.project.dto.PilotTaskDto;
 import com.aloha.project.dto.TeamMemberDto;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -42,6 +43,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Controller
 @RequestMapping("/leader")
+@RequiredArgsConstructor
 public class LeaderController {
 
     private static final DateTimeFormatter DT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
