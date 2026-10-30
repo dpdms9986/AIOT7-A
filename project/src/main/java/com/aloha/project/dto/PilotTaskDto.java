@@ -2,6 +2,9 @@ package com.aloha.project.dto;
 
 import java.time.LocalDateTime;
 
+import com.aloha.project.domain.lands.Regions;
+import com.aloha.project.domain.tasks.WorkAssignments;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -30,11 +33,10 @@ public class PilotTaskDto {
     // 작업 시작 때 채워짐
     private String droneName;          // 사용 드론
     private String chemicalName;       // 사용 약제
-    private Double sprayRate;          // 살포량 (L/ha)
     private LocalDateTime startedAt;   // 시작 일시
 
     // 완료 보고 때 채워짐
-    private Double usedAmount;         // 실제 약제 사용량 (L)
+    private String usedAmount;         // 실제 약제 사용량 (L 또는 상태값)
     private LocalDateTime completedAt; // 완료 일시
 
     /* ===== 화면용 getter ===== */
@@ -61,5 +63,38 @@ public class PilotTaskDto {
 
     public boolean isDone() {
         return "COMPLETED".equals(status);
+    }
+
+    // 👇 [백엔드 필수 변환 메서드 추가] WorkAssignments 엔티티 -> PilotTaskDto 변환
+    public static PilotTaskDto from(WorkAssignments assignment) {
+        if (assignment == null) return null;
+
+        // 농지 정보 추출
+        String landAddress = (assignment.getLand() != null) ? assignment.getLand().getAddress() : "-";
+        String landRegion = "-";
+        if (assignment.getLand() != null && assignment.getLand().getRegion() != null) {
+            Regions r = assignment.getLand().getRegion();
+            // 시/군/구 + 읍/면/동 합치기 (예: "동구 어남동")
+            landRegion = (r.getSigungu() != null ? r.getSigungu() + " " : "") + r.getEupmyeondong();
+        }
+        Double area = (assignment.getLand() != null) ? assignment.getLand().getAreaSize() : 0.0;
+
+        // 조종사 이름 추출
+        String pilot = (assignment.getPilot() != null) ? assignment.getPilot().getName() : "-";
+
+        return PilotTaskDto.builder()
+                .no(assignment.getNo())
+                .address(landAddress)
+                .region(landRegion)
+                .areaSize(area)
+                .status(assignment.getStatus())
+                .pilotName(pilot)
+                .assignedAt(assignment.getCreatedAt())
+                .startedAt(assignment.getStartedAt())
+                .completedAt(assignment.getCompletedAt() != null ? assignment.getCompletedAt() : assignment.getCreatedAt())
+                .droneName("-")               // 기본값 (추후 기체 배정 연동)
+                .chemicalName("기본 방제약제") // 기본값
+                .usedAmount("양호")           // 약제 사용량 상태값
+                .build();
     }
 }

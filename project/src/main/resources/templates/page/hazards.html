@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{UI/layouts/user/common_layout}">
+<head>
+  <meta charset="UTF-8">
+  <title>위험 구역 | 스마트 농업 관제 시스템</title>
+  <!-- 지도 (Leaflet) : 다른 대시보드와 같은 버전 -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body layout:fragment="content">
+
+<main class="dash-main hz-page">
+
+  <!-- ===== 제목 + 신고 버튼 ===== -->
+  <div class="dash-title-row">
+    <div>
+      <h1>⚠️ 위험 구역</h1>
+      <p>고압선, 철탑 등 비행 위험 요소를 지도에 공유하고, 해소되면 완료 처리합니다.</p>
+    </div>
+    <button type="button" class="dash-btn-primary" id="hz-open-btn">+ 위험 구역 신고</button>
+  </div>
+
+  <!-- 처리 결과 메시지 (redirect 후 1회) -->
+  <p class="page-flash" th:if="${successMessage}" th:text="${successMessage}">성공</p>
+  <p class="page-flash is-error" th:if="${errorMessage}" th:text="${errorMessage}">실패</p>
+
+  <!-- ===== 요약 카드 4개 ===== -->
+  <section class="dash-stats">
+    <div class="dash-card dash-stat">
+      <span class="dash-stat-icon completed">📋</span>
+      <div class="dash-stat-body">
+        <small>전체 신고</small>
+        <strong><th:block th:text="${totalCount}">0</th:block><span>건</span></strong>
+        <em>지금까지 등록된 위험 구역</em>
+      </div>
+    </div>
+    <div class="dash-card dash-stat">
+      <span class="dash-stat-icon assigned">⚠️</span>
+      <div class="dash-stat-body">
+        <small>주의 요망</small>
+        <strong><th:block th:text="${activeCount}">0</th:block><span>건</span></strong>
+        <em>아직 해소되지 않은 곳</em>
+      </div>
+    </div>
+    <div class="dash-card dash-stat">
+      <span class="dash-stat-icon danger">🚨</span>
+      <div class="dash-stat-body">
+        <small>고위험</small>
+        <strong><th:block th:text="${highRiskCount}">0</th:block><span>건</span></strong>
+        <em>주의 요망 중 고위험</em>
+      </div>
+    </div>
+    <div class="dash-card dash-stat">
+      <span class="dash-stat-icon ready">✅</span>
+      <div class="dash-stat-body">
+        <small>해소 완료</small>
+        <strong><th:block th:text="${resolvedCount}">0</th:block><span>건</span></strong>
+        <em>위험이 사라진 곳</em>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 왼쪽 목록 + 오른쪽 지도 ===== -->
+  <section class="hz-layout">
+
+    <!-- 목록 -->
+    <article class="dash-card">
+      <div class="dash-card-head">
+        <h2>📍 위험 구역 목록 <span class="task-count" th:text="${#lists.size(hazards)} + '건'">0건</span></h2>
+      </div>
+
+      <div class="hz-table-wrap">
+        <table class="hz-table">
+          <thead>
+            <tr>
+              <th>위험도</th>
+              <th>제목</th>
+              <th>작성자</th>
+              <th>등록일</th>
+              <th>상태</th>
+              <th>관리</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- 행에 data- 로 값을 심어 두고, JS가 읽어서 지도 마커 + 상세에 사용 -->
+            <tr class="hz-row" th:each="h : ${hazards}"
+                th:classappend="${h.status == 'RESOLVED'} ? 'is-resolved'"
+                th:data-no="${h.no}"
+                th:data-lat="${h.latitude}"
+                th:data-lng="${h.longitude}"
+                th:data-title="${h.title}"
+                th:data-type="${h.hazardType}"
+                th:data-status="${h.status}"
+                th:data-content="${h.content}"
+                th:data-author="${h.user != null ? h.user.name : '-'}"
+                th:data-date="${h.createdAt != null ? #temporals.format(h.createdAt, 'yyyy-MM-dd HH:mm') : '-'}">
+              <td>
+                <span class="hz-badge"
+                      th:classappend="${h.hazardType == '고위험'} ? 'hz-high' : (${h.hazardType == '중위험'} ? 'hz-mid' : 'hz-low')"
+                      th:text="${h.hazardType}">고위험</span>
+              </td>
+              <td class="hz-title-cell" th:text="${h.title}">어남동 3번지 고압선 주의</td>
+              <td th:text="${h.user != null ? h.user.name : '-'}">김단장</td>
+              <td th:text="${h.createdAt != null ? #temporals.format(h.createdAt, 'MM-dd HH:mm') : '-'}">10-30 14:00</td>
+              <td>
+                <span class="hz-status" th:classappend="${h.status == 'ACTIVE'} ? 'active' : 'resolved'"
+                      th:text="${h.status == 'ACTIVE'} ? '주의 요망' : '해소됨'">주의 요망</span>
+              </td>
+              <td>
+                <!-- 주의 요망일 때만 해소 버튼 -->
+                <form th:if="${h.status == 'ACTIVE'}"
+                      th:action="@{/hazards/{no}/resolve(no=${h.no})}" method="post"
+                      onsubmit="return confirm('이 위험 구역을 해소 완료로 바꿀까요?');">
+                  <button type="submit" class="hz-resolve-btn">해소 완료</button>
+                </form>
+                <span th:unless="${h.status == 'ACTIVE'}" class="hz-muted">-</span>
+              </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(hazards)}">
+              <td colspan="6" class="hz-empty">등록된 위험 구역이 없습니다.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </article>
+
+    <!-- 지도 + 선택한 위험 구역 상세 -->
+    <article class="dash-card">
+      <div class="dash-card-head">
+        <h2>🗺 위험 구역 지도</h2>
+        <span class="hz-legend">
+          <i class="hz-dot hz-high"></i>고위험
+          <i class="hz-dot hz-mid"></i>중위험
+          <i class="hz-dot hz-low"></i>저위험
+          <i class="hz-dot hz-off"></i>해소됨
+        </span>
+      </div>
+
+      <div id="hz-map" class="hz-map"></div>
+
+      <!-- 목록이나 마커를 누르면 JS가 채움 -->
+      <div class="hz-detail" id="hz-detail" hidden>
+        <div class="hz-detail-head">
+          <span class="hz-badge" id="hz-d-type">고위험</span>
+          <strong id="hz-d-title">제목</strong>
+          <span class="hz-status" id="hz-d-status">주의 요망</span>
+        </div>
+        <p class="hz-detail-meta">
+          <span id="hz-d-author">작성자</span> · <span id="hz-d-date">등록일</span> ·
+          좌표 <span id="hz-d-coord">36.3504, 127.3845</span>
+        </p>
+        <p class="hz-detail-content" id="hz-d-content">상세 내용</p>
+      </div>
+      <p class="hz-muted hz-detail-hint" id="hz-detail-hint">목록이나 지도 마커를 누르면 상세 내용이 보여요.</p>
+    </article>
+  </section>
+</main>
+
+<!-- ===== 위험 구역 신고 팝업 (POST /hazards → HazardRequest) ===== -->
+<div class="hz-modal" id="hz-modal" hidden>
+  <section class="hz-modal-box" role="dialog" aria-modal="true" aria-labelledby="hz-modal-title">
+    <button type="button" class="hz-modal-close" data-hz-close aria-label="닫기">✖</button>
+    <h3 id="hz-modal-title">위험 구역 신고</h3>
+    <p class="hz-muted">지도를 클릭하면 위치(위도·경도)가 자동으로 입력돼요.</p>
+
+    <form th:action="@{/hazards}" method="post">
+      <label class="task-field">
+        <span>제목</span>
+        <input type="text" name="title" maxlength="150" placeholder="예) 어남동 3번지 고압선 주의" required>
+      </label>
+
+      <div class="task-field">
+        <span>위험도</span>
+        <div class="hz-type-group">
+          <label class="hz-type-option"><input type="radio" name="hazardType" value="고위험" required> <b class="hz-badge hz-high">고위험</b></label>
+          <label class="hz-type-option"><input type="radio" name="hazardType" value="중위험" checked> <b class="hz-badge hz-mid">중위험</b></label>
+          <label class="hz-type-option"><input type="radio" name="hazardType" value="저위험"> <b class="hz-badge hz-low">저위험</b></label>
+        </div>
+      </div>
+
+      <label class="task-field">
+        <span>상세 내용</span>
+        <textarea name="content" rows="3" placeholder="어떤 위험이 있는지 적어 주세요." required></textarea>
+      </label>
+
+      <div class="task-field">
+        <span>위치 선택</span>
+        <div id="hz-pick-map" class="hz-pick-map"></div>
+      </div>
+
+      <div class="hz-coord-row">
+        <label class="task-field">
+          <span>위도</span>
+          <input type="number" name="latitude" id="hz-lat" step="any" value="36.3504" required>
+        </label>
+        <label class="task-field">
+          <span>경도</span>
+          <input type="number" name="longitude" id="hz-lng" step="any" value="127.3845" required>
+        </label>
+      </div>
+
+      <div class="hz-modal-actions">
+        <button type="button" class="dash-btn-outline" data-hz-close>취소</button>
+        <button type="submit" class="dash-btn-primary">신고하기</button>
+      </div>
+    </form>
+  </section>
+</div>
+
+<script th:src="@{/js/common/hazards.js}"></script>
+</body>
+</html>

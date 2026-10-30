@@ -2,6 +2,8 @@ package com.aloha.project.dto;
 
 import java.time.LocalDateTime;
 
+import com.aloha.project.domain.lands.Lands;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -30,6 +32,19 @@ public class LandDto {
     private String status;            // READY / ASSIGNED / IN_PROGRESS / COMPLETED
     private String pilotName;         // 배정 조종사 (없으면 null)
     private LocalDateTime assignedAt; // 배정 일시 (없으면 null)
+
+    public static LandDto from(Lands land) {
+        if (land == null) return null;
+
+        return LandDto.builder()
+                .no(land.getNo())
+                .address(land.getAddress())
+                .latitude(land.getLatitude())
+                .longitude(land.getLongitude())
+                .areaSize(land.getAreaSize())
+                .status(land.getStatus())
+                .build();
+    }
 
     /* ===== 화면용 getter ===== */
 
