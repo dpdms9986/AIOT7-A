@@ -10805,3 +10805,93 @@ main.asset-page-main .asset-pilot-tab {
   .hz-layout { grid-template-columns: 1fr; }
   .hz-map { height: 320px; }
 }
+
+
+
+/* ===== 위험 구역: 상세보기 + 표 정렬 (2026-10-30) ===== */
+
+/* 표 정렬: 제목만 왼쪽, 나머지는 가운데 */
+.hz-table th,
+.hz-table td { text-align: center; }
+.hz-table th:nth-child(2),
+.hz-table .hz-title-cell { text-align: left; min-width: 160px; }
+
+/* 관리 칸: 버튼 묶음 너비를 고정하고 가운데에 두기 → 상세보기 위치가 줄마다 같음 */
+.hz-table .hz-row-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  width: 150px;
+  margin: 0 auto;
+}
+
+.hz-table .hz-row-actions form { margin: 0; }
+
+/* 상세보기 버튼 */
+.hz-view-btn {
+  padding: 5px 10px;
+  border: 1px solid var(--color-border, #dfe5e1);
+  border-radius: 6px;
+  background: #ffffff;
+  color: var(--color-text, #1f2a24);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.hz-view-btn:hover { border-color: var(--color-primary, #238451); color: var(--color-primary, #238451); }
+
+/* 지도 아래 작은 상세: 내용은 3줄까지만 (전체는 상세보기 팝업에서) */
+.hz-detail-content {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* 상세보기 팝업 */
+.hz-view-title { margin: 10px 0 12px; font-size: 18px; word-break: break-all; }
+.hz-view-info {
+  display: grid;
+  grid-template-columns: 70px 1fr;
+  gap: 6px 10px;
+  margin: 0 0 14px;
+  font-size: 13px;
+}
+.hz-view-info dt { color: var(--color-text-sub, #6b7570); }
+.hz-view-info dd { margin: 0; }
+.hz-view-label { margin: 0 0 6px; color: var(--color-text-sub, #6b7570); font-size: 12px; font-weight: 700; }
+.hz-view-content {
+  max-height: 300px;            /* 길면 이 안에서 스크롤 */
+  overflow-y: auto;
+  padding: 12px;
+  border: 1px solid var(--color-border, #dfe5e1);
+  border-radius: 8px;
+  background: #fafcfb;
+  font-size: 14px;
+  line-height: 1.7;
+  white-space: pre-line;        /* 줄바꿈 그대로 보여 주기 */
+  word-break: break-all;
+}
+
+/* 화면이 좁을 때: 목록 위, 지도 아래 */
+@media (max-width: 1280px) {
+  .hz-layout { grid-template-columns: 1fr; }
+}
+
+
+/* ===== 위험 구역 신고: 주소 검색 줄 (2026-10-30) ===== */
+.hz-addr-row { display: flex; gap: 8px; }
+.hz-addr-row input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--color-border, #dfe5e1);
+  border-radius: 8px;
+  background: #f8faf9;
+  font-family: inherit;
+  font-size: 13px;
+}
+.hz-addr-row .dash-btn-outline { flex-shrink: 0; }
+#hz-addr-msg { display: block; margin-top: 4px; }
