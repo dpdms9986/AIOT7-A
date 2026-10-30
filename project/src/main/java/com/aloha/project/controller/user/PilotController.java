@@ -81,7 +81,13 @@ public class PilotController {
         long activeCount = all.stream().filter(t -> !t.isDone()).count();
         List<PilotTaskDto> done = all.stream().filter(PilotTaskDto::isDone).toList();
         double doneArea = done.stream().mapToDouble(t -> t.getAreaSize() == null ? 0 : t.getAreaSize()).sum();
-        double doneUsed = done.stream().mapToDouble(t -> t.getUsedAmount() == null ? 0 : t.getUsedAmount()).sum();
+        double doneUsed = done.stream().mapToDouble(t -> {
+            try {
+                return (t.getUsedAmount() != null) ? Double.parseDouble(t.getUsedAmount()) : 0.0;
+            } catch (Exception e) {
+                return 0.0;
+            }
+        }).sum();
 
         // 3) 상세로 보여줄 작업: 주소의 no → 없으면 진행 중 → 없으면 첫 번째
         PilotTaskDto selected = Optional.ofNullable(no)
