@@ -64,7 +64,11 @@
       <div class="signup-footer">이미 계정이 있으신가요?<a th:href="@{/login}">로그인</a></div>
     </section>
   </main>
+
+  <!-- 공통 팝업(showPopup) 불러오기 → 중복확인, 입력 검사 알림을 팝업으로 -->
+  <th:block th:replace="~{UI/fragments/user/toast :: toast}"></th:block>
+
   <!-- [변경 4] JS 파일 경로도 @{/js/users/signup.js} 로 지정 -->
- <script th:src="@{/js/users/signup.js}"></script>
+  <script th:src="@{/js/users/signup.js}"></script>
 </body>
 </html>

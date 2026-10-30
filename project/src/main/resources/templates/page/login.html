@@ -18,10 +18,7 @@
         <p>계정에 로그인하여 관제 서비스를 이용하세요.</p>
       </header>
 
-      <!-- [추가] 안내 메시지 -->
-      <div th:if="${signupSuccess}" class="page-flash">
-        회원가입이 완료되었습니다! 가입하신 정보로 로그인해주세요.
-      </div>
+      <!-- 안내 메시지 (회원가입 완료는 팝업으로 표시 → toast.html) -->
       <div th:if="${param.logout != null}" class="page-flash is-info">
         정상적으로 로그아웃되었습니다.
       </div>
@@ -60,7 +57,10 @@
     </section>
   </main>
 
-  <script>
+  <!-- 공통 팝업(showPopup) 불러오기 → 회원가입 완료 팝업 -->
+  <th:block th:replace="~{UI/fragments/user/toast :: toast}"></th:block>
+
+  <script> 
     // param.error가 존재하면 에러 메시지를 표시
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('error')) {
