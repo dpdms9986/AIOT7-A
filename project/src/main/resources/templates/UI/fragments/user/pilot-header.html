@@ -1,28 +1,31 @@
 <th:block th:fragment="header">
   <header class="dash-header">
-    <a href="#" class="dash-logo"><span>🌱</span>스마트 농업 관제 시스템</a>
+    <a th:href="@{/pilot/dashboard}" class="dash-logo"><span>🌱</span>스마트 농업 관제 시스템</a>
+
     <nav class="dash-topnav" id="gnb-menu">
-      <a href="/pilot/dashboard" class="active">내 할당 필지</a>
-      <a href="/pilot/history">작업 이력</a>
-      <a href="/pilot/assetlist">드론 · 자산</a>
-      <a href="/hazardlist">게시판</a>
-      <a href="/support">고객센터</a>
+      <a th:href="@{/pilot/dashboard}"
+         th:classappend="${#strings.startsWith(currentUri, '/pilot/dashboard')} ? 'active'">내 할당 필지</a>
+      <a th:href="@{/pilot/history}"
+         th:classappend="${#strings.startsWith(currentUri, '/pilot/history')} ? 'active'">작업 이력</a>
+      <a th:href="@{/pilot/assetlist}"
+         th:classappend="${#strings.startsWith(currentUri, '/pilot/assetlist')} ? 'active'">드론 · 자산</a>
+      <a th:href="@{/hazardlist}"
+         th:classappend="${#strings.startsWith(currentUri, '/hazardlist')} ? 'active'">게시판</a>
+      <a th:href="@{/support}"
+         th:classappend="${#strings.startsWith(currentUri, '/support')} ? 'active'">고객센터</a>
     </nav>
+
     <div class="dash-header-right">
-        <span class="gnb-team" id="team-name">방제단</span>
-        <button type="button" class="gnb-invite" id="invite-btn" hidden>초대 코드 <b id="invite-code">------</b> 📋</button>
-        <span class="dash-role" id="user-role">-</span>
-        
-        <a href="/mypage" class="gnb-user" title="마이페이지"><span class="dash-avatar">👤</span><span id="user-name">사용자</span></a>
-        <!-- <button type="button" class="dash-btn-outline gnb-logout" id="logout-btn">로그아웃</button> -->
+        <span class="gnb-team" th:text="${headerTeamName} ?: '방제단 없음'">방제단</span>
+        <span class="dash-role" th:text="${roleLabel}">-</span>
+
+        <a th:href="@{/mypage}" class="gnb-user" title="마이페이지">
+          <span class="dash-avatar">👤</span><span th:text="${loginName}">사용자</span>
+        </a>
 
         <form th:action="@{/logout}" method="post">
-          <div class="d-grid gap-2">
-              <button type="submit" class="dash-btn-outline gnb-logout">로그아웃</button>
-          </div>
-      </form>
+          <button type="submit" class="dash-btn-outline gnb-logout">로그아웃</button>
+        </form>
     </div>
   </header>
 </th:block>
-
-

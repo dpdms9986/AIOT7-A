@@ -1,16 +1,209 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{UI/layouts/user/leader_layout}"
-      >
+      layout:decorate="~{UI/layouts/user/leader_layout}">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>스마트 농업 관제 시스템</title>
+  <title>농지 관리 | 스마트 농업 관제 시스템</title>
+  <!-- 이 화면에서만 쓰는 지도 라이브러리 (레이아웃 head 에 합쳐짐) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body layout:fragment="content">
 
-  <h1>농지 관리</h1>
+<main class="app-layout">
+  <div class="main-content">
+    <section id="farm-list" class="tab-content">
 
+      <div class="farm-page-title">
+        <h1>🌱 농지 관리</h1>
+      </div>
+      <p class="page-description">등록된 농지의 현황을 확인하고 관리합니다.</p>
+
+      <!-- 처리 결과 메시지 (등록/삭제 후 redirect 되면 1회 표시) -->
+      <p class="page-flash" th:if="${message}" th:text="${message}">메시지</p>
+
+      <!-- ===== 검색 (GET) ===== -->
+      <form class="filter-card" th:action="@{/leader/farmlist}" method="get">
+        <div class="filter-group">
+          <label for="region-filter">행정구역</label>
+          <select id="region-filter" name="dong">
+            <option value="">전체 행정구역</option>
+            <option th:each="d : ${dongs}"
+                    th:value="${d}"
+                    th:text="${d}"
+                    th:selected="${d == dong}">전민동</option>
+          </select>
+        </div>
+
+        <div class="filter-group search-group">
+          <label for="farm-search">검색</label>
+          <input type="search" id="farm-search" name="keyword"
+                 th:value="${keyword}" placeholder="주소 또는 행정구역 검색">
+        </div>
+
+        <button type="submit" class="button">검색</button>
+        <a class="button" th:href="@{/leader/farmlist}">초기화</a>
+        <button type="button" id="register-button" class="button primary-button">+ 농지 등록</button>
+      </form>
+
+      <!-- ===== 목록 ===== -->
+      <div class="table-card">
+        <div class="table-heading">
+          <h2>농지 목록</h2>
+          <span>총 <strong th:text="${#lists.size(lands)}">0</strong>건</span>
+        </div>
+
+        <div class="table-scroll">
+          <table class="farm-table">
+            <thead>
+              <tr>
+                <th>주소</th>
+                <th>행정구역</th>
+                <th>면적</th>
+                <th>상태</th>
+                <th>배정 조종사</th>
+                <th>관리</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="land : ${lands}">
+                <td th:text="${land.address}">전민동 15-2</td>
+                <td th:text="${land.region} + ' ' + ${land.dong}">유성구 전민동</td>
+                <td th:text="${#numbers.formatDecimal(land.areaSize, 0, 'COMMA', 0, 'POINT')} + ' ㎡'">3,300 ㎡</td>
+                <td>
+                  <span class="status-badge"
+                        th:classappend="${land.statusClass}"
+                        th:text="${land.statusLabel}">대기</span>
+                </td>
+                <td th:text="${land.pilotName} ?: '미배정'">미배정</td>
+                <td>
+                  <!-- 상세 패널에 필요한 값을 data- 에 심어둠 → JS가 읽음 -->
+                  <button type="button" class="button detail-button"
+                          th:data-no="${land.no}"
+                          th:data-address="${land.address}"
+                          th:data-full-region="${land.fullRegion}"
+                          th:data-status="${land.statusLabel}"
+                          th:data-status-class="${land.statusClass}"
+                          th:data-lat="${land.latitude}"
+                          th:data-lng="${land.longitude}"
+                          th:data-pilot="${land.pilotName} ?: '미배정'"
+                          th:data-assigned-at="${land.assignedAt != null} ? ${#temporals.format(land.assignedAt, 'yyyy-MM-dd HH:mm')} : '-'"
+                          th:data-deletable="${land.deletable}"
+                          th:data-assign-url="@{/leader/task-assignment(landNo=${land.no})}">상세</button>
+                </td>
+              </tr>
+
+              <tr th:if="${#lists.isEmpty(lands)}">
+                <td colspan="6" class="farm-empty">검색 조건에 맞는 농지가 없습니다.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<!-- ===== 상세 패널 (내용은 JS가 data- 값으로 채움) ===== -->
+<div id="farm-detail-backdrop" class="farm-detail-backdrop" hidden></div>
+
+<aside id="farm-detail-drawer" class="farm-detail-drawer"
+       aria-labelledby="drawer-title" aria-hidden="true" inert hidden>
+  <div class="drawer-header">
+    <div>
+      <p class="drawer-eyebrow">FARMLAND MANAGEMENT</p>
+      <h2 id="drawer-title">농지 상세</h2>
+    </div>
+    <button type="button" id="close-farm-detail" class="drawer-close" aria-label="상세 패널 닫기">&times;</button>
+  </div>
+
+  <div class="drawer-content">
+    <div class="farm-detail-map-wrap">
+      <div id="farm-detail-map"></div>
+      <span id="farm-detail-map-status" class="farm-map-status">지도 로딩 중</span>
+    </div>
+
+    <section class="drawer-info-card">
+      <h3>기본 정보</h3>
+      <dl class="drawer-info">
+        <dt>주소</dt>        <dd id="drawer-address">-</dd>
+        <dt>행정구역</dt>    <dd id="drawer-region">-</dd>
+        <dt>농지 상태</dt>   <dd><span id="drawer-status" class="status-badge">-</span></dd>
+        <dt>농지 ID</dt>     <dd id="drawer-id">-</dd>
+        <dt>위도 / 경도</dt> <dd id="drawer-coordinates">미등록</dd>
+      </dl>
+    </section>
+
+    <section class="drawer-info-card">
+      <h3>작업 정보</h3>
+      <dl class="drawer-info">
+        <dt>배정 조종사</dt> <dd id="drawer-pilot">미배정</dd>
+        <dt>배정 일시</dt>   <dd id="drawer-assigned-at">-</dd>
+      </dl>
+    </section>
+  </div>
+
+  <div class="drawer-footer">
+    <!-- 삭제: 숨은 칸 landNo 에 JS가 번호를 넣고 POST 전송 -->
+    <form th:action="@{/leader/farmlist/delete}" method="post"
+          onsubmit="return confirm('이 농지를 삭제하시겠습니까?');">
+      <input type="hidden" name="landNo" id="delete-land-no">
+      <button type="submit" id="delete-farm-button" class="button drawer-delete">삭제</button>
+    </form>
+    <!-- 작업 배정: 작업 배정 화면으로 이동 (주소는 JS가 data-assign-url 로 넣음) -->
+    <a id="assign-farm-link" class="button primary-button" href="#">작업 배정</a>
+  </div>
+</aside>
+
+<!-- ===== 농지 등록 모달 (POST → LandCreateRequest) ===== -->
+<div class="team-modal-backdrop" id="farm-register-modal" hidden>
+  <section class="team-modal" role="dialog" aria-modal="true" aria-labelledby="farm-register-title">
+    <div class="team-modal-heading">
+      <div>
+        <h2 id="farm-register-title">농지 등록</h2>
+        <p>새 농지 정보를 입력하세요.</p>
+      </div>
+      <button type="button" class="team-modal-close" data-close-modal aria-label="닫기">×</button>
+    </div>
+
+    <form th:action="@{/leader/farmlist}" method="post">
+      <div class="team-form-grid">
+        <label>시/도
+          <input type="text" name="city" value="대전광역시" required>
+        </label>
+        <label>시/군/구
+          <input type="text" name="region" value="유성구" required>
+        </label>
+        <label>읍/면/동
+          <input type="text" name="dong" placeholder="예) 전민동" required>
+        </label>
+        <label>면적 (㎡)
+          <input type="number" name="areaSize" min="1" step="0.1" required>
+        </label>
+      </div>
+
+      <label class="team-form-full">상세 주소
+        <input type="text" name="address" placeholder="예) 전민동 15-2" required>
+      </label>
+
+      <div class="team-form-grid">
+        <label>위도 (선택)
+          <input type="number" name="latitude" step="0.000001">
+        </label>
+        <label>경도 (선택)
+          <input type="number" name="longitude" step="0.000001">
+        </label>
+      </div>
+
+      <div class="team-modal-actions">
+        <button type="button" class="team-btn team-btn-outline" data-close-modal>취소</button>
+        <button type="submit" class="team-btn team-btn-primary">등록</button>
+      </div>
+    </form>
+  </section>
+</div>
+
+<script th:src="@{/js/leader/farmlist.js}"></script>
 </body>
 </html>

@@ -1,16 +1,211 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{UI/layouts/user/pilot_layout}"
-      >
+      layout:decorate="~{UI/layouts/user/pilot_layout}">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>스마트 농업 관제 시스템</title>
+  <title>드론 · 자산 | 스마트 농업 관제 시스템</title>
 </head>
 <body layout:fragment="content">
 
-  <h1>드론 자산</h1>
+<main class="main-content asset-page-main">
+
+  <!-- 페이지 제목 -->
+  <section class="page-heading asset-page-heading">
+    <div class="page-heading-icon" aria-hidden="true">🚁</div>
+    <div>
+      <h1>드론 · 자산 관리</h1>
+      <p>내게 배정된 드론과 담당 약제, 정비 상태를 확인합니다.</p>
+    </div>
+  </section>
+
+  <!-- 탭: 링크 -->
+  <section class="asset-pilot-tabs" aria-label="자산 종류 선택">
+    <a class="asset-pilot-tab" th:classappend="${tab == 'all'} ? 'active'"
+       th:href="@{/pilot/assetlist(tab='all')}">전체 자산</a>
+    <a class="asset-pilot-tab" th:classappend="${tab == 'drone'} ? 'active'"
+       th:href="@{/pilot/assetlist(tab='drone')}">드론 기체</a>
+    <a class="asset-pilot-tab" th:classappend="${tab == 'chemical'} ? 'active'"
+       th:href="@{/pilot/assetlist(tab='chemical')}">농업용 약제</a>
+    <a class="asset-pilot-tab" th:classappend="${tab == 'maintenance'} ? 'active'"
+       th:href="@{/pilot/assetlist(tab='maintenance')}">정비 현황</a>
+  </section>
+
+  <!-- 요약 -->
+  <section class="asset-pilot-summary" aria-label="내 자산 요약">
+    <article class="asset-pilot-stat">
+      <div class="asset-pilot-stat-icon drone">🚁</div>
+      <div>
+        <span>내 드론 기체</span>
+        <strong th:text="${droneCount} + '대'">0대</strong>
+        <small>배정된 기체</small>
+      </div>
+    </article>
+    <article class="asset-pilot-stat">
+      <div class="asset-pilot-stat-icon chemical">🧪</div>
+      <div>
+        <span>담당 약제 품목</span>
+        <strong th:text="${chemicalCount} + '종'">0종</strong>
+        <small>내 담당 재고</small>
+      </div>
+    </article>
+    <article class="asset-pilot-stat">
+      <div class="asset-pilot-stat-icon maintenance">🔧</div>
+      <div>
+        <span>정비 필요</span>
+        <strong th:text="${maintenanceCount} + '건'">0건</strong>
+        <small>확인이 필요한 기체</small>
+      </div>
+    </article>
+  </section>
+
+  <!-- 자산 목록 -->
+  <section class="asset-pilot-list-card">
+    <div class="asset-pilot-list-heading">
+      <div>
+        <h2 th:text="${tabTitle}">전체 자산</h2>
+        <p>본인에게 배정된 자산만 표시됩니다.</p>
+      </div>
+      <span>총 <strong th:text="${#lists.size(assets)}">0</strong>건</span>
+    </div>
+
+    <!-- 검색 (GET) -->
+    <form class="asset-pilot-filters is-pilot" th:action="@{/pilot/assetlist}" method="get">
+      <input type="hidden" name="tab" th:value="${tab}">
+      <label>
+        자산 유형
+        <select name="type">
+          <option value="">전체</option>
+          <option value="drone"    th:selected="${type == 'drone'}">드론 기체</option>
+          <option value="chemical" th:selected="${type == 'chemical'}">농업용 약제</option>
+        </select>
+      </label>
+      <label class="asset-pilot-keyword">
+        검색어
+        <input type="search" name="keyword" th:value="${keyword}" placeholder="자산명, 모델명, 약제명 검색">
+      </label>
+      <label>
+        상태
+        <select name="status">
+          <option value="">전체</option>
+          <option th:each="s : ${statusOptions}" th:value="${s.key}" th:text="${s.value}"
+                  th:selected="${s.key == status}">정상</option>
+        </select>
+      </label>
+      <button type="submit" class="asset-pilot-search-button">검색</button>
+      <a class="asset-pilot-reset-button" th:href="@{/pilot/assetlist(tab=${tab})}">초기화</a>
+    </form>
+
+    <!-- 표 (담당 조종사 칸 없음) -->
+    <div class="asset-pilot-table-scroll">
+      <table class="asset-pilot-table">
+        <thead>
+          <tr>
+            <th>자산 유형</th>
+            <th>이름 / 모델명</th>
+            <th>상태</th>
+            <th>최근 관리일</th>
+            <th>관리</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="a : ${assets}"
+              th:classappend="${selected != null and a.id == selected.id} ? 'selected'">
+            <td th:text="${a.typeLabel}">🚁 드론</td>
+            <td>
+              <strong th:text="${a.name}">DJI Agras T40</strong>
+              <small th:text="${a.subtitle}">기체 코드 DR-001</small>
+            </td>
+            <td><span class="asset-pilot-badge" th:classappend="${a.status}" th:text="${a.statusLabel}">정상</span></td>
+            <td th:text="${a.lastManagedAt != null} ? ${#temporals.format(a.lastManagedAt, 'yyyy-MM-dd')} : '기록 없음'">2026-10-20</td>
+            <td>
+              <a class="asset-pilot-detail-button"
+                 th:href="@{/pilot/assetlist#asset-detail(tab=${tab}, type=${type}, status=${status}, keyword=${keyword}, id=${a.id})}">상세보기</a>
+            </td>
+          </tr>
+          <tr th:if="${#lists.isEmpty(assets)}">
+            <td colspan="5" class="asset-pilot-empty">조건에 맞는 자산이 없습니다.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ===== 선택된 자산 상세 (보기 전용) ===== -->
+  <section class="asset-pilot-detail-card" id="asset-detail"
+           th:if="${selected != null}" th:object="${selected}">
+
+    <div class="asset-pilot-detail-heading">
+      <div>
+        <h2>선택된 자산 상세 정보</h2>
+        <p>자산별 기본 정보와 관리 이력을 확인합니다.</p>
+      </div>
+      <span class="asset-detail-type-label" th:text="*{drone} ? '드론 기체' : '농업용 약제'">드론 기체</span>
+    </div>
+
+    <div class="asset-detail-content">
+      <div class="asset-detail-title">
+        <h3 th:text="*{name}">DJI Agras T40</h3>
+        <p th:text="*{drone} ? |기체 코드 *{id} · 드론 관리 정보| : |약제 코드 *{id} · 농업용 약제 관리|">기체 코드 DR-001</p>
+      </div>
+
+      <div class="asset-current-status" th:if="*{drone}" th:classappend="*{currentStatusClass}">
+        <span class="asset-current-status-label">현재 가동 상태</span>
+        <strong th:text="*{statusLabel}">운용 중</strong>
+      </div>
+
+      <div class="asset-detail-grid">
+        <div class="asset-detail-info"><span>자산 코드</span><strong th:text="*{id}">DR-001</strong></div>
+
+        <th:block th:if="*{drone}">
+          <div class="asset-detail-info"><span>약제 탱크 용량</span><strong th:text="*{tankCapacity} + ' L'">40 L</strong></div>
+          <div class="asset-detail-info"><span>배터리 사이클</span><strong th:text="*{batteryCycles} + ' 회'">212 회</strong></div>
+        </th:block>
+
+        <th:block th:unless="*{drone}">
+          <div class="asset-detail-info"><span>약제 분류</span><strong th:text="*{subtitle}">분류: 살균제</strong></div>
+          <div class="asset-detail-info"><span>재고 상태</span><strong th:text="*{statusLabel}">정상</strong></div>
+          <div class="asset-detail-info"><span>현재 재고량</span><strong th:text="*{stock} + ' L'">42.5 L</strong></div>
+        </th:block>
+
+        <div class="asset-detail-info">
+          <span th:text="*{drone} ? '최근 관리일' : '최근 재고 갱신일'">최근 관리일</span>
+          <strong th:text="*{lastManagedAt != null} ? *{#temporals.format(lastManagedAt, 'yyyy-MM-dd')} : '기록 없음'">2026-10-20</strong>
+        </div>
+      </div>
+
+      <div class="asset-detail-section">
+        <div class="asset-detail-section-heading">
+          <h4 th:text="*{drone} ? '정비 및 점검 이력' : '입고 이력'">정비 및 점검 이력</h4>
+        </div>
+        <div class="asset-detail-table-wrap">
+          <table class="asset-detail-table">
+            <thead>
+              <tr th:if="*{drone}">
+                <th>관리 일자</th><th>관리 유형</th><th>관리 내용</th><th>정비 비용</th>
+              </tr>
+              <tr th:unless="*{drone}">
+                <th>입고 일자</th><th>입고 수량</th><th>내용</th><th>비고</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="log : *{logs}">
+                <td th:text="${#temporals.format(log.date, 'yyyy-MM-dd')}">2026-10-20</td>
+                <td th:text="${log.kind}">정기 점검</td>
+                <td th:text="${log.content}">프로펠러 점검</td>
+                <td th:text="${log.note}">0원</td>
+              </tr>
+              <tr th:if="*{#lists.isEmpty(logs)}">
+                <td colspan="4" class="empty-row">이력이 없습니다.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
 
 </body>
 </html>
