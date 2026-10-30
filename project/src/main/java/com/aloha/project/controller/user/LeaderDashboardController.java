@@ -1,7 +1,6 @@
 package com.aloha.project.controller.user;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -37,8 +36,8 @@ public class LeaderDashboardController {
                                Model model) {
 
         // TODO(백엔드): landService.getLands(로그인 단장의 팀), teamService.getMembers(...)
-        List<LandDto> lands = sampleLands();
-        List<TeamMemberDto> pilots = sampleMembers();
+        List<LandDto> lands = new ArrayList<>();           // TODO(백엔드)
+        List<TeamMemberDto> pilots = new ArrayList<>();   // TODO(백엔드)
 
         // 1) 요약 카드 숫자
         model.addAttribute("readyCount",     countStatus(lands, "READY"));
@@ -106,44 +105,4 @@ public class LeaderDashboardController {
         return lands.stream().filter(l -> status.equals(l.getStatus())).count();
     }
 
-    /* =========================================================
-       샘플 데이터 (LeaderController 와 같은 내용, 백엔드 연결 전까지만)
-       ========================================================= */
-    private List<TeamMemberDto> sampleMembers() {
-        List<TeamMemberDto> list = new ArrayList<>();
-        list.add(TeamMemberDto.builder().no(1L).name("김민수").status("working").build());
-        list.add(TeamMemberDto.builder().no(2L).name("이서연").status("online").build());
-        list.add(TeamMemberDto.builder().no(3L).name("박지훈").status("online").build());
-        list.add(TeamMemberDto.builder().no(4L).name("최유진").status("offline").build());
-        return list;
-    }
-
-    private List<LandDto> sampleLands() {
-        List<LandDto> list = new ArrayList<>();
-        list.add(LandDto.builder().no(1L).city("대전광역시").region("유성구").dong("전민동")
-                .address("전민동 15-2").latitude(36.3912).longitude(127.4035).areaSize(3300.0)
-                .status("READY").build());
-        list.add(LandDto.builder().no(2L).city("대전광역시").region("유성구").dong("노은동")
-                .address("노은동 2-8").latitude(36.3741).longitude(127.3189).areaSize(2150.0)
-                .status("ASSIGNED").pilotName("이서연")
-                .assignedAt(LocalDateTime.of(2026, 10, 29, 9, 30)).build());
-        list.add(LandDto.builder().no(3L).city("대전광역시").region("유성구").dong("전민동")
-                .address("전민동 31-7").latitude(36.3890).longitude(127.4071).areaSize(4800.0)
-                .status("IN_PROGRESS").pilotName("김민수")
-                .assignedAt(LocalDateTime.of(2026, 10, 29, 8, 0)).build());
-        list.add(LandDto.builder().no(4L).city("대전광역시").region("유성구").dong("노은동")
-                .address("노은동 112").latitude(null).longitude(null).areaSize(1200.0)
-                .status("COMPLETED").pilotName("박지훈")
-                .assignedAt(LocalDateTime.of(2026, 10, 28, 14, 0)).build());
-        list.add(LandDto.builder().no(5L).city("대전광역시").region("유성구").dong("전민동")
-                .address("전민동 42-1").latitude(36.3931).longitude(127.4012).areaSize(2600.0)
-                .status("READY").build());
-        list.add(LandDto.builder().no(6L).city("대전광역시").region("유성구").dong("노은동")
-                .address("노은동 77-3").latitude(36.3769).longitude(127.3151).areaSize(1850.0)
-                .status("READY").build());
-        list.add(LandDto.builder().no(7L).city("대전광역시").region("유성구").dong("구즉동")
-                .address("구즉동 9-4").latitude(36.4210).longitude(127.3902).areaSize(5100.0)
-                .status("READY").build());
-        return list;
-    }
 }

@@ -1,6 +1,5 @@
 package com.aloha.project.controller.user;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,7 +10,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.aloha.project.dto.AssetDto;
-import com.aloha.project.dto.AssetLogDto;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -34,7 +32,7 @@ public class PilotAssetController {
             Model model) {
 
         // TODO(백엔드): assetService.getMyAssets(로그인 조종사)
-        List<AssetDto> all = sampleMyAssets();
+        List<AssetDto> all = new ArrayList<>();
 
         // 1) 탭 + 검색 조건으로 거르기
         String kw = keyword.trim();
@@ -80,37 +78,5 @@ public class PilotAssetController {
         model.addAttribute("keyword", keyword);
 
         return "page/pilot/assetlist";
-    }
-
-    /* =========================================================
-       샘플 데이터 (백엔드 연결 전까지만 사용)
-       - 로그인한 조종사를 "김민수"라고 가정 → 김민수 담당 자산만
-       ========================================================= */
-    private List<AssetDto> sampleMyAssets() {
-        List<AssetDto> list = new ArrayList<>();
-
-        list.add(AssetDto.builder().id("DR-001").type("drone").name("DJI Agras T40")
-                .subtitle("기체 코드 DR-001").owner("김민수").status("operating")
-                .lastManagedAt(LocalDate.of(2026, 10, 20)).tankCapacity(40).batteryCycles(212)
-                .logs(List.of(
-                        new AssetLogDto(LocalDate.of(2026, 10, 20), "정기 점검", "프로펠러, 노즐 점검", "0원"),
-                        new AssetLogDto(LocalDate.of(2026, 9, 2), "부품 교체", "배터리 1팩 교체", "380,000원")))
-                .build());
-
-        list.add(AssetDto.builder().id("DR-004").type("drone").name("DJI Agras T25")
-                .subtitle("기체 코드 DR-004 (예비기)").owner("김민수").status("maintenance")
-                .lastManagedAt(LocalDate.of(2026, 10, 26)).tankCapacity(20).batteryCycles(95)
-                .logs(List.of(
-                        new AssetLogDto(LocalDate.of(2026, 10, 26), "점검 요청", "노즐 막힘 의심", "-")))
-                .build());
-
-        list.add(AssetDto.builder().id("CH-001").type("chemical").name("A사 살균제")
-                .subtitle("분류: 살균제").owner("김민수").status("normal")
-                .lastManagedAt(LocalDate.of(2026, 10, 18)).stock(42.5)
-                .logs(List.of(
-                        new AssetLogDto(LocalDate.of(2026, 10, 18), "20L", "정기 입고", "")))
-                .build());
-
-        return list;
     }
 }
