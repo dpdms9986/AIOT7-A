@@ -184,7 +184,7 @@
         <th:block th:unless="*{drone}">
           <div class="asset-detail-info"><span>약제 분류</span><strong th:text="*{subtitle}">분류: 살균제</strong></div>
           <div class="asset-detail-info"><span>재고 상태</span><strong th:text="*{statusLabel}">정상</strong></div>
-          <div class="asset-detail-info"><span>현재 재고량</span><strong th:text="*{stock} + ' L'">42.5 L</strong></div>
+          <div class="asset-detail-info"><span>현재 재고량</span><strong th:text="*{stock} ?: '-'">양호</strong></div>
         </th:block>
 
         <div class="asset-detail-info">

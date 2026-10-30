@@ -14,7 +14,7 @@ import com.aloha.project.domain.users.Users;
 @Getter
 @Setter 
 @AllArgsConstructor 
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor
 public class Drones {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)

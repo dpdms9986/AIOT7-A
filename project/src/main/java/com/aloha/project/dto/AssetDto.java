@@ -6,6 +6,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.aloha.project.domain.tasks.Drones;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -47,7 +49,31 @@ public class AssetDto {
     private Integer batteryCycles;   // 배터리 사이클
 
     // 약제만
-    private Double stock;            // 현재 재고량 (L)
+    private String stock;            // 현재 재고량 (L)
+
+    // AssetDto.java 안에 추가할 Drones 변환 메서드
+    public static AssetDto from(Drones drone) {
+    if (drone == null) return null;
+
+    // Drones 엔티티의 상태(AVAILABLE 등) -> AssetDto 상태(normal, operating 등) 매핑
+    String uiStatus = switch (drone.getStatus()) {
+        case "AVAILABLE"   -> "normal";
+        case "IN_USE"      -> "operating";
+        case "MAINTENANCE" -> "maintenance";
+        default            -> "normal";
+    };
+
+    return AssetDto.builder()
+            .id(drone.getSerialNumber() != null ? drone.getSerialNumber() : String.valueOf(drone.getNo()))
+            .type("drone")
+            .name(drone.getModelName())
+            .subtitle(drone.getSerialNumber())
+            .owner(drone.getUser() != null ? drone.getUser().getName() : "-")
+            .status(uiStatus)
+            .tankCapacity(drone.getTankCapacity() != null ? drone.getTankCapacity().intValue() : 40)
+            .batteryCycles(drone.getBatteryCycle())
+            .build();
+}
 
     // 정비 이력(드론) / 입고 이력(약제)
     @Builder.Default

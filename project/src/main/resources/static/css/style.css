@@ -10668,3 +10668,140 @@ main.asset-page-main .asset-pilot-tab {
     grid-template-columns: 145px minmax(180px, 1fr) auto auto;
   }
 }
+
+
+
+/* ===== 위험 구역 (hazards.html) (2026-10-30) ===== */
+
+/* 왼쪽 목록 + 오른쪽 지도 */
+.hz-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  gap: var(--card-gap, 16px);
+  align-items: start;
+}
+
+/* 목록 표 */
+.hz-table-wrap { overflow-x: auto; }
+.hz-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.hz-table th,
+.hz-table td { padding: 11px 10px; border-bottom: 1px solid var(--color-border, #dfe5e1); text-align: left; white-space: nowrap; }
+.hz-table th { background: #f5f8f6; color: var(--color-text-sub, #6b7570); font-weight: 700; }
+.hz-table .hz-title-cell { white-space: normal; font-weight: 600; }
+.hz-row { cursor: pointer; transition: background 0.15s; }
+.hz-row:hover { background: #f5faf7; }
+.hz-row.selected { background: var(--color-primary-light, #e8f5ee); }
+.hz-row.is-resolved { color: var(--color-text-sub, #6b7570); }
+.hz-empty { padding: 28px 10px; text-align: center; color: var(--color-text-sub, #6b7570); }
+.hz-muted { color: var(--color-text-sub, #6b7570); font-size: 12px; }
+
+/* 위험도 배지 */
+.hz-badge {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.hz-badge.hz-high { background: #fdeaea; color: #d93025; }
+.hz-badge.hz-mid  { background: #fff4e0; color: #c26a00; }
+.hz-badge.hz-low  { background: #e6f4ea; color: #1e8e3e; }
+
+/* 상태 배지 */
+.hz-status {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.hz-status.active   { background: #fff4e0; color: #c26a00; }
+.hz-status.resolved { background: #eef1f4; color: #6b7570; }
+
+/* 해소 완료 버튼 */
+.hz-resolve-btn {
+  padding: 5px 10px;
+  border: 1px solid var(--color-primary, #238451);
+  border-radius: 6px;
+  background: #ffffff;
+  color: var(--color-primary, #238451);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.hz-resolve-btn:hover { background: var(--color-primary, #238451); color: #ffffff; }
+
+/* 지도 */
+.hz-map { height: 420px; border-radius: 10px; overflow: hidden; z-index: 0; }
+.hz-legend { display: inline-flex; align-items: center; gap: 4px 10px; flex-wrap: wrap; font-size: 12px; color: var(--color-text-sub, #6b7570); }
+.hz-dot { display: inline-block; width: 10px; height: 10px; margin-right: 4px; border-radius: 50%; vertical-align: -1px; }
+.hz-dot.hz-high { background: #d93025; }
+.hz-dot.hz-mid  { background: #f29900; }
+.hz-dot.hz-low  { background: #1e8e3e; }
+.hz-dot.hz-off  { background: #9aa0a6; }
+
+/* 선택한 위험 구역 상세 */
+.hz-detail { margin-top: 14px; padding: 14px; border: 1px solid var(--color-border, #dfe5e1); border-radius: 10px; background: #fafcfb; }
+.hz-detail[hidden] { display: none; }
+.hz-detail-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.hz-detail-head strong { font-size: 15px; }
+.hz-detail-meta { margin: 8px 0 0; color: var(--color-text-sub, #6b7570); font-size: 12px; }
+.hz-detail-content { margin: 10px 0 0; font-size: 13px; line-height: 1.6; white-space: pre-line; }
+.hz-detail-hint { margin: 12px 0 0; }
+.hz-detail-hint[hidden] { display: none; }
+
+/* 신고 팝업 */
+.hz-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.45);
+}
+.hz-modal[hidden] { display: none !important; }
+.hz-modal-box {
+  position: relative;
+  width: min(520px, 100%);
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+  padding: 24px;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+.hz-modal-box h3 { margin: 0 0 4px; font-size: 18px; }
+.hz-modal-box .hz-muted { margin: 0 0 14px; }
+.hz-modal-box form { display: flex; flex-direction: column; gap: 12px; }
+.hz-modal-box textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--color-border, #dfe5e1);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 13px;
+  resize: vertical;
+}
+.hz-modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  border: 0;
+  background: transparent;
+  font-size: 16px;
+  cursor: pointer;
+}
+.hz-type-group { display: flex; gap: 14px; flex-wrap: wrap; }
+.hz-type-option { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.hz-pick-map { height: 220px; border: 1px solid var(--color-border, #dfe5e1); border-radius: 10px; overflow: hidden; }
+.hz-coord-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.hz-modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px; }
+
+/* 화면이 좁을 때 */
+@media (max-width: 1100px) {
+  .hz-layout { grid-template-columns: 1fr; }
+  .hz-map { height: 320px; }
+}

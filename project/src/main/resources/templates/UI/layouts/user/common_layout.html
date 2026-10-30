@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <!-- [META] -->
+    <th:block th:replace="~{UI/fragments/user/meta::meta}"></th:block>
+    <!-- [LINK] -->
+    <th:block th:replace="~{UI/fragments/user/link::link}"></th:block>
+    <!-- [SCRIPT] -->
+    <th:block th:replace="~{UI/fragments/user/script::script}"></th:block>
+</head>
+<body>
+    <!-- [HEADER] 단장/조종사 공통 화면: 로그인한 사람 역할에 맞는 헤더 -->
+    <th:block sec:authorize="hasRole('LEADER')">
+        <th:block th:replace="~{UI/fragments/user/leader-header::header}"></th:block>
+    </th:block>
+    <th:block sec:authorize="!hasRole('LEADER')">
+        <th:block th:replace="~{UI/fragments/user/pilot-header::header}"></th:block>
+    </th:block>
+    <!-- [TOAST] 공통 팝업 -->
+    <th:block th:replace="~{UI/fragments/user/toast::toast}"></th:block>
+    <!-- [CONTENT]-->
+    <th:block layout:fragment="content"></th:block>
+    <!-- [FOOTER]-->
+    <th:block th:replace="~{UI/fragments/user/footer::footer}"></th:block>
+</body>
+</html>
