@@ -12,10 +12,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,57 +28,86 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.aloha.project.domain.lands.Lands;
+import com.aloha.project.domain.tasks.DispatchBatches;
+import com.aloha.project.domain.tasks.WorkAssignments;
+import com.aloha.project.domain.users.CustomUser;
+import com.aloha.project.domain.users.Teams;
+import com.aloha.project.domain.users.Users;
 import com.aloha.project.dto.AssignRequest;
 import com.aloha.project.dto.LandCreateRequest;
 import com.aloha.project.dto.LandDto;
 import com.aloha.project.dto.PilotTaskDto;
 import com.aloha.project.dto.TeamMemberDto;
+import com.aloha.project.repository.lands.LandRepository;
+import com.aloha.project.repository.tasks.DispatchBatchRepository;
+import com.aloha.project.repository.tasks.WorkAssignmentRepository;
+import com.aloha.project.repository.users.UserRepository;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * 방제단장(LEADER) 화면 컨트롤러
- * - 주소가 /leader 로 시작하는 요청을 처리
- * - 데이터는 TODO(백엔드) 부분을 서비스 호출로 연결 예정 (지금은 빈 목록)
+ * 방제단장(LEADER) 화면 컨트롤러 (실제 DB 연동 완료)
  */
 @Slf4j
 @Controller
 @RequestMapping("/leader")
+@RequiredArgsConstructor
 public class LeaderController {
 
     private static final DateTimeFormatter DT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
+    private final UserRepository userRepository;
+    private final LandRepository landRepository;
+    private final WorkAssignmentRepository workAssignmentRepository;
+    private final DispatchBatchRepository dispatchBatchRepository;
 
     /* =========================================================
        작업 배정 (탭 3개: assign / status / history)
-       예) /leader/task-assignment?tab=history&from=2026-10-01&to=2026-10-31&hPilot=김민수
        ========================================================= */
     @GetMapping("/task-assignment")
     public String getTaskAssignment(
             @RequestParam(value = "tab",     defaultValue = "assign") String tab,
-            // [배정 탭]
             @RequestParam(value = "region",  defaultValue = "") String region,
             @RequestParam(value = "landNo",  required = false) Long landNo,
-            // [현황 탭]
             @RequestParam(value = "status",  defaultValue = "") String status,
             @RequestParam(value = "pilot",   defaultValue = "") String pilot,
-            // [이력 탭]
             @RequestParam(value = "from", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam(value = "to",   required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
             @RequestParam(value = "hRegion", defaultValue = "") String hRegion,
             @RequestParam(value = "hPilot",  defaultValue = "") String hPilot,
+            @AuthenticationPrincipal CustomUser customUser,
             Model model) {
 
-        // TODO(백엔드): landService / teamService 로 교체
-        List<LandDto> allLands = new ArrayList<>();
+        if (customUser == null) return "redirect:/login";
+
+        Users leader = userRepository.findById(customUser.getUser().getNo()).orElse(null);
+        Teams myTeam = (leader != null) ? leader.getTeam() : null;
+        final String inviteCode = (myTeam != null && myTeam.getInviteCode() != null) ? myTeam.getInviteCode() : "";
+
+        // [DB 연동 1] 전체 농지 목록 조회 (LandDto 변환)
+        List<LandDto> allLands = landRepository.findAll().stream()
+                .map(LandDto::from)
+                .toList();
+
+        // [DB 연동 2] 소속 조종사 목록 조회 (TeamMemberDto 변환)
         List<TeamMemberDto> pilots = new ArrayList<>();
+        if (!inviteCode.isEmpty()) {
+            pilots = userRepository.findAll().stream()
+                    .filter(u -> u.getTeam() != null 
+                              && inviteCode.equals(u.getTeam().getInviteCode())
+                              && !"LEADER".equals(u.getRole()))
+                    .map(TeamMemberDto::from)
+                    .toList();
+        }
 
         /* ----- [배정 탭] 미배정(READY) 농지 + 지역 검색 ----- */
         String[] words = region.trim().isEmpty() ? new String[0] : region.trim().split("\\s+");
         List<LandDto> readyLands = allLands.stream()
                 .filter(l -> "READY".equals(l.getStatus()))
                 .filter(l -> Arrays.stream(words)
-                        .allMatch(w -> (l.getFullRegion() + " " + l.getAddress()).contains(w)))
+                        .allMatch(w -> ((l.getFullRegion() != null ? l.getFullRegion() : "") + " " + l.getAddress()).contains(w)))
                 .toList();
 
         /* ----- [현황 탭] 배정됨 + 작업 중 ----- */
@@ -88,32 +119,37 @@ public class LeaderController {
                 .filter(l -> pilot.isEmpty()  || pilot.equals(l.getPilotName()))
                 .toList();
         Map<String, Long> countByPilot = allAssigned.stream()
+                .filter(l -> l.getPilotName() != null)
                 .collect(Collectors.groupingBy(LandDto::getPilotName, LinkedHashMap::new, Collectors.counting()));
 
         /* ----- [이력 탭] 완료된 작업 + 기간/지역/조종사 검색 ----- */
         boolean dateError = from != null && to != null && from.isAfter(to);
         List<PilotTaskDto> history = dateError ? List.of() : filterHistory(from, to, hRegion, hPilot);
         double hArea = history.stream().mapToDouble(h -> h.getAreaSize() == null ? 0 : h.getAreaSize()).sum();
-        double hUsed = history.stream().mapToDouble(h -> h.getUsedAmount() == null ? 0 : h.getUsedAmount()).sum();
-        List<String> historyPilots = new ArrayList<>();   // TODO(백엔드): 팀 조종사 이름 목록
+        double hUsed = history.stream().mapToDouble(h -> {
+                                                          try {
+                                                                  return (h.getUsedAmount() != null) ? Double.parseDouble(h.getUsedAmount()) : 0.0;
+                                                          } catch (Exception e) {
+                                                                  return 0.0; // "양호" 같은 글자일 경우 0.0 처리
+                                                          }
+                                                          }).sum();
+        List<String> historyPilots = pilots.stream().map(TeamMemberDto::getName).toList();
 
         /* ----- 화면으로 보낼 값 ----- */
         model.addAttribute("tab", tab);
-        // 배정 탭
         model.addAttribute("readyLands", readyLands);
         model.addAttribute("pilots", pilots);
         model.addAttribute("region", region);
         model.addAttribute("landNo", landNo);
-        // 현황 탭
+
         model.addAttribute("assigned", assigned);
         model.addAttribute("assignedTotal", allAssigned.size());
         model.addAttribute("countByPilot", countByPilot);
         model.addAttribute("status", status);
         model.addAttribute("pilot", pilot);
-        // 이력 탭
+
         model.addAttribute("history", history);
         model.addAttribute("hArea", hArea);
-        model.addAttribute("hUsed", hUsed);
         model.addAttribute("historyPilots", historyPilots);
         model.addAttribute("dateError", dateError);
         model.addAttribute("from", from);
@@ -125,8 +161,7 @@ public class LeaderController {
     }
 
     /**
-     * 작업 이력 CSV 다운로드 (화면과 같은 검색 조건)
-     * GET /leader/task-assignment/history.csv?from=&to=&hRegion=&hPilot=
+     * 작업 이력 CSV 다운로드
      */
     @GetMapping("/task-assignment/history.csv")
     public ResponseEntity<byte[]> downloadHistoryCsv(
@@ -138,7 +173,7 @@ public class LeaderController {
         List<PilotTaskDto> rows = filterHistory(from, to, hRegion, hPilot);
 
         StringBuilder sb = new StringBuilder("\uFEFF");   // 엑셀 한글 깨짐 방지
-        sb.append("완료 일시,주소,행정구역,면적(㎡),담당 조종사,배정 일시,사용 약제,사용량(L)\r\n");
+        sb.append("완료 일시,주소,행정구역,면적(㎡),담당 조종사,배정 일시,사용 약제\r\n");
         for (PilotTaskDto r : rows) {
             sb.append(String.join(",",
                     csv(r.getCompletedAt() == null ? "" : r.getCompletedAt().format(DT)),
@@ -147,8 +182,7 @@ public class LeaderController {
                     csv(r.getAreaSize()),
                     csv(r.getPilotName()),
                     csv(r.getAssignedAt() == null ? "" : r.getAssignedAt().format(DT)),
-                    csv(r.getChemicalName()),
-                    csv(r.getUsedAmount())))
+                    csv(r.getChemicalName())))
               .append("\r\n");
         }
 
@@ -162,14 +196,17 @@ public class LeaderController {
     }
 
     /**
-     * 작업 배정 - 배정 확정
+     * 작업 배정 - 실제 다중 농지 일괄 배정 (DB 저장)
      */
     @PostMapping("/task-assignment")
     public String assign(@ModelAttribute AssignRequest req,
+                         @AuthenticationPrincipal CustomUser customUser,
                          RedirectAttributes redirectAttributes) {
-        log.info("배정 요청: {}", req);
+        log.info("배정 요청 수신: {}", req);
 
-        if (req.getLandNos().isEmpty()) {
+        if (customUser == null) return "redirect:/login";
+
+        if (req.getLandNos() == null || req.getLandNos().isEmpty()) {
             redirectAttributes.addFlashAttribute("errorMessage", "배정할 농지를 선택하세요.");
             return "redirect:/leader/task-assignment";
         }
@@ -180,46 +217,117 @@ public class LeaderController {
             return "redirect:/leader/task-assignment";
         }
 
-        // TODO(백엔드): workAssignmentService.assign(로그인 단장의 팀, req)
-        long pilotCount = req.getQuotas().values().stream().filter(v -> v != null && v > 0).count();
-        redirectAttributes.addFlashAttribute("message",
-                req.getLandNos().size() + "필지를 " + pilotCount + "명의 조종사에게 배정했습니다. (샘플)");
+        Users leader = userRepository.findById(customUser.getUser().getNo()).orElse(null);
+        Teams myTeam = (leader != null) ? leader.getTeam() : null;
+
+        if (leader != null && myTeam != null) {
+            // 1. 상위 배정 묶음(DispatchBatches) 생성
+            DispatchBatches batch = DispatchBatches.builder()
+                    .team(myTeam)
+                    .leader(leader)
+                    .batchTitle("공동방제 (" + req.getLandNos().size() + "필지)")
+                    .assignedPilotCount(req.getQuotas().size())
+                    .build();
+            dispatchBatchRepository.save(batch);
+
+            // 2. 조종사별 할당량(quotas)에 맞춰 조종사 큐 생성
+            List<Long> pilotQueue = new ArrayList<>();
+            for (Map.Entry<Long, Integer> entry : req.getQuotas().entrySet()) {
+                int count = (entry.getValue() != null) ? entry.getValue() : 0;
+                for (int i = 0; i < count; i++) {
+                    pilotQueue.add(entry.getKey());
+                }
+            }
+
+            // 3. 선택된 농지에 순서대로 조종사 매핑하여 WorkAssignments 저장
+            for (int i = 0; i < req.getLandNos().size(); i++) {
+                Long landNo = req.getLandNos().get(i);
+                Lands land = landRepository.findById(landNo).orElse(null);
+
+                if (land != null && "READY".equals(land.getStatus())) {
+                    Long pilotNo = (i < pilotQueue.size()) ? pilotQueue.get(i) : leader.getNo();
+                    Users pilot = userRepository.findById(pilotNo).orElse(leader);
+
+                    WorkAssignments assignment = WorkAssignments.builder()
+                            .dispatchBatch(batch)
+                            .land(land)
+                            .pilot(pilot)
+                            .status("ASSIGNED")
+                            .build();
+                    workAssignmentRepository.save(assignment);
+
+                    land.updateStatus("ASSIGNED");
+                    landRepository.save(land);
+                }
+            }
+
+            long pilotCount = req.getQuotas().values().stream().filter(v -> v != null && v > 0).count();
+            redirectAttributes.addFlashAttribute("message",
+                    req.getLandNos().size() + "필지를 " + pilotCount + "명의 조종사에게 배정했습니다.");
+        }
+
         return "redirect:/leader/task-assignment?tab=status";
     }
 
     /**
-     * 작업 배정 - 배정 취소 (ASSIGNED 상태만)
+     * 작업 배정 취소 (실제 DB 삭제 및 READY 복구)
      */
     @PostMapping("/task-assignment/cancel")
     public String cancelAssignment(@RequestParam("landNo") Long landNo,
                                    RedirectAttributes redirectAttributes) {
-        log.info("배정 취소 요청: {}", landNo);
-        // TODO(백엔드): workAssignmentService.cancel(로그인 단장의 팀, landNo)
-        redirectAttributes.addFlashAttribute("message", landNo + "번 농지 배정 취소 요청을 받았습니다. (샘플)");
+        log.info("배정 취소 요청: landNo={}", landNo);
+
+        Lands land = landRepository.findById(landNo).orElse(null);
+        if (land != null) {
+            List<WorkAssignments> assignments = workAssignmentRepository.findAll().stream()
+                    .filter(w -> w.getLand() != null && landNo.equals(w.getLand().getNo()))
+                    .toList();
+            workAssignmentRepository.deleteAll(assignments);
+
+            land.updateStatus("READY");
+            landRepository.save(land);
+            redirectAttributes.addFlashAttribute("message", landNo + "번 농지 배정이 취소되었습니다.");
+        }
+
         return "redirect:/leader/task-assignment?tab=status";
     }
 
     /* =========================================================
        방제단 관리
-       - 팀 이름, 초대 코드는 GlobalModelAdvice 의 headerTeamName, headerInviteCode 사용
        ========================================================= */
     @GetMapping("/team-management")
     public String getTeamManagement(
             @RequestParam(value = "keyword", defaultValue = "") String keyword,
             @RequestParam(value = "status",  defaultValue = "") String status,
             @RequestParam(value = "skill",   defaultValue = "") String skill,
+            @AuthenticationPrincipal CustomUser customUser,
             Model model) {
 
-        List<TeamMemberDto> allMembers = new ArrayList<>();   // TODO(백엔드): teamService.getMembers(로그인 단장)
+        if (customUser == null) return "redirect:/login";
+
+        Users leader = userRepository.findById(customUser.getUser().getNo()).orElse(null);
+        Teams myTeam = (leader != null) ? leader.getTeam() : null;
+        final String inviteCode = (myTeam != null && myTeam.getInviteCode() != null) ? myTeam.getInviteCode() : "";
+
+        // DB에서 소속 조종사 목록 조회
+        List<TeamMemberDto> allMembers = new ArrayList<>();
+        if (!inviteCode.isEmpty()) {
+            allMembers = userRepository.findAll().stream()
+                    .filter(u -> u.getTeam() != null 
+                              && inviteCode.equals(u.getTeam().getInviteCode())
+                              && !"LEADER".equals(u.getRole()))
+                    .map(TeamMemberDto::from)
+                    .toList();
+        }
 
         String kw = keyword.trim();
         List<TeamMemberDto> members = allMembers.stream()
                 .filter(m -> kw.isEmpty()
-                          || m.getName().contains(kw)
-                          || m.getPhone().contains(kw)
-                          || m.getUsername().contains(kw))
-                .filter(m -> status.isEmpty() || m.getStatus().equals(status))
-                .filter(m -> skill.isEmpty()  || m.getSkill().equals(skill))
+                          || (m.getName() != null && m.getName().contains(kw))
+                          || (m.getPhone() != null && m.getPhone().contains(kw))
+                          || (m.getUsername() != null && m.getUsername().contains(kw)))
+                .filter(m -> status.isEmpty() || status.equals(m.getStatus()))
+                .filter(m -> skill.isEmpty()  || skill.equals(m.getSkill()))
                 .toList();
 
         long onlineCount  = allMembers.stream().filter(m -> "online".equals(m.getStatus())).count();
@@ -247,9 +355,20 @@ public class LeaderController {
     public String reassign(@PathVariable("no") Long no,
                            @RequestParam("targetNo") Long targetNo,
                            RedirectAttributes redirectAttributes) {
-        log.info("재배정 요청: {} → {}", no, targetNo);
-        // TODO(백엔드): workAssignmentService.reassign(no, targetNo)
-        redirectAttributes.addFlashAttribute("message", "재배정 요청이 처리되었습니다. (샘플)");
+        log.info("미완료 작업 재배정: {} → {}", no, targetNo);
+
+        Users targetPilot = userRepository.findById(targetNo).orElse(null);
+        if (targetPilot != null) {
+            List<WorkAssignments> tasks = workAssignmentRepository.findAll().stream()
+                    .filter(w -> w.getPilot() != null && no.equals(w.getPilot().getNo()) && !"COMPLETED".equals(w.getStatus()))
+                    .toList();
+            for (WorkAssignments w : tasks) {
+                w.setPilot(targetPilot);
+                workAssignmentRepository.save(w);
+            }
+            redirectAttributes.addFlashAttribute("message", "미완료 작업이 " + targetPilot.getName() + " 조종사에게 재배정되었습니다.");
+        }
+
         return "redirect:/leader/team-management";
     }
 
@@ -262,17 +381,18 @@ public class LeaderController {
             @RequestParam(value = "keyword", defaultValue = "") String keyword,
             Model model) {
 
-        List<LandDto> allLands = new ArrayList<>();   // TODO(백엔드): landService.getLands(로그인 단장의 팀)
+        List<Lands> rawLands = landRepository.findAll();
+        List<LandDto> allLands = rawLands.stream().map(LandDto::from).toList();
 
         String kw = keyword.trim();
         List<LandDto> lands = allLands.stream()
-                .filter(l -> dong.isEmpty() || l.getDong().equals(dong))
-                .filter(l -> kw.isEmpty()
-                          || (l.getFullRegion() + " " + l.getAddress()).contains(kw))
+                .filter(l -> dong.isEmpty() || (l.getDong() != null && l.getDong().equals(dong)))
+                .filter(l -> kw.isEmpty() || (l.getAddress() != null && l.getAddress().contains(kw)))
                 .toList();
 
         List<String> dongs = allLands.stream()
                 .map(LandDto::getDong)
+                .filter(d -> d != null && !d.isBlank())
                 .distinct()
                 .sorted()
                 .toList();
@@ -288,49 +408,84 @@ public class LeaderController {
     @PostMapping("/farmlist")
     public String createLand(@ModelAttribute LandCreateRequest form,
                              RedirectAttributes redirectAttributes) {
-        log.info("농지 등록 요청: {}", form);
-        // TODO(백엔드): landService.create(로그인 단장의 팀, form)
-        redirectAttributes.addFlashAttribute("message",
-                form.getAddress() + " 농지 등록 요청을 받았습니다. (샘플이라 목록에는 추가되지 않아요)");
+        log.info("신규 농지 등록: {}", form);
+
+        Lands land = Lands.builder()
+                .address(form.getAddress())
+                .latitude(form.getLatitude() != null ? form.getLatitude() : 36.3504)
+                .longitude(form.getLongitude() != null ? form.getLongitude() : 127.3845)
+                .areaSize(form.getAreaSize() != null ? form.getAreaSize() : 1000.0)
+                .status("READY")
+                .build();
+
+        landRepository.save(land);
+        redirectAttributes.addFlashAttribute("message", form.getAddress() + " 농지가 등록되었습니다.");
         return "redirect:/leader/farmlist";
     }
 
     @PostMapping("/farmlist/delete")
     public String deleteLand(@RequestParam("landNo") Long landNo,
                              RedirectAttributes redirectAttributes) {
-        log.info("농지 삭제 요청: {}", landNo);
-        // TODO(백엔드): landService.delete(로그인 단장의 팀, landNo)  ※ READY 만 허용
-        redirectAttributes.addFlashAttribute("message", landNo + "번 농지 삭제 요청을 받았습니다. (샘플)");
+        log.info("농지 삭제: landNo={}", landNo);
+
+        Lands land = landRepository.findById(landNo).orElse(null);
+        if (land != null && "READY".equals(land.getStatus())) {
+            landRepository.delete(land);
+            redirectAttributes.addFlashAttribute("message", landNo + "번 농지가 삭제되었습니다.");
+        } else {
+            redirectAttributes.addFlashAttribute("message", "배정 중이거나 작업 중인 농지는 삭제할 수 없습니다.");
+        }
+
         return "redirect:/leader/farmlist";
     }
 
-    /* =========================================================
-       작업 이력 → 작업 배정 화면의 "작업 이력" 탭으로 이동
-       ========================================================= */
-    @GetMapping("/history")
-    public String getHistory() {
-        return "redirect:/leader/task-assignment?tab=history";
-    }
+        @GetMapping("/history")
+        public String getHistory() {
+                return "redirect:/leader/task-assignment?tab=history";
+        }
 
-    /* =========================================================
-       작업 이력 검색 (화면 + CSV 같이 사용)
-       ========================================================= */
-    private List<PilotTaskDto> filterHistory(LocalDate from, LocalDate to, String region, String pilot) {
-        // TODO(백엔드): workAssignmentService.getTeamHistory(로그인 단장의 팀, from, to, region, pilot)
-        String[] words = region.trim().isEmpty() ? new String[0] : region.trim().split("\\s+");
-        return new ArrayList<PilotTaskDto>().stream()
-                .filter(h -> from == null || !h.getCompletedAt().toLocalDate().isBefore(from))
-                .filter(h -> to == null   || !h.getCompletedAt().toLocalDate().isAfter(to))
-                .filter(h -> Arrays.stream(words)
-                        .allMatch(w -> (h.getRegion() + " " + h.getAddress()).contains(w)))
-                .filter(h -> pilot.isEmpty() || pilot.equals(h.getPilotName()))
-                .sorted(Comparator.comparing(PilotTaskDto::getCompletedAt).reversed())   // 최근 완료 먼저
-                .toList();
-    }
+        /* =========================================================
+        작업 이력 검색 (실제 DB WorkAssignments 조회)
+        ========================================================= */
+        private List<PilotTaskDto> filterHistory(LocalDate from, LocalDate to, String region, String pilot) {
+                // DB에서 완료(COMPLETED)된 작업만 가져와 PilotTaskDto로 매핑
+                List<WorkAssignments> completed = workAssignmentRepository.findAll().stream()
+                        .filter(w -> "COMPLETED".equals(w.getStatus()))
+                        .toList();
 
-    // CSV 칸 하나: 따옴표로 감싸고, 안의 따옴표는 두 번 써서 깨지지 않게
-    private String csv(Object value) {
-        String s = value == null ? "" : String.valueOf(value);
-        return "\"" + s.replace("\"", "\"\"") + "\"";
-    }
+                List<PilotTaskDto> dtos = completed.stream().map(w -> {
+            // 읍/면/동 행정구역 이름 추출
+              String regionName = (w.getLand() != null && w.getLand().getRegion() != null) 
+                                  ? w.getLand().getRegion().getEupmyeondong() 
+                                  : "-";
+
+              return PilotTaskDto.builder()
+                      .no(w.getNo())
+                      .address(w.getLand() != null ? w.getLand().getAddress() : "-")
+                      .region(regionName) // 👈 getName() 대신 getEupmyeondong() 사용!
+                      .areaSize(w.getLand() != null ? w.getLand().getAreaSize() : 0.0)
+                      .status(w.getStatus())
+                      .pilotName(w.getPilot() != null ? w.getPilot().getName() : "-")
+                      .assignedAt(w.getCreatedAt())
+                      .completedAt(w.getCompletedAt() != null ? w.getCompletedAt() : w.getCreatedAt())
+                      .chemicalName("기본 살충제")
+                      .usedAmount("0.0") // 👈 0.0 대신 문자열 "0.0" 전달!
+                      .build();
+          }).toList();
+
+                String[] words = region.trim().isEmpty() ? new String[0] : region.trim().split("\\s+");
+                return dtos.stream()
+                        .filter(h -> from == null || (h.getCompletedAt() != null && !h.getCompletedAt().toLocalDate().isBefore(from)))
+                        .filter(h -> to == null   || (h.getCompletedAt() != null && !h.getCompletedAt().toLocalDate().isAfter(to)))
+                        .filter(h -> Arrays.stream(words)
+                                .allMatch(w -> ((h.getRegion() != null ? h.getRegion() : "") + " " + (h.getAddress() != null ? h.getAddress() : "")).contains(w)))
+                        .filter(h -> pilot.isEmpty() || pilot.equals(h.getPilotName()))
+                        .sorted(Comparator.comparing(PilotTaskDto::getCompletedAt, Comparator.nullsLast(Comparator.reverseOrder())))
+                        .toList();
+        }
+
+        private String csv(Object value) {
+                String s = value == null ? "" : String.valueOf(value);
+                return "\"" + s.replace("\"", "\"\"") + "\"";
+        }
 }

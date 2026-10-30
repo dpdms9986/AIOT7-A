@@ -43,8 +43,8 @@
 
       <!-- 완료 요약 -->
       <p class="task-history-sum" th:if="${doneCount > 0}"
-         th:text="|완료 ${doneCount}건 · 면적 ${#numbers.formatDecimal(doneArea, 0, 'COMMA', 0, 'POINT')}㎡ · 약제 사용량 ${#numbers.formatDecimal(doneUsed, 1, 1)}L|">
-        완료 2건 · 면적 3,700㎡ · 약제 사용량 4.4L
+         th:text="|완료 ${doneCount}건 · 면적 ${#numbers.formatDecimal(doneArea, 0, 'COMMA', 0, 'POINT')}㎡|">
+        완료 2건 · 면적 3,700㎡
       </p>
 
       <!-- 목록: 각 작업이 상세를 여는 링크 -->
@@ -91,18 +91,16 @@
           <th:block th:if="*{status != 'ASSIGNED'}">
             <dt>드론</dt>      <dd th:text="*{droneName}">DJI T40-01</dd>
             <dt>약제</dt>      <dd th:text="*{chemicalName}">살균제 A</dd>
-            <dt>살포량</dt>    <dd th:text="*{sprayRate} + ' L/ha'">12 L/ha</dd>
             <dt>시작 일시</dt> <dd th:text="*{#temporals.format(startedAt, 'yyyy-MM-dd HH:mm')}">2026-10-29 09:10</dd>
           </th:block>
 
           <!-- 완료한 작업만 -->
           <th:block th:if="*{done}">
-            <dt>완료 일시</dt>   <dd th:text="*{#temporals.format(completedAt, 'yyyy-MM-dd HH:mm')}">2026-10-28 10:25</dd>
-            <dt>실제 사용량</dt> <dd th:text="*{usedAmount} + ' L'">1.8 L</dd>
+            <dt>완료 일시</dt> <dd th:text="*{#temporals.format(completedAt, 'yyyy-MM-dd HH:mm')}">2026-10-28 10:25</dd>
           </th:block>
         </dl>
 
-        <!-- [대기] → 작업 시작 폼 -->
+        <!-- [대기] → 작업 시작 폼 (드론, 약제만 선택) -->
         <form th:if="*{status == 'ASSIGNED'}"
               th:action="@{/pilot/history/{no}/start(no=*{no})}" method="post">
           <div class="pilot-form">
@@ -121,25 +119,14 @@
                 <option th:each="c : ${chemicals}" th:value="${c.id}" th:text="${c.label}">살균제 A</option>
               </select>
             </label>
-            <label class="task-field">
-              <span>살포량 (L/ha)</span>
-              <input type="number" name="sprayRate" value="12" min="1" max="50" step="0.1" required>
-            </label>
           </div>
           <button type="submit" class="dash-btn-primary">작업 시작</button>
         </form>
 
-        <!-- [진행 중] → 완료 보고 폼 -->
+        <!-- [진행 중] → 완료 보고 (입력칸 없이 버튼만) -->
         <form th:if="*{status == 'IN_PROGRESS'}"
               th:action="@{/pilot/history/{no}/complete(no=*{no})}" method="post"
               onsubmit="return confirm('작업 완료를 보고할까요?');">
-          <div class="pilot-form">
-            <p class="pilot-form-title">방제 완료 보고</p>
-            <label class="task-field">
-              <span>실제 약제 사용량 (L)</span>
-              <input type="number" name="usedAmount" min="0.1" step="0.1" placeholder="예: 1.2" required>
-            </label>
-          </div>
           <button type="submit" class="dash-btn-primary">작업 완료 보고</button>
         </form>
       </div>

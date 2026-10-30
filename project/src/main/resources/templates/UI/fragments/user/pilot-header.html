@@ -8,9 +8,9 @@
       <a th:href="@{/pilot/history}"
          th:classappend="${#strings.startsWith(currentUri, '/pilot/history')} ? 'active'">작업 이력</a>
       <a th:href="@{/pilot/assetlist}"
-         th:classappend="${#strings.startsWith(currentUri, '/pilot/assetlist')} ? 'active'">드론 · 자산</a>
-      <a th:href="@{/hazardlist}"
-         th:classappend="${#strings.startsWith(currentUri, '/hazardlist')} ? 'active'">게시판</a>
+         th:classappend="${#strings.startsWith(currentUri, '/pilot/assetlist')} ? 'active'">드론 · 약제</a>
+      <a th:href="@{/hazards}"
+         th:classappend="${#strings.startsWith(currentUri, '/hazards')} ? 'active'">게시판</a>
       <a th:href="@{/support}"
          th:classappend="${#strings.startsWith(currentUri, '/support')} ? 'active'">고객센터</a>
     </nav>

@@ -1,14 +1,12 @@
 package com.aloha.project.domain.users;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import lombok.Getter;
 import lombok.ToString;
@@ -17,13 +15,13 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Getter
 @ToString
-public class CustomUser implements UserDetails, OAuth2User  {
+public class CustomUser implements UserDetails  {
 
   // 사용자 DTO
   private Users user;
 
   // 소셜 로그인 시 제공자가 내려준 사용자 속성
-  private Map<String, Object> attributes = Collections.emptyMap();
+//   private Map<String, Object> attributes = Collections.emptyMap();
 
   public CustomUser(Users user) {
       this.user = user;
@@ -31,18 +29,18 @@ public class CustomUser implements UserDetails, OAuth2User  {
 
   public CustomUser(Users user, Map<String, Object> attributes) {
       this.user = user;
-      this.attributes = attributes;
+    //   this.attributes = attributes;
   }
 
-  @Override
-  public Map<String, Object> getAttributes() {
-      return attributes;
-  }
+//   @Override
+//   public Map<String, Object> getAttributes() {
+//       return attributes;
+//   }
 
-  @Override
-  public String getName() {
-      return user.getUserName();
-  }
+//   @Override
+//   public String getName() {
+//       return user.getUserName();
+//   }
 
 
   /**
