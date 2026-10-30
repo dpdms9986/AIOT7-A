@@ -6,37 +6,21 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import lombok.extern.slf4j.Slf4j;
 
-
-@Slf4j 
-@Controller 
+@Slf4j
+@Controller
 @RequestMapping("/pilot")
 public class PilotController {
 
-    /**
-     * 파일럿 대시보드
-     * @return
-     */
+    // 1. 조종사 대시보드
     @GetMapping("/dashboard")
     public String getDashboard() {
         return "page/pilot/dashboard";
     }
 
-    /**
-     * 작업 이력
-     * @return
-     */
+    // 2. 작업 이력
     @GetMapping("/history")
     public String getHistory() {
         return "page/pilot/history";
     }
 
-    /**
-     * 드론자산
-     * @return
-     */
-    @GetMapping("/assetlist")
-    public String getAssetList() {
-        return "page/pilot/assetlist";
-    }
-    
 }
