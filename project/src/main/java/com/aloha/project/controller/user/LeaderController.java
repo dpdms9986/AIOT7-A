@@ -38,8 +38,6 @@ public class LeaderController {
     private final TaskService taskService;
     private final LandRepository landRepository;
     private final UserRepository userRepository;
-    private final DroneRepository droneRepository;
-
 
     // 2. 작업 배정
     @GetMapping("/task-assignment")
