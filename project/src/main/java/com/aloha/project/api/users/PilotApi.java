@@ -21,7 +21,7 @@ import com.aloha.project.dto.PilotAssignmentResponse;
 import com.aloha.project.dto.StatusUpdateRequest;
 import com.aloha.project.dto.WorkActionRequest;
 import com.aloha.project.service.inter.users.PilotService;
-import com.aloha.project.service.inter.users.WorkAssignmentService;
+import com.aloha.project.service.inter.tasks.WorkAssignmentService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
