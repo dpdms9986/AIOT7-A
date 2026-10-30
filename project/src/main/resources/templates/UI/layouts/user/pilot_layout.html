@@ -11,10 +11,11 @@
 <body>
     <!-- [HEADER] -->
     <th:block th:replace="~{UI/fragments/user/pilot-header::header}"></th:block>
+    <!-- [TOAST] 로그인 안내 -->
+    <th:block th:replace="~{UI/fragments/user/toast::toast}"></th:block>
     <!-- [CONTENT]-->
     <th:block layout:fragment="content"></th:block>
     <!-- [FOOTER]-->
     <th:block th:replace="~{UI/fragments/user/footer::footer}"></th:block>
-    
 </body>
 </html>

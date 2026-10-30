@@ -1,28 +1,55 @@
 <th:block th:fragment="header">
     <header class="dash-header">
-      <a href="#" class="dash-logo"><span>🌱</span>스마트 농업 관제 시스템</a>
+      <a th:href="@{/leader/dashboard}" class="dash-logo"><span>🌱</span>스마트 농업 관제 시스템</a>
+
+      <!-- 현재 주소로 시작하면 active -->
       <nav class="dash-topnav" id="gnb-menu">
-        <a href="/leader/dashboard" class="active">관제 대시보드</a>
-        <a href="/leader/task-assignment">작업 배정</a>
-        <a href="/leader/farmlist">농지 관리</a>
-        <a href="/leader/team-management">방제단 관리</a>
-        <a href="/leader/assetlist">드론 · 자산</a>
-        <a href="/hazardlist">게시판</a>
-        <a href="/support">고객센터</a>
+        <a th:href="@{/leader/dashboard}"
+           th:classappend="${#strings.startsWith(currentUri, '/leader/dashboard')} ? 'active'">관제 대시보드</a>
+        <a th:href="@{/leader/task-assignment}"
+           th:classappend="${#strings.startsWith(currentUri, '/leader/task-assignment')} ? 'active'">작업 배정</a>
+        <a th:href="@{/leader/farmlist}"
+           th:classappend="${#strings.startsWith(currentUri, '/leader/farmlist')} ? 'active'">농지 관리</a>
+        <a th:href="@{/leader/team-management}"
+           th:classappend="${#strings.startsWith(currentUri, '/leader/team-management')} ? 'active'">방제단 관리</a>
+        <a th:href="@{/leader/assetlist}"
+           th:classappend="${#strings.startsWith(currentUri, '/leader/assetlist')} ? 'active'">드론 · 자산</a>
+        <a th:href="@{/hazardlist}"
+           th:classappend="${#strings.startsWith(currentUri, '/hazardlist')} ? 'active'">게시판</a>
+        <a th:href="@{/support}"
+           th:classappend="${#strings.startsWith(currentUri, '/support')} ? 'active'">고객센터</a>
       </nav>
+
       <div class="dash-header-right">
-          <span class="gnb-team" id="team-name">방제단</span>
-          <button type="button" class="gnb-invite" id="invite-btn" hidden>초대 코드 <b id="invite-code">------</b> 📋</button>
-          <span class="dash-role" id="user-role">-</span>
-          
-          <a href="/mypage" class="gnb-user" title="마이페이지"><span class="dash-avatar">👤</span><span id="user-name">사용자</span></a>
+          <span class="gnb-team" th:text="${headerTeamName} ?: '방제단 없음'">방제단</span>
+
+          <!-- 단장만: 초대코드 (클릭하면 복사) -->
+          <button type="button" class="gnb-invite" id="invite-btn"
+                  th:if="${headerInviteCode != null}">
+            초대 코드 <b id="invite-code" th:text="${headerInviteCode}">------</b> 📋
+          </button>
+
+          <span class="dash-role" th:text="${roleLabel}">-</span>
+
+          <a th:href="@{/mypage}" class="gnb-user" title="마이페이지">
+            <span class="dash-avatar">👤</span><span th:text="${loginName}">사용자</span>
+          </a>
+
           <form th:action="@{/logout}" method="post">
-          <div class="d-grid gap-2">
-              <button type="submit" class="dash-btn-outline gnb-logout">로그아웃</button>
-          </div>
-      </form>
+            <button type="submit" class="dash-btn-outline gnb-logout">로그아웃</button>
+          </form>
       </div>
     </header>
+
+    <!-- 헤더 초대코드 복사 -->
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const btn = document.querySelector("#invite-btn");
+        btn?.addEventListener("click", async () => {
+          const code = document.querySelector("#invite-code").textContent.trim();
+          try { await navigator.clipboard.writeText(code); alert(`초대 코드 ${code} 가 복사되었습니다.`); }
+          catch (e) { alert(`초대 코드: ${code}`); }
+        });
+      });
+    </script>
 </th:block>
-
-

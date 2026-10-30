@@ -1,16 +1,195 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{UI/layouts/user/leader_layout}"
-      >
+      layout:decorate="~{UI/layouts/user/leader_layout}">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>스마트 농업 관제 시스템</title>
+  <title>관제 대시보드 | 스마트 농업 관제 시스템</title>
+  <!-- 이 화면 전용: 지도(Leaflet), 웹소켓(SockJS, STOMP) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
 </head>
 <body layout:fragment="content">
 
-  <h1>리더 대시보드</h1>
+<main class="dash-main">
+  <div class="dash-title-row">
+    <div>
+      <h1>🗺 관제 대시보드</h1>
+      <p>농지 작업을 조종사에게 배정하고 실시간 위치를 확인하세요.</p>
+    </div>
+  </div>
 
+  <!-- 처리 결과 메시지 -->
+  <p class="page-flash" th:if="${message}" th:text="${message}">메시지</p>
+
+  <!-- ===== 요약 카드 (서버가 숫자 넣음) ===== -->
+  <section class="dash-stats">
+    <div class="dash-card dash-stat">
+      <span class="dash-stat-icon ready">🌱</span>
+      <div class="dash-stat-body">
+        <small>미배정</small>
+        <strong><th:block th:text="${readyCount}">0</th:block><span>건</span></strong>
+        <em>조종사 배정이 필요한 농지</em>
+      </div>
+    </div>
+    <div class="dash-card dash-stat">
+      <span class="dash-stat-icon assigned">⏳</span>
+      <div class="dash-stat-body">
+        <small>배정</small>
+        <strong><th:block th:text="${assignedCount}">0</th:block><span>건</span></strong>
+        <em>배정 완료, 작업 시작 전</em>
+      </div>
+    </div>
+    <div class="dash-card dash-stat">
+      <span class="dash-stat-icon progress">🚁</span>
+      <div class="dash-stat-body">
+        <small>진행 중</small>
+        <strong><th:block th:text="${progressCount}">0</th:block><span>건</span></strong>
+        <em>현재 방제 작업 중</em>
+      </div>
+    </div>
+    <div class="dash-card dash-stat">
+      <span class="dash-stat-icon completed">✅</span>
+      <div class="dash-stat-body">
+        <small>완료</small>
+        <strong><th:block th:text="${completedCount}">0</th:block><span>건</span></strong>
+        <em>작업 완료된 농지</em>
+      </div>
+    </div>
+  </section>
+
+  <section class="leader-layout">
+
+    <!-- ===== 왼쪽: 지도 ===== -->
+    <article class="dash-card">
+      <div class="dash-card-head">
+        <h2>🗺 방제단 관제 지도</h2>
+        <span id="status" class="ws-status">현재 상태: 연결 대기 중</span>
+      </div>
+
+      <div class="gps-control-bar">
+        <label>방제단 번호:</label>
+        <input type="number" id="teamNoInput" value="1" style="width: 45px;">
+        <button type="button" class="gps-btn" onclick="connect()">🔌 채널 연결</button>
+        <button type="button" class="gps-btn" onclick="fitAll()">🗺 전체 보기</button>
+        <button type="button" class="gps-btn btn-real" id="follow-btn" onclick="toggleFollow()">🎯 조종사 따라가기</button>
+        <div id="autoStatus" class="gps-status-text">조종사 위치를 수신 대기 중입니다.</div>
+      </div>
+
+      <!-- data-selected: 처음 선택할 농지 번호 (배정 후 돌아왔을 때) -->
+      <div id="leader-map" th:data-selected="${selectedLandNo}"></div>
+
+      <ul class="dash-legend">
+        <li><i style="background:#238451;"></i>READY 미배정</li>
+        <li><i style="background:#f2b705;"></i>ASSIGNED 배정</li>
+        <li><i style="background:#2f80ed;"></i>IN_PROGRESS 진행 중</li>
+        <li><i style="background:#8a8f8c;"></i>COMPLETED 완료</li>
+        <li>🚁 조종사 실시간 위치</li>
+      </ul>
+    </article>
+
+    <!-- ===== 오른쪽 ===== -->
+    <aside class="leader-side">
+
+      <!-- 미배정 농지 -->
+      <section class="dash-card side-card">
+        <div class="side-card-head">
+          <h2>📋 미배정 농지</h2>
+          <span class="count-label" th:text="${#lists.size(readyLands)} + '개'">0개</span>
+        </div>
+        <div class="side-body">
+          <p class="panel-caption">농지를 누르면 지도에서 위치를 보여주고 배정할 수 있어요</p>
+          <ul class="side-list" id="unassigned-farm-list">
+            <li class="side-item" tabindex="0" th:each="l : ${readyLands}" th:data-no="${l.no}">
+              <div class="item-main">
+                <strong th:text="${l.address}">전민동 15-2</strong>
+                <small th:text="${#numbers.formatDecimal(l.areaSize, 0, 'COMMA', 0, 'POINT')} + '㎡'">3,300㎡</small>
+              </div>
+            </li>
+            <li class="side-empty" th:if="${#lists.isEmpty(readyLands)}">미배정 농지가 없습니다.</li>
+          </ul>
+
+          <!-- 선택한 농지 정보 + 배정 폼 (내용은 JS가 채움, 전송은 POST) -->
+          <div class="assign-panel" id="assign-panel" hidden>
+            <h3 id="ap-title">🌱 농지</h3>
+            <dl>
+              <dt>상태</dt>   <dd><span class="assign-status" id="ap-status">-</span></dd>
+              <dt>면적</dt>   <dd id="ap-area">-</dd>
+              <dt>배정일</dt> <dd id="ap-date">-</dd>
+              <dt>조종사</dt> <dd id="ap-pilot">-</dd>
+            </dl>
+
+            <!-- 배정하기 / 재배정 (READY, ASSIGNED 일 때) -->
+            <form class="assign-form" id="ap-assign-form" th:action="@{/leader/dashboard/assign}" method="post">
+              <input type="hidden" name="landNo" id="ap-land-no">
+              <label>조종사
+                <select name="pilotNo" id="ap-pilot-select" required>
+                  <option value="">조종사 선택</option>
+                  <option th:each="p : ${pilots}"
+                          th:value="${p.no}"
+                          th:data-name="${p.name}"
+                          th:text="|${p.name} (배정 ${activeCount.get(p.name) ?: 0}건)|">김민수 (배정 1건)</option>
+                </select>
+              </label>
+              <label>작업 예정일
+                <input type="date" name="workDate" th:min="${today}" th:value="${today}" required>
+              </label>
+              <div class="assign-actions">
+                <button type="submit" class="dash-btn-primary" id="ap-submit">✅ 배정하기</button>
+              </div>
+            </form>
+
+            <!-- 배정 취소 (ASSIGNED 일 때) -->
+            <form id="ap-cancel-form" th:action="@{/leader/dashboard/unassign}" method="post"
+                  onsubmit="return confirm('이 농지의 배정을 취소할까요?');">
+              <input type="hidden" name="landNo" id="ap-cancel-no">
+              <button type="submit" class="dash-btn-outline btn-danger">배정 취소</button>
+            </form>
+
+            <!-- 진행 중 / 완료 안내 -->
+            <p class="assign-note" id="ap-note" hidden></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 소속 조종사 -->
+      <section class="dash-card side-card">
+        <div class="side-card-head">
+          <h2>👨‍🌾 소속 조종사</h2>
+          <span class="count-label" th:text="${#lists.size(pilots)} + '명'">0명</span>
+        </div>
+        <div class="side-body">
+          <p class="panel-caption">조종사를 누르면 지도에서 현재 위치로 이동해요</p>
+          <ul class="side-list" id="pilot-status-list">
+            <li class="side-item" tabindex="0" th:each="p : ${pilots}"
+                th:data-name="${p.name}"
+                th:data-working="${workingAt.containsKey(p.name)}">
+              <div class="item-main">
+                <strong th:text="${p.name}">김민수</strong>
+                <small th:text="${workingAt.containsKey(p.name)}
+                                ? |${workingAt.get(p.name)} 작업 중|
+                                : |배정 ${activeCount.get(p.name) ?: 0}건|">배정 0건</small>
+              </div>
+              <!-- 작업 중이면 서버가 표시, 나머지는 JS가 실시간 위치로 대기/오프라인 갱신 -->
+              <span class="pilot-state"
+                    th:classappend="${workingAt.containsKey(p.name)} ? 'busy' : 'offline'">
+                <i></i><th:block th:text="${workingAt.containsKey(p.name)} ? '작업 중' : '오프라인'">오프라인</th:block>
+              </span>
+            </li>
+            <li class="side-empty" th:if="${#lists.isEmpty(pilots)}">소속 조종사가 없습니다.</li>
+          </ul>
+        </div>
+      </section>
+    </aside>
+  </section>
+</main>
+
+<!-- 지도에 찍을 농지 점 전부 → JS 배열 -->
+<script th:inline="javascript">
+  const FARMS = /*[[${farmPoints}]]*/ [];
+</script>
+<script th:src="@{/js/leader/dashboard.js}"></script>
 </body>
 </html>
