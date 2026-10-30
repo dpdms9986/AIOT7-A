@@ -707,7 +707,6 @@
     flex: 1;
     min-width: 0;
     padding: 24px 28px 32px;
-    background: #f5f7fa;
     color: #203246;
 }
 
@@ -1141,7 +1140,7 @@
 
 
 /* ==================================================
-   조종사용 드론 · 자산 관리
+   조종사용 드론 · 약제 관리
    기존 style.css 하단에 통합
 ================================================== */
 
@@ -1150,7 +1149,6 @@
     flex: 1;
     min-width: 0;
     padding: 24px 28px 32px;
-    background: #f5f7fa;
     color: #203246;
 }
 
@@ -7031,7 +7029,6 @@ body.notice-detail-page .notice-member-info {
     min-width: 0;
     box-sizing: border-box;
     padding: 28px 24px;
-    background: var(--color-bg);
     color: var(--color-text);
 }
 
@@ -10527,7 +10524,7 @@ a.pilot-task {
 }
 
 
-/* ===== 드론·자산 관리 (2026-10-29) ===== */
+/* ===== 드론·약제 관리 (2026-10-29) ===== */
 
 /* 없던 상태 배지 색 */
 .asset-pilot-badge.operating      { background: #e4efff; color: #246ac0; }
@@ -10631,5 +10628,43 @@ a.asset-pilot-detail-button {
   }
   #farm-list form.filter-card > .button {
     width: 100%;
+  }
+}
+
+
+/* ===== 자산 화면 탭 줄 카드 모양으로 정리 (2026-10-30) ===== */
+main.asset-page-main .asset-pilot-tabs {
+  background: #ffffff;
+  border: 1px solid #e0e7ec;
+  border-radius: 12px;
+  padding: 6px;
+  gap: 6px;
+}
+
+main.asset-page-main .asset-pilot-tab {
+  border-radius: 8px;
+}
+
+
+/* ===== 공통 팝업 경고 아이콘 (2026-10-30) ===== */
+.login-popup-icon.warn {
+  background: #fff4e5;
+  color: #e67e22;
+}
+
+
+/* ===== 자산 화면: 검색 줄 칸 맞춤 (단장/조종사 순서 통일) (2026-10-30) ===== */
+@media (min-width: 1101px) {
+  /* 단장 - 유형 숨김: 담당 조종사 | 상태 | 검색어 | 검색 | 초기화 */
+  form.asset-pilot-filters.no-type {
+    grid-template-columns: 150px 145px minmax(180px, 1fr) auto auto;
+  }
+  /* 조종사 - 전체 탭: 유형 | 상태 | 검색어 | 검색 | 초기화 */
+  form.asset-pilot-filters.is-pilot {
+    grid-template-columns: 150px 145px minmax(180px, 1fr) auto auto;
+  }
+  /* 조종사 - 유형 숨김: 상태 | 검색어 | 검색 | 초기화 */
+  form.asset-pilot-filters.is-pilot.no-type {
+    grid-template-columns: 145px minmax(180px, 1fr) auto auto;
   }
 }

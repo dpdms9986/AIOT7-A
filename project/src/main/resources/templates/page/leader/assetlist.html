@@ -4,7 +4,7 @@
       layout:decorate="~{UI/layouts/user/leader_layout}">
 <head>
   <meta charset="UTF-8">
-  <title>드론 · 자산 관리 | 스마트 농업 관제 시스템</title>
+  <title>드론 · 약제 관리 | 스마트 농업 관제 시스템</title>
 </head>
 <body layout:fragment="content">
 
@@ -14,7 +14,7 @@
   <section class="page-heading asset-page-heading">
     <div class="page-heading-icon" aria-hidden="true">🚁</div>
     <div>
-      <h1>드론 · 자산 관리</h1>
+      <h1>드론 · 약제 관리</h1>
       <p>방제단에 등록된 전체 드론과 약제, 담당 조종사 및 정비 상태를 관리합니다.</p>
     </div>
     <button type="button" class="asset-role-chip" id="asset-register-btn">+ 자산 등록</button>
@@ -31,8 +31,6 @@
        th:href="@{/leader/assetlist(tab='drone')}">드론 기체</a>
     <a class="asset-pilot-tab" th:classappend="${tab == 'chemical'} ? 'active'"
        th:href="@{/leader/assetlist(tab='chemical')}">농업용 약제</a>
-    <a class="asset-pilot-tab" th:classappend="${tab == 'maintenance'} ? 'active'"
-       th:href="@{/leader/assetlist(tab='maintenance')}">정비 현황</a>
   </section>
 
   <!-- 요약 -->
@@ -73,10 +71,11 @@
       <span>총 <strong th:text="${#lists.size(assets)}">0</strong>건</span>
     </div>
 
-    <!-- 검색 (GET) -->
-    <form class="asset-pilot-filters" th:action="@{/leader/assetlist}" method="get">
+    <!-- 검색 (GET) : 자산 유형은 전체 탭에서만 -->
+    <form class="asset-pilot-filters" th:classappend="${tab != 'all'} ? 'no-type'"
+          th:action="@{/leader/assetlist}" method="get">
       <input type="hidden" name="tab" th:value="${tab}">
-      <label>
+      <label th:if="${tab == 'all'}">
         자산 유형
         <select name="type">
           <option value="">전체</option>
@@ -96,7 +95,7 @@
         상태
         <select name="status">
           <option value="">전체</option>
-          <!-- Map 반복: s.key = 코드, s.value = 글자 -->
+          <!-- 탭에 맞는 상태만 (컨트롤러가 골라서 보냄) -->
           <option th:each="s : ${statusOptions}" th:value="${s.key}" th:text="${s.value}"
                   th:selected="${s.key == status}">정상</option>
         </select>
@@ -275,7 +274,7 @@
         </label>
         <label>상태
           <select name="status" required>
-            <option th:each="s : ${statusOptions}" th:value="${s.key}" th:text="${s.value}">정상</option>
+            <option th:each="s : ${allStatusOptions}" th:value="${s.key}" th:text="${s.value}">정상</option>
           </select>
         </label>
       </div>

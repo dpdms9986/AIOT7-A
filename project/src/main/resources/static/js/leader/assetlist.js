@@ -1,4 +1,4 @@
-// 드론·자산 관리 - 등록 팝업 열고 닫기만 (목록/검색/상세/저장은 서버)
+// 드론·약제 관리 - 등록 팝업 열고 닫기만 (목록/검색/상세/저장은 서버)
 document.addEventListener("DOMContentLoaded", () => {
   const modal = document.querySelector("#asset-register-modal");
   const openBtn = document.querySelector("#asset-register-btn");
