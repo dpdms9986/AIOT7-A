@@ -68,7 +68,26 @@
     <!-- 목록 -->
     <article class="dash-card">
       <div class="dash-card-head">
-        <h2>📍 위험 구역 목록 <span class="task-count" th:text="${#lists.size(hazards)} + '건'">0건</span></h2>
+        <h2>📍 위험 구역 목록 <span class="task-count" id="hz-count" th:text="${#lists.size(hazards)} + '건'">0건</span></h2>
+      </div>
+
+      <!-- 검색: [검색] 버튼 또는 Enter 로 목록과 지도를 거름 (hazards.js) -->
+      <div class="hz-filters">
+        <input type="search" class="dash-input hz-f-keyword" id="hz-f-keyword"
+               placeholder="🔍 제목, 내용, 작성자 검색 (예: 대전, 고압선)">
+        <select class="hz-f-select" id="hz-f-type" aria-label="위험도">
+          <option value="">전체 위험도</option>
+          <option value="고위험">고위험</option>
+          <option value="중위험">중위험</option>
+          <option value="저위험">저위험</option>
+        </select>
+        <select class="hz-f-select" id="hz-f-status" aria-label="상태">
+          <option value="">전체 상태</option>
+          <option value="ACTIVE">주의 요망</option>
+          <option value="RESOLVED">해소됨</option>
+        </select>
+        <button type="button" class="dash-btn-primary" id="hz-f-search">검색</button>
+        <button type="button" class="dash-btn-outline" id="hz-f-reset">초기화</button>
       </div>
 
       <div class="hz-table-wrap">
@@ -125,6 +144,10 @@
             </tr>
             <tr th:if="${#lists.isEmpty(hazards)}">
               <td colspan="7" class="hz-empty">등록된 위험 구역이 없습니다.</td>
+            </tr>
+            <!-- 검색 결과가 없을 때 (hazards.js 가 보이게 함) -->
+            <tr id="hz-no-result" hidden>
+              <td colspan="7" class="hz-empty">검색 조건에 맞는 위험 구역이 없습니다.</td>
             </tr>
           </tbody>
         </table>
