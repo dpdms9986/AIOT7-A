@@ -69,7 +69,7 @@ public class HazardPageController {
         // 수정/삭제 버튼 노출 여부 판단을 위해 현재 로그인 사용자 번호 전달
         model.addAttribute("currentLoginUserNo", customUser.getUser().getNo());
 
-        return "page/hazards"; // templates/page/hazards.html
+        return "page/common/hazards"; // templates/page/hazards.html
     }
 
     /**

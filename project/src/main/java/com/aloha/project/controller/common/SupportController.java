@@ -73,7 +73,7 @@ public class SupportController {
 
         model.addAttribute("myInquiries", myInquiries);
 
-        return "page/support-my";
+        return "page/common/support-my";
     }
 
     /* =========================================================
@@ -150,7 +150,7 @@ public class SupportController {
 
         model.addAttribute("inquiry", toInquiryDto(inquiry));
 
-        return "page/support-detail";
+        return "page/common/support-detail";
     }
 
     /* =========================================================
