@@ -54,8 +54,12 @@ public class SecurityConfig {
                                     "/static/**", "/css/**", "/js/**", "/images/**", "/fonts/**"
                                 ).permitAll()              // "/static/**" 경로에 대한 모든 요청을 허용
                                 .requestMatchers("/admin/**", "/api/admin/**").hasRole("ADMIN")      // "/admin/**" 경로에 대한 요청은 ADMIN 권한 필요
-                                .requestMatchers("/pilot/**", "/api/pilot/**").hasRole("PILOT")      // "/admin/**" 경로에 대한 요청은 ADMIN 권한 필요
-                                .requestMatchers("/leader/**", "/api/leader/**").hasRole("LEADER")      // "/admin/**" 경로에 대한 요청은 ADMIN 권한 필요
+                                .requestMatchers("/pilot/**", "/api/pilot/**").hasRole("PILOT")     
+                                .requestMatchers("/leader/**", "/api/leader/**").hasRole("LEADER")  
+                                .requestMatchers(
+                                    "/", "/login", "/signin", "/signup", "/join", 
+                                    "/check-username", "/find-id", "/find-pw", "/terms/**", "/info"
+                                ).permitAll()   
                                 .requestMatchers("/api/**").permitAll()
                 .anyRequest().authenticated()                            // 주석 처리된 부분: 모든 다른 요청은 인증 필요
                 )
