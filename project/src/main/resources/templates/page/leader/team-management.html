@@ -5,14 +5,12 @@
 <head>
   <meta charset="UTF-8">
   <title>방제단 관리 | 스마트 농업 관제 시스템</title>
-  <!-- 이 화면 전용 CSS (레이아웃 head 에 합쳐짐) -->
-  <link rel="stylesheet" th:href="@{/css/team-management.css}">
 </head>
 <body layout:fragment="content">
 
 <main class="main-content team-management-page">
 
-    <!-- ===== 제목 (초대 코드는 위쪽 헤더에 있음) ===== -->
+  <!-- ===== 제목 (초대 코드는 위쪽 헤더에 있음) ===== -->
   <section class="team-page-heading">
     <div>
       <h1 th:text="${headerTeamName}">방제단 관리</h1>
@@ -64,7 +62,7 @@
     <div class="team-panel-heading">
       <div>
         <h2>소속 조종사 목록</h2>
-        <p>접속 상태, 담당 기체, 탱크 용량 및 당일 작업량을 확인합니다.</p>
+        <p>접속 상태, 담당 기체 및 당일 작업량을 확인합니다.</p>
       </div>
       <span class="team-result-count">총 <strong th:text="${#lists.size(members)}">0</strong>명</span>
     </div>
@@ -108,7 +106,6 @@
             <th>연락처</th>
             <th>접속 상태</th>
             <th>담당 기체</th>
-            <th>탱크 용량</th>
             <th>현재 작업</th>
             <th>금일 작업량</th>
             <th>숙련도</th>
@@ -140,7 +137,6 @@
             </td>
 
             <td th:text="${member.drone} ?: '미배정'">DJI T40</td>
-            <td th:text="${member.tank != null} ? ${member.tank} + ' L' : '미등록'">40 L</td>
             <td th:text="${member.currentTask}">-</td>
             <td th:text="${member.completed} + '건'">0건</td>
 
@@ -158,7 +154,6 @@
                         th:data-username="${member.username}"
                         th:data-phone="${member.phone}"
                         th:data-drone="${member.drone} ?: '미배정'"
-                        th:data-tank="${member.tank != null} ? ${member.tank} + ' L' : '미등록'"
                         th:data-skill="${member.skill}"
                         th:data-task="${member.currentTask}"
                         th:data-completed="${member.completed} + '건'">상세보기</button>
@@ -182,7 +177,7 @@
           </tr>
 
           <tr th:if="${#lists.isEmpty(members)}">
-            <td colspan="9" class="team-empty">검색 조건에 맞는 조종사가 없습니다.</td>
+            <td colspan="8" class="team-empty">검색 조건에 맞는 조종사가 없습니다.</td>
           </tr>
         </tbody>
       </table>

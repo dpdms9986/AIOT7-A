@@ -1,20 +1,9 @@
 // 방제단 관리
 // - 목록/검색/요약/재배정 : 서버(타임리프)가 처리
-// - JS : 초대코드 복사 + 상세보기 모달만
+// - JS : 상세보기 모달만 (초대 코드 복사는 헤더에서 처리)
 document.addEventListener("DOMContentLoaded", () => {
 
-  /* ===== 1. 초대 코드 복사 ===== */
-  document.querySelector("#invite-pilot-btn")?.addEventListener("click", async () => {
-    const code = document.querySelector("#invite-code").textContent.trim();
-    try {
-      await navigator.clipboard.writeText(code);
-      alert(`초대 코드 ${code} 가 복사되었습니다.`);
-    } catch (e) {
-      alert(`초대 코드: ${code}`);
-    }
-  });
-
-  /* ===== 2. 상세보기 모달 ===== */
+  /* ===== 상세보기 모달 ===== */
   const modal = document.querySelector("#team-detail-modal");
   const content = document.querySelector("#team-detail-content");
 
@@ -23,7 +12,6 @@ document.addEventListener("DOMContentLoaded", () => {
     ["아이디(이메일)", "username"],
     ["연락처", "phone"],
     ["담당 기체", "drone"],
-    ["약제 탱크 용량", "tank"],
     ["숙련도", "skill"],
     ["현재 작업", "task"],
     ["금일 완료 작업", "completed"],
@@ -41,7 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const span = document.createElement("span");
         span.textContent = label;
         const strong = document.createElement("strong");
-        strong.textContent = btn.dataset[key];   // th:data-* 로 심어둔 값
+        strong.textContent = btn.dataset[key] ?? "-";   // th:data-* 로 심어둔 값
         item.append(span, strong);
         content.append(item);
       });

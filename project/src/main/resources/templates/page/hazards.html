@@ -81,6 +81,7 @@
               <th>등록일</th>
               <th>상태</th>
               <th>관리</th>
+              <th>상세</th>
             </tr>
           </thead>
           <tbody>
@@ -108,8 +109,8 @@
                 <span class="hz-status" th:classappend="${h.status == 'ACTIVE'} ? 'active' : 'resolved'"
                       th:text="${h.status == 'ACTIVE'} ? '주의 요망' : '해소됨'">주의 요망</span>
               </td>
+              <!-- 관리: 주의 요망일 때만 해소 버튼 -->
               <td>
-                <!-- 주의 요망일 때만 해소 버튼 -->
                 <form th:if="${h.status == 'ACTIVE'}"
                       th:action="@{/hazards/{no}/resolve(no=${h.no})}" method="post"
                       onsubmit="return confirm('이 위험 구역을 해소 완료로 바꿀까요?');">
@@ -117,9 +118,13 @@
                 </form>
                 <span th:unless="${h.status == 'ACTIVE'}" class="hz-muted">-</span>
               </td>
+              <!-- 상세: 행에 심어 둔 값으로 팝업을 띄움 (서버 요청 없음) -->
+              <td>
+                <button type="button" class="hz-view-btn">상세보기</button>
+              </td>
             </tr>
             <tr th:if="${#lists.isEmpty(hazards)}">
-              <td colspan="6" class="hz-empty">등록된 위험 구역이 없습니다.</td>
+              <td colspan="7" class="hz-empty">등록된 위험 구역이 없습니다.</td>
             </tr>
           </tbody>
         </table>
@@ -186,7 +191,16 @@
       </label>
 
       <div class="task-field">
-        <span>위치 선택</span>
+        <span>위치 (주소 검색)</span>
+        <div class="hz-addr-row">
+          <input type="text" id="hz-addr" placeholder="주소 검색 버튼을 눌러 주세요" readonly>
+          <button type="button" class="dash-btn-outline" id="hz-addr-btn">주소 검색</button>
+        </div>
+        <small class="hz-muted" id="hz-addr-msg">주소를 고르면 지도와 위도·경도가 자동으로 맞춰져요. 지도를 클릭해 미세 조정할 수 있어요.</small>
+      </div>
+
+      <div class="task-field">
+        <span>위치 확인</span>
         <div id="hz-pick-map" class="hz-pick-map"></div>
       </div>
 
@@ -206,6 +220,28 @@
         <button type="submit" class="dash-btn-primary">신고하기</button>
       </div>
     </form>
+  </section>
+</div>
+
+<!-- ===== 위험 구역 상세보기 팝업 (JS가 행의 data- 값으로 채움) ===== -->
+<div class="hz-modal" id="hz-view-modal" hidden>
+  <section class="hz-modal-box" role="dialog" aria-modal="true" aria-labelledby="hz-v-title">
+    <button type="button" class="hz-modal-close" data-hz-view-close aria-label="닫기">✖</button>
+    <div class="hz-detail-head">
+      <span class="hz-badge" id="hz-v-type">중위험</span>
+      <span class="hz-status" id="hz-v-status">주의 요망</span>
+    </div>
+    <h3 class="hz-view-title" id="hz-v-title">제목</h3>
+    <dl class="hz-view-info">
+      <dt>작성자</dt>  <dd id="hz-v-author">-</dd>
+      <dt>등록일</dt>  <dd id="hz-v-date">-</dd>
+      <dt>좌표</dt>    <dd id="hz-v-coord">-</dd>
+    </dl>
+    <p class="hz-view-label">상세 내용</p>
+    <div class="hz-view-content" id="hz-v-content">내용</div>
+    <div class="hz-modal-actions">
+      <button type="button" class="dash-btn-outline" data-hz-view-close>닫기</button>
+    </div>
   </section>
 </div>
 
