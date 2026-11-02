@@ -86,10 +86,40 @@ document.addEventListener("DOMContentLoaded", () => {
 
   rows.forEach((row) => {
     row.addEventListener("click", (e) => {
-      if (e.target.closest("form, button")) return;   // 해소 버튼 누를 땐 선택 안 함
+      if (e.target.closest("form, button")) return;   // 버튼 누를 땐 선택 안 함
       select(row, false);
     });
   });
+
+  /* ---------- 2-1) 상세보기 팝업 (내용이 길어도 전부 보이게) ---------- */
+  const viewModal = document.getElementById("hz-view-modal");
+
+  function openView(row) {
+    const d = row.dataset;
+    $("hz-v-title").textContent = d.title || "-";
+    $("hz-v-type").textContent = d.type || "-";
+    $("hz-v-type").className = "hz-badge " + badgeClass(d.type);
+    const active = d.status === "ACTIVE";
+    $("hz-v-status").textContent = active ? "주의 요망" : "해소됨";
+    $("hz-v-status").className = "hz-status " + (active ? "active" : "resolved");
+    $("hz-v-author").textContent = d.author || "-";
+    $("hz-v-date").textContent = d.date || "-";
+    $("hz-v-coord").textContent = `${d.lat}, ${d.lng}`;
+    $("hz-v-content").textContent = d.content || "";
+    viewModal.hidden = false;
+  }
+  const closeView = () => { if (viewModal) viewModal.hidden = true; };
+
+  document.querySelectorAll(".hz-view-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const row = btn.closest(".hz-row");
+      select(row, false);      // 지도도 같이 이동
+      openView(row);
+    });
+  });
+  viewModal?.querySelectorAll("[data-hz-view-close]").forEach((b) => b.addEventListener("click", closeView));
+  viewModal?.addEventListener("click", (e) => { if (e.target === viewModal) closeView(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && viewModal && !viewModal.hidden) closeView(); });
 
   /* ---------- 3) 신고 팝업 ---------- */
   const modal = document.getElementById("hz-modal");
@@ -142,4 +172,64 @@ document.addEventListener("DOMContentLoaded", () => {
   modal?.querySelectorAll("[data-hz-close]").forEach((b) => b.addEventListener("click", closeModal));
   modal?.addEventListener("click", (e) => { if (e.target === modal) closeModal(); });   // 바깥 클릭
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && modal && !modal.hidden) closeModal(); });
+
+    /* ---------- 4) 주소 검색 → 위도·경도 자동 입력 ---------- */
+  const addrInput = document.getElementById("hz-addr");
+  const addrBtn = document.getElementById("hz-addr-btn");
+  const addrMsg = document.getElementById("hz-addr-msg");
+
+  // 주소 → 좌표 (OpenStreetMap Nominatim, 무료)
+  async function geocode(address) {
+    const url = "https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=kr&q="
+              + encodeURIComponent(address);
+    const res = await fetch(url, { headers: { "Accept-Language": "ko" } });
+    if (!res.ok) return null;
+    const list = await res.json();
+    return list.length ? { lat: parseFloat(list[0].lat), lng: parseFloat(list[0].lon) } : null;
+  }
+
+  // 못 찾으면 주소 끝부분(번지 등)을 하나씩 떼면서 다시 시도 → 동네라도 맞추기
+  async function geocodeLoose(address) {
+    let words = address.trim().split(/\s+/);
+    while (words.length >= 2) {
+      const pos = await geocode(words.join(" "));
+      if (pos) return { pos, exact: words.join(" ") === address.trim() };
+      words = words.slice(0, -1);
+    }
+    return null;
+  }
+
+  async function moveToAddress(roadAddr, jibunAddr) {
+    addrMsg.textContent = "위치를 찾는 중이에요...";
+    const found = (await geocodeLoose(roadAddr)) || (jibunAddr ? await geocodeLoose(jibunAddr) : null);
+
+    if (!found) {
+      addrMsg.textContent = "주소 위치를 찾지 못했어요. 지도에서 직접 위치를 눌러 주세요.";
+      if (window.showPopup) showPopup("주소 위치를 찾지 못했어요.\n지도에서 직접 위치를 눌러 주세요.", "warn");
+      return;
+    }
+
+    const { lat, lng } = found.pos;
+    setPick(lat, lng);
+    pickMap.setView([lat, lng], found.exact ? 17 : 15);
+    addrMsg.textContent = found.exact
+      ? "주소 위치로 맞췄어요. 필요하면 지도를 클릭해 미세 조정하세요."
+      : "정확한 번지는 못 찾아서 근처로 맞췄어요. 지도를 클릭해 정확한 위치를 찍어 주세요.";
+  }
+
+  addrBtn?.addEventListener("click", () => {
+    // 다음(카카오) 우편번호 검색 (script.html 에서 이미 불러옴)
+    if (typeof daum === "undefined" || !daum.Postcode) {
+      if (window.showPopup) showPopup("주소 검색을 불러오지 못했어요. 지도에서 직접 위치를 눌러 주세요.", "warn");
+      return;
+    }
+    new daum.Postcode({
+      oncomplete: (data) => {
+        const road = data.roadAddress || data.address;
+        addrInput.value = road;
+        moveToAddress(road, data.jibunAddress || data.autoJibunAddress);
+      },
+    }).open();
+  });
+
 });

@@ -46,6 +46,12 @@ public class TaskServiceImpl implements TaskService {
             Users pilot = userRepository.findById(request.getPilotNo())
                     .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 조종사입니다: " + request.getPilotNo()));
 
+            // 조종사가 팀장과 동일한 방제단 소속인지 확인 (새로 추가한코드 문제있을시 삭제)
+            if (pilot.getTeam() == null ||
+                !pilot.getTeam().getNo().equals(myTeam.getNo())) {
+                throw new IllegalArgumentException("해당 방제단 소속 조종사만 배정할 수 있습니다.");
+            }
+
             // 2. 상위 배정 묶음(DispatchBatches) 생성
             String title = (request.getBatchTitle() != null && !request.getBatchTitle().trim().isEmpty())
                     ? request.getBatchTitle().trim()
