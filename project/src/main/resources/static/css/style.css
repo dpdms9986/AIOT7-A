@@ -10816,17 +10816,6 @@ main.asset-page-main .asset-pilot-tab {
 .hz-table th:nth-child(2),
 .hz-table .hz-title-cell { text-align: left; min-width: 160px; }
 
-/* 관리 칸: 버튼 묶음 너비를 고정하고 가운데에 두기 → 상세보기 위치가 줄마다 같음 */
-.hz-table .hz-row-actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 8px;
-  width: 150px;
-  margin: 0 auto;
-}
-
-.hz-table .hz-row-actions form { margin: 0; }
 
 /* 상세보기 버튼 */
 .hz-view-btn {
@@ -10949,27 +10938,6 @@ main.asset-page-main .asset-pilot-tab {
 /* ===== 고객센터: 탭 + 1:1 문의 + 내 문의내역 (2026-11-02) ===== */
 
 /* 탭 */
-.sp-tabs {
-  display: flex;
-  gap: 6px;
-  padding: 6px;
-  border: 1px solid #e0e7ec;
-  border-radius: 12px;
-  background: #ffffff;
-}
-.sp-tabs a {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 10px 18px;
-  border-radius: 8px;
-  color: var(--color-text-sub, #6b7570);
-  font-size: 14px;
-  font-weight: 700;
-  text-decoration: none;
-}
-.sp-tabs a:hover { color: var(--color-primary, #238451); }
-.sp-tabs a.active { background: var(--color-primary-light, #e8f5ee); color: var(--color-primary, #238451); }
 .sp-tab-count {
   min-width: 20px;
   padding: 1px 6px;
@@ -10981,8 +10949,6 @@ main.asset-page-main .asset-pilot-tab {
 }
 
 .sp-guide { margin: 0 0 14px; color: var(--color-text-sub, #6b7570); font-size: 13px; line-height: 1.6; }
-.sp-link-btn { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
-.sp-ask-card { max-width: 760px; }
 
 /* 내 문의내역 표 */
 .sp-table-wrap { overflow-x: auto; }
@@ -11035,3 +11001,39 @@ main.asset-page-main .asset-pilot-tab {
   text-decoration: none;
 }
 .sp-my-btn:hover { border-color: var(--color-primary, #238451); color: var(--color-primary, #238451); }
+
+
+/* 링크(a)로 만든 버튼: 글자 세로 가운데 정렬 */
+a.dash-btn-primary,
+a.dash-btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+
+
+/* ===== 위험 구역: 목록 검색 줄 (2026-11-02) ===== */
+.hz-filters {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) 130px 120px auto auto;   /* 검색어 | 위험도 | 상태 | 검색 | 초기화 */
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.hz-f-keyword { width: 100%; }
+.hz-f-select {
+  height: 38px;
+  padding: 0 10px;
+  border: 1px solid var(--color-border, #dfe5e1);
+  border-radius: 8px;
+  background: #ffffff;
+  font-family: inherit;
+  font-size: 13px;
+}
+.hz-row[hidden] { display: none; }
+
+@media (max-width: 760px) {
+  .hz-filters { grid-template-columns: 1fr 1fr; }
+  .hz-f-keyword { grid-column: 1 / -1; }
+}

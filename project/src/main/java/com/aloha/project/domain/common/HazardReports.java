@@ -1,4 +1,4 @@
-package com.aloha.project.domain.tasks;
+package com.aloha.project.domain.common;
 
 import java.time.LocalDateTime;
 
@@ -36,11 +36,12 @@ public class HazardReports {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content; // 상세 위험 내용
 
-    // @Column(nullable = false, length = 50)
-    // private String hazardType; // 위험 유형 (예: 고압선, 통신철탑, 맹견, 비행금지구역)
+    // 👇 위험 구역 지번/도로명 주소 (카카오 주소검색 연동)
+    @Column(length = 200)
+    private String address;
 
     @Column(nullable = false, length = 50)
-    private String hazardType;
+    private String hazardType; // "고위험", "중위험", "저위험"
 
     @Column(nullable = false)
     private Double latitude; // 위험 지점 위도 (관제 지도 빨간 마커 표시용)
@@ -70,5 +71,15 @@ public class HazardReports {
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
+    }
+
+    // 👇 위험 구역 내용 수정 메서드 (더티 체킹용)
+    public void update(String title, String content, String hazardType, String address, Double latitude, Double longitude) {
+        this.title = title;
+        this.content = content;
+        this.hazardType = hazardType;
+        this.address = address;
+        if (latitude != null) this.latitude = latitude;
+        if (longitude != null) this.longitude = longitude;
     }
 }
