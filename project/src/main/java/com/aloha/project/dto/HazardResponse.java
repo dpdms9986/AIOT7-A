@@ -2,7 +2,7 @@ package com.aloha.project.dto;
 
 import java.time.LocalDateTime;
 
-import com.aloha.project.domain.tasks.HazardReports;
+import com.aloha.project.domain.common.HazardReports;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
