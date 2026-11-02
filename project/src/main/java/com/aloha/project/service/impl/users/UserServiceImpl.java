@@ -1,7 +1,6 @@
 package com.aloha.project.service.impl.users;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
