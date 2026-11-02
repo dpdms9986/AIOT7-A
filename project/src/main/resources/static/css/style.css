@@ -547,6 +547,21 @@
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.4));
 }
 
+/* ======= 위험구역 게시판 마커 ======= */
+.hazard-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* ----- 오른쪽 카드 (머리 아래 구분선 있는 카드) ----- */
 .side-card { padding: 0; overflow: hidden; }
 .side-card-head {
@@ -11036,4 +11051,175 @@ a.dash-btn-outline {
 @media (max-width: 760px) {
   .hz-filters { grid-template-columns: 1fr 1fr; }
   .hz-f-keyword { grid-column: 1 / -1; }
+}
+
+
+/* ===== 마이페이지 (2026-11-02) ===== */
+.mp-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--card-gap, 16px); align-items: stretch; }
+
+/* 실적 카드 = 링크 */
+a.mp-stat-link { position: relative; color: inherit; text-decoration: none; transition: border-color 0.15s, transform 0.15s; }
+a.mp-stat-link:hover { border-color: var(--color-primary, #238451); transform: translateY(-2px); }
+
+/* 오른쪽 › 화살표 */
+.mp-arrow {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  margin-left: auto;
+  border-radius: 50%;
+  background: var(--color-primary-light, #e8f5ee);
+  color: var(--color-primary, #238451);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* 내 정보 */
+.mp-profile { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+.mp-avatar {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--color-primary, #238451);
+  color: #ffffff;
+  font-size: 24px;
+  font-weight: 800;
+}
+.mp-profile strong { display: block; font-size: 20px; }
+.mp-role {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--color-primary-light, #e8f5ee);
+  color: var(--color-primary, #238451);
+  font-size: 12px;
+  font-weight: 700;
+}
+.mp-info {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 12px;
+  margin: 0 0 16px;
+  padding: 16px 0;
+  border-top: 1px solid var(--color-border, #dfe5e1);
+  font-size: 14px;
+}
+.mp-info dt { color: var(--color-text-sub, #6b7570); }
+.mp-info dd { margin: 0; font-weight: 600; word-break: break-all; }
+.mp-edit-btn {
+  width: 100%;
+  height: 44px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--color-primary-light, #e8f5ee);
+  color: var(--color-primary, #238451);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.mp-edit-btn:hover { background: #d6eedf; }
+
+/* 오른쪽 바로가기 4칸 */
+.mp-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--card-gap, 16px); }
+.mp-action {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  border: 1px solid transparent;
+  color: inherit;
+  font-family: inherit;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.15s;
+}
+.mp-action:hover { border-color: var(--color-primary, #238451); transform: translateY(-2px); }
+.mp-action-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--color-primary-light, #e8f5ee);
+  font-size: 24px;
+}
+.mp-action-text { display: flex; flex-direction: column; gap: 4px; }
+.mp-action-text strong { font-size: 16px; }
+.mp-action-text small { color: var(--color-text-sub, #6b7570); font-size: 12px; line-height: 1.5; }
+
+/* 팝업 안 폼 */
+.mp-form { display: flex; flex-direction: column; gap: 12px; }
+.mp-hint { margin: 0; min-height: 18px; font-size: 12px; }
+.mp-hint.ok { color: var(--color-primary, #238451); }
+.mp-hint.warn { color: #d93025; }
+
+@media (max-width: 1100px) {
+  .mp-layout { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .mp-actions { grid-template-columns: 1fr; }
+}
+
+
+/* ===== 마이페이지: 실적 카드 묶음 + 바로가기 다듬기 (2026-11-02) ===== */
+.mp-stats-card { margin-bottom: 0; }
+.mp-more { color: var(--color-primary, #238451); font-size: 13px; font-weight: 700; text-decoration: none; }
+.mp-more:hover { text-decoration: underline; }
+
+/* 실적 4칸 */
+.mp-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.mp-stat {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 1px solid var(--color-border, #dfe5e1);
+  border-radius: 12px;
+  background: #ffffff;
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 0.15s, background 0.15s;
+}
+.mp-stat:hover { border-color: var(--color-primary, #238451); background: #f7fbf8; }
+.mp-stat-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--color-primary-light, #e8f5ee);
+  font-size: 20px;
+}
+.mp-stat.is-progress .mp-stat-icon { background: #e7f0fd; }
+.mp-stat.is-wait .mp-stat-icon { background: #fef3dc; }
+.mp-stat-body { display: flex; flex-direction: column; gap: 2px; }
+.mp-stat-body small { color: var(--color-text-sub, #6b7570); font-size: 12px; font-weight: 600; }
+.mp-stat-body strong { font-size: 24px; font-weight: 800; line-height: 1.2; }
+.mp-stat-body strong span { margin-left: 3px; font-size: 13px; font-weight: 600; color: var(--color-text-sub, #6b7570); }
+
+/* 바로가기 4칸: 아이콘 위 / 글자 아래 / 화살표 오른쪽 아래 */
+.mp-action {
+  position: relative;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px;
+}
+.mp-action .mp-arrow { position: absolute; right: 20px; bottom: 20px; }
+.mp-action-icon { width: 52px; height: 52px; border-radius: 14px; font-size: 24px; }
+.mp-action-text strong { font-size: 17px; }
+.mp-action-text small { font-size: 13px; }
+
+@media (max-width: 1100px) {
+  .mp-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }

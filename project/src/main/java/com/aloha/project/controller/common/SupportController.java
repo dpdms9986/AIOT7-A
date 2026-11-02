@@ -52,7 +52,7 @@ public class SupportController {
 
         model.addAttribute("waitingCount", waitingCount);
 
-        return "page/support";
+        return "page/common/support";
     }
 
     /* =========================================================

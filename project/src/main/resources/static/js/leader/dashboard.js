@@ -222,6 +222,7 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ===== 처음 실행 ===== */
   renderFarmMarkers();
   fitAll();
+  addHazardMarkers(map);
   if (selectedNo) selectFarm(selectedNo, false);   // 배정 후 돌아왔으면 그 농지 선택
   setTimeout(() => map.invalidateSize(), 100);
   connect();

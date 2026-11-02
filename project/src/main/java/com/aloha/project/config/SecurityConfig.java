@@ -53,10 +53,9 @@ public class SecurityConfig {
                                 .requestMatchers(
                                     "/static/**", "/css/**", "/js/**", "/images/**", "/fonts/**"
                                 ).permitAll()              // "/static/**" 경로에 대한 모든 요청을 허용
-                                .requestMatchers("/admin/**").hasRole("ADMIN")      // "/admin/**" 경로에 대한 요청은 ADMIN 권한 필요
-                                .requestMatchers("/users/**").hasRole("USER")      // "/users/**" 경로에 대한 요청은 USER 권한 필요
-                                .requestMatchers("/my/**").hasRole("USER")      // "/users/**" 경로에 대한 요청은 USER 권한 필요
-                                .requestMatchers("/**").permitAll()             // 루트 경로에 대한 모든 요청을 허용
+                                .requestMatchers("/admin/**", "/api/admin/**").hasRole("ADMIN")      // "/admin/**" 경로에 대한 요청은 ADMIN 권한 필요
+                                .requestMatchers("/pilot/**", "/api/pilot/**").hasRole("PILOT")      // "/admin/**" 경로에 대한 요청은 ADMIN 권한 필요
+                                .requestMatchers("/leader/**", "/api/leader/**").hasRole("LEADER")      // "/admin/**" 경로에 대한 요청은 ADMIN 권한 필요
                                 .requestMatchers("/api/**").permitAll()
                 .anyRequest().authenticated()                            // 주석 처리된 부분: 모든 다른 요청은 인증 필요
                 )
@@ -74,13 +73,10 @@ public class SecurityConfig {
                 .userDetailsService(customDetailsService)
                 // 자동 로그인 설정
                 // - 자동 로그인 기본 파라미터 : remember-me
+                // SecurityFilterChain 내부
                 .rememberMe(rememberMe -> rememberMe
-                                .key("project")
-                                .rememberMeServices(customRememberMeServices())
-                                .tokenRepository(tokenRepository())
-                                .userDetailsService(customDetailsService)
-                                .authenticationSuccessHandler(customAuthenticationSuccessHandler)
-                                .tokenValiditySeconds(60 * 60 * 24 * 30) // 30일
+                    .rememberMeServices(customRememberMeServices())
+                    .authenticationSuccessHandler(customAuthenticationSuccessHandler)
                 )
                 // // 소셜 로그인 설정 (Google, Naver, Kakao)
                 // .oauth2Login(oauth2 -> oauth2
@@ -111,8 +107,6 @@ public class SecurityConfig {
         return http.build(); // 설정을 기반으로 SecurityFilterChain 객체를 빌드하여 반환
     }
 
-
-
    /**
 	 * 🍃 암호화 방식 빈 등록
 	 * @return
@@ -121,8 +115,7 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
-
+    
      /**
     * 🍃 자동 로그인 저장소 빈 등록
     * ✅ 데이터 소스
@@ -175,7 +168,11 @@ public class SecurityConfig {
      */
     @Bean
     public CustomRememberMeServices customRememberMeServices() {
-        return new CustomRememberMeServices("start", customDetailsService, tokenRepository());
+        CustomRememberMeServices rememberMeServices = 
+            new CustomRememberMeServices("project", customDetailsService, tokenRepository());
+        rememberMeServices.setTokenValiditySeconds(60 * 60 * 24 * 30); // 30일 설정
+        rememberMeServices.setParameter("remember-me"); // 체크박스 name (기본값)
+        return rememberMeServices;
     }
   
 }

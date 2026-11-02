@@ -135,4 +135,5 @@ document.addEventListener("DOMContentLoaded", () => {
   applyFilter();
   if (selectedNo) selectTask(selectedNo);
   else renderMarkers();
+  if (hasMap()) addHazardMarkers(map);
 });

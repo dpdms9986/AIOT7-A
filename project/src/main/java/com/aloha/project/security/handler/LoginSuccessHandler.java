@@ -76,22 +76,7 @@ public class LoginSuccessHandler extends SavedRequestAwareAuthenticationSuccessH
           return;
       }
 
-      // 권한별 대시보드 이동
-      // 1. ROLE_PILOT -> /pilot/dashboard
-      if (customUser.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_PILOT"))) {
-          log.info("파일럿 대시보드로 이동");
-          String targetUrl = "/pilot/dashboard";
-          response.sendRedirect(targetUrl);
-          return;
-      }
-
-      // 2. ROLE_LEADER -> /leader/dashboard
-      if (customUser.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_LEADER"))) {
-          log.info("단장 대시보드로 이동");
-          String targetUrl = "/leader/dashboard";
-          response.sendRedirect(targetUrl);
-          return;
-      }
+    
 
       // 기본 페이지로 이동
       log.info("기본 페이지로 이동");

@@ -170,8 +170,10 @@ public class LeaderAssetController {
     @PostMapping("/assetlist/{id}/status")
     public String changeStatus(@PathVariable("id") String id,
                                @RequestParam("status") String status,
+                               @AuthenticationPrincipal CustomUser customUser,
                                RedirectAttributes redirectAttributes) {
         log.info("자산 상태 변경 요청: {} → {}", id, status);
+        if (customUser == null) return "redirect:/login";
 
         // 시리얼번호 또는 ID로 드론을 찾아 상태 업데이트
         Drones drone = droneRepository.findAll().stream()

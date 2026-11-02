@@ -103,9 +103,9 @@
         const OTHER_FARMS = /*[[${otherFarms}]]*/ [];
     </script>
 
-    <!-- 순서 중요: 지도·웹소켓(map 생성) → 작업 목록(map 사용) -->
+    <!-- 순서 중요: 지도·웹소켓(map 생성) → 위험 마커 → 작업 목록(map 사용) -->
     <script th:src="@{/js/pilot/pilot-gps.js}"></script>
-    <!-- [교체] 없는 파일(pilot-dashboard.js) 대신 새로 만든 파일 -->
+    <script th:src="@{/js/common/hazard-markers.js}"></script>
     <script th:src="@{/js/pilot/pilot-tasks.js}"></script>
 </th:block>
 

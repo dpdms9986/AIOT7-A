@@ -13,6 +13,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import com.aloha.project.domain.users.CustomUser;
 
 import com.aloha.project.domain.tasks.Drones;
 import com.aloha.project.domain.users.CustomUser;
