@@ -1,3 +1,4 @@
+
 package com.aloha.project.domain.common;
 
 import java.time.LocalDateTime;
@@ -10,6 +11,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+// 고객센터 1:1 문의 및 관리자 답변 관리
 
 @Builder
 @Entity
@@ -29,29 +32,41 @@ public class Inquiries {
     @JoinColumn(name = "users_no", nullable = false)
     private Users user;
 
-    // 문의자 이름
-    @Column(nullable = false, length = 100)
-    private String name;
-
-    // 답변 수신 이메일
-    @Column(name = "reply_email", nullable = false, length = 255)
-    private String replyEmail;
-
-    // 문의 유형
-    // account / field / drone / etc
+    // 문의 유형 (account / field / drone / etc)
     @Column(nullable = false, length = 50)
     private String category;
+
+    // 문의 제목
+    @Column(nullable = false, length = 200)
+    private String title;
 
     // 문의 내용
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
-    // 문의 접수 일시
+    // 문의 상태 (WAITING / COMPLETED)
+    @Builder.Default
+    @Column(nullable = false, length = 20)
+    private String status = "WAITING";
+
+    // 관리자 답변 내용
+    @Column(name = "answer_content", columnDefinition = "TEXT")
+    private String answerContent;
+
+    // 관리자 답변 등록 일시
+    @Column(name = "answered_at")
+    private LocalDateTime answeredAt;
+
+    // 문의 등록 일시
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
+
+        if (this.status == null) {
+            this.status = "WAITING";
+        }
     }
 }
