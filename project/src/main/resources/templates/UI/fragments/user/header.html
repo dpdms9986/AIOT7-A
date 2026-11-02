@@ -20,9 +20,9 @@
         <th:block sec:authorize="isAuthenticated()">
           <div class="home-auth">
             <a th:href="@{/leader/dashboard}" class="home-btn home-btn-primary"
-               sec:authorize="hasRole('LEADER')">관제 대시보드</a>
+               sec:authorize="hasRole('LEADER')">🌱 우리 농지 관제</a>
             <a th:href="@{/pilot/dashboard}" class="home-btn home-btn-primary"
-               sec:authorize="hasRole('PILOT')">내 작업</a>
+               sec:authorize="hasRole('PILOT')">🌱 오늘의 작업</a>
 
             <form th:action="@{/logout}" method="post" style="display:inline;">
               <button type="submit" class="home-btn home-btn-outline">로그아웃</button>

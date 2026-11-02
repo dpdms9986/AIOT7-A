@@ -167,34 +167,41 @@
       <button type="button" class="team-modal-close" data-close-modal aria-label="닫기">×</button>
     </div>
 
-    <form th:action="@{/leader/farmlist}" method="post">
-      <div class="team-form-grid">
-        <label>시/도
-          <input type="text" name="city" value="대전광역시" required>
-        </label>
-        <label>시/군/구
-          <input type="text" name="region" value="유성구" required>
-        </label>
-        <label>읍/면/동
-          <input type="text" name="dong" placeholder="예) 전민동" required>
-        </label>
-        <label>면적 (㎡)
-          <input type="number" name="areaSize" min="1" step="0.1" required>
-        </label>
+      <form th:action="@{/leader/farmlist}" method="post">
+      <!-- 주소 검색 결과가 들어가는 숨은 칸 (서버로 같이 전송됨) -->
+      <input type="hidden" name="city">
+      <input type="hidden" name="region">
+      <input type="hidden" name="dong">
+      <input type="hidden" name="address">
+
+      <div class="team-form-full">
+        <span>위치 (주소 검색)</span>
+        <div class="hz-addr-row">
+          <input type="text" id="farm-addr" placeholder="주소 검색 버튼을 눌러 주세요" readonly>
+          <button type="button" class="team-btn team-btn-outline" id="farm-addr-btn">주소 검색</button>
+        </div>
+        <small id="farm-addr-msg">주소를 고르면 지도와 위도·경도가 자동으로 맞춰져요. 지도를 클릭해 미세 조정할 수 있어요.</small>
       </div>
 
-      <label class="team-form-full">상세 주소
-        <input type="text" name="address" placeholder="예) 전민동 15-2" required>
+      <div class="team-form-full">
+        <span>위치 확인</span>
+        <div id="farm-pick-map" class="hz-pick-map"></div>
+      </div>
+
+      <div class="team-form-full">
+        <div class="team-form-grid">
+          <label>위도
+            <input type="number" name="latitude" step="any">
+          </label>
+          <label>경도
+            <input type="number" name="longitude" step="any">
+          </label>
+        </div>
+      </div>
+
+      <label class="team-form-full">면적 (㎡)
+        <input type="number" name="areaSize" min="1" step="0.1" required>
       </label>
-
-      <div class="team-form-grid">
-        <label>위도 (선택)
-          <input type="number" name="latitude" step="0.000001">
-        </label>
-        <label>경도 (선택)
-          <input type="number" name="longitude" step="0.000001">
-        </label>
-      </div>
 
       <div class="team-modal-actions">
         <button type="button" class="team-btn team-btn-outline" data-close-modal>취소</button>
