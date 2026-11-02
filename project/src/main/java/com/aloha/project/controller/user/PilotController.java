@@ -64,6 +64,7 @@ public class PilotController {
             @AuthenticationPrincipal CustomUser customUser,
             Model model) {
 
+        if (customUser == null) return "redirect:/login";
         Users pilot = getLoginPilot(customUser);
 
         // 현재 로그인한 조종사에게 배정된 작업
@@ -110,6 +111,7 @@ public class PilotController {
             @RequestParam(value = "no", required = false) Long no,
             Model model) {
 
+        if (customUser == null) return "redirect:/login";
         Users pilot = getLoginPilot(customUser);
 
         // 로그인 조종사 본인의 전체 작업 이력

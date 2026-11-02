@@ -10,7 +10,10 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import com.aloha.project.domain.users.CustomUser;
 
+import com.aloha.project.domain.users.CustomUser;
 import com.aloha.project.dto.AssetDto;
 
 import lombok.extern.slf4j.Slf4j;
@@ -31,8 +34,10 @@ public class PilotAssetController {
             @RequestParam(value = "status",  defaultValue = "") String status,
             @RequestParam(value = "keyword", defaultValue = "") String keyword,
             @RequestParam(value = "id",      required = false) String id,
+            @AuthenticationPrincipal CustomUser customUser,
             Model model) {
 
+        if (customUser == null) return "redirect:/login";
         // TODO(백엔드): assetService.getMyAssets(로그인 조종사)
         List<AssetDto> all = new ArrayList<>();
 

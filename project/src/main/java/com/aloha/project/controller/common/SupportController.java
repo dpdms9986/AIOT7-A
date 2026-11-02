@@ -52,7 +52,7 @@ public class SupportController {
         model.addAttribute("waitingCount",
                 myInquiries(customUser).stream().filter(q -> !q.isAnswered()).count());
 
-        return "page/support";
+        return "page/common/support";
     }
 
     /* =========================================================
@@ -63,7 +63,7 @@ public class SupportController {
         if (customUser == null) return "redirect:/login";
 
         model.addAttribute("myInquiries", myInquiries(customUser));
-        return "page/support-my";
+        return "page/common/support-my";
     }
 
     /* =========================================================
@@ -125,7 +125,7 @@ public class SupportController {
         }
 
         model.addAttribute("inquiry", inquiry);
-        return "page/support-detail";
+        return "page/common/support-detail";
     }
 
     // 로그인한 사람의 문의 목록 (최신순)

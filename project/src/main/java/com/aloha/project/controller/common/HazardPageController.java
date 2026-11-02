@@ -52,7 +52,7 @@ public class HazardPageController {
         model.addAttribute("resolvedCount", resolvedCount);
         model.addAttribute("highRiskCount", highRiskCount);
 
-        return "page/hazards"; // templates/page/hazards.html
+        return "page/common/hazards"; // templates/page/hazards.html
     }
 
     /**
