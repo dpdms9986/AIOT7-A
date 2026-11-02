@@ -15,6 +15,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const badgeClass = (type) => (type === "고위험" ? "hz-high" : type === "중위험" ? "hz-mid" : "hz-low");
 
+  // 배경에서 눌렀다가 배경에서 뗐을 때만 닫기 (팝업 안에서 드래그해도 안 꺼짐)
+  function closeOnBackdrop(overlay, close) {
+    let downOnBackdrop = false;
+    overlay?.addEventListener("pointerdown", (e) => { downOnBackdrop = (e.target === overlay); });
+    overlay?.addEventListener("click", (e) => {
+      if (e.target === overlay && downOnBackdrop) close();
+      downOnBackdrop = false;
+    });
+  }
+
   /* ---------- 1) 큰 지도 + 마커 ---------- */
   const mapEl = document.getElementById("hz-map");
   const rows = [...document.querySelectorAll(".hz-row")];
@@ -170,7 +180,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
   viewModal?.querySelectorAll("[data-hz-view-close]").forEach((b) => b.addEventListener("click", closeView));
-  viewModal?.addEventListener("click", (e) => { if (e.target === viewModal) closeView(); });
+    // closeOnBackdrop(viewModal, closeView); - 바깥 클릭 시 팝업 꺼짐
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && viewModal && !viewModal.hidden) closeView(); });
 
   /* ---------- 3) 신고 팝업 ---------- */
@@ -222,7 +232,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   openBtn?.addEventListener("click", openModal);
   modal?.querySelectorAll("[data-hz-close]").forEach((b) => b.addEventListener("click", closeModal));
-  modal?.addEventListener("click", (e) => { if (e.target === modal) closeModal(); });   // 바깥 클릭
+  // closeOnBackdrop(modal, closeModal);   // 바깥 클릭 시 팝업 꺼짐
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && modal && !modal.hidden) closeModal(); });
 
     /* ---------- 4) 주소 검색 → 위도·경도 자동 입력 ---------- */

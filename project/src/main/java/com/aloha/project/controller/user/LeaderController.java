@@ -379,8 +379,10 @@ public class LeaderController {
     public String getFarmList(
             @RequestParam(value = "dong",    defaultValue = "") String dong,
             @RequestParam(value = "keyword", defaultValue = "") String keyword,
+            @AuthenticationPrincipal CustomUser customUser,
             Model model) {
-
+        
+        if (customUser == null) return "redirect:/login";
         List<Lands> rawLands = landRepository.findAll();
         List<LandDto> allLands = rawLands.stream().map(LandDto::from).toList();
 

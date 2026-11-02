@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{UI/layouts/user/common_layout}">
+<head>
+  <meta charset="UTF-8">
+  <title>마이페이지 | 스마트 농업 관제 시스템</title>
+</head>
+<body layout:fragment="content">
+
+<main class="dash-main mp-page">
+
+  <div class="dash-title-row">
+    <div>
+      <h1>👤 마이페이지</h1>
+      <p>내 정보와 주요 기능을 한눈에 확인하고, 편리하게 관리하세요.</p>
+    </div>
+  </div>
+
+  <!-- 처리 결과 메시지 (redirect 후 1회) → 공통 팝업으로 표시 -->
+  <script th:inline="javascript">
+    document.addEventListener("DOMContentLoaded", () => {
+      const message = /*[[${message}]]*/ null;
+      const errorMessage = /*[[${errorMessage}]]*/ null;
+      if (!window.showPopup) return;
+      if (message) showPopup(message);                  // 성공: 초록 체크
+      if (errorMessage) showPopup(errorMessage, "warn"); // 실패: 주황 느낌표
+    });
+  </script>
+
+    <!-- ===== 방제 실적 (조종사만) : 한 카드로 묶음 ===== -->
+  <section class="dash-card mp-stats-card" th:if="${isPilot}">
+    <div class="dash-card-head">
+      <h2>📊 나의 방제 실적</h2>
+      <a class="mp-more" th:href="@{/pilot/history}">작업 이력 보기 ›</a>
+    </div>
+
+    <div class="mp-stats">
+      <a class="mp-stat" th:href="@{/pilot/history(filter='done')}">
+        <span class="mp-stat-icon">✅</span>
+        <span class="mp-stat-body">
+          <small>누적 방제</small>
+          <strong><th:block th:text="${totalDone}">0</th:block><span>건</span></strong>
+        </span>
+      </a>
+      <a class="mp-stat" th:href="@{/pilot/history(filter='done')}">
+        <span class="mp-stat-icon">📅</span>
+        <span class="mp-stat-body">
+          <small>이번 달 방제</small>
+          <strong><th:block th:text="${monthDone}">0</th:block><span>건</span></strong>
+        </span>
+      </a>
+      <a class="mp-stat is-progress" th:href="@{/pilot/history(filter='active')}">
+        <span class="mp-stat-icon">🚁</span>
+        <span class="mp-stat-body">
+          <small>진행 중</small>
+          <strong><th:block th:text="${inProgress}">0</th:block><span>건</span></strong>
+        </span>
+      </a>
+      <a class="mp-stat is-wait" th:href="@{/pilot/history(filter='active')}">
+        <span class="mp-stat-icon">⏳</span>
+        <span class="mp-stat-body">
+          <small>대기</small>
+          <strong><th:block th:text="${waiting}">0</th:block><span>건</span></strong>
+        </span>
+      </a>
+    </div>
+  </section>
+
+  <section class="mp-layout">
+
+    <!-- ===== 왼쪽: 내 정보 ===== -->
+    <article class="dash-card" th:object="${me}">
+      <div class="dash-card-head">
+        <h2>👤 내 정보</h2>
+      </div>
+
+      <div class="mp-profile">
+        <span class="mp-avatar" th:text="*{#strings.substring(name, 0, 1)}">김</span>
+        <div>
+          <strong th:text="*{name}">김민수</strong>
+          <span class="mp-role" th:text="${roleLabel}">조종사</span>
+        </div>
+      </div>
+
+      <dl class="mp-info">
+        <dt>✉️ 이메일(아이디)</dt> <dd th:text="*{userName}">pilot@test.com</dd>
+        <dt>📞 연락처</dt>         <dd th:text="*{phone} ?: '미등록'">010-0000-0000</dd>
+        <dt>🌱 소속 방제단</dt>    <dd th:text="${teamName}">대전 유성 방제단</dd>
+        <th:block th:unless="${isPilot}">
+          <dt>👥 소속 조종사</dt>  <dd th:text="${pilotCount} + '명'">0명</dd>
+        </th:block>
+        <dt>📅 가입일</dt>         <dd th:text="*{createdAt != null} ? *{#temporals.format(createdAt, 'yyyy-MM-dd')} : '-'">2026-10-29</dd>
+      </dl>
+
+      <!-- 프로필 수정 = 연락처 변경 팝업 열기 -->
+      <button type="button" class="mp-edit-btn" data-open="mp-phone-modal">✏️ 프로필 수정 ›</button>
+    </article>
+
+    <!-- ===== 오른쪽: 바로가기 4개 ===== -->
+    <div class="mp-actions">
+      <button type="button" class="dash-card mp-action" data-open="mp-phone-modal">
+        <span class="mp-action-icon">📞</span>
+        <span class="mp-action-text">
+          <strong>연락처 변경</strong>
+          <small>연락처 정보를 수정할 수 있어요</small>
+        </span>
+        <span class="mp-arrow">›</span>
+      </button>
+
+      <button type="button" class="dash-card mp-action" data-open="mp-pw-modal">
+        <span class="mp-action-icon">🔒</span>
+        <span class="mp-action-text">
+          <strong>비밀번호 변경</strong>
+          <small>비밀번호를 안전하게 변경하세요</small>
+        </span>
+        <span class="mp-arrow">›</span>
+      </button>
+
+      <a class="dash-card mp-action" th:href="@{/hazards}">
+        <span class="mp-action-icon">⚠️</span>
+        <span class="mp-action-text">
+          <strong>게시판 바로가기</strong>
+          <small>현장 위험 구역을 확인해 보세요</small>
+        </span>
+        <span class="mp-arrow">›</span>
+      </a>
+
+      <a class="dash-card mp-action" th:href="@{/support}">
+        <span class="mp-action-icon">🎧</span>
+        <span class="mp-action-text">
+          <strong>고객센터</strong>
+          <small>궁금한 점을 문의해 보세요</small>
+        </span>
+        <span class="mp-arrow">›</span>
+      </a>
+    </div>
+  </section>
+</main>
+
+<!-- ===== 연락처 변경 팝업 (POST /mypage/profile) ===== -->
+<div class="hz-modal" id="mp-phone-modal" hidden>
+  <section class="hz-modal-box" role="dialog" aria-modal="true" aria-labelledby="mp-phone-title">
+    <button type="button" class="hz-modal-close" data-close aria-label="닫기">✖</button>
+    <h3 id="mp-phone-title">📞 연락처 변경</h3>
+    <p class="hz-muted">새 연락처를 입력하고 저장하세요.</p>
+
+    <form class="mp-form" th:action="@{/mypage/profile}" method="post">
+      <label class="task-field">
+        <span>연락처</span>
+        <input type="tel" name="phone" th:value="${me.phone}" maxlength="13" placeholder="예) 010-1234-5678">
+      </label>
+      <div class="hz-modal-actions">
+        <button type="button" class="dash-btn-outline" data-close>취소</button>
+        <button type="submit" class="dash-btn-primary">저장</button>
+      </div>
+    </form>
+  </section>
+</div>
+
+<!-- ===== 비밀번호 변경 팝업 (POST /mypage/password) ===== -->
+<div class="hz-modal" id="mp-pw-modal" hidden>
+  <section class="hz-modal-box" role="dialog" aria-modal="true" aria-labelledby="mp-pw-title">
+    <button type="button" class="hz-modal-close" data-close aria-label="닫기">✖</button>
+    <h3 id="mp-pw-title">🔒 비밀번호 변경</h3>
+    <p class="hz-muted">현재 비밀번호를 확인한 뒤 새 비밀번호로 변경합니다.</p>
+
+    <form class="mp-form" id="mp-pw-form" th:action="@{/mypage/password}" method="post">
+      <label class="task-field">
+        <span>현재 비밀번호</span>
+        <input type="password" name="currentPassword" required>
+      </label>
+      <label class="task-field">
+        <span>새 비밀번호</span>
+        <input type="password" name="newPassword" id="mp-new-pw" minlength="4" required>
+      </label>
+      <label class="task-field">
+        <span>새 비밀번호 확인</span>
+        <input type="password" name="newPasswordConfirm" id="mp-new-pw2" minlength="4" required>
+      </label>
+      <p class="mp-hint" id="mp-pw-msg"></p>
+      <div class="hz-modal-actions">
+        <button type="button" class="dash-btn-outline" data-close>취소</button>
+        <button type="submit" class="dash-btn-primary">변경</button>
+      </div>
+    </form>
+  </section>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    /* ----- 팝업 열기/닫기 (data-open="팝업 id") ----- */
+    const closeAll = () => document.querySelectorAll(".hz-modal").forEach((m) => { m.hidden = true; });
+
+    document.querySelectorAll("[data-open]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const modal = document.getElementById(btn.dataset.open);
+        if (!modal) return;
+        modal.hidden = false;
+        modal.querySelector("input")?.focus();
+      });
+    });
+    document.querySelectorAll(".hz-modal").forEach((modal) => {
+      modal.querySelectorAll("[data-close]").forEach((b) => b.addEventListener("click", closeAll));
+      modal.addEventListener("click", (e) => { if (e.target === modal) closeAll(); });   // 바깥 클릭
+    });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeAll(); });
+
+    /* ----- 새 비밀번호 확인 실시간 검사 + 다르면 전송 막기 ----- */
+    const form = document.getElementById("mp-pw-form");
+    const pw = document.getElementById("mp-new-pw");
+    const pw2 = document.getElementById("mp-new-pw2");
+    const msg = document.getElementById("mp-pw-msg");
+
+    const check = () => {
+      if (!pw2.value) { msg.textContent = ""; msg.className = "mp-hint"; return; }
+      const same = pw.value === pw2.value;
+      msg.textContent = same ? "새 비밀번호가 일치합니다." : "새 비밀번호가 일치하지 않습니다.";
+      msg.className = "mp-hint " + (same ? "ok" : "warn");
+    };
+    pw.addEventListener("input", check);
+    pw2.addEventListener("input", check);
+
+    form.addEventListener("submit", (e) => {
+      if (pw.value !== pw2.value) {
+        e.preventDefault();
+        if (window.showPopup) showPopup("새 비밀번호가 일치하지 않습니다.", "warn", () => pw2.focus());
+      }
+    });
+  });
+</script>
+</body>
+</html>
