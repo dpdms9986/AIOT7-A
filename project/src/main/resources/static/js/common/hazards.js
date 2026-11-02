@@ -91,6 +91,58 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+      /* ---------- 2-0) 목록 검색 (제목·내용·작성자 / 위험도 / 상태) ---------- */
+  const fKeyword = document.getElementById("hz-f-keyword");
+  const fType = document.getElementById("hz-f-type");
+  const fStatus = document.getElementById("hz-f-status");
+  const fSearch = document.getElementById("hz-f-search");
+  const fReset = document.getElementById("hz-f-reset");
+  const countEl = document.getElementById("hz-count");
+  const noResult = document.getElementById("hz-no-result");
+
+  function applyFilter() {
+    const kw = (fKeyword?.value || "").trim();
+    const type = fType?.value || "";
+    const status = fStatus?.value || "";
+    let shown = 0;
+
+    rows.forEach((row) => {
+      const d = row.dataset;
+      const text = `${d.title} ${d.content} ${d.author}`;
+      const match = (!kw || text.includes(kw))
+                 && (!type || d.type === type)
+                 && (!status || d.status === status);
+
+      row.hidden = !match;
+      if (match) shown++;
+
+      // 지도 마커도 같이 숨기기/보이기
+      const marker = markers.get(row);
+      if (map && marker) {
+        if (match) marker.addTo(map);
+        else marker.remove();
+      }
+    });
+
+    if (countEl) countEl.textContent = shown + "건";
+    if (noResult) noResult.hidden = shown > 0 || rows.length === 0;
+  }
+
+  // [검색] 버튼 / 검색칸에서 Enter 를 누를 때만 거르기
+  fSearch?.addEventListener("click", applyFilter);
+  fKeyword?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      applyFilter();
+    }
+  });
+  fReset?.addEventListener("click", () => {
+    if (fKeyword) fKeyword.value = "";
+    if (fType) fType.value = "";
+    if (fStatus) fStatus.value = "";
+    applyFilter();
+  });
+
   /* ---------- 2-1) 상세보기 팝업 (내용이 길어도 전부 보이게) ---------- */
   const viewModal = document.getElementById("hz-view-modal");
 
