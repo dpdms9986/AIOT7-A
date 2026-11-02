@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{UI/layouts/user/common_layout}">
+<head>
+  <meta charset="UTF-8">
+  <title>고객센터 | 스마트 농업 관제 시스템</title>
+</head>
+<body layout:fragment="content">
+
+<main class="dash-main sp-page">
+
+  <div class="dash-title-row">
+    <div>
+      <h1>💬 고객센터</h1>
+      <p>궁금한 점이 있으시면 언제든지 문의해 주세요.</p>
+    </div>
+  </div>
+
+  <!-- 처리 결과 메시지 (redirect 후 1회) -->
+  <p class="page-flash" th:if="${message}" th:text="${message}">성공</p>
+
+  <section class="sp-layout">
+
+    <!-- ===== 왼쪽: 자주 묻는 질문 ===== -->
+    <article class="dash-card">
+      <div class="dash-card-head">
+        <h2>❓ 자주 묻는 질문</h2>
+      </div>
+
+      <!-- 검색: 입력하면 아래 질문 중 맞는 것만 보여 줌 (JS) -->
+      <input type="search" class="dash-input sp-search" id="sp-search" placeholder="🔍 무엇을 도와드릴까요? (예: 초대 코드)">
+
+            <div class="sp-faq" id="sp-faq">
+        <details>
+          <summary>회원가입은 어떻게 하나요?</summary>
+          <p>회원가입 화면에서 방제단장 또는 드론 조종사 중 하나를 선택해 가입합니다. 새로 방제단을 만드는 분은 방제단장으로, 이미 있는 방제단에 들어가는 분은 드론 조종사로 가입하세요.</p>
+        </details>
+        <details>
+          <summary>조종사로 가입하려면 무엇이 필요한가요?</summary>
+          <p>소속될 방제단의 초대 코드(영문·숫자 6자리)가 필요합니다. 초대 코드는 방제단장에게 받을 수 있고, 회원가입 화면에 입력하면 해당 방제단에 바로 소속됩니다.</p>
+        </details>
+        <details>
+          <summary>초대 코드를 모르겠어요.</summary>
+          <p>초대 코드는 방제단장만 확인할 수 있습니다. 소속될 방제단의 단장에게 초대 코드를 요청해 주세요.</p>
+        </details>
+        <details>
+          <summary>조종사를 방제단에 초대하려면 어떻게 하나요?</summary>
+          <p>방제단장으로 로그인하면 화면 위쪽에 초대 코드가 보입니다. 누르면 복사되니, 조종사에게 전달해 회원가입 때 입력하도록 안내해 주세요.</p>
+        </details>
+        <details>
+          <summary>작업은 어떻게 배정받나요?</summary>
+          <p>방제단장이 농지를 선택해 조종사에게 배정합니다. 조종사는 내 할당 필지와 작업 이력 화면에서 배정받은 작업을 확인할 수 있습니다.</p>
+        </details>
+        <details>
+          <summary>작업은 어떻게 시작하고 완료하나요?</summary>
+          <p>작업 이력 화면에서 대기 중인 작업을 선택하고, 사용할 드론과 약제를 고른 뒤 [작업 시작]을 누르세요. 방제가 끝나면 [작업 완료 보고]를 누르면 됩니다.</p>
+        </details>
+        <details>
+          <summary>조종사도 농지를 등록할 수 있나요?</summary>
+          <p>농지 등록은 방제단장만 할 수 있습니다. 조종사는 배정받은 농지에서 작업을 진행합니다.</p>
+        </details>
+        <details>
+          <summary>고압선 같은 위험한 곳을 발견했어요.</summary>
+          <p>게시판의 위험 구역 탭에서 [+ 위험 구역 신고]를 눌러 위치와 내용을 등록해 주세요. 모든 방제단이 함께 확인할 수 있어 사고 예방에 도움이 됩니다.</p>
+        </details>
+        <details>
+          <summary>시스템 사용 중 오류가 발생했어요.</summary>
+          <p>잠시 후 다시 시도해 주세요. 계속 발생하면 오른쪽 문의 양식으로 알려 주시면 확인 후 답변드리겠습니다.</p>
+        </details>
+        <p class="sp-empty" id="sp-empty" hidden>검색 결과가 없습니다. 오른쪽 문의 양식으로 질문해 주세요.</p>
+      </div>
+    </article>
+
+    <!-- ===== 오른쪽: 문의하기 ===== -->
+    <article class="dash-card">
+      <div class="dash-card-head">
+        <h2>✉️ 문의하기</h2>
+      </div>
+
+      <div class="sp-contact">
+        <div class="sp-contact-row"><span>📞</span>전화<small>042-000-0000</small></div>
+        <div class="sp-contact-row"><span>✉️</span>이메일<small>test@smartfarm.kr</small></div>
+        <div class="sp-contact-row"><span>🕘</span>운영 시간<small>평일 09:00 ~ 18:00</small></div>
+      </div>
+
+      <form class="sp-form" th:action="@{/support}" method="post">
+        <label class="task-field">
+          <span>이름</span>
+          <input type="text" name="name" placeholder="이름을 입력해 주세요" required>
+        </label>
+        <label class="task-field">
+          <span>이메일</span>
+          <input type="email" name="email" placeholder="답변 받을 이메일" required>
+        </label>
+        <label class="task-field">
+          <span>문의 유형</span>
+          <select name="type" required>
+            <option value="">선택해 주세요</option>
+            <option value="account">계정 · 로그인</option>
+            <option value="field">농지 · 작업 배정</option>
+            <option value="drone">드론 · 약제</option>
+            <option value="etc">기타</option>
+          </select>
+        </label>
+        <label class="task-field">
+          <span>문의 내용</span>
+          <textarea name="content" rows="5" placeholder="문의 내용을 입력해 주세요" required></textarea>
+        </label>
+        <button type="submit" class="dash-btn-primary sp-submit">보내기</button>
+      </form>
+    </article>
+  </section>
+</main>
+
+<!-- 자주 묻는 질문 검색 -->
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const input = document.getElementById("sp-search");
+    const items = [...document.querySelectorAll("#sp-faq details")];
+    const empty = document.getElementById("sp-empty");
+
+    input?.addEventListener("input", () => {
+      const kw = input.value.trim();
+      let shown = 0;
+      items.forEach((d) => {
+        const match = !kw || d.textContent.includes(kw);
+        d.hidden = !match;
+        if (match) shown++;
+      });
+      empty.hidden = shown > 0;
+    });
+  });
+</script>
+</body>
+</html>
