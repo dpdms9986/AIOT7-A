@@ -5,20 +5,20 @@
     <th:block th:replace="~{UI/fragments/admin/link::link}"></th:block>
     <th:block th:replace="~{UI/fragments/admin/script::script}"></th:block>
 </head>
-<body>
-
+<body class="adm-body">
+  <div class="adm-shell">
     <!-- [HEADER] -->
     <th:block th:replace="~{UI/fragments/admin/header::header}"></th:block>
-    <!-- [SIDE] -->
-    <th:block th:replace="~{UI/fragments/admin/side::side}"></th:block>
-    
-    <!-- [CONTENT] -->
-    <th:block layout:fragment="content"></th:block>
-    
 
-    <!-- [RECENT] -->
-    <th:block th:replace="~{UI/fragments/admin/recent::recent}"></th:block>
-    <!-- [THEME SWITCHER] -->
-    <th:block th:replace="~{UI/fragments/admin/switcher::switcher}"></th:block>
+    <div class="adm-frame">
+      <!-- [SIDE] -->
+      <th:block th:replace="~{UI/fragments/admin/side::side}"></th:block>
+
+      <!-- [CONTENT] -->
+      <main class="adm-content">
+        <th:block layout:fragment="content"></th:block>
+      </main>
+    </div>
+  </div>
 </body>
 </html>
