@@ -7,12 +7,13 @@ import java.util.List;
 import java.util.Map;
 
 import com.aloha.project.domain.tasks.Drones;
+import com.aloha.project.domain.tasks.Chemicals;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.Setter; 
 
 /**
  * 드론·자산 한 건 (드론 기체 또는 약제)
@@ -36,7 +37,7 @@ public class AssetDto {
         STATUS_LABELS.put("fault", "고장");
     }
 
-    private String id;               // 자산 코드  예) DR-001, CH-001
+    private String id;               // 내부 자산 식별자 (DB 기본키)
     private String type;             // drone / chemical
     private String name;             // 이름 / 모델명
     private String subtitle;         // 드론: 기체 설명 / 약제: 분류
@@ -64,14 +65,37 @@ public class AssetDto {
     };
 
     return AssetDto.builder()
-            .id(drone.getSerialNumber() != null ? drone.getSerialNumber() : String.valueOf(drone.getNo()))
+            .id(String.valueOf(drone.getNo()))
             .type("drone")
             .name(drone.getModelName())
-            .subtitle(drone.getSerialNumber())
+            .subtitle(null)
             .owner(drone.getUser() != null ? drone.getUser().getName() : "-")
             .status(uiStatus)
-            .tankCapacity(drone.getTankCapacity() != null ? drone.getTankCapacity().intValue() : 40)
+            .tankCapacity(drone.getTankCapacity() != null 
+                    ? drone.getTankCapacity().intValue() : 40)
             .batteryCycles(drone.getBatteryCycle())
+            .build();
+}
+
+    // Chemicals 엔티티 → AssetDto 변환
+    public static AssetDto from(Chemicals chemical) {
+    if (chemical == null) return null;
+
+    return AssetDto.builder()
+            .id(String.valueOf(chemical.getNo()))
+            .type("chemical")
+            .name(chemical.getChemicalName())
+            .subtitle(chemical.getCategory())
+            .owner("-")
+            .status(chemical.getStatus())
+            .lastManagedAt(
+                    chemical.getUpdatedAt() != null
+                            ? chemical.getUpdatedAt().toLocalDate()
+                            : chemical.getCreatedAt() != null
+                                    ? chemical.getCreatedAt().toLocalDate()
+                                    : null
+            )
+            .stock(null)
             .build();
 }
 

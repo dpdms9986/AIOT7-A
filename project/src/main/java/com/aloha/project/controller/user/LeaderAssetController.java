@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.aloha.project.domain.tasks.Drones;
 import com.aloha.project.domain.users.CustomUser;
@@ -27,6 +29,8 @@ import com.aloha.project.repository.users.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+
 
 /**
  * 방제단장 - 드론·약제 관리
@@ -41,6 +45,7 @@ public class LeaderAssetController {
     private final DroneRepository droneRepository;
     private final UserRepository userRepository;
 
+    @Transactional(readOnly = true)
     @GetMapping("/assetlist")
     public String getAssetList(
             @RequestParam(value = "tab",     defaultValue = "all") String tab,
@@ -150,9 +155,11 @@ public class LeaderAssetController {
             Drones drone = new Drones();
             drone.setUser(leader); // 기본 소유자: 등록한 단장
             drone.setModelName(form.getName());
-            drone.setSerialNumber(form.getSubtitle() != null && !form.getSubtitle().isBlank() 
-                                  ? form.getSubtitle() 
-                                  : "SN-" + System.currentTimeMillis());
+            
+            // 시리얼 번호는 서버에서 자동 생성
+            drone.setSerialNumber(
+                "AUTO-" + UUID.randomUUID().toString().replace("-", "")
+);
             drone.setStatus(form.getStatus() != null ? form.getStatus() : "AVAILABLE");
             drone.setTankCapacity(40.0); // 기본값
             drone.setBatteryCycle(0);

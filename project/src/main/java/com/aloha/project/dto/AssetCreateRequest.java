@@ -17,7 +17,6 @@ import lombok.ToString;
 @NoArgsConstructor
 public class AssetCreateRequest {
     private String type;      // drone / chemical
-    private String id;        // 자산 코드
     private String name;      // 이름 / 모델명
     private String subtitle;  // 설명 / 분류
     private String owner;     // 담당 조종사

@@ -128,7 +128,10 @@
             <td th:text="${a.typeLabel}">🚁 드론</td>
             <td>
               <strong th:text="${a.name}">DJI Agras T40</strong>
-              <small th:text="${a.subtitle}">기체 코드 DR-001</small>
+              <small th:if="${!a.drone and a.subtitle != null and !#strings.isEmpty(a.subtitle)}"
+              th:text="${a.subtitle}">
+              분류: 살균제
+             </small>
             </td>
             <td th:text="${a.owner}">김민수</td>
             <td><span class="asset-pilot-badge" th:classappend="${a.status}" th:text="${a.statusLabel}">정상</span></td>
@@ -162,7 +165,9 @@
     <div class="asset-detail-content">
       <div class="asset-detail-title">
         <h3 th:text="*{name}">DJI Agras T40</h3>
-        <p th:text="*{drone} ? |기체 코드 *{id} · 드론 관리 정보| : |약제 코드 *{id} · 농업용 약제 관리|">기체 코드 DR-001</p>
+       <p th:text="*{drone} ? '드론 관리 정보' : '농업용 약제 관리'">
+  드론 관리 정보
+</p>
       </div>
 
       <!-- [드론] 현재 가동 상태 -->
@@ -173,13 +178,7 @@
 
       <!-- 기본 정보 -->
       <div class="asset-detail-grid">
-        <div class="asset-detail-info"><span>자산 코드</span><strong th:text="*{id}">DR-001</strong></div>
-        <div class="asset-detail-info"><span>담당 조종사</span><strong th:text="*{owner}">김민수</strong></div>
-
-        <th:block th:if="*{drone}">
-          <div class="asset-detail-info"><span>약제 탱크 용량</span><strong th:text="*{tankCapacity} + ' L'">40 L</strong></div>
-          <div class="asset-detail-info"><span>배터리 사이클</span><strong th:text="*{batteryCycles} + ' 회'">212 회</strong></div>
-        </th:block>
+        
 
         <th:block th:unless="*{drone}">
           <div class="asset-detail-info"><span>약제 분류</span><strong th:text="*{subtitle}">분류: 살균제</strong></div>
@@ -257,9 +256,6 @@
             <option value="drone">드론 기체</option>
             <option value="chemical">농업용 약제</option>
           </select>
-        </label>
-        <label>자산 코드
-          <input type="text" name="id" placeholder="예) DR-004, CH-003" required>
         </label>
         <label>이름 / 모델명
           <input type="text" name="name" placeholder="예) DJI Agras T50" required>

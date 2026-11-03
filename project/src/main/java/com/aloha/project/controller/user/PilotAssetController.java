@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -14,6 +16,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.aloha.project.domain.users.CustomUser;
 
 import com.aloha.project.domain.tasks.Drones;
@@ -22,9 +27,14 @@ import com.aloha.project.domain.users.Users;
 import com.aloha.project.dto.AssetDto;
 import com.aloha.project.repository.tasks.DroneRepository;
 import com.aloha.project.repository.users.UserRepository;
+import com.aloha.project.dto.AssetCreateRequest;
+import com.aloha.project.domain.tasks.Chemicals;
+import com.aloha.project.repository.tasks.ChemicalRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+
 
 /**
  * 조종사 - 드론·자산 (본인 및 같은 방제단 드론 조회, 보기 전용)
@@ -38,6 +48,7 @@ public class PilotAssetController {
 
     private final UserRepository userRepository;
     private final DroneRepository droneRepository;
+    private final ChemicalRepository chemicalRepository;
 
     @Transactional(readOnly = true)
     @GetMapping("/assetlist")
@@ -48,6 +59,7 @@ public class PilotAssetController {
             @RequestParam(value = "status", defaultValue = "") String status,
             @RequestParam(value = "keyword", defaultValue = "") String keyword,
             @RequestParam(value = "id", required = false) String id,
+            @RequestParam(value = "assetType", required = false) String assetType,
             Model model) {
 
         // 1. 로그인 조종사 확인
@@ -78,9 +90,22 @@ public class PilotAssetController {
         }
 
         // 3. Entity → DTO 변환
-        List<AssetDto> all = droneMap.values().stream()
+        List<AssetDto> all = new ArrayList<>(
+        droneMap.values().stream()
                 .map(AssetDto::from)
-                .toList();
+                .toList()
+        );
+
+        // 같은 방제단의 약제 조회
+        if (pilot.getTeam() != null) {
+         List<AssetDto> chemicals = chemicalRepository
+            .findByTeam_No(pilot.getTeam().getNo())
+            .stream()
+            .map(AssetDto::from)
+            .toList();
+
+         all.addAll(chemicals);
+        }
 
 
         // 4. 기존 탭 및 검색 조건
@@ -116,19 +141,35 @@ public class PilotAssetController {
         long maintenanceCount = all.stream()
                 .filter(AssetDto::isMaintenanceNeeded)
                 .count();
-
-        // 6. 상세 조회
-        AssetDto selected = (id == null) ? null
-                : all.stream()
-                        .filter(a -> a.getId().equals(id))
-                        .findFirst()
-                        .orElse(null);
-
+        
         String tabTitle = switch (tab) {
-            case "drone" -> "드론 기체";
-            case "chemical" -> "농업용 약제";
-            default -> "전체 자산";
+        case "drone" -> "드론 기체";
+        case "chemical" -> "농업용 약제";
+        default -> "전체 자산";
         };
+
+       // 6. 상세 조회
+        String selectedType = assetType;
+
+       // 현재 탭이 드론 또는 약제라면 탭 정보를 우선 사용
+         if ("drone".equals(tab)) {
+        selectedType = "drone";
+       } else if ("chemical".equals(tab)) {
+       selectedType = "chemical";
+      }
+
+        // 람다에서 사용할 최종 변수
+        final String detailType = selectedType;
+
+        AssetDto selected = (id == null) ? null
+        : all.stream()
+                .filter(a -> a.getId().equals(id))
+                .filter(a -> detailType == null
+                        || detailType.isEmpty()
+                        || a.getType().equals(detailType))
+                .findFirst()
+                .orElse(null);
+        
 
         // 7. 기존 화면 Model 변수명 유지
         model.addAttribute("tab", tab);
@@ -145,6 +186,66 @@ public class PilotAssetController {
 
         return "page/pilot/assetlist";
     }
+
+      @PostMapping("/assetlist")
+      public String createAsset(
+        @ModelAttribute AssetCreateRequest form,
+        @AuthenticationPrincipal CustomUser customUser,
+        RedirectAttributes redirectAttributes) {
+
+      if (customUser == null || customUser.getUser() == null) {
+        return "redirect:/login";
+    }
+
+      Users pilot = userRepository.findById(customUser.getUser().getNo())
+            .orElseThrow(() ->
+                    new IllegalArgumentException("로그인 사용자를 찾을 수 없습니다."));
+
+       if (!"PILOT".equals(pilot.getRole())) {
+        throw new IllegalStateException("조종사 계정만 등록할 수 있습니다.");
+    }
+
+       if ("chemical".equals(form.getType())) {
+
+    // 약제 등록
+    if (pilot.getTeam() == null) {
+        throw new IllegalStateException("방제단에 소속된 조종사만 약제를 등록할 수 있습니다.");
+    }
+
+    Chemicals chemical = Chemicals.builder()
+        .team(pilot.getTeam())
+        .chemicalName(form.getName())
+        .category(form.getSubtitle())
+        .status(form.getStatus() != null ? form.getStatus() : "normal")
+        .build();
+
+    chemicalRepository.save(chemical);
+
+    } else {
+
+     // 기존 드론 등록
+     Drones drone = new Drones();
+     drone.setUser(pilot);
+     drone.setModelName(form.getName());
+     drone.setSerialNumber(
+            "AUTO-" + UUID.randomUUID().toString().replace("-", "")
+      );
+      drone.setStatus(
+            form.getStatus() != null ? form.getStatus() : "AVAILABLE"
+       );
+      drone.setTankCapacity(40.0);
+      drone.setBatteryCycle(0);
+
+      droneRepository.save(drone);
+        }
+
+       redirectAttributes.addFlashAttribute(
+            "message", form.getName() + " 자산이 등록되었습니다."
+        );
+
+        return "redirect:/pilot/assetlist";
+        }
+
 
     /* =========================================================
        탭별 상태 검색 목록
