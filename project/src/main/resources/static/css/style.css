@@ -11405,3 +11405,37 @@ a.mp-stat-link:hover { border-color: var(--color-primary, #238451); transform: t
 .um-pager a { min-width: 34px; padding: 6px 10px; border: 1px solid #d6dfe6; border-radius: 8px; background: #fff; color: #334155; text-align: center; text-decoration: none; }
 .um-pager a:hover { background: #f1f7f3; }
 .um-pager a.on { border-color: #1f9d57; background: #e3f4e9; color: #17803f; font-weight: 800; }
+
+
+/* =====================================================
+   관리자 공통: 요약 카드 / 탭 / 모달 (문의현황, 조종사 관리)
+   ===================================================== */
+.adm-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.adm-stat { padding: 14px 16px; border: 1px solid #e4ebe6; border-radius: 14px; background: #f8fbf9; }
+.adm-stat small { display: block; color: #6b7a89; font-size: 12px; }
+.adm-stat strong { font-size: 26px; font-weight: 800; }
+.adm-stat.warn strong { color: #c26a00; }
+.adm-stat.ok strong   { color: #17803f; }
+
+.um-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.um-tabs a { padding: 7px 14px; border: 1px solid #d6dfe6; border-radius: 999px; background: #fff; color: #334155; font-size: 13px; font-weight: 600; text-decoration: none; }
+.um-tabs a:hover { background: #f1f7f3; }
+.um-tabs a.on { border-color: #1f9d57; background: #e3f4e9; color: #17803f; }
+
+.um-link { padding: 0; border: 0; background: none; color: inherit; font: inherit; font-weight: 600; text-align: left; cursor: pointer; }
+.um-link:hover { color: #17803f; text-decoration: underline; }
+
+/* 문의 상세 / 답변 모달 */
+.iq-modal { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; background: rgba(15, 30, 22, .5); }
+.iq-modal[hidden] { display: none; }
+.iq-panel { width: 100%; max-width: 640px; max-height: 90vh; overflow-y: auto; padding: 22px; border-radius: 16px; background: #fff; box-shadow: 0 20px 50px rgba(0, 0, 0, .25); }
+.iq-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.iq-close { border: 0; background: none; font-size: 18px; color: #6b7a89; cursor: pointer; }
+.iq-panel h3 { margin: 0 0 6px; font-size: 18px; font-weight: 800; }
+.iq-meta { margin: 0 0 14px; color: #8491a0; font-size: 12px; }
+.iq-body { padding: 14px; border-radius: 10px; background: #f5f8f6; font-size: 14px; line-height: 1.7; white-space: pre-line; word-break: break-word; }
+.iq-answer { margin-top: 16px; }
+.iq-answer-title { margin: 0 0 8px; font-size: 14px; font-weight: 800; }
+.iq-answer-title small { margin-left: 6px; color: #8491a0; font-weight: 400; }
+.iq-answer textarea { box-sizing: border-box; width: 100%; padding: 12px; border: 1px solid #d6dfe6; border-radius: 10px; font: inherit; font-size: 14px; resize: vertical; }
+.iq-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }

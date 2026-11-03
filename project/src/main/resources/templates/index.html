@@ -32,7 +32,7 @@
         
           <!-- 지도 배경 이미지 영역 -->
           <div class="home-map-board">
-            <img src="assets/지도사진2.png" alt="농장 및 드론 방제 상태 지도" class="home-map-img">
+            <img th:src="@{/images/map2.png}" alt="농장 및 드론 방제 상태 지도" class="home-map-img">
           </div>
         </div>
     </section>
@@ -48,6 +48,36 @@
     </section>
 
 
+     <!-- 로그인 직후 권한별 이동 (서버 수정 없이 화면에서 처리) -->
+    <th:block sec:authorize="hasRole('ADMIN')">
+      <span id="role-home" data-url="/admin/dashboard" hidden></span>
+    </th:block>
+    <th:block sec:authorize="!hasRole('ADMIN') and hasRole('LEADER')">
+      <span id="role-home" data-url="/leader/dashboard" hidden sec:authentication="principal.user.name"></span>
+    </th:block>
+    <th:block sec:authorize="!hasRole('ADMIN') and !hasRole('LEADER') and hasRole('PILOT')">
+      <span id="role-home" data-url="/pilot/dashboard" hidden sec:authentication="principal.user.name"></span>
+    </th:block>
+
+    <script>
+      (function () {
+        try {
+          const t = Number(sessionStorage.getItem('justLoggedIn') || 0);
+          sessionStorage.removeItem('justLoggedIn');          // 한 번만 동작
+          const el = document.getElementById('role-home');
+          // 로그인 후 10초 이내에 메인이 열린 경우에만 이동
+          if (el && t && Date.now() - t < 10000) {
+            // 관리자 화면에는 팝업이 없으니 단장·조종사일 때만 메시지 전달
+            if (!el.dataset.url.startsWith('/admin')) {
+              const name = (el.textContent || '').trim();
+              sessionStorage.setItem('loginPopup', (name ? name + '님, ' : '') + '로그인되었습니다.');
+            }
+            location.replace(el.dataset.url);
+          }
+        } catch (e) {}
+      })();
+    </script>
+  
   <!-- 팝업 -->
   <th:block th:replace="~{UI/fragments/user/popup::popup}"></th:block>
 
