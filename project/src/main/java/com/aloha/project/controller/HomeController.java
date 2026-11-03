@@ -39,15 +39,6 @@ public class HomeController {
       return "page/signup";
   }
 
-  // 임시: 등록된 방제단과 초대코드 목록 전체 반환 (Thunder Client 테스트용)
-    @GetMapping("/api/test/invite-codes")
-    @ResponseBody
-    public ResponseEntity<?> getInviteCodes() {
-        // DB에 저장된 모든 팀의 이름과 초대코드 조회
-        return ResponseEntity.ok(teamRepository.findAll());
-    }
-
-
    // [깔끔하게 정리된 버전]
     @PostMapping("/signup")
     public String signupSubmit(@ModelAttribute SignupRequest signupDto, 
