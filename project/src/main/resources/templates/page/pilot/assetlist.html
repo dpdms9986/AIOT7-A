@@ -216,7 +216,7 @@
   </section>
 
    
-<!-- ===== 자산 등록 팝업 ===== -->
+<!-- ===== 자산 등록 팝업 (POST → AssetCreateRequest) ===== -->
 <div class="team-modal-backdrop" id="asset-register-modal" hidden>
   <section class="team-modal"
            role="dialog"
@@ -238,41 +238,45 @@
     <form th:action="@{/pilot/assetlist}" method="post">
       <div class="team-form-grid">
 
-        <!-- 1. 자산 종류 -->
-        <label>
-          자산 종류
+        <label>자산 유형
           <select id="asset-type" name="type" required>
-            <option value="">선택하세요</option>
             <option value="drone">드론 기체</option>
             <option value="chemical">농업용 약제</option>
           </select>
         </label>
 
-        <!-- 2. 자산명 -->
         <label>
           <span id="asset-name-label">이름 / 모델명</span>
           <input type="text"
                  id="asset-name"
                  name="name"
-                 placeholder="자산 이름을 입력하세요"
+                 placeholder="예) DJI Agras T50"
                  required>
         </label>
 
-        <!-- 3. 설명 / 약제 분류 -->
         <label>
-          <span id="asset-subtitle-label">설명</span>
-
+          <span id="asset-subtitle-label">설명 / 분류</span>
           <input type="text"
                  id="asset-subtitle"
                  name="subtitle"
-                 placeholder="자산 설명을 입력하세요">
+                 placeholder="예) 분류: 살균제">
         </label>
 
-        <!-- 4. 상태 -->
-        <label>
-          상태
+        <label>담당 조종사
+  <select id="asset-owner" name="owner" required>
+    <option th:each="o : ${owners}"
+            th:value="${o.no}"
+            th:text="${o.name}"
+            th:selected="${o.no == currentUser.no}">
+    </option>
+  </select>
+</label>
+
+        <label>상태
           <select id="asset-status" name="status" required>
-            <option value="">자산 종류를 먼저 선택하세요</option>
+            <option th:each="s : ${allStatusOptions}"
+                    th:value="${s.key}"
+                    th:text="${s.value}">정상</option>
           </select>
         </label>
 
@@ -290,8 +294,4 @@
   </section>
 </div>
 
-</main>
-
 <script th:src="@{/js/pilot/assetlist.js}"></script>
-</body>
-</html>

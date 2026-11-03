@@ -198,22 +198,11 @@ public class LeaderAssetController {
             Drones drone = new Drones();
             drone.setUser(pilot);
             drone.setModelName(form.getName());
-<<<<<<< HEAD
-            
-            // 시리얼 번호는 서버에서 자동 생성
-            drone.setSerialNumber(
-                "AUTO-" + UUID.randomUUID().toString().replace("-", "")
-);
-            drone.setStatus(form.getStatus() != null ? form.getStatus() : "AVAILABLE");
-            drone.setTankCapacity(40.0); // 기본값
-            drone.setBatteryCycle(0);
-=======
             drone.setStatus(AssetDto.toDbStatus(
                     form.getStatus() != null && !form.getStatus().isBlank()
                             ? form.getStatus()
                             : "normal"
             ));
->>>>>>> develop
 
             droneRepository.save(drone);
 

@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -74,6 +73,14 @@ public class PilotAssetController {
         if (!"PILOT".equals(pilot.getRole())) {
             throw new IllegalStateException("조종사 계정만 접근할 수 있습니다.");
         }
+
+        // 같은 방제단 소속 조종사 목록
+        List<Users> owners = userRepository.findAll().stream()
+        .filter(u -> "PILOT".equals(u.getRole()))
+        .filter(u -> u.getTeam() != null
+                && pilot.getTeam() != null
+                && u.getTeam().getNo().equals(pilot.getTeam().getNo()))
+        .toList();
 
        
         // 2. 본인 및 같은 방제단의 드론 조회
@@ -183,6 +190,9 @@ public class PilotAssetController {
         model.addAttribute("type", typeFilter);
         model.addAttribute("status", statusFilter);
         model.addAttribute("keyword", keyword);
+        model.addAttribute("owners", owners);
+        model.addAttribute("currentUser", pilot);
+        model.addAttribute("allStatusOptions", statusOptionsFor("all"));
 
         return "page/pilot/assetlist";
     }
@@ -214,6 +224,7 @@ public class PilotAssetController {
 
     Chemicals chemical = Chemicals.builder()
         .team(pilot.getTeam())
+        .user(pilot)
         .chemicalName(form.getName())
         .category(form.getSubtitle())
         .status(form.getStatus() != null ? form.getStatus() : "normal")
@@ -227,15 +238,11 @@ public class PilotAssetController {
      Drones drone = new Drones();
      drone.setUser(pilot);
      drone.setModelName(form.getName());
-     drone.setSerialNumber(
-            "AUTO-" + UUID.randomUUID().toString().replace("-", "")
-      );
+     
       drone.setStatus(
             form.getStatus() != null ? form.getStatus() : "AVAILABLE"
        );
-      drone.setTankCapacity(40.0);
-      drone.setBatteryCycle(0);
-
+ 
       droneRepository.save(drone);
         }
 

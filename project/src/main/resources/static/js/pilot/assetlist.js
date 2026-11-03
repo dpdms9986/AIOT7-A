@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const cancelBtn = document.querySelector("#cancel-asset-register");
 
     const typeSelect = document.querySelector("#asset-type");
-
+    const ownerSelect = document.querySelector("#asset-owner");
     const nameLabel = document.querySelector("#asset-name-label");
     const nameInput = document.querySelector("#asset-name");
 
@@ -16,10 +16,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const statusSelect = document.querySelector("#asset-status");
 
     if (
-        !modal || !openBtn || !closeBtn || !cancelBtn ||
-        !typeSelect || !nameLabel || !nameInput ||
-        !subtitleLabel || !subtitleInput || !statusSelect
-    ) {
+    !modal || !openBtn || !closeBtn || !cancelBtn ||
+    !typeSelect || !ownerSelect || !nameLabel || !nameInput ||
+    !subtitleLabel || !subtitleInput || !statusSelect
+) {
         console.error("자산 등록 모달 요소를 찾을 수 없습니다.");
         return;
     }
@@ -66,17 +66,22 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     };
 
-    // 모달 열기
     const openModal = () => {
-        modal.hidden = false;
-        document.body.style.overflow = "hidden";
+    modal.hidden = false;
+    document.body.style.overflow = "hidden";
 
-        typeSelect.value = "";
-        nameInput.value = "";
-        subtitleInput.value = "";
+    // 기본값: 드론 기체
+    typeSelect.value = "drone";
 
-        updateForm("");
-    };
+    // 담당 조종사: HTML에서 지정한 로그인 사용자
+    // 선택 상태 유지
+
+    nameInput.value = "";
+    subtitleInput.value = "";
+
+    // 드론 기본 입력 항목 및 정상 상태 설정
+    updateForm("drone");
+};
 
     // 모달 닫기
     const closeModal = () => {
@@ -108,3 +113,4 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 });
+

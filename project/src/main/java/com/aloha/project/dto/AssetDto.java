@@ -65,17 +65,6 @@ public class AssetDto {
     };
 
     return AssetDto.builder()
-<<<<<<< HEAD
-            .id(String.valueOf(drone.getNo()))
-            .type("drone")
-            .name(drone.getModelName())
-            .subtitle(null)
-            .owner(drone.getUser() != null ? drone.getUser().getName() : "-")
-            .status(uiStatus)
-            .tankCapacity(drone.getTankCapacity() != null 
-                    ? drone.getTankCapacity().intValue() : 40)
-            .batteryCycles(drone.getBatteryCycle())
-=======
             .id("drone-" + drone.getNo())
             .type("drone")
             .name(drone.getModelName())
@@ -84,24 +73,7 @@ public class AssetDto {
                     ? drone.getUser().getName()
                     : "-")
             .status(uiStatus)
->>>>>>> develop
             .build();
-    }
-
-    // Chemicals 엔티티 -> AssetDto 변환
-    public static AssetDto from(Chemicals chemical) {
-        if (chemical == null) return null;
-    
-        return AssetDto.builder()
-                .id("chemical-" + chemical.getNo())
-                .type("chemical")
-                .name(chemical.getChemicalName())
-                .subtitle(chemical.getCategory())
-                .owner(chemical.getUser() != null
-                        ? chemical.getUser().getName()
-                        : "-")
-                .status(chemical.getStatus())
-                .build();
     }
 
     // 화면 상태 코드 -> DB 상태
@@ -116,16 +88,18 @@ public class AssetDto {
         };
     }
 
-    // Chemicals 엔티티 → AssetDto 변환
-    public static AssetDto from(Chemicals chemical) {
+   // Chemicals 엔티티 -> AssetDto 변환
+public static AssetDto from(Chemicals chemical) {
     if (chemical == null) return null;
 
     return AssetDto.builder()
-            .id(String.valueOf(chemical.getNo()))
+            .id("chemical-" + chemical.getNo())
             .type("chemical")
             .name(chemical.getChemicalName())
             .subtitle(chemical.getCategory())
-            .owner("-")
+            .owner(chemical.getUser() != null
+                    ? chemical.getUser().getName()
+                    : "-")
             .status(chemical.getStatus())
             .lastManagedAt(
                     chemical.getUpdatedAt() != null
