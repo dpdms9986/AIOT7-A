@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{UI/layouts/admin/admin_layout}">
+<head>
+  <meta charset="UTF-8">
+  <title>관리자 | 전체 현황</title>
+</head>
+<body layout:fragment="content">
+
+<!--/*
+  TODO(백엔드) 이 페이지에서 쓰는 값 (AdminPageController#getDashboard 에서 model 에 담김)
+    leaderCount, pilotCount          : 이용자 수
+    totalProgressPercent             : 방제 완료율(%)
+    totalLandCount, completedLandCount : 전체/완료 농지 수
+    recentWorks (List<AdminWorkDto>) : 최근 방제 작업 이력 (workDate, region, pilotName, status, statusLabel)
+    weekLabels, weekCounts           : 주간 방제 작업 추이 (7일)
+  현재 recentWorks / weekCounts 는 컨트롤러가 findAll() 로 계산 중 → 레포지토리 쿼리로 교체 예정
+*/-->
+
+<div class="adm-dash">
+
+  <!-- 왼쪽: 이용자, 신규 문의 -->
+  <div class="adm-col">
+    <article class="dash-card">
+      <div class="dash-card-head"><h2>👥 이용자 현황</h2></div>
+      <div class="adm-big">
+        <strong><th:block th:text="${(leaderCount ?: 0) + (pilotCount ?: 0)}">0</th:block><small>명</small></strong>
+        <span>전체 이용자</span>
+      </div>
+      <div class="adm-big">
+        <strong><th:block th:text="${leaderCount ?: 0}">0</th:block><small>명</small></strong>
+        <span>방제단장</span>
+      </div>
+      <div class="adm-big">
+        <strong><th:block th:text="${pilotCount ?: 0}">0</th:block><small>명</small></strong>
+        <span>운행 조종사</span>
+      </div>
+    </article>
+
+    <!--/*
+      TODO(백엔드) 신규 문의: 아래 JS 가 호출하는 API (이미 InquiryApi 에 있음, 관리자 권한)
+        GET /api/inquiries/admin/waiting-count        → { waitingCount }
+        GET /api/inquiries/admin?status=WAITING&size=4 → Page { content: [{ title, createdAt ... }] }
+    */-->
+    <article class="dash-card">
+      <div class="dash-card-head">
+        <h2>💬 신규 문의</h2>
+        <span class="dash-more">답변 대기 <b class="js-waiting">0</b>건</span>
+      </div>
+      <ul class="adm-inq" id="inquiry-list"></ul>
+      <p class="adm-empty" id="inquiry-empty">새로 들어온 문의가 없어요.</p>
+    </article>
+  </div>
+
+  <!-- 가운데: 방제 완료율, 최근 방제 작업 이력 -->
+  <div class="adm-col">
+    <article class="dash-card">
+      <div class="dash-card-head"><h2>🌱 방제 현황</h2></div>
+      <div class="adm-donut" th:style="|--p:${totalProgressPercent ?: 0}|">
+        <div class="adm-donut-in">
+          <strong><th:block th:text="${totalProgressPercent ?: 0}">0</th:block>%</strong>
+          <small>방제 완료율</small>
+        </div>
+      </div>
+      <p class="adm-caption" th:text="|전체 농지 ${totalLandCount ?: 0}곳 중 ${completedLandCount ?: 0}곳 완료|">전체 농지 0곳 중 0곳 완료</p>
+
+      <div class="dash-card-head"><h2>🚁 최근 방제 작업 이력</h2></div>
+      <div class="asset-pilot-table-scroll">
+        <table class="asset-pilot-table">
+          <thead>
+            <tr><th>날짜</th><th>작업 지역</th><th>조종사</th><th>상태</th></tr>
+          </thead>
+          <tbody>
+            <tr th:each="w : ${recentWorks}">
+              <td th:text="${w.workDate != null} ? ${#temporals.format(w.workDate, 'MM-dd')} : '-'">11-02</td>
+              <td th:text="${w.region}">유성구 전민동</td>
+              <td th:text="${w.pilotName}">김인수</td>
+              <td>
+                <span class="asset-pilot-badge"
+                      th:classappend="${w.status == 'COMPLETED'} ? 'normal' : (${w.status == 'IN_PROGRESS'} ? 'operating' : 'maintenance')"
+                      th:text="${w.statusLabel}">완료</span>
+              </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(recentWorks)}">
+              <td colspan="4" class="adm-empty">아직 방제 작업 이력이 없어요.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </article>
+  </div>
+
+  <!-- 오른쪽: 게시판, 드론 사진, 주간 추이 -->
+  <div class="adm-col">
+    <!--/*
+      TODO(백엔드) 게시판 카드: GET /api/hazards (HazardApi) 응답 배열의 길이 = 위험 구역 건수,
+        hazardType === '고위험' 인 것만 세서 "그중 고위험" 표시. 필드명이 바뀌면 아래 JS 수정
+    */-->
+    <article class="dash-card">
+      <div class="dash-card-head"><h2>📋 게시판</h2></div>
+      <div class="adm-big">
+        <strong><b class="js-hz-count">0</b><small>건</small></strong>
+        <span>주의 요망 위험 구역</span>
+      </div>
+      <a class="adm-link" th:href="@{/hazards}">게시판 바로가기 ›</a>
+      <small class="adm-sub">그중 고위험 <b class="js-hz-high">0</b>건</small>
+    </article>
+
+    <!-- 사진을 넣으면 이모지는 지워도 됨 -->
+    <article class="dash-card adm-photo">🚁</article>
+
+    <article class="dash-card">
+      <div class="dash-card-head"><h2>📊 주간 방제 작업 추이</h2></div>
+      <div class="adm-bars" id="week-bars"></div>
+      <p class="adm-empty" id="week-empty" hidden>아직 데이터가 없어요.</p>
+    </article>
+  </div>
+
+</div>
+
+<script th:inline="javascript">
+  const WEEK_LABELS = /*[[${weekLabels}]]*/ [];
+  const WEEK_COUNTS = /*[[${weekCounts}]]*/ [];
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const setAll = (sel, v) => document.querySelectorAll(sel).forEach(el => { el.textContent = v; });
+
+  // TODO(백엔드) 게시판 카드: 위험 구역 건수와 고위험 건수
+  fetch('/api/hazards')
+    .then(r => (r.ok ? r.json() : []))
+    .then(list => {
+      setAll('.js-hz-count', list.length);
+      setAll('.js-hz-high', list.filter(h => h.hazardType === '고위험').length);
+    })
+    .catch(() => {});
+
+  // TODO(백엔드) 신규 문의: 답변 대기 건수
+  fetch('/api/inquiries/admin/waiting-count')
+    .then(r => (r.ok ? r.json() : null))
+    .then(d => { if (d) setAll('.js-waiting', d.waitingCount); })
+    .catch(() => {});
+
+  // TODO(백엔드) 신규 문의: 답변 대기 최근 4건
+  fetch('/api/inquiries/admin?status=WAITING&size=4')
+    .then(r => (r.ok ? r.json() : null))
+    .then(page => {
+      const list = page && page.content ? page.content : [];
+      if (list.length === 0) return;
+      const ul = document.getElementById('inquiry-list');
+      list.forEach(q => {
+        const li = document.createElement('li');
+        const title = document.createElement('span');
+        title.textContent = q.title;
+        const date = document.createElement('span');
+        date.textContent = (q.createdAt || '').slice(5, 10).replace('-', '.');
+        li.append(title, date);
+        ul.appendChild(li);
+      });
+      document.getElementById('inquiry-empty').hidden = true;
+    })
+    .catch(() => {});
+
+  // 주간 방제 작업 추이: 값이 없거나 전부 0이면 안내 문구만 보임
+  const labels = WEEK_LABELS || [];
+  const counts = WEEK_COUNTS || [];
+  const box = document.getElementById('week-bars');
+  if (labels.length === 0 || counts.every(c => c === 0)) {
+    box.hidden = true;
+    document.getElementById('week-empty').hidden = false;
+  } else {
+    const max = Math.max(...counts, 1);
+    labels.forEach((label, i) => {
+      const col = document.createElement('div');
+      col.className = 'adm-bar';
+      const num = document.createElement('b');
+      num.textContent = counts[i];
+      const bar = document.createElement('i');
+      bar.style.height = Math.round((counts[i] / max) * 100) + 'px';
+      const day = document.createElement('em');
+      day.textContent = label;
+      col.append(num, bar, day);
+      box.appendChild(col);
+    });
+  }
+});
+</script>
+
+</body>
+</html>

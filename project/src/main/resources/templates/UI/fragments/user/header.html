@@ -23,6 +23,8 @@
                sec:authorize="hasRole('LEADER')">🌱 우리 농지 관제</a>
             <a th:href="@{/pilot/dashboard}" class="home-btn home-btn-primary"
                sec:authorize="hasRole('PILOT')">🌱 오늘의 작업</a>
+            <a th:href="@{/admin}" class="home-btn home-btn-primary"
+               sec:authorize="hasRole('ADMIN')">🛠 관리자 페이지</a>
 
             <form th:action="@{/logout}" method="post" style="display:inline;">
               <button type="submit" class="home-btn home-btn-outline">로그아웃</button>
