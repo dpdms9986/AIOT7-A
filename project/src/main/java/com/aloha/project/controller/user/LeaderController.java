@@ -424,6 +424,9 @@ public class LeaderController {
                 .latitude(form.getLatitude() != null ? form.getLatitude() : 36.3504)
                 .longitude(form.getLongitude() != null ? form.getLongitude() : 127.3845)
                 .areaSize(form.getAreaSize() != null ? form.getAreaSize() : 1000.0)
+                .polygonCoordinates(
+                        form.getPolygonCoordinates() != null && !form.getPolygonCoordinates().isBlank()
+                        ? form.getPolygonCoordinates() : null)
                 .status("READY")
                 .build();
 

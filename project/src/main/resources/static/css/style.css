@@ -12378,3 +12378,131 @@ a.mp-stat-link:hover { border-color: var(--color-primary, #238451); transform: t
 .iq-answer-title small { margin-left: 6px; color: #8491a0; font-weight: 400; }
 .iq-answer textarea { box-sizing: border-box; width: 100%; padding: 12px; border: 1px solid #d6dfe6; border-radius: 10px; font: inherit; font-size: 14px; resize: vertical; }
 .iq-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+
+
+/* =====================================================================
+   FieldSplit : 농지 다각형 그리기 / 1/N 분할 (모두 .field-split-wrap 안에서만 적용)
+   ===================================================================== */
+.field-split-wrap { color: #152a2a; font-size: 13px; }
+.field-split-wrap *, .field-split-wrap *::before, .field-split-wrap *::after { box-sizing: border-box; }
+
+/* --- 그리기 버튼 / 안내 문구 (농지 등록 모달) --- */
+.field-split-wrap .fs-draw-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0 0 6px; }
+.field-split-wrap .fs-draw-btn {
+  min-height: 30px; padding: 0 12px; border: 1px solid #dce8df; border-radius: 6px;
+  background: #f5faf6; color: #34765b; font-size: 12px; font-weight: 700; white-space: nowrap; cursor: pointer;
+}
+.field-split-wrap .fs-draw-btn:hover,
+.field-split-wrap .fs-draw-btn[aria-pressed="true"] { border-color: #247a5e; background: #eaf5ed; }
+.field-split-wrap .fs-status { margin: 0; color: #8c9c92; font-size: 11px; line-height: 1.4; text-align: right; }
+.field-split-wrap .fs-status[data-state="active"]  { color: #247a5e; font-weight: 600; }
+.field-split-wrap .fs-status[data-state="success"] { color: #488064; }
+.field-split-wrap .fs-status[data-state="error"]   { color: #a34437; }
+
+/* --- Leaflet 안의 요소 --- */
+.field-split-wrap .leaflet-container { font-family: inherit; }
+.field-split-wrap .leaflet-container.coordinate-picking { cursor: crosshair; }
+.field-split-wrap .leaflet-tooltip.coordinate-index-tooltip {
+  padding: 2px 5px; border: 0; border-radius: 8px; background: #247a5e;
+  box-shadow: 0 1px 4px rgba(22,75,54,.18); color: #fff; font-size: 10px; font-weight: 700;
+}
+.field-split-wrap .coordinate-pick-popup .leaflet-popup-content { min-width: 175px; margin: 9px 11px; }
+.field-split-wrap .coordinate-pick-value { display: block; color: #31483d; font-size: 12px; font-weight: 700; }
+.field-split-wrap .coordinate-pick-help { margin: 4px 0 8px; color: #829189; font-size: 10px; line-height: 1.4; }
+.field-split-wrap .coordinate-pick-add {
+  width: 100%; min-height: 30px; border: 0; border-radius: 5px;
+  background: #247a5e; color: #fff; font-size: 11px; font-weight: 700; cursor: pointer;
+}
+.field-split-wrap .coordinate-pick-add:hover { background: #1d694f; }
+
+/* --- 작업 배정 : 분할 미리보기 영역 --- */
+.field-split-wrap.fs-section { margin-top: 18px; }
+.field-split-wrap .fs-summary {
+  display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 10px 16px; margin-bottom: 14px;
+  border: 1px solid #e5ece6; border-radius: 10px; background: linear-gradient(105deg,#f1f7f1 0%,#fbfcf8 100%);
+}
+.field-split-wrap .fs-summary-icon { width: 34px; height: 34px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 8px; color: #438368; background: #e2efe5; font-size: 17px; }
+.field-split-wrap .fs-summary-copy { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.field-split-wrap .fs-summary-copy strong { color: #3a5348; font-size: 13px; font-weight: 700; }
+.field-split-wrap .fs-summary-copy span { color: #84948a; font-size: 11px; }
+.field-split-wrap .fs-metric { margin-left: auto; display: flex; gap: 18px; }
+.field-split-wrap .fs-metric > div { display: flex; flex-direction: column; gap: 2px; min-width: 86px; }
+.field-split-wrap .fs-metric span { color: #89978e; font-size: 11px; }
+.field-split-wrap .fs-metric strong { color: #3b6651; font-size: 16px; font-weight: 700; }
+.field-split-wrap .fs-metric small { color: #829189; font-size: 10px; font-weight: 500; }
+
+.field-split-wrap .fs-grid { display: grid; grid-template-columns: minmax(240px, .62fr) minmax(0, 1.6fr); gap: 14px; align-items: stretch; }
+.field-split-wrap .fs-panel { min-width: 0; padding: 16px; border: 1px solid #e8ece8; border-radius: 10px; background: #fff; }
+.field-split-wrap .fs-panel h3 { margin: 0 0 12px; color: #243b35; font-size: 14px; font-weight: 700; }
+.field-split-wrap .fs-label { display: block; margin-bottom: 7px; color: #50625a; font-size: 12px; font-weight: 700; }
+.field-split-wrap .fs-hint { margin: 6px 0 0; color: #9ba69f; font-size: 11px; line-height: 1.5; }
+.field-split-wrap .fs-count { display: flex; align-items: center; height: 38px; border: 1px solid #e4eae5; border-radius: 7px; overflow: hidden; }
+.field-split-wrap .fs-count button { width: 38px; align-self: stretch; border: 0; background: #fbfcfb; color: #6d8177; font-size: 17px; cursor: pointer; }
+.field-split-wrap .fs-count button:hover { background: #eff6f0; color: #267755; }
+.field-split-wrap .fs-count input { width: 48px; height: 100%; border: 0; outline: 0; background: #fff; color: #31483d; text-align: center; font-size: 14px; font-weight: 700; appearance: textfield; -moz-appearance: textfield; }
+.field-split-wrap .fs-count input::-webkit-inner-spin-button,
+.field-split-wrap .fs-count input::-webkit-outer-spin-button { appearance: none; margin: 0; }
+.field-split-wrap .fs-count span { margin-left: auto; padding-right: 11px; color: #98a39d; font-size: 11px; }
+.field-split-wrap .fs-open-pilots { width: 100%; margin-top: 12px; }
+.field-split-wrap .fs-error { margin-top: 10px; padding: 8px 10px; border: 1px solid #f2d9d5; border-radius: 6px; background: #fff8f6; color: #a34437; font-size: 12px; line-height: 1.5; }
+.field-split-wrap .fs-error[hidden] { display: none; }
+
+.field-split-wrap .fs-map-wrap { position: relative; height: 340px; overflow: hidden; border: 1px solid #e4ebe5; border-radius: 7px; background: #edf1ed; }
+.field-split-wrap .fs-map { position: absolute; inset: 0; z-index: 1; background: #edf1ed; }
+.field-split-wrap .fs-map-label {
+  position: absolute; z-index: 500; top: 10px; left: 10px; display: flex; align-items: center; gap: 7px; padding: 6px 9px;
+  border: 1px solid rgba(225,232,226,.95); border-radius: 6px; background: rgba(255,255,255,.94);
+  color: #4b6257; font-size: 11px; font-weight: 600; pointer-events: none;
+}
+.field-split-wrap .fs-map-legend {
+  position: absolute; z-index: 500; right: 10px; bottom: 10px; display: flex; align-items: center; gap: 12px; padding: 6px 9px;
+  border: 1px solid rgba(225,232,226,.95); border-radius: 6px; background: rgba(255,255,255,.94);
+  color: #687a71; font-size: 10px; pointer-events: none;
+}
+.field-split-wrap .fs-map-legend > span { display: inline-flex; align-items: center; gap: 5px; }
+.field-split-wrap .legend-fill { width: 10px; height: 8px; border: 1px solid #4f9d79; background: rgba(86,164,123,.27); }
+.field-split-wrap .legend-outline { width: 11px; height: 0; border-top: 1px dashed #365f4d; }
+.field-split-wrap .fs-map-empty {
+  position: absolute; inset: 0; z-index: 400; display: grid; place-items: center; padding: 20px;
+  background: rgba(245,247,244,.92); color: #6f8078; font-size: 13px; text-align: center;
+}
+.field-split-wrap .fs-map-empty[hidden] { display: none; }
+
+/* --- 분할 결과 카드 --- */
+.field-split-wrap .fs-results { margin-top: 16px; }
+.field-split-wrap .fs-results-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.field-split-wrap .fs-results-head h3 { display: flex; align-items: center; gap: 8px; margin: 0; color: #243b35; font-size: 14px; font-weight: 700; }
+.field-split-wrap .count-pill { min-width: 20px; height: 20px; display: inline-grid; place-items: center; padding: 0 6px; border-radius: 10px; background: #eaf3ec; color: #4f856a; font-size: 11px; font-weight: 700; }
+.field-split-wrap .result-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.field-split-wrap .result-card { min-width: 0; padding: 12px 13px; border: 1px solid #e8ece8; border-radius: 8px; background: #fff; transition: border-color .15s ease, box-shadow .15s ease; }
+.field-split-wrap .result-card:hover,
+.field-split-wrap .result-card.is-active { border-color: #7fb396; box-shadow: 0 2px 10px rgba(36,122,94,.12); }
+.field-split-wrap .result-card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.field-split-wrap .piece-title { display: flex; align-items: center; gap: 7px; min-width: 0; color: #40564c; font-size: 12px; font-weight: 700; }
+.field-split-wrap .piece-color { width: 10px; height: 10px; flex: 0 0 auto; border-radius: 3px; }
+.field-split-wrap .piece-metrics { display: flex; align-items: baseline; gap: 6px; margin: 10px 0 8px; }
+.field-split-wrap .piece-area { color: #344b40; font-size: 17px; font-weight: 700; }
+.field-split-wrap .piece-unit { color: #8e9c94; font-size: 11px; }
+.field-split-wrap .piece-share { margin-left: auto; color: #8e9c94; font-size: 11px; font-weight: 600; }
+.field-split-wrap .piece-progress { height: 4px; overflow: hidden; border-radius: 3px; background: #eff2ef; }
+.field-split-wrap .piece-progress span { display: block; height: 100%; border-radius: inherit; }
+.field-split-wrap .piece-pilot { display: block; width: 100%; margin-top: 10px; height: 32px; padding: 0 8px; border: 1px solid #dfe7e1; border-radius: 6px; background: #fff; color: #40564c; font-size: 12px; }
+.field-split-wrap .piece-pilot:focus { outline: 2px solid rgba(35,135,101,.25); border-color: #8ab9a0; }
+.field-split-wrap .piece-pilot-name { margin-top: 8px; color: #6f8078; font-size: 11px; }
+.field-split-wrap .fs-empty { padding: 22px; border: 1px dashed #dce5de; border-radius: 8px; text-align: center; color: #87958d; font-size: 12px; line-height: 1.6; }
+.field-split-wrap .fs-empty[hidden] { display: none; }
+.field-split-wrap .fs-note { margin: 10px 0 0; padding: 9px 11px; border-radius: 6px; background: #fffaf0; border: 1px solid #ead9b5; color: #806d49; font-size: 11px; line-height: 1.55; }
+.field-split-wrap .fs-actions { display: flex; justify-content: flex-end; margin-top: 12px; }
+
+@media (max-width: 900px) {
+  .field-split-wrap .fs-grid { grid-template-columns: minmax(0, 1fr); }
+  .field-split-wrap .result-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .field-split-wrap .fs-metric { display: none; }
+}
+@media (max-width: 560px) {
+  .field-split-wrap .result-cards { grid-template-columns: minmax(0, 1fr); }
+  .field-split-wrap .fs-map-wrap { height: 280px; }
+}
+
+/* 농지 등록 모달 : 외곽 그리기용으로 지도를 조금 키움 */
+#farm-register-modal .hz-pick-map { height: 300px; }

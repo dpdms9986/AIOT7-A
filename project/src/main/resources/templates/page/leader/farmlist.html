@@ -8,6 +8,7 @@
   <!-- 이 화면에서만 쓰는 지도 라이브러리 (레이아웃 head 에 합쳐짐) -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6.5.0/turf.min.js"></script>
 </head>
 <body layout:fragment="content">
 
@@ -87,6 +88,7 @@
                           th:data-status-class="${land.statusClass}"
                           th:data-lat="${land.latitude}"
                           th:data-lng="${land.longitude}"
+                          th:data-polygon="${land.polygonCoordinates}"
                           th:data-pilot="${land.pilotName} ?: '미배정'"
                           th:data-assigned-at="${land.assignedAt != null} ? ${#temporals.format(land.assignedAt, 'yyyy-MM-dd HH:mm')} : '-'"
                           th:data-deletable="${land.deletable}"
@@ -183,9 +185,14 @@
         <small id="farm-addr-msg">주소를 고르면 지도와 위도·경도가 자동으로 맞춰져요. 지도를 클릭해 미세 조정할 수 있어요.</small>
       </div>
 
-      <div class="team-form-full">
-        <span>위치 확인</span>
+      <div class="team-form-full field-split-wrap">
+        <span>위치 확인 · 농지 외곽</span>
+        <div class="fs-draw-row">
+          <button type="button" id="farm-draw-btn" class="fs-draw-btn" aria-pressed="false">지도에서 외곽 그리기</button>
+          <p id="farm-draw-status" class="fs-status" role="status" aria-live="polite">외곽을 그리지 않으면 위치 마커만 저장돼요.</p>
+        </div>
         <div id="farm-pick-map" class="hz-pick-map"></div>
+        <input type="hidden" name="polygonCoordinates" id="farm-polygon">
       </div>
 
       <div class="team-form-full">
@@ -211,6 +218,8 @@
   </section>
 </div>
 
+
+<script th:src="@{/js/common/field-split.js}"></script>
 <script th:src="@{/js/leader/farmlist.js}"></script>
 </body>
 </html>
