@@ -46,8 +46,8 @@ public class AssetDto {
     private LocalDate lastManagedAt; // 최근 관리일 (없으면 null)
 
     // 드론만
-    private Integer tankCapacity;    // 약제 탱크 용량 (L)
-    private Integer batteryCycles;   // 배터리 사이클
+    // private Integer tankCapacity;    // 약제 탱크 용량 (L)
+    // private Integer batteryCycles;   // 배터리 사이클
 
     // 약제만
     private String stock;            // 현재 재고량 (L)
@@ -65,6 +65,7 @@ public class AssetDto {
     };
 
     return AssetDto.builder()
+<<<<<<< HEAD
             .id(String.valueOf(drone.getNo()))
             .type("drone")
             .name(drone.getModelName())
@@ -74,8 +75,46 @@ public class AssetDto {
             .tankCapacity(drone.getTankCapacity() != null 
                     ? drone.getTankCapacity().intValue() : 40)
             .batteryCycles(drone.getBatteryCycle())
+=======
+            .id("drone-" + drone.getNo())
+            .type("drone")
+            .name(drone.getModelName())
+            .subtitle("")
+            .owner(drone.getUser() != null
+                    ? drone.getUser().getName()
+                    : "-")
+            .status(uiStatus)
+>>>>>>> develop
             .build();
-}
+    }
+
+    // Chemicals 엔티티 -> AssetDto 변환
+    public static AssetDto from(Chemicals chemical) {
+        if (chemical == null) return null;
+    
+        return AssetDto.builder()
+                .id("chemical-" + chemical.getNo())
+                .type("chemical")
+                .name(chemical.getChemicalName())
+                .subtitle(chemical.getCategory())
+                .owner(chemical.getUser() != null
+                        ? chemical.getUser().getName()
+                        : "-")
+                .status(chemical.getStatus())
+                .build();
+    }
+
+    // 화면 상태 코드 -> DB 상태
+    public static String toDbStatus(String uiStatus) {
+        return switch (uiStatus) {
+            case "normal"        -> "AVAILABLE";
+            case "operating"     -> "IN_USE";
+            case "maintenance",
+                "in-maintenance",
+                "fault"         -> "MAINTENANCE";
+            default              -> "AVAILABLE";
+        };
+    }
 
     // Chemicals 엔티티 → AssetDto 변환
     public static AssetDto from(Chemicals chemical) {
