@@ -293,11 +293,7 @@
 
 <!-- 자산 등록 성공 팝업 -->
 <script th:if="${assetRegistered}">
-    $alert(
-        '등록 완료',
-        '자산이 등록되었습니다.',
-        'success'
-    );
+    showPopup('자산이 등록되었습니다.');
 </script>
 </body>
 </html>

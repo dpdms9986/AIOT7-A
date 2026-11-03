@@ -56,8 +56,15 @@ document.addEventListener("DOMContentLoaded", () => {
             statusSelect.add(new Option("정상", "normal"));
             statusSelect.add(new Option("재고 부족", "low"));
         }
-    };
 
+        // 리더와 동일한 방식으로 설명란 숨김
+    // 리더와 동일하게 설명 입력 영역 전체 숨김
+     const subtitleField = subtitleInput.closest("label");
+
+      if (subtitleField) {
+    subtitleField.style.display = type === "drone" ? "none" : "";
+       }
+    };
     // 모달 열기
     const openModal = () => {
         modal.hidden = false;
