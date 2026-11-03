@@ -108,4 +108,25 @@ public class LandDto {
     public boolean isCancellable() {
         return "ASSIGNED".equals(status);
     }
+
+    // LandDto.java 내부에 추가
+    public String getEffectivePolygonCoordinates() {
+        // 1. 이미 등록된 다각형 좌표가 있다면 그대로 사용
+        if (this.polygonCoordinates != null && !this.polygonCoordinates.isBlank()) {
+            return this.polygonCoordinates;
+        }
+        
+        // 2. 다각형이 없는 옛날 농지라면, 중심점(lat, lng)과 면적으로 사각형 외곽 좌표 자동 생성 (약 50m 반경)
+        if (this.latitude != null && this.longitude != null) {
+            double dLat = 0.00045; // 약 50m 위도 차이
+            double dLng = 0.00055; // 약 50m 경도 차이
+            
+            return String.format("[[%.6f, %.6f], [%.6f, %.6f], [%.6f, %.6f], [%.6f, %.6f]]",
+                    latitude + dLat, longitude - dLng,
+                    latitude + dLat, longitude + dLng,
+                    latitude - dLat, longitude + dLng,
+                    latitude - dLat, longitude - dLng);
+        }
+        return "[]";
+    }
 }
