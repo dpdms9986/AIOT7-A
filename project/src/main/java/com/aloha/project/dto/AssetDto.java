@@ -13,7 +13,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.Setter; 
 
 /**
  * 드론·자산 한 건 (드론 기체 또는 약제)
@@ -37,7 +37,7 @@ public class AssetDto {
         STATUS_LABELS.put("fault", "고장");
     }
 
-    private String id;               // 자산 코드  예) DR-001, CH-001
+    private String id;               // 내부 자산 식별자 (DB 기본키)
     private String type;             // drone / chemical
     private String name;             // 이름 / 모델명
     private String subtitle;         // 드론: 기체 설명 / 약제: 분류
@@ -76,22 +76,6 @@ public class AssetDto {
             .build();
     }
 
-    // Chemicals 엔티티 -> AssetDto 변환
-    public static AssetDto from(Chemicals chemical) {
-        if (chemical == null) return null;
-    
-        return AssetDto.builder()
-                .id("chemical-" + chemical.getNo())
-                .type("chemical")
-                .name(chemical.getChemicalName())
-                .subtitle(chemical.getCategory())
-                .owner(chemical.getUser() != null
-                        ? chemical.getUser().getName()
-                        : "-")
-                .status(chemical.getStatus())
-                .build();
-    }
-
     // 화면 상태 코드 -> DB 상태
     public static String toDbStatus(String uiStatus) {
         return switch (uiStatus) {
@@ -103,6 +87,30 @@ public class AssetDto {
             default              -> "AVAILABLE";
         };
     }
+
+   // Chemicals 엔티티 -> AssetDto 변환
+public static AssetDto from(Chemicals chemical) {
+    if (chemical == null) return null;
+
+    return AssetDto.builder()
+            .id("chemical-" + chemical.getNo())
+            .type("chemical")
+            .name(chemical.getChemicalName())
+            .subtitle(chemical.getCategory())
+            .owner(chemical.getUser() != null
+                    ? chemical.getUser().getName()
+                    : "-")
+            .status(chemical.getStatus())
+            .lastManagedAt(
+                    chemical.getUpdatedAt() != null
+                            ? chemical.getUpdatedAt().toLocalDate()
+                            : chemical.getCreatedAt() != null
+                                    ? chemical.getCreatedAt().toLocalDate()
+                                    : null
+            )
+            .stock(null)
+            .build();
+}
 
     // 정비 이력(드론) / 입고 이력(약제)
     @Builder.Default

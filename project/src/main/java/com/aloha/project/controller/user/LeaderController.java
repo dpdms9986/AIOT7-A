@@ -19,6 +19,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -295,8 +296,9 @@ public class LeaderController {
     /* =========================================================
        방제단 관리
        ========================================================= */
-    @GetMapping("/team-management")
-    public String getTeamManagement(
+        @Transactional(readOnly = true)
+        @GetMapping("/team-management")
+        public String getTeamManagement(
             @RequestParam(value = "keyword", defaultValue = "") String keyword,
             @RequestParam(value = "status",  defaultValue = "") String status,
             @RequestParam(value = "skill",   defaultValue = "") String skill,
@@ -309,6 +311,11 @@ public class LeaderController {
         Teams myTeam = (leader != null) ? leader.getTeam() : null;
         final String inviteCode = (myTeam != null && myTeam.getInviteCode() != null) ? myTeam.getInviteCode() : "";
 
+        // 조종사별 작업 목록 (상태/현재 작업/금일 완료 계산용)
+        Map<Long, List<WorkAssignments>> worksByPilot = workAssignmentRepository.findAll().stream()
+                .filter(w -> w.getPilot() != null)
+                .collect(Collectors.groupingBy(w -> w.getPilot().getNo()));
+
         // DB에서 소속 조종사 목록 조회
         List<TeamMemberDto> allMembers = new ArrayList<>();
         if (!inviteCode.isEmpty()) {
@@ -316,7 +323,7 @@ public class LeaderController {
                     .filter(u -> u.getTeam() != null 
                               && inviteCode.equals(u.getTeam().getInviteCode())
                               && !"LEADER".equals(u.getRole()))
-                    .map(TeamMemberDto::from)
+                    .map(u -> TeamMemberDto.from(u, worksByPilot.getOrDefault(u.getNo(), List.of())))
                     .toList();
         }
 
