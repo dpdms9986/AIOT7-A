@@ -1,3 +1,4 @@
+
 document.addEventListener("DOMContentLoaded", () => {
     const modal = document.querySelector("#asset-register-modal");
 
@@ -16,15 +17,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const statusSelect = document.querySelector("#asset-status");
 
     if (
-    !modal || !openBtn || !closeBtn || !cancelBtn ||
-    !typeSelect || !ownerSelect || !nameLabel || !nameInput ||
-    !subtitleLabel || !subtitleInput || !statusSelect
-) {
+        !modal || !openBtn || !closeBtn || !cancelBtn ||
+        !typeSelect || !ownerSelect || !nameLabel || !nameInput ||
+        !subtitleLabel || !subtitleInput || !statusSelect
+    ) {
         console.error("자산 등록 모달 요소를 찾을 수 없습니다.");
         return;
     }
 
-    // 자산 종류에 따른 입력 항목 설정
+    // 자산 종류에 따른 입력 항목 및 상태 선택지 설정
     const updateForm = (type) => {
         statusSelect.innerHTML = "";
 
@@ -37,9 +38,11 @@ document.addEventListener("DOMContentLoaded", () => {
             subtitleInput.value = "";
             subtitleInput.required = false;
 
-            statusSelect.add(new Option("정상", "AVAILABLE"));
-            statusSelect.add(new Option("정비 필요", "MAINTENANCE"));
-            statusSelect.add(new Option("운용 중지", "INACTIVE"));
+            statusSelect.add(new Option("정상", "normal"));
+            statusSelect.add(new Option("운용 중", "operating"));
+            statusSelect.add(new Option("정비 중", "maintenance"));
+            statusSelect.add(new Option("정비 필요", "in-maintenance"));
+            statusSelect.add(new Option("고장", "fault"));
 
         } else if (type === "chemical") {
             nameLabel.textContent = "약제명";
@@ -47,41 +50,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
             subtitleLabel.textContent = "약제 분류";
             subtitleInput.placeholder = "예: 살충제, 살균제";
+            subtitleInput.value = "";
             subtitleInput.required = true;
 
             statusSelect.add(new Option("정상", "normal"));
             statusSelect.add(new Option("재고 부족", "low"));
-            statusSelect.add(new Option("품절", "empty"));
-
-        } else {
-            nameLabel.textContent = "이름 / 모델명";
-            nameInput.placeholder = "자산 이름을 입력하세요";
-
-            subtitleLabel.textContent = "설명";
-            subtitleInput.placeholder = "자산 설명을 입력하세요";
-            subtitleInput.value = "";
-            subtitleInput.required = false;
-
-            statusSelect.add(new Option("자산 종류를 먼저 선택하세요", ""));
         }
     };
 
+    // 모달 열기
     const openModal = () => {
-    modal.hidden = false;
-    document.body.style.overflow = "hidden";
+        modal.hidden = false;
+        document.body.style.overflow = "hidden";
 
-    // 기본값: 드론 기체
-    typeSelect.value = "drone";
+        typeSelect.value = "drone";
+        nameInput.value = "";
+        subtitleInput.value = "";
 
-    // 담당 조종사: HTML에서 지정한 로그인 사용자
-    // 선택 상태 유지
-
-    nameInput.value = "";
-    subtitleInput.value = "";
-
-    // 드론 기본 입력 항목 및 정상 상태 설정
-    updateForm("drone");
-};
+        updateForm("drone");
+    };
 
     // 모달 닫기
     const closeModal = () => {
@@ -95,7 +82,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 자산 종류 변경
     typeSelect.addEventListener("change", () => {
-        subtitleInput.value = "";
         updateForm(typeSelect.value);
     });
 
@@ -113,4 +99,3 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 });
-
