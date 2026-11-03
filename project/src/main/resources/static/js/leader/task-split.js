@@ -1,6 +1,8 @@
-// 작업 배정 : 농지 다각형 1/N 분할 미리보기 + 구역별 조종사 매핑
-// 흐름) 농지 체크 → 모영역(A) 표시 → 투입 조종사 수(N)만큼 분할 → 구역마다 담당 조종사 선택 → 배정 확정
-// 의존: field-split.js, Leaflet, Turf.js / task-assignment.js 와 같은 폼(#assign-form)을 사용
+// 작업 배정 : 영역 선택 → N분할 → 구역별 조종사 매핑 → 배정 확정
+// 1) 영역 : 등록된 미배정 농지를 체크하거나, 지도에서 직접 꼭짓점을 찍어 그린다
+// 2) 분할 : 조각 수 N 은 조종사 수와 상관없이 단장이 정한다 (경도 기준 N등분)
+// 3) 매핑 : 구역마다 담당 조종사를 고른다 (한 조종사가 여러 구역 가능 → 숙련도에 따라 넓게/좁게 배분)
+// 의존: field-split.js, Leaflet, Turf.js / task-assignment.js 와 같은 폼(#assign-form)
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.querySelector("#assign-form");
   if (!form) return;                                   // 현황/이력 탭에서는 아무것도 안 함
@@ -9,13 +11,21 @@ document.addEventListener("DOMContentLoaded", () => {
   const countInput = $("#splitCount");
   const decBtn = $("#fs-dec");
   const incBtn = $("#fs-inc");
-  const countHint = $("#fs-count-hint");
   const errorBox = $("#fs-error");
   const cardsBox = $("#resultCards");
   const emptyBox = $("#fs-empty");
   const fallbackNote = $("#fs-fallback-note");
   const mapEmpty = $("#fs-map-empty");
   const MAP_EMPTY_DEFAULT = mapEmpty.innerHTML;
+  const drawBtn = $("#fs-draw-btn");
+  const drawStatus = $("#fs-draw-status");
+  const drawnWrap = $("#fs-drawn-wrap");
+  const drawnAddress = $("#fs-drawn-address");
+  const coordsBox = $("#fs-coords");
+  const summaryBox = $("#fs-pilot-summary");
+  const copyMsg = $("#fs-copy-msg");
+  const pieceInput = $("#piece-assignments-json");
+  const hidden = (name) => form.querySelector(`[name='${name}']`);
 
   const showError = (msg) => { errorBox.textContent = msg; errorBox.hidden = false; };
   const clearError = () => { errorBox.textContent = ""; errorBox.hidden = true; };
@@ -26,21 +36,76 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   const { COLORS } = FieldSplit;
 
-  /* ===================== 상태 / 입력 읽기 ===================== */
+  // 프롬프트(FieldSplit)의 예제 좌표
+  const SAMPLE_COORDINATES = [
+    [37.5467, 127.0328], [37.5500, 127.0360], [37.5491, 127.0414], [37.5467, 127.0457],
+    [37.5424, 127.0433], [37.5417, 127.0382], [37.5432, 127.0335],
+  ];
+  const DRAW_HINT = "등록된 농지를 체크하거나, 지도를 눌러 꼭짓점을 찍어 영역을 잡을 수 있어요.";
+  const DRAW_LABEL = "✏️ 지도에서 직접 영역 그리기";
+
+  /* ===================== 상태 ===================== */
   const landChecks = () => [...form.querySelectorAll(".land-check")];
   const selectedLands = () => landChecks().filter((c) => c.checked);
-  const pilotChecks = () => [...form.querySelectorAll(".task-pilot-check")];
-  const checkedPilots = () => pilotChecks()
-    .filter((c) => c.checked)
+
+  // 배정 가능한 조종사 = 모달 목록의 조종사 중 작업 중(disabled)이 아닌 사람. 체크 여부와 상관없음
+  const allPilots = () => [...form.querySelectorAll(".task-pilot-check")]
+    .filter((c) => !c.disabled)
     .map((c) => ({
       no: c.value,
       name: c.closest(".task-pilot").querySelector("label > span")?.textContent.trim() || `조종사 ${c.value}`,
     }));
 
-  let targetCheckbox = null;     // 지도에 보여줄 농지 (가장 최근에 체크한 것)
-  let pieces = [];               // 분할 결과 (GeoJSON Feature, 서→동 순)
-  let pieceLayers = [];          // 조각별 Leaflet 레이어 (툴팁/강조용)
-  let assignment = [];           // 조각 index → 조종사 번호 ("" = 미지정)
+  let targetCheckbox = null;   // 지도에 보여줄 등록 농지 (가장 최근에 체크한 것)
+  let drawn = null;            // 직접 그린 영역 [[lat,lng],...]
+  let currentCoords = null;    // 지금 지도에 표시 중인 모영역
+  let lastKey = "";            // 영역이 바뀌면 담당 매핑을 초기화하기 위한 값
+  let pieces = [];             // 분할 결과 (GeoJSON Feature, 서→동 순)
+  let pieceLayers = [];
+  let assignment = [];         // 구역 index → 조종사 번호 ("" = 미지정)
+
+  /* ===================== 도우미 ===================== */
+  const pad2 = (n) => String(n).padStart(2, "0");
+  const pilotNameOf = (no) => allPilots().find((p) => p.no === no)?.name || "";
+  const formatArea = (m2) => (m2 >= 1_000_000
+    ? { value: (m2 / 1_000_000).toFixed(2), unit: "km²" }
+    : { value: Math.round(m2).toLocaleString("ko-KR"), unit: "m²" });
+
+  const areaOfCoords = (coords) => {
+    try {
+      return turf.area(turf.polygon([FieldSplit.closeRing(coords).map(([lat, lng]) => [lng, lat])]));
+    } catch { return 0; }
+  };
+
+  const toLatLng = (geometry) => {
+    const ring = (r) => r.map(([lng, lat]) => [lat, lng]);
+    if (geometry.type === "Polygon") return geometry.coordinates.map(ring);
+    if (geometry.type === "MultiPolygon") return geometry.coordinates.map((poly) => poly.map(ring));
+    return geometry.coordinates;
+  };
+
+  let copyTimer = null;
+  const setCopyMsg = (msg) => {
+    copyMsg.textContent = msg;
+    clearTimeout(copyTimer);
+    copyTimer = setTimeout(() => { copyMsg.textContent = ""; }, 3000);
+  };
+  const copyText = (text, okMsg) => {
+    const fallback = () => {
+      const t = document.createElement("textarea");
+      t.value = text; t.setAttribute("readonly", "");
+      t.style.position = "fixed"; t.style.opacity = "0";
+      document.body.append(t); t.select();
+      const ok = document.execCommand("copy");
+      t.remove();
+      setCopyMsg(ok ? okMsg : "복사하지 못했어요. 브라우저 권한을 확인해 주세요.");
+    };
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text).then(() => setCopyMsg(okMsg)).catch(fallback);
+    } else {
+      fallback();
+    }
+  };
 
   /* ===================== 지도 ===================== */
   const map = L.map("fs-map", { scrollWheelZoom: false }).setView([36.3504, 127.3845], 13);
@@ -59,41 +124,101 @@ document.addEventListener("DOMContentLoaded", () => {
     pieceLayers = [];
   };
 
-  const pad2 = (n) => String(n).padStart(2, "0");
-  const pilotNameOf = (pilotNo) => checkedPilots().find((p) => p.no === pilotNo)?.name || "";
   const tooltipText = (index) => {
     const name = pilotNameOf(assignment[index]);
     return `구역 ${pad2(pieces[index].properties.sliceIndex + 1)} · ${name || "담당 미지정"}`;
   };
 
-  const formatArea = (m2) => (m2 >= 1_000_000
-    ? { value: (m2 / 1_000_000).toFixed(2), unit: "km²" }
-    : { value: Math.round(m2).toLocaleString("ko-KR"), unit: "m²" });
+  /* ===================== 1단계: 지도에서 직접 영역 그리기 ===================== */
+  const drawer = FieldSplit.createDrawer(map, {
+    onStatus: (message, state) => { drawStatus.textContent = message; drawStatus.dataset.state = state || ""; },
+  });
 
-  /* ===================== 조종사 수 ↔ 분할 개수 동기화 ===================== */
-  const syncCountToPilots = () => {
-    const n = checkedPilots().length;
-    const synced = n >= 2;
-    if (synced) countInput.value = String(Math.min(12, n));
-    countInput.readOnly = synced;
-    decBtn.disabled = synced;
-    incBtn.disabled = synced;
-    countHint.textContent = synced
-      ? `투입 조종사 ${n}명에 맞춰 ${Math.min(12, n)}조각으로 나뉩니다.`
-      : "투입 조종사를 2명 이상 체크하면 그 인원수에 맞춰 자동으로 바뀝니다.";
+  const resetDrawUi = () => {
+    drawBtn.textContent = DRAW_LABEL;
+    drawBtn.setAttribute("aria-pressed", "false");
+  };
+  const cancelDrawing = () => {
+    if (drawer.isActive()) { drawer.clear(); resetDrawUi(); drawStatus.textContent = DRAW_HINT; }
+  };
+  const clearDrawn = () => { drawn = null; drawnWrap.hidden = true; };
+  const uncheckLands = () => {
+    selectedLands().forEach((c) => {
+      c.checked = false;
+      c.dispatchEvent(new Event("change", { bubbles: true }));   // task-assignment.js 의 선택 합계도 갱신
+    });
   };
 
-  /* 조각별 담당 조종사 기본값: 이전 선택이 아직 유효하면 유지, 비면 안 쓴 조종사를 순서대로 */
+  const useDrawn = (coords) => {
+    cancelDrawing();
+    uncheckLands();                                  // 등록 농지 선택은 해제
+    drawn = coords.map(([lat, lng]) => [lat, lng]);
+    drawnWrap.hidden = false;
+    renderSplit();
+  };
+
+  drawBtn.addEventListener("click", () => {
+    if (drawer.isActive()) {                         // 그리기 완료
+      const result = drawer.finish();
+      resetDrawUi();
+      if (result.ok) { drawer.clear(); useDrawn(result.coordinates); }
+      return;
+    }
+    drawer.clear();                                  // 새로 그리기 시작
+    clearDrawn();
+    uncheckLands();
+    resetView("지도에서 영역을 그리는 중");
+    drawer.start();
+    drawBtn.textContent = "✔ 그리기 완료";
+    drawBtn.setAttribute("aria-pressed", "true");
+  });
+
+  $("#fs-coords-apply").addEventListener("click", () => {
+    const parsed = FieldSplit.parsePolygon(coordsBox.value.trim());
+    if (!parsed) {
+      showError("좌표 형식을 확인해 주세요. 예: [[37.54, 127.03], [37.55, 127.04], [37.53, 127.05]]");
+      return;
+    }
+    clearError();
+    useDrawn(parsed);
+  });
+
+  $("#fs-sample-btn").addEventListener("click", () => {
+    coordsBox.value = JSON.stringify(SAMPLE_COORDINATES);
+    clearError();
+    useDrawn(SAMPLE_COORDINATES);
+  });
+
+  /* ===================== 3단계: 구역별 담당 조종사 ===================== */
   const refreshAssignment = () => {
-    const pilots = checkedPilots().map((p) => p.no);
-    const next = pieces.map((_, i) => (pilots.includes(assignment[i]) ? assignment[i] : ""));
-    const used = new Set(next.filter(Boolean));
-    const free = pilots.filter((no) => !used.has(no));
-    next.forEach((v, i) => { if (!v && free.length) next[i] = free.shift(); });
-    assignment = next;
+    const valid = new Set(allPilots().map((p) => p.no));
+    assignment = pieces.map((_, i) => (valid.has(assignment[i]) ? assignment[i] : ""));
   };
 
-  /* ===================== 렌더링 ===================== */
+  // 조종사별 담당 구역 · 면적 요약 (숙련도에 따라 넓게/좁게 줬는지 한눈에 보기)
+  const renderPilotSummary = () => {
+    if (!pieces.length) { summaryBox.textContent = ""; return; }
+    const areas = pieces.map((p) => turf.area(p));
+    const total = areas.reduce((s, a) => s + a, 0);
+    const byPilot = new Map();
+    let unassigned = 0;
+    pieces.forEach((p, i) => {
+      const no = assignment[i];
+      if (!no) { unassigned += 1; return; }
+      const e = byPilot.get(no) || { zones: [], area: 0 };
+      e.zones.push(pad2(p.properties.sliceIndex + 1));
+      e.area += areas[i];
+      byPilot.set(no, e);
+    });
+    const lines = [...byPilot.entries()].map(([no, e]) => {
+      const a = formatArea(e.area);
+      const pct = total > 0 ? ((e.area / total) * 100).toFixed(1) : "0.0";
+      return `${pilotNameOf(no)} · 구역 ${e.zones.join(", ")} · ${a.value}${a.unit} (${pct}%)`;
+    });
+    if (unassigned) lines.push(`담당 미지정 구역 ${unassigned}개`);
+    summaryBox.textContent = lines.length ? lines.join("\n") : "구역마다 담당 조종사를 선택해 주세요.";
+  };
+
   const renderCards = () => {
     cardsBox.replaceChildren();
     emptyBox.hidden = pieces.length > 0;
@@ -102,7 +227,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const areas = pieces.map((p) => turf.area(p));
     const total = areas.reduce((sum, a) => sum + a, 0);
-    const pilots = checkedPilots();
+    const pilots = allPilots();
 
     pieces.forEach((piece, index) => {
       const sliceNo = piece.properties.sliceIndex;
@@ -136,11 +261,22 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         const hint = document.createElement("div");
         hint.className = "piece-pilot-name";
-        hint.textContent = "투입 조종사를 선택하면 여기서 담당자를 고를 수 있어요.";
+        hint.textContent = "배정 가능한 조종사가 없어요.";
         card.append(hint);
       }
+
+      const copyBtn = document.createElement("button");
+      copyBtn.type = "button";
+      copyBtn.className = "dash-btn-outline task-mini-btn";
+      copyBtn.textContent = "좌표 복사";
+      copyBtn.addEventListener("click", () => {
+        copyText(JSON.stringify(toLatLng(piece.geometry), null, 2), `구역 ${pad2(sliceNo + 1)} 좌표를 복사했어요.`);
+      });
+      card.append(copyBtn);
+
       cardsBox.append(card);
     });
+    renderPilotSummary();
   };
 
   const renderMap = (coords) => {
@@ -167,7 +303,6 @@ document.addEventListener("DOMContentLoaded", () => {
     window.setTimeout(() => map.invalidateSize(), 100);
   };
 
-  /* 지도의 조각을 누르면 해당 카드 강조 + 담당자 안내 */
   const highlightPiece = (index) => {
     cardsBox.querySelectorAll(".result-card").forEach((c) =>
       c.classList.toggle("is-active", c.dataset.piece === String(index)));
@@ -177,59 +312,75 @@ document.addEventListener("DOMContentLoaded", () => {
       ?.scrollIntoView({ block: "nearest", behavior: "smooth" });
   };
 
-  /* 카드에서 조종사를 고르면: 이미 다른 구역이 쓰던 조종사는 서로 바꿔줌(한 명이 두 구역 X) */
+  // 카드에서 조종사를 고르면 그대로 저장 (한 조종사가 여러 구역을 맡을 수 있음)
   const onPilotPicked = (index, pilotNo) => {
-    if (pilotNo) {
-      const other = assignment.findIndex((v, i) => i !== index && v === pilotNo);
-      if (other >= 0) assignment[other] = assignment[index];
-    }
     assignment[index] = pilotNo;
-    cardsBox.querySelectorAll(".piece-pilot").forEach((sel, i) => { sel.value = assignment[i] || ""; });
     pieces.forEach((_, i) => pieceLayers[i]?.setTooltipContent(tooltipText(i)));
+    renderPilotSummary();
     highlightPiece(index);
   };
 
   const resetView = (message = "농지를 선택해 주세요") => {
     pieces = [];
     assignment = [];
+    lastKey = "";
+    currentCoords = null;
     clearMapLayers();
     renderCards();
     mapEmpty.innerHTML = MAP_EMPTY_DEFAULT;
     mapEmpty.hidden = false;
     fallbackNote.hidden = true;
-    $("#fs-target").textContent = "농지를 선택하면 모영역(A)이 지도에 표시됩니다.";
+    $("#fs-target").textContent = "위 목록에서 농지를 고르거나, 지도에서 직접 영역을 그려 주세요.";
     $("#fs-sum-count").textContent = "-";
     $("#fs-sum-area").textContent = "-";
     $("#fs-map-region").textContent = message;
   };
 
-  /* 모영역(A) 불러오기 → 분할 → 그리기 */
-  const renderSplit = () => {
+  /* ===================== 2단계: 모영역 → N분할 → 그리기 ===================== */
+  function renderSplit() {
     clearError();
-    syncCountToPilots();
 
-    if (!targetCheckbox || !targetCheckbox.checked) {
-      resetView();
+    let coords = null;
+    let label = "";
+    let areaM2 = 0;
+    let isFallback = false;
+    let key = "";
+
+    if (drawn) {
+      coords = drawn;
+      label = "직접 그린 영역";
+      areaM2 = areaOfCoords(drawn);
+      key = `drawn:${JSON.stringify(drawn)}`;
+    } else if (targetCheckbox && targetCheckbox.checked) {
+      const d = targetCheckbox.dataset;
+      const saved = FieldSplit.parsePolygon(d.polygon);
+      coords = saved || FieldSplit.fallbackPolygon(Number(d.lat), Number(d.lng), Number(d.area));
+      isFallback = !saved;
+      label = d.address;
+      areaM2 = Number(d.area || 0);
+      key = `land:${targetCheckbox.value}`;
+    } else {
+      if (!drawer.isActive()) resetView();
       return;
     }
-    const d = targetCheckbox.dataset;
-    const saved = FieldSplit.parsePolygon(d.polygon);
-    const coords = saved || FieldSplit.fallbackPolygon(Number(d.lat), Number(d.lng), Number(d.area));
-    fallbackNote.hidden = !!saved;
 
-    $("#fs-target").textContent = `${d.address} (모영역 A)`;
-    $("#fs-map-region").textContent = d.address;
-    $("#fs-sum-area").textContent = `${Number(d.area || 0).toLocaleString("ko-KR")} m²`;
+    if (key !== lastKey) { assignment = []; lastKey = key; }   // 영역이 바뀌면 담당 매핑 초기화
+    fallbackNote.hidden = !isFallback;
+    $("#fs-target").textContent = `${label} (모영역 A)`;
+    $("#fs-map-region").textContent = label;
+    $("#fs-sum-area").textContent = `${Math.round(areaM2).toLocaleString("ko-KR")} m²`;
     mapEmpty.hidden = true;
 
     if (!coords) {
-      resetView(d.address);
+      resetView(label);
       mapEmpty.hidden = false;
       mapEmpty.textContent = "이 농지는 외곽선도 위치 좌표도 없어 미리보기를 만들 수 없습니다.";
       return;
     }
+    currentCoords = coords;
 
-    const n = Number(countInput.value);
+    const n = Math.min(12, Math.max(2, Math.round(Number(countInput.value)) || 2));
+    countInput.value = String(n);
     try {
       pieces = FieldSplit.splitPolygonIntoN(coords, n);
       if (!pieces.length) throw new Error("다각형과 겹치는 조각이 없습니다. 좌표를 확인해 주세요.");
@@ -251,33 +402,31 @@ document.addEventListener("DOMContentLoaded", () => {
     $("#fs-sum-count").innerHTML = `${pad2(pieces.length)} <small>조각</small>`;
     renderCards();
     renderMap(coords);
-  };
+  }
 
   /* ===================== 이벤트 ===================== */
-  // 농지 체크: 가장 최근에 체크한 농지를 지도에 보여줌
   const pickTarget = () => {
     if (targetCheckbox && targetCheckbox.checked) return;
     const list = selectedLands();
     targetCheckbox = list.length ? list[list.length - 1] : null;
   };
 
+  // 등록 농지 체크: 가장 최근에 체크한 농지를 지도에 보여줌 (직접 그린 영역은 해제)
   landChecks().forEach((c) => c.addEventListener("change", () => {
-    if (c.checked) targetCheckbox = c;
+    if (c.checked) { cancelDrawing(); clearDrawn(); targetCheckbox = c; }
     else pickTarget();
     renderSplit();
   }));
   $("#check-all")?.addEventListener("change", () => {
+    if ($("#check-all").checked) { cancelDrawing(); clearDrawn(); }
     targetCheckbox = null;
     pickTarget();
     renderSplit();
   });
 
-  // 투입 조종사 체크 → 분할 개수 자동 동기화
-  pilotChecks().forEach((c) => c.addEventListener("change", renderSplit));
-
-  // 조각 수 직접 조절 (조종사 2명 미만일 때만 가능 = 미리보기용)
+  // 조각 수는 단장이 직접 정한다 (조종사 수와 무관)
   const changeCount = (amount) => {
-    const current = Number(countInput.value) || 2;
+    const current = Number(countInput.value) || 3;
     countInput.value = String(Math.min(12, Math.max(2, current + amount)));
     renderSplit();
   };
@@ -285,39 +434,76 @@ document.addEventListener("DOMContentLoaded", () => {
   incBtn.addEventListener("click", () => changeCount(1));
   countInput.addEventListener("change", renderSplit);
 
-  $("#fs-open-pilots").addEventListener("click", () => $("#open-assign").click());
+  $("#fs-fit").addEventListener("click", () => {
+    if (!currentCoords) return;
+    map.fitBounds(L.latLngBounds(currentCoords), { padding: [30, 30], maxZoom: 18, animate: true });
+  });
+
+  $("#fs-copy-all").addEventListener("click", () => {
+    if (!pieces.length) { setCopyMsg("먼저 영역을 분할해 주세요."); return; }
+    const output = pieces.map((feature, i) => ({
+      zone: pad2(feature.properties.sliceIndex + 1),
+      pilot: pilotNameOf(assignment[i]) || null,
+      areaSqm: Math.round(turf.area(feature)),
+      type: feature.geometry.type,
+      coordinates: toLatLng(feature.geometry),
+    }));
+    copyText(JSON.stringify(output, null, 2), "구역 좌표 JSON을 복사했어요.");
+  });
 
   /* ----- 배정 확정 -----
-     백엔드 규격(AssignRequest: landNos, quotas[조종사번호])은 그대로 사용.
-     농지 1건이면 '구역 01 담당 조종사'에게 quota 1, 나머지는 0 으로 맞춘 뒤 기존 폼 전송. */
+     구역마다 담당 조종사 + 구역 다각형(pieceAssignmentsJson)을 서버로 보낸다.
+     직접 그린 영역이면 영역 정보(drawn*)도 같이 보낸다. */
   $("#fs-confirm").addEventListener("click", () => {
-    const lands = selectedLands();
-    const pilots = checkedPilots();
-    if (!lands.length) { alert("배정할 농지를 먼저 선택하세요."); return; }
-    if (!pilots.length) { alert("투입할 조종사를 선택하세요."); return; }
+    clearError();
+    if (!pieces.length) { alert("먼저 영역을 선택하고 분할해 주세요."); return; }
 
-    if (lands.length === 1 && pieces.length) {
-      const first = assignment[0] || pilots[0].no;
-      pilotChecks().filter((c) => c.checked).forEach((c) => {
-        c.closest(".task-pilot").querySelector(".task-quota-input").value = c.value === first ? 1 : 0;
-      });
+    const lands = selectedLands();
+    if (!drawn && lands.length !== 1) {
+      alert(lands.length
+        ? "구역별 배정은 농지를 1건만 선택해 주세요. 여러 농지를 한꺼번에 나눌 때는 '분배 설정'을 사용하세요."
+        : "배정할 농지를 선택하거나 지도에서 영역을 그려 주세요.");
+      return;
     }
+    const emptyIdx = assignment.findIndex((v) => !v);
+    if (emptyIdx >= 0) {
+      alert(`구역 ${pad2(pieces[emptyIdx].properties.sliceIndex + 1)}의 담당 조종사를 선택하세요.`);
+      return;
+    }
+
+    if (drawn) {
+      if (!drawnAddress.value.trim()) {
+        alert("직접 그린 영역의 이름(주소)을 입력해 주세요.");
+        drawnAddress.focus();
+        return;
+      }
+      const center = L.latLngBounds(drawn).getCenter();
+      hidden("drawnPolygon").value = JSON.stringify(drawn);
+      hidden("drawnLat").value = center.lat.toFixed(6);
+      hidden("drawnLng").value = center.lng.toFixed(6);
+      hidden("drawnArea").value = String(Math.max(1, Math.round(areaOfCoords(drawn))));
+    } else {
+      ["drawnPolygon", "drawnLat", "drawnLng", "drawnArea"].forEach((n) => { hidden(n).value = ""; });
+    }
+
+    pieceInput.value = JSON.stringify(pieces.map((piece, i) => ({
+      sliceIndex: piece.properties.sliceIndex,
+      pilotNo: Number(assignment[i]),
+      areaSize: Math.round(turf.area(piece)),
+      geometry: piece.geometry,                         // 구역 다각형 (GeoJSON, [경도, 위도])
+    })));
+
+    form.dataset.pieceMode = "1";                       // task-assignment.js 의 필지 수 검사를 건너뜀
     form.requestSubmit();
   });
 
-  // 농지 1건 + 조종사 여러 명이면, 조각이 저장되지 않는다는 점을 확정 직전에 한 번 더 알림
+  // 모달의 '배정 확정'(일반 배정)으로 제출하면 구역 정보는 보내지 않는다
   form.addEventListener("submit", (e) => {
-    if (e.defaultPrevented) return;                       // 기존 검사에서 이미 막힘
-    const pilots = checkedPilots();
-    if (selectedLands().length !== 1 || pilots.length < 2) return;
-    const receiver = pilotChecks()
-      .filter((c) => c.checked)
-      .find((c) => Number(c.closest(".task-pilot").querySelector(".task-quota-input").value) > 0);
-    const name = receiver ? pilotNameOf(receiver.value) : "첫 번째 조종사";
-    const ok = window.confirm(
-      `현재는 농지 1건을 조종사 1명에게만 저장할 수 있어요.\n` +
-      `조각 나누기는 미리보기용이며, 이 농지 전체가 '${name}' 조종사에게 배정됩니다.\n계속할까요?`);
-    if (!ok) e.preventDefault();
+    delete form.dataset.pieceMode;
+    if (e.submitter) {
+      pieceInput.value = "";
+      ["drawnPolygon", "drawnLat", "drawnLng", "drawnArea"].forEach((n) => { hidden(n).value = ""; });
+    }
   });
 
   /* ===================== 처음 열렸을 때 ===================== */
