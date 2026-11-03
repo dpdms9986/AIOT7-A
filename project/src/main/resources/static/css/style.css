@@ -1087,15 +1087,6 @@
    기존 style.css 하단에 적용
 ================================================== */
 
-/* 1. 메인 콘텐츠 */
-.asset-page-main {
-    box-sizing: border-box;
-    flex: 1;
-    min-width: 0;
-    padding: 24px 28px 32px;
-    background: #f5f7fa;
-    color: #203246;
-}
 
 /* 2. 페이지 제목 */
 .asset-page-heading {
@@ -1103,27 +1094,29 @@
     align-items: center;
     gap: 16px;
     margin-bottom: 16px;
-    padding: 20px;
-    border: 1px solid #e4eaee;
-    border-radius: 12px;
-    background: #fff;
+    padding: 8px;
+    border: none;
+    border-radius: 0px;
+    background: transparent;
+    box-shadow: none;
 }
 
 .asset-page-heading .page-heading-icon {
     display: grid;
-    flex: 0 0 60px;
-    width: 60px;
-    height: 60px;
+    flex: 0 0 40px;
+    width: 40px;
+    height: 40px;
     place-items: center;
-    border-radius: 10px;
+    border-radius: 8px;
     background: #e5f4eb;
-    font-size: 28px;
+    font-size: 24px;
 }
 
 .asset-page-heading h1 {
-    margin: 0 0 6px;
+    margin: 0 0 7px;
+    color: #203246;
     font-size: 24px;
-    font-weight: 750;
+    font-weight: 700;
     letter-spacing: -0.5px;
 }
 
@@ -1132,6 +1125,11 @@
     color: #718093;
     font-size: 13px;
     line-height: 1.6;
+}
+
+/* 등록 버튼을 오른쪽으로 */
+.asset-pilot-register-button {
+    margin-left: auto;
 }
 
 .asset-role-chip {
@@ -2086,22 +2084,23 @@
     display: flex;
     align-items: center;
     gap: 16px;
-    margin-bottom: 16px;
-    padding: 20px;
-    border: 1px solid #e4eaee;
-    border-radius: 12px;
-    background: #fff;
+    margin-bottom: 24px;
+    padding: 8px 0;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
 }
 
 .asset-page-heading .page-heading-icon {
     display: grid;
-    flex: 0 0 60px;
-    width: 60px;
-    height: 60px;
+    flex: 0 0 40px;
+    width: 40px;
+    height: 40px;
     place-items: center;
-    border-radius: 10px;
+    border-radius: 8px;
     background: #e5f4eb;
-    font-size: 28px;
+    font-size: 24px;
 }
 
 .asset-page-heading h1 {
