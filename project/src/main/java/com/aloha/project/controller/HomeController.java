@@ -1,6 +1,5 @@
 package com.aloha.project.controller;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CookieValue;
@@ -9,11 +8,9 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.aloha.project.dto.SignupRequest;
-import com.aloha.project.repository.users.TeamRepository;
 import com.aloha.project.service.inter.users.UserService;
 
 import jakarta.servlet.http.Cookie;
@@ -29,7 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 public class HomeController {
 
   private final UserService userService; // 실제 회원가입 DB 처리를 하는 서비스 주입
-    private final TeamRepository teamRepository;
+
   /**
    * 💻 회원가입
    * @return
@@ -38,14 +35,6 @@ public class HomeController {
   public String getMethodName() {
       return "page/signup";
   }
-
-  // 임시: 등록된 방제단과 초대코드 목록 전체 반환 (Thunder Client 테스트용)
-    @GetMapping("/api/test/invite-codes")
-    @ResponseBody
-    public ResponseEntity<?> getInviteCodes() {
-        // DB에 저장된 모든 팀의 이름과 초대코드 조회
-        return ResponseEntity.ok(teamRepository.findAll());
-    }
 
 
    // [깔끔하게 정리된 버전]

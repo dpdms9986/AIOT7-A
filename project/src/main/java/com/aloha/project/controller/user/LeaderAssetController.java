@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.aloha.project.domain.tasks.Drones;
 import com.aloha.project.domain.tasks.Chemicals;
@@ -30,6 +32,8 @@ import com.aloha.project.repository.users.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+
+
 /**
  * 방제단장 - 드론·약제 관리
  * 예) /leader/assetlist?tab=drone&owner=김민수&id=DR-001
@@ -44,6 +48,7 @@ public class LeaderAssetController {
     private final ChemicalRepository chemicalRepository;
     private final UserRepository userRepository;
 
+    @Transactional(readOnly = true)
     @GetMapping("/assetlist")
     public String getAssetList(
             @RequestParam(value = "tab",     defaultValue = "all") String tab,

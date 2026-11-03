@@ -24,7 +24,7 @@
     let farmDetailMap = null;
     let farmDetailMarker = null;
 
-    const DEFAULT_MAP_POSITION = [36.3504, 127.3845];
+    const DEFAULT_MAP_POSITION = [36.4026852, 127.4060879];
 
     const rows = () =>
         [...tbody.querySelectorAll("tr[data-farm-id]")];
@@ -151,22 +151,47 @@
             }
 
             if (hasCoordinates) {
-                farmDetailMap.setView([lat, lng], 16);
+    const position = [lat, lng];
 
-                farmDetailMarker = L.marker([lat, lng])
-                    .addTo(farmDetailMap)
-                    .bindPopup(data.address);
+    // 지도 중심을 해당 농지 좌표로 이동
+    farmDetailMap.setView(position, 17);
 
-                if (statusElement) {
-                    statusElement.textContent = "농지 위치 표시 중";
-                }
-            } else {
-                farmDetailMap.setView(DEFAULT_MAP_POSITION, 13);
+    // 기존 핀이 있으면 제거
+    if (farmDetailMarker) {
+        farmDetailMap.removeLayer(farmDetailMarker);
+    }
 
-                if (statusElement) {
-                    statusElement.textContent = "농지 좌표 미등록";
-                }
-            }
+    // 해당 좌표에 핀 생성
+    farmDetailMarker = L.marker(position, {
+        draggable: false,
+        title: data.address
+    }).addTo(farmDetailMap);
+
+    // 주소와 좌표를 팝업에 표시
+    farmDetailMarker.bindPopup(
+        `<strong>${data.address}</strong><br>` +
+        `위도: ${lat.toFixed(7)}<br>` +
+        `경도: ${lng.toFixed(7)}`
+    );
+
+    farmDetailMarker.openPopup();
+
+    if (statusElement) {
+        statusElement.textContent =
+            `위치 표시 중 (${lat.toFixed(6)}, ${lng.toFixed(6)})`;
+    }
+
+    console.log("농지 마커 좌표:", lat, lng);
+} else {
+    farmDetailMap.setView(DEFAULT_MAP_POSITION, 16);
+
+    if (statusElement) {
+        statusElement.textContent =
+            `좌표 미등록 (lat: "${data.latitude}", lng: "${data.longitude}")`;
+    }
+
+    console.warn("농지 좌표가 유효하지 않습니다.", data);
+}
         });
     }
 
@@ -356,4 +381,41 @@
     if (regionFilter) regionFilter.value = "";
 
     applyFilters();
+
+    // ===== 방제단 관리 탭 전환 =====
+document.addEventListener("DOMContentLoaded", () => {
+    const tabButtons = document.querySelectorAll("[data-team-tab]");
+    const membersPanel = document.querySelector("#team-members-panel");
+    const allocationPanel = document.querySelector("#team-allocation-panel");
+
+    if (!tabButtons.length || !membersPanel || !allocationPanel) {
+        console.error("방제단 탭 요소를 찾을 수 없습니다.");
+        return;
+    }
+
+    function activateTab(tabName) {
+        const showAllocation = tabName === "allocation";
+
+        // 탭 버튼 상태 변경
+        tabButtons.forEach(button => {
+            const isActive = button.dataset.teamTab === tabName;
+
+            button.classList.toggle("active", isActive);
+            button.setAttribute("aria-pressed", String(isActive));
+        });
+
+        // 해당 패널만 표시
+        membersPanel.hidden = showAllocation;
+        allocationPanel.hidden = !showAllocation;
+    }
+
+    tabButtons.forEach(button => {
+        button.addEventListener("click", () => {
+            activateTab(button.dataset.teamTab);
+        });
+    });
+
+    // 최초 진입은 조종사 현황 탭
+    activateTab("members");
+});
 })();
