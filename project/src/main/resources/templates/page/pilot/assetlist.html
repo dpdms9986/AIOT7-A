@@ -8,7 +8,7 @@
 </head>
 <body layout:fragment="content">
 
-<main class="main-content asset-page-main">
+<main class="dash-main">
 
   <!-- 페이지 제목 -->
   <section class="page-heading asset-page-heading">
@@ -273,12 +273,14 @@
 </label>
 
         <label>상태
-          <select id="asset-status" name="status" required>
-            <option th:each="s : ${allStatusOptions}"
-                    th:value="${s.key}"
-                    th:text="${s.value}">정상</option>
-          </select>
-        </label>
+  <select id="asset-status" name="status" required>
+    <option th:each="s : ${allStatusOptions}"
+            th:value="${s.key}"
+            th:text="${s.value}"
+            th:attr="data-asset-type=${s.key == 'normal' ? 'both' : (s.key == 'low' ? 'chemical' : 'drone')}">
+    </option>
+  </select>
+</label>
 
       </div>
 
@@ -292,6 +294,17 @@
       </div>
     </form>
   </section>
-</div>
+</div>  
+
+
+<!-- 공통 팝업 불러오기 -->
+<th:block th:replace="~{UI/fragments/user/toast :: toast}"></th:block>
 
 <script th:src="@{/js/pilot/assetlist.js}"></script>
+
+<!-- 자산 등록 성공 팝업 -->
+<script th:if="${assetRegistered}">
+    showPopup('자산이 등록되었습니다.');
+</script>
+</body>
+</html>

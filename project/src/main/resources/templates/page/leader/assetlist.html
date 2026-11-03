@@ -8,7 +8,7 @@
 </head>
 <body layout:fragment="content">
 
-<main class="main-content asset-page-main asset-team-page">
+<main class="dash-main asset-team-page">
 
   <!-- 페이지 제목 -->
   <section class="page-heading asset-page-heading">
@@ -252,7 +252,7 @@
     <form th:action="@{/leader/assetlist}" method="post">
       <div class="team-form-grid">
         <label>자산 유형
-          <select name="type" required>
+          <select id="asset-type" name="type" required>
             <option value="drone">드론 기체</option>
             <option value="chemical">농업용 약제</option>
           </select>
@@ -270,9 +270,11 @@
         </label>
         <label>상태
           <select name="status" required>
-            <option th:each="s : ${allStatusOptions}" th:value="${s.key}" th:text="${s.value}">정상</option>
+            <option th:each="s : ${allStatusOptions}" th:value="${s.key}" th:text="${s.value}" th:attr="data-asset-type=${s.key == 'normal' ? 'both' : (s.key == 'low' ? 'chemical' : 'drone')}">
+    </option>
           </select>
         </label>
+
       </div>
       <div class="team-modal-actions">
         <button type="button" class="team-btn team-btn-outline" data-close-modal>취소</button>
@@ -282,6 +284,16 @@
   </section>
 </div>
 
+
+
+<!-- 공통 팝업 불러오기 -->
+<th:block th:replace="~{UI/fragments/user/toast :: toast}"></th:block>
 <script th:src="@{/js/leader/assetlist.js}"></script>
+
+
+<!-- 자산 등록 성공 팝업 -->
+<script th:if="${assetRegistered}">
+    showPopup('자산이 등록되었습니다.');
+</script>
 </body>
 </html>

@@ -35,6 +35,7 @@ public class AssetDto {
         STATUS_LABELS.put("maintenance", "정비 필요");
         STATUS_LABELS.put("in-maintenance", "정비 중");
         STATUS_LABELS.put("fault", "고장");
+        STATUS_LABELS.put("low", "재고 부족");
     }
 
     private String id;               // 내부 자산 식별자 (DB 기본키)

@@ -144,7 +144,7 @@ public class LeaderAssetController {
         model.addAttribute("selected", selected);
         model.addAttribute("owners", owners);
         model.addAttribute("statusOptions", statusOptions);                 // 검색용 (탭별)
-        model.addAttribute("allStatusOptions", AssetDto.STATUS_LABELS);     // 자산 등록 팝업용 (전부)
+        model.addAttribute("allStatusOptions", statusOptionsFor("all"));     // 자산 등록 팝업용 (전부)
         // 검색값 유지
         model.addAttribute("type", typeFilter);
         model.addAttribute("owner", owner);
@@ -227,9 +227,8 @@ public class LeaderAssetController {
         }
 
         redirectAttributes.addFlashAttribute(
-                "message",
-                form.getName() + " 자산이 성공적으로 등록되었습니다."
-        );
+        "assetRegistered", true
+    );
 
         return "redirect:/leader/assetlist";
     }
@@ -348,13 +347,17 @@ public class LeaderAssetController {
        탭별 상태 검색 목록 (AssetDto.STATUS_LABELS 에서 골라 씀, DTO 는 수정 안 함)
        ========================================================= */
     private Map<String, String> statusOptionsFor(String tab) {
-        List<String> keys = switch (tab) {
-            case "drone"    -> List.of("normal", "operating", "maintenance", "in-maintenance", "fault");
-            case "chemical" -> List.of("normal", "low");
-            default         -> new ArrayList<>(AssetDto.STATUS_LABELS.keySet());
-        };
-        Map<String, String> options = new LinkedHashMap<>();
-        keys.forEach(k -> options.put(k, AssetDto.STATUS_LABELS.get(k)));
-        return options;
-    }
+    List<String> keys = switch (tab) {
+        case "drone" ->
+            List.of("normal", "operating", "maintenance",
+                    "in-maintenance", "fault");
+        case "chemical" -> List.of("normal", "low");
+        default -> List.of("normal", "operating", "maintenance",
+                           "in-maintenance", "fault", "low");
+    };
+
+    Map<String, String> options = new LinkedHashMap<>();
+    keys.forEach(k -> options.put(k, AssetDto.STATUS_LABELS.get(k)));
+    return options;
+}
 }

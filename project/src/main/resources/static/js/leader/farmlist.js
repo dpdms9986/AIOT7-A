@@ -73,6 +73,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const DEFAULT_POS = [36.3504, 127.3845];   // 좌표 없을 때 기본 위치 (대전)
   let map = null;
   let marker = null;
+  let polyLayer = null;   // 저장된 농지 외곽선
 
   const showMap = (d) => {
     const status = $("#farm-detail-map-status");
@@ -91,10 +92,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     map.invalidateSize();   // 숨겨져 있던 패널이 열렸으니 크기 다시 계산
 
-    // 이전 마커 지우기
+    // 이전 마커 및 외곽선 지우기
     if (marker) { map.removeLayer(marker); marker = null; }
+    if (polyLayer) { map.removeLayer(polyLayer); polyLayer = null; }
 
     const lat = Number(d.lat), lng = Number(d.lng);
+    const polygon = window.FieldSplit ? FieldSplit.parsePolygon(d.polygon) : null;   // data-polygon
+
     if (d.lat && d.lng && Number.isFinite(lat) && Number.isFinite(lng)) {
       map.setView([lat, lng], 16);
       marker = L.marker([lat, lng]).addTo(map).bindPopup(d.address);
@@ -103,9 +107,18 @@ document.addEventListener("DOMContentLoaded", () => {
       map.setView(DEFAULT_POS, 13);
       status.textContent = "농지 좌표 미등록";
     }
+
+    // 저장된 농지 외곽선 표시
+    if (polygon) {
+      polyLayer = L.polygon(polygon, {
+        color: "#247a5e", weight: 2, fillColor: "#54a77b", fillOpacity: 0.25,
+      }).addTo(map);
+      map.fitBounds(polyLayer.getBounds(), { padding: [24, 24], maxZoom: 18 });
+      status.textContent = "농지 외곽선 표시 중";
+    }
   };
 
-    /* ===================== 3. 등록 모달 ===================== */
+  /* ===================== 3. 등록 모달 ===================== */
   const modal = $("#farm-register-modal");
   const regForm = modal.querySelector("form");
   const field = (name) => regForm.querySelector(`[name='${name}']`);
@@ -116,8 +129,32 @@ document.addEventListener("DOMContentLoaded", () => {
   const lngInput = field("longitude");
   const ADDR_HINT = "주소를 고르면 지도와 위도·경도가 자동으로 맞춰져요. 지도를 클릭해 미세 조정할 수 있어요.";
 
+  // 외곽선 그리기에 필요한 요소들
+  const drawBtn = $("#farm-draw-btn");
+  const drawStatus = $("#farm-draw-status");
+  const polygonInput = $("#farm-polygon");
+  const DRAW_HINT = "외곽을 그리지 않으면 위치 마커만 저장돼요.";
+
   let pickMap = null;
   let pickMarker = null;
+  let outlineDrawer = null;    // FieldSplit.createDrawer (지도가 만들어진 뒤 생성)
+
+  const setDrawStatus = (message, state = "") => {
+    if (!drawStatus) return;
+    drawStatus.textContent = message;
+    drawStatus.dataset.state = state;
+  };
+
+  // 그린 외곽선 + 관련 입력칸 모두 초기화
+  const clearDrawing = () => {
+    if (outlineDrawer) outlineDrawer.clear();
+    if (polygonInput) polygonInput.value = "";
+    if (drawBtn) {
+      drawBtn.textContent = "지도에서 외곽 그리기";
+      drawBtn.setAttribute("aria-pressed", "false");
+    }
+    setDrawStatus(DRAW_HINT);
+  };
 
   // 위도·경도 칸 + 마커 (+ 지도 이동) 한 번에 맞추기
   const setPick = (lat, lng, zoom) => {
@@ -136,11 +173,38 @@ document.addEventListener("DOMContentLoaded", () => {
     pickMap.setView(DEFAULT_POS, 13);
   };
 
+  // 그리기가 끝났을 때 처리
+  const finishDrawing = () => {
+    if (!outlineDrawer) return false;
+    const result = outlineDrawer.finish();
+    if (drawBtn) {
+      drawBtn.textContent = "지도에서 외곽 다시 그리기";
+      drawBtn.setAttribute("aria-pressed", "false");
+    }
+    if (!result.ok) {
+      if (polygonInput) polygonInput.value = "";
+      return false;
+    }
+    const coords = result.coordinates;
+    if (polygonInput) polygonInput.value = JSON.stringify(coords);
+
+    const center = L.latLngBounds(coords).getCenter();
+    setPick(center.lat, center.lng);
+
+    if (window.turf && window.FieldSplit) {
+      const polygon = turf.polygon([FieldSplit.closeRing(coords).map(([lat, lng]) => [lng, lat])]);
+      const areaField = field("areaSize");
+      if (areaField) areaField.value = Math.max(1, Math.round(turf.area(polygon)));
+    }
+    return true;
+  };
+
   const openModal = () => {
     modal.hidden = false;
     document.body.style.overflow = "hidden";
     regForm.reset();                    // 지난번에 입력한 값 지우기
     addrMsg.textContent = ADDR_HINT;
+    clearDrawing();                     // 열 때 외곽선 초기화
 
     // 팝업 안 작은 지도 (처음 열 때 한 번만 만들기)
     if (typeof L !== "undefined") {
@@ -150,33 +214,54 @@ document.addEventListener("DOMContentLoaded", () => {
           maxZoom: 19,
           attribution: "&copy; OpenStreetMap",
         }).addTo(pickMap);
-        pickMap.on("click", (e) => setPick(e.latlng.lat, e.latlng.lng));   // 지도 클릭 → 위치 지정
+
+        pickMap.on("click", (e) => {
+          if (outlineDrawer && outlineDrawer.isActive()) return;   // 그리는 중엔 꼭짓점이 우선
+          setPick(e.latlng.lat, e.latlng.lng);
+        });
+
+        if (window.FieldSplit) {
+          outlineDrawer = FieldSplit.createDrawer(pickMap, { onStatus: setDrawStatus });
+        }
       }
       resetPick();
       setTimeout(() => pickMap.invalidateSize(), 0);   // 숨겨져 있던 지도는 크기 다시 계산
     }
-    addrBtn.focus();
+    if (addrBtn) addrBtn.focus();
   };
+
   const closeModal = () => {
     modal.hidden = true;
     document.body.style.overflow = "";
   };
 
-  $("#register-button").addEventListener("click", openModal);
+  const registerBtn = $("#register-button");
+  if (registerBtn) registerBtn.addEventListener("click", openModal);
   modal.querySelectorAll("[data-close-modal]").forEach((b) => b.addEventListener("click", closeModal));
 
-  /* [나중에 다시 켤 때 이 주석만 지우세요]
-  // 배경에서 눌렀다가 배경에서 뗐을 때만 닫기 (팝업 안에서 드래그해도 안 꺼짐)
-  let downOnBackdrop = false;
-  modal.addEventListener("pointerdown", (e) => { downOnBackdrop = (e.target === modal); });
-  modal.addEventListener("click", (e) => {
-    if (e.target === modal && downOnBackdrop) closeModal();
-    downOnBackdrop = false;
-  });
-  */
+  // 외곽 그리기 버튼 이벤트
+  if (drawBtn) {
+    drawBtn.addEventListener("click", () => {
+      if (!outlineDrawer) {
+        if (window.showPopup) showPopup("지도를 불러오지 못했어요. 페이지를 새로고침해 주세요.", "warn");
+        return;
+      }
+      if (outlineDrawer.isActive()) {          // 그리기 완료
+        finishDrawing();
+        return;
+      }
+      if (polygonInput && polygonInput.value && !window.confirm("이미 그린 외곽이 있어요. 지우고 새로 그릴까요?")) return;
+      clearDrawing();
+      if (pickMarker) { pickMap.removeLayer(pickMarker); pickMarker = null; }   // 그리는 동안엔 마커 숨김
+      outlineDrawer.start();
+      drawBtn.textContent = "그리기 완료";
+      drawBtn.setAttribute("aria-pressed", "true");
+    });
+  }
 
   // 위도·경도를 직접 고치면 지도 마커도 이동
   [latInput, lngInput].forEach((input) => {
+    if (!input) return;
     input.addEventListener("change", () => {
       const lat = parseFloat(latInput.value);
       const lng = parseFloat(lngInput.value);
@@ -185,8 +270,15 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // 주소 검색을 안 하고 등록하려 할 때 막기 (숨은 칸은 브라우저가 검사하지 않음)
+  // 주소 검색을 안 하고 등록하려 할 때 막기 + 그리는 중 등록 방지
   regForm.addEventListener("submit", (e) => {
+    if (outlineDrawer && outlineDrawer.isActive() && !finishDrawing()) {
+      e.preventDefault();
+      const msg = "농지 외곽을 올바르게 그려 주세요. (꼭짓점 3개 이상, 선이 꼬이지 않게)";
+      if (window.showPopup) showPopup(msg, "warn");
+      else alert(msg);
+      return;
+    }
     if (!field("city").value || !field("dong").value || !field("address").value) {
       e.preventDefault();
       const msg = "주소 검색 버튼으로 농지 주소를 먼저 선택해 주세요.";
@@ -196,7 +288,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   /* ===================== 3-1. 주소 검색 → 위치 자동 입력 ===================== */
-  // 다음 우편번호는 시/도를 짧게 주므로("대전") 정식 이름으로 바꿔서 채우기
   const SIDO_FULL = {
     "서울": "서울특별시", "부산": "부산광역시", "대구": "대구광역시", "인천": "인천광역시",
     "광주": "광주광역시", "대전": "대전광역시", "울산": "울산광역시", "세종": "세종특별자치시",
@@ -205,7 +296,6 @@ document.addEventListener("DOMContentLoaded", () => {
     "제주": "제주특별자치도",
   };
 
-  // 주소 → 좌표 (OpenStreetMap Nominatim, 위험 구역 신고와 같은 방식)
   async function geocode(address) {
     const url = "https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=kr&q="
               + encodeURIComponent(address);
@@ -215,7 +305,6 @@ document.addEventListener("DOMContentLoaded", () => {
     return list.length ? { lat: parseFloat(list[0].lat), lng: parseFloat(list[0].lon) } : null;
   }
 
-  // 못 찾으면 주소 끝부분(번지 등)을 하나씩 떼면서 다시 시도
   async function geocodeLoose(address) {
     let words = address.trim().split(/\s+/);
     while (words.length >= 2) {
@@ -227,7 +316,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function findCoords(road, jibun) {
-    latInput.value = "";      // 이전 검색의 좌표가 남지 않게 비우기
+    latInput.value = "";      
     lngInput.value = "";
     resetPick();
     addrMsg.textContent = "위치를 찾는 중이에요...";
@@ -244,32 +333,33 @@ document.addEventListener("DOMContentLoaded", () => {
       : "정확한 번지는 못 찾아서 근처로 맞췄어요. 지도를 클릭해 정확한 위치를 찍어 주세요.";
   }
 
-  addrBtn.addEventListener("click", () => {
-    // 다음(카카오) 우편번호 검색 (script.html 에서 이미 불러옴)
-    if (typeof daum === "undefined" || !daum.Postcode) {
-      if (window.showPopup) showPopup("주소 검색을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.", "warn");
-      return;
-    }
-    new daum.Postcode({
-      oncomplete: (data) => {
-        const road = data.roadAddress || data.address;
-        const jibun = data.jibunAddress || data.autoJibunAddress || "";
-        addrInput.value = road;
+  if (addrBtn) {
+    addrBtn.addEventListener("click", () => {
+      if (typeof daum === "undefined" || !daum.Postcode) {
+        if (window.showPopup) showPopup("주소 검색을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.", "warn");
+        return;
+      }
+      new daum.Postcode({
+        oncomplete: (data) => {
+          const road = data.roadAddress || data.address;
+          const jibun = data.jibunAddress || data.autoJibunAddress || "";
+          if (addrInput) addrInput.value = road;
 
-        // 서버로 보낼 숨은 칸 채우기
-        field("city").value = SIDO_FULL[data.sido] || data.sido;
-        field("region").value = data.sigungu || "";
-        field("dong").value = data.bname1 || data.bname;
+          clearDrawing();   // 위치가 바뀌었으니 이전에 그린 외곽선은 지움
 
-        // 상세 주소: 지번 주소에서 "시/도 시/군/구" 부분을 떼고 저장 (예: "전민동 15-2")
-        const prefix = [data.sido, data.sigungu].filter(Boolean).join(" ") + " ";
-        const base = jibun || road;
-        field("address").value = base.startsWith(prefix) ? base.slice(prefix.length) : base;
+          field("city").value = SIDO_FULL[data.sido] || data.sido;
+          field("region").value = data.sigungu || "";
+          field("dong").value = data.bname1 || data.bname;
 
-        findCoords(road, jibun);
-      },
-    }).open();
-  });
+          const prefix = [data.sido, data.sigungu].filter(Boolean).join(" ") + " ";
+          const base = jibun || road;
+          field("address").value = base.startsWith(prefix) ? base.slice(prefix.length) : base;
+
+          findCoords(road, jibun);
+        },
+      }).open();
+    });
+  }
 
   /* ===================== 4. ESC 로 닫기 ===================== */
   document.addEventListener("keydown", (e) => {

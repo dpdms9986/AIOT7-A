@@ -45,6 +45,7 @@ public class LandDto {
                 .longitude(land.getLongitude())
                 .areaSize(land.getAreaSize())
                 .status(land.getStatus())
+                .polygonCoordinates(land.getPolygonCoordinates())
                 .build();
     }
 
