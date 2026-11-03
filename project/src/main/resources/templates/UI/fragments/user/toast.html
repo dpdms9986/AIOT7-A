@@ -45,7 +45,14 @@
       document.addEventListener("DOMContentLoaded", () => {
         if (loginMessage)  showPopup(loginMessage);
         if (signupSuccess) showPopup("회원가입이 완료되었습니다. 로그인해 주세요.");
-      });    
+        try {
+          const pending = sessionStorage.getItem("loginPopup");
+          if (pending) {
+            sessionStorage.removeItem("loginPopup");
+            showPopup(pending);
+          }
+        } catch (e) {}
+      });
     })();
   </script>
 </th:block> 

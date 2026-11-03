@@ -16,13 +16,15 @@ public class Teams {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long no;
 
+    @Column(nullable = false)
     private String teamName;
     
-    @Column(unique = true)
+    @Column(unique = true, nullable = false)
     private String inviteCode;
     
-    @Column(name = "leader_no")
-    private Long leaderNo; 
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "leader_no")     // nullable = true 유지!
+    private Users leader;               // 방제단장(ROLE_LEADER) 객체 직접 매핑 
     
     private LocalDateTime createdAt;
 

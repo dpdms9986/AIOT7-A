@@ -1,10 +1,14 @@
 package com.aloha.project.controller.admin;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,6 +20,7 @@ import com.aloha.project.domain.tasks.WorkAssignments;
 import com.aloha.project.domain.users.CustomUser;
 import com.aloha.project.domain.users.Teams;
 import com.aloha.project.domain.users.Users;
+import com.aloha.project.dto.AdminWorkDto; // dto/admin 폴더에 두었다면: com.aloha.project.dto.admin.AdminWorkDto
 import com.aloha.project.dto.LandDto;
 import com.aloha.project.repository.lands.LandRepository;
 import com.aloha.project.repository.tasks.DroneRepository;
@@ -47,6 +52,7 @@ public class AdminPageController {
      * 1. 관리자 통합 관제 대시보드
      * GET /admin 또는 GET /admin/dashboard
      */
+    @Transactional(readOnly = true) // open-in-view=false 라서 LAZY(농지/조종사)는 이 안에서 꺼내야 함
     @GetMapping({"", "/", "/dashboard"})
     public String getDashboard(@AuthenticationPrincipal CustomUser customUser, Model model) {
         log.info("관리자 대시보드 접근: {}", customUser != null ? customUser.getUsername() : "anonymous");
@@ -57,8 +63,7 @@ public class AdminPageController {
         long pilotCount  = allUsers.stream().filter(u -> "PILOT".equals(u.getRole())).count();
 
         // 2. 등록된 전체 방제단(Teams) 현황
-        List<Teams> allTeams = teamRepository.findAll();
-        long totalTeamCount = allTeams.size();
+        long totalTeamCount = teamRepository.findAll().size();
 
         // 3. 등록된 전체 드론 기체 현황
         List<Drones> allDrones = droneRepository.findAll();
@@ -73,6 +78,34 @@ public class AdminPageController {
         // 전체 방제 완료율 계산
         int totalProgressPercent = (totalLandCount > 0) ? (int) ((completedLandCount * 100) / totalLandCount) : 0;
 
+        // 5. 최근 방제 작업 이력 (8건)
+        // TODO(백엔드) findAll() 은 전체를 읽어서 느릴 수 있음.
+        //   WorkAssignmentRepository 에 findTop8ByOrderByCreatedAtDesc() 만들어지면 아래 줄 교체:
+        //   List<WorkAssignments> allWorks = workAssignmentRepository.findTop8ByOrderByCreatedAtDesc();
+        List<WorkAssignments> allWorks = workAssignmentRepository.findAll();
+        List<AdminWorkDto> recentWorks = allWorks.stream()
+                .map(AdminWorkDto::from)
+                .filter(w -> w.getWorkDate() != null)
+                .sorted(Comparator.comparing(AdminWorkDto::getWorkDate).reversed())
+                .limit(8)
+                .toList();
+
+        // 6. 주간(최근 7일) 방제 완료 추이 - 0건인 날도 채움
+        // TODO(백엔드) findByStatusAndCompletedAtGreaterThanEqual("COMPLETED", 시작일시) 만들어지면
+        //   allWorks 대신 그 결과를 사용
+        LocalDate today = LocalDate.now();
+        List<String> weekLabels = new ArrayList<>();
+        List<Long> weekCounts = new ArrayList<>();
+        for (int i = 6; i >= 0; i--) {
+            LocalDate day = today.minusDays(i);
+            weekLabels.add(String.format("%02d.%02d", day.getMonthValue(), day.getDayOfMonth()));
+            weekCounts.add(allWorks.stream()
+                    .filter(w -> "COMPLETED".equals(w.getStatus())
+                            && w.getCompletedAt() != null
+                            && w.getCompletedAt().toLocalDate().equals(day))
+                    .count());
+        }
+
         // Model 바인딩
         model.addAttribute("totalTeamCount", totalTeamCount);
         model.addAttribute("leaderCount", leaderCount);
@@ -82,6 +115,9 @@ public class AdminPageController {
         model.addAttribute("totalLandCount", totalLandCount);
         model.addAttribute("completedLandCount", completedLandCount);
         model.addAttribute("totalProgressPercent", totalProgressPercent);
+        model.addAttribute("recentWorks", recentWorks);
+        model.addAttribute("weekLabels", weekLabels);
+        model.addAttribute("weekCounts", weekCounts);
 
         return "page/admin/dashboard"; // templates/page/admin/dashboard.html
     }
@@ -129,6 +165,7 @@ public class AdminPageController {
      * 4. 시스템 종합 방제 통계
      * GET /admin/statistics
      */
+    // TODO(백엔드) w.getLand() 가 LAZY 라서 @Transactional(readOnly = true) 필요 (open-in-view=false)
     @GetMapping("/statistics")
     public String getStatistics(Model model) {
         // 전체 완료된 작업 이력 조회

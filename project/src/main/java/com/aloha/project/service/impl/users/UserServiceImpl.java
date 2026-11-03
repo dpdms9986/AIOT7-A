@@ -71,6 +71,11 @@ public class UserServiceImpl implements UserService {
                     .build();
             user.addAuth(userAuth);
 
+            // ⭐ [추가] 단장이 저장되었으니, 팀의 leader에 단장 꽂아주기!
+            if ("LEADER".equals(request.getRole())) {
+                team.setLeader(user); // 👈 JPA 더티체킹으로 teams 테이블의 leader_no 컬럼이 자동 UPDATE됨!
+            }
+
             // 저장 (Cascade에 의해 UserAuth도 함께 저장됨)
             repository.save(user);
 

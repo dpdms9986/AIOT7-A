@@ -33,6 +33,8 @@ public class LandDto {
     private String pilotName;         // 배정 조종사 (없으면 null)
     private LocalDateTime assignedAt; // 배정 일시 (없으면 null)
 
+    private String polygonCoordinates; // 다각형 좌표 그리기
+
     public static LandDto from(Lands land) {
         if (land == null) return null;
 

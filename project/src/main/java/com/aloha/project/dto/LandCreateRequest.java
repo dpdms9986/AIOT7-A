@@ -22,4 +22,6 @@ public class LandCreateRequest {
     private Double latitude;   // name="latitude"   (비우면 null)
     private Double longitude;  // name="longitude"  (비우면 null)
     private Double areaSize;   // name="areaSize"
+
+    private String polygonCoordinates; // 다각형 그리기
 }
