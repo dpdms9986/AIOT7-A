@@ -269,7 +269,7 @@
         </label>
         <label>담당 조종사
           <select name="owner" required>
-            <option th:each="o : ${owners}" th:value="${o}" th:text="${o}">김민수</option>
+            <option th:each="o : ${owners}" th:value="${o.no}" th:text="${o.name}"></option>
           </select>
         </label>
         <label>상태
