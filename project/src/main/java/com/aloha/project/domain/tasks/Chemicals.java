@@ -31,18 +31,6 @@ public class Chemicals {
     @Column(nullable = false, length = 50)
     private String category; // 살충제 / 살균제 / 제초제 / 영양제
 
-    @Column(length = 100)
-    private String manufacturer; // 제조사
-
-    // @Column(nullable = false)
-    // private Double currentStock = 0.0; // 현재 재고량
-
-    // @Column(nullable = false)
-    // private Double safetyStock; // 안전 재고 기준량
-
-    // @Column(nullable = false, length = 20)
-    // private String unit = "L"; // 재고 관리 단위
-
     @Builder.Default
     @Column(nullable = false, length = 20)  // 재고량 상태
     private String status = "normal";       // normal: 양호, low: 부족
