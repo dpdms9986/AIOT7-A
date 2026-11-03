@@ -5,6 +5,9 @@
 <head>
   <meta charset="UTF-8">
   <title>작업 배정 | 스마트 농업 관제 시스템</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6.5.0/turf.min.js"></script>
 </head>
 <body layout:fragment="content">
 
@@ -70,6 +73,10 @@
                   <input type="checkbox" class="land-check" name="landNos"
                          th:value="${land.no}"
                          th:data-area="${land.areaSize}"
+                         th:data-polygon="${land.polygonCoordinates}"
+                         th:data-lat="${land.latitude}"
+                         th:data-lng="${land.longitude}"
+                         th:data-address="${land.address}"
                          th:checked="${land.no == landNo}"
                          th:attr="aria-label=${land.address} + ' 선택'">
                 </td>
@@ -88,6 +95,93 @@
         <div class="task-select-bar">
           <p>선택한 농지 <strong id="sel-count">0</strong>필지 · 총 <strong id="sel-area">0</strong>㎡</p>
           <button type="button" class="dash-btn-primary" id="open-assign">👥 분배 설정</button>
+        </div>
+
+         <!-- 구역 분할 배정 -->
+        <div class="field-split-wrap fs-section" id="fs-section">
+          <div class="fs-summary">
+            <div class="fs-summary-icon" aria-hidden="true">🗺️</div>
+            <div class="fs-summary-copy">
+              <strong>구역 분할 배정</strong>
+              <span id="fs-target">위 목록에서 농지를 고르거나, 지도에서 직접 영역을 그려 주세요.</span>
+            </div>
+            <div class="fs-metric">
+              <div><span>분할 개수</span><strong id="fs-sum-count">-</strong></div>
+              <div><span>원본 면적</span><strong id="fs-sum-area">-</strong></div>
+            </div>
+          </div>
+
+          <div class="fs-grid">
+            <section class="fs-panel" aria-labelledby="fs-set-title">
+              <h3 id="fs-set-title">1. 영역 선택 · 2. 분할</h3>
+
+              <button type="button" class="dash-btn-outline" id="fs-draw-btn" aria-pressed="false">✏️ 지도에서 직접 영역 그리기</button>
+              <p class="fs-hint" id="fs-draw-status">등록된 농지를 체크하거나, 지도를 눌러 꼭짓점을 찍어 영역을 잡을 수 있어요.</p>
+              <div id="fs-drawn-wrap" hidden>
+                <label class="fs-label" for="fs-drawn-address">직접 그린 영역 이름(주소)</label>
+                <input type="text" id="fs-drawn-address" name="drawnAddress" maxlength="200"
+                       placeholder="예) 전민동 15-2 옆 밭" style="width:100%">
+              </div>
+
+              <label class="fs-label" for="splitCount" style="display:block;margin-top:14px">분할할 조각 수</label>
+              <div class="fs-count">
+                <button type="button" id="fs-dec" aria-label="분할 개수 줄이기">−</button>
+                <input id="splitCount" type="number" min="2" max="12" value="3" inputmode="numeric">
+                <button type="button" id="fs-inc" aria-label="분할 개수 늘리기">+</button>
+                <span>조각</span>
+              </div>
+              <p class="fs-hint" id="fs-count-hint">조각 수는 조종사 수와 상관없이 정할 수 있어요. 한 조종사가 여러 구역을 맡아도 됩니다.</p>
+
+              <details style="margin-top:12px">
+                <summary class="fs-hint" style="cursor:pointer">좌표 직접 입력 · 예제</summary>
+                <textarea id="fs-coords" rows="4" style="width:100%;margin-top:6px"
+                          placeholder="[[위도, 경도], [위도, 경도], [위도, 경도]]"></textarea>
+                <div style="display:flex;gap:6px;margin-top:6px">
+                  <button type="button" class="dash-btn-outline task-mini-btn" id="fs-coords-apply">좌표 적용</button>
+                  <button type="button" class="dash-btn-outline task-mini-btn" id="fs-sample-btn">예제 불러오기</button>
+                </div>
+              </details>
+
+              <div class="fs-error" id="fs-error" role="alert" hidden></div>
+            </section>
+
+            <section class="fs-panel" aria-labelledby="fs-map-title">
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+                <h3 id="fs-map-title">분할 미리보기</h3>
+                <button type="button" class="dash-btn-outline task-mini-btn" id="fs-fit">전체 영역 보기</button>
+              </div>
+              <div class="fs-map-wrap">
+                <div id="fs-map" class="fs-map" aria-label="분할된 농지 지도"></div>
+                <div class="fs-map-label"><span id="fs-map-region">농지를 선택해 주세요</span></div>
+                <div class="fs-map-legend">
+                  <span><i class="legend-fill"></i> 분할 영역</span>
+                  <span><i class="legend-outline"></i> 모영역(A)</span>
+                </div>
+                <div class="fs-map-empty" id="fs-map-empty">위 목록에서 농지를 선택하거나<br>영역을 직접 그리면 여기에 표시됩니다.</div>
+              </div>
+            </section>
+          </div>
+
+          <div class="fs-results">
+            <div class="fs-results-head" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <h3>3. 구역별 담당 조종사 <span id="fs-result-count" class="count-pill">0</span></h3>
+              <button type="button" class="dash-btn-outline task-mini-btn" id="fs-copy-all">좌표 JSON 복사</button>
+              <span class="fs-hint" id="fs-copy-msg"></span>
+            </div>
+            <div id="resultCards" class="result-cards"></div>
+            <div id="fs-empty" class="fs-empty">영역을 정하고 조각 수를 고르면 구역별 카드가 여기에 나타납니다.</div>
+            <p class="fs-note" id="fs-fallback-note" hidden>이 농지는 외곽선이 등록되지 않아, 중심 좌표와 면적으로 만든 사각형을 기준으로 분할합니다.</p>
+            <div class="fs-note" id="fs-pilot-summary" style="white-space:pre-line"></div>
+            <p class="fs-note">분할은 경도 폭을 균등하게 나누는 방식이라 구역별 면적은 다를 수 있습니다. 숙련도가 높은 조종사에게 넓은 구역(또는 여러 구역)을 맡겨 보세요.</p>
+            <div class="fs-actions">
+              <input type="hidden" name="pieceAssignmentsJson" id="piece-assignments-json">
+              <input type="hidden" name="drawnPolygon">
+              <input type="hidden" name="drawnLat">
+              <input type="hidden" name="drawnLng">
+              <input type="hidden" name="drawnArea">
+              <button type="button" class="dash-btn-primary" id="fs-confirm">✔ 배정 확정</button>
+            </div>
+          </div>
         </div>
 
         <div class="task-modal" id="assign-modal" hidden>
@@ -246,7 +340,7 @@
           <select name="hPilot">
             <option value="">전체</option>
             <option th:each="n : ${historyPilots}" th:value="${n}" th:text="${n}"
-                    th:selected="${n == hPilot}">김민수</option>
+                   th:selected="${n == hPilot}">김민수</option>
           </select>
         </label>
         <div class="task-filter-btns">
@@ -296,6 +390,9 @@
 
 </main>
 
+<!-- 분할 기능 자바스크립트 추가 -->
+<script th:src="@{/js/common/field-split.js}"></script>
 <script th:src="@{/js/leader/task-assignment.js}"></script>
+<script th:src="@{/js/leader/task-split.js}"></script>
 </body>
 </html>

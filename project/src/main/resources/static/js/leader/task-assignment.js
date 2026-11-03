@@ -118,6 +118,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* ===== 6. 배정 확정 전 검사 → 통과하면 브라우저가 폼 전송 ===== */
   form.addEventListener("submit", (e) => {
+    if (form.dataset.pieceMode === "1") return;   // 구역별 배정은 task-split.js 에서 검증
     const total = selectedLands().length;
     if (checkedPilots().length === 0) {
       e.preventDefault();
