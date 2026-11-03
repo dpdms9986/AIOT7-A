@@ -1,6 +1,10 @@
 package com.aloha.project.dto;
 
-import com.aloha.project.domain.users.Users; // 👈 Users 엔티티 import 추가!
+import java.time.LocalDate;
+import java.util.List;
+
+import com.aloha.project.domain.tasks.WorkAssignments;
+import com.aloha.project.domain.users.Users;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -43,5 +47,28 @@ public class TeamMemberDto {
                 .completed(0)
                 .skill("중급")     // 기본 숙련도
                 .build();
+    }
+
+    // 작업 목록을 같이 받아서 상태/현재작업/금일완료를 채우는 버전
+    public static TeamMemberDto from(Users user, List<WorkAssignments> works) {
+        TeamMemberDto dto = from(user);
+        if (dto == null) return null;
+
+        WorkAssignments current = works.stream()
+                .filter(w -> "IN_PROGRESS".equals(w.getStatus()))
+                .findFirst().orElse(null);
+
+        if (current != null) {
+            dto.setStatus("working");
+            dto.setCurrentTask(current.getLand().getAddress());
+        }
+
+        dto.setCompleted((int) works.stream()
+                .filter(w -> "COMPLETED".equals(w.getStatus())
+                          && w.getCompletedAt() != null
+                          && w.getCompletedAt().toLocalDate().equals(LocalDate.now()))
+                .count());
+
+        return dto;
     }
 }
