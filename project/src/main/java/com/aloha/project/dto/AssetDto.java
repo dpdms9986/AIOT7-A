@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.aloha.project.domain.tasks.Drones;
+import com.aloha.project.domain.tasks.Chemicals;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -45,8 +46,8 @@ public class AssetDto {
     private LocalDate lastManagedAt; // 최근 관리일 (없으면 null)
 
     // 드론만
-    private Integer tankCapacity;    // 약제 탱크 용량 (L)
-    private Integer batteryCycles;   // 배터리 사이클
+    // private Integer tankCapacity;    // 약제 탱크 용량 (L)
+    // private Integer batteryCycles;   // 배터리 사이클
 
     // 약제만
     private String stock;            // 현재 재고량 (L)
@@ -64,16 +65,44 @@ public class AssetDto {
     };
 
     return AssetDto.builder()
-            .id(drone.getSerialNumber() != null ? drone.getSerialNumber() : String.valueOf(drone.getNo()))
+            .id("drone-" + drone.getNo())
             .type("drone")
             .name(drone.getModelName())
-            .subtitle(drone.getSerialNumber())
-            .owner(drone.getUser() != null ? drone.getUser().getName() : "-")
+            .subtitle("")
+            .owner(drone.getUser() != null
+                    ? drone.getUser().getName()
+                    : "-")
             .status(uiStatus)
-            .tankCapacity(drone.getTankCapacity() != null ? drone.getTankCapacity().intValue() : 40)
-            .batteryCycles(drone.getBatteryCycle())
             .build();
-}
+    }
+
+    // Chemicals 엔티티 -> AssetDto 변환
+    public static AssetDto from(Chemicals chemical) {
+        if (chemical == null) return null;
+    
+        return AssetDto.builder()
+                .id("chemical-" + chemical.getNo())
+                .type("chemical")
+                .name(chemical.getChemicalName())
+                .subtitle(chemical.getCategory())
+                .owner(chemical.getUser() != null
+                        ? chemical.getUser().getName()
+                        : "-")
+                .status(chemical.getStatus())
+                .build();
+    }
+
+    // 화면 상태 코드 -> DB 상태
+    public static String toDbStatus(String uiStatus) {
+        return switch (uiStatus) {
+            case "normal"        -> "AVAILABLE";
+            case "operating"     -> "IN_USE";
+            case "maintenance",
+                "in-maintenance",
+                "fault"         -> "MAINTENANCE";
+            default              -> "AVAILABLE";
+        };
+    }
 
     // 정비 이력(드론) / 입고 이력(약제)
     @Builder.Default
