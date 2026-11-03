@@ -239,15 +239,17 @@ public class PilotAssetController {
      drone.setUser(pilot);
      drone.setModelName(form.getName());
      
-      drone.setStatus(
-            form.getStatus() != null ? form.getStatus() : "AVAILABLE"
-       );
+      drone.setStatus(AssetDto.toDbStatus(
+        form.getStatus() != null && !form.getStatus().isBlank()
+                ? form.getStatus()
+                : "normal"
+         ));
  
       droneRepository.save(drone);
         }
 
        redirectAttributes.addFlashAttribute(
-            "message", form.getName() + " 자산이 등록되었습니다."
+        "assetRegistered", true
         );
 
         return "redirect:/pilot/assetlist";
@@ -265,11 +267,12 @@ public class PilotAssetController {
                             "in-maintenance", "fault");
             case "chemical" ->
                     List.of("normal", "low");
-            default ->
-                    new ArrayList<>(AssetDto.STATUS_LABELS.keySet());
+            default -> List.of("normal", "operating", "maintenance","in-maintenance", "fault", "low"
+);
         };
 
         Map<String, String> options = new LinkedHashMap<>();
+
         keys.forEach(k ->
                 options.put(k, AssetDto.STATUS_LABELS.get(k)));
 
