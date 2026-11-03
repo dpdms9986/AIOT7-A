@@ -48,6 +48,9 @@ public class Lands {
         this.createdAt = LocalDateTime.now();
     }
 
+    @Column(columnDefinition = "TEXT")
+    private String polygonCoordinates;
+
     // Lands.java 및 WorkAssignments.java 내부에 각각 추가
     public void updateStatus(String status) {
     this.status = status;
