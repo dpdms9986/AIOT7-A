@@ -209,9 +209,7 @@ public class LeaderController {
     public String assign(@ModelAttribute AssignRequest req,
                          @AuthenticationPrincipal CustomUser customUser,
                          RedirectAttributes redirectAttributes) {
-        log.info("배정 요청 수신: {}", req);
-
-        if (customUser == null) return "redirect:/login";
+        log.info("작업 배정 요청: 단장={}, req={}", customUser.getUsername(), req);
 
         Users leader = userRepository.findById(customUser.getUser().getNo()).orElse(null);
         Teams myTeam = (leader != null) ? leader.getTeam() : null;
@@ -257,33 +255,71 @@ public class LeaderController {
                 }
             }
 
+						long pilotCount = req.getQuotas().values().stream().filter(v -> v != null && v > 0).count();
+            double weight = (pilotCount > 0) ? (1.0 / pilotCount) : 1.0;
+
             // 3. 선택된 농지에 순서대로 조종사 매핑하여 WorkAssignments 저장
-            for (int i = 0; i < req.getLandNos().size(); i++) {
-                Long landNo = req.getLandNos().get(i);
-                Lands land = landRepository.findById(landNo).orElse(null);
+					if (req.getLandNos().size() == 1) {
+					/* =========================================================
+					* [케이스 A] 농지 1개를 여러 명에게 분할 배정 (N분할)
+					* -> 조종사 큐(pilotQueue) 수만큼 WorkAssignments를 여러 개 생성!
+					* ========================================================= */
+					Long landNo = req.getLandNos().get(0);
+					Lands land = landRepository.findById(landNo).orElse(null);
 
-                if (land != null && "READY".equals(land.getStatus())) {
-                    Long pilotNo = (i < pilotQueue.size()) ? pilotQueue.get(i) : leader.getNo();
-                    Users pilot = userRepository.findById(pilotNo).orElse(leader);
+					if (land != null && "READY".equals(land.getStatus())) {
+							double totalPieces = pilotQueue.size(); // 총 조각 수 (예: 1:2면 3조각)
 
-                    WorkAssignments assignment = WorkAssignments.builder()
-                            .dispatchBatch(batch)
-                            .land(land)
-                            .pilot(pilot)
-                            .status("ASSIGNED")
-                            .build();
-                    workAssignmentRepository.save(assignment);
+							// 조종사별로 담당하는 지분만큼 WorkAssignments 생성
+							for (Map.Entry<Long, Integer> entry : req.getQuotas().entrySet()) {
+									int quota = (entry.getValue() != null) ? entry.getValue() : 0;
+									if (quota > 0) {
+											Users pilot = userRepository.findById(entry.getKey()).orElse(leader);
+											double myRatio = quota / totalPieces; // 1:2 분할 시 각각 1/3, 2/3
 
-                    land.updateStatus("ASSIGNED");
-                    landRepository.save(land);
-                }
-            }
+											WorkAssignments assignment = WorkAssignments.builder()
+															.dispatchBatch(batch)
+															.land(land)
+															.pilot(pilot)
+															.weightRatio(myRatio) // 조종사 개인 지분율 저장!
+															.status("ASSIGNED")
+															.build();
+											workAssignmentRepository.save(assignment);
+									}
+							}
+							land.updateStatus("ASSIGNED");
+							landRepository.save(land);
+					}
+			} else {
+					/* =========================================================
+					* [케이스 B] 여러 농지를 여러 명에게 배정 (기존 1인 1필지 로직)
+					* ========================================================= */
+					for (int i = 0; i < req.getLandNos().size(); i++) {
+							Long landNo = req.getLandNos().get(i);
+							Lands land = landRepository.findById(landNo).orElse(null);
 
-            long pilotCount = req.getQuotas().values().stream().filter(v -> v != null && v > 0).count();
+							if (land != null && "READY".equals(land.getStatus())) {
+									Long pilotNo = (i < pilotQueue.size()) ? pilotQueue.get(i) : leader.getNo();
+									Users pilot = userRepository.findById(pilotNo).orElse(leader);
+
+									WorkAssignments assignment = WorkAssignments.builder()
+													.dispatchBatch(batch)
+													.land(land)
+													.pilot(pilot)
+													.weightRatio(1.0)
+													.status("ASSIGNED")
+													.build();
+									workAssignmentRepository.save(assignment);
+
+									land.updateStatus("ASSIGNED");
+									landRepository.save(land);
+							}
+					}
+			}
             redirectAttributes.addFlashAttribute("message",
                     req.getLandNos().size() + "필지를 " + pilotCount + "명의 조종사에게 배정했습니다.");
-        }
 
+        }
         return "redirect:/leader/task-assignment?tab=status";
     }
 
@@ -408,17 +444,27 @@ public class LeaderController {
         log.info("배정 취소 요청: landNo={}", landNo);
 
         Lands land = landRepository.findById(landNo).orElse(null);
-        if (land != null) {
-            List<WorkAssignments> assignments = workAssignmentRepository.findAll().stream()
-                    .filter(w -> w.getLand() != null && landNo.equals(w.getLand().getNo()))
-                    .toList();
-            workAssignmentRepository.deleteAll(assignments);
-
-            land.updateStatus("READY");
-            landRepository.save(land);
-            redirectAttributes.addFlashAttribute("message", landNo + "번 농지 배정이 취소되었습니다.");
+        if (land == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "존재하지 않는 농지입니다.");
+            return "redirect:/leader/task-assignment?tab=status";
         }
 
+        // 👈 대기(ASSIGNED) 상태만 취소 허용
+        if (!"ASSIGNED".equals(land.getStatus())) {
+            redirectAttributes.addFlashAttribute("errorMessage", "대기 중인 작업만 취소할 수 있습니다.");
+            return "redirect:/leader/task-assignment?tab=status";
+        }
+
+        // 👈 findAll() 대신 해당 농지 것만 깔끔하게 조회 후 삭제 (또는 기존 방식도 당장은 OK!)
+        List<WorkAssignments> assignments = workAssignmentRepository.findAll().stream()
+                .filter(w -> w.getLand() != null && landNo.equals(w.getLand().getNo()))
+                .toList();
+        workAssignmentRepository.deleteAll(assignments);
+
+        land.updateStatus("READY");
+        landRepository.save(land);
+        
+        redirectAttributes.addFlashAttribute("message", landNo + "번 농지 배정이 취소되었습니다.");
         return "redirect:/leader/task-assignment?tab=status";
     }
 
@@ -547,16 +593,22 @@ public class LeaderController {
     public String createLand(@ModelAttribute LandCreateRequest form,
                              RedirectAttributes redirectAttributes) {
         log.info("신규 농지 등록: {}", form);
+				
+				Double finalArea = form.getAreaSize();
+				if (finalArea == null || finalArea <= 0) {
+						finalArea = 1000.0; // 기본값 안전 세팅
+				}
 
         Lands land = Lands.builder()
                 .address(form.getAddress())
                 .latitude(form.getLatitude() != null ? form.getLatitude() : 36.3504)
                 .longitude(form.getLongitude() != null ? form.getLongitude() : 127.3845)
-                .areaSize(form.getAreaSize() != null ? form.getAreaSize() : 1000.0)
+                .areaSize(form.getSafeAreaSize())
                 .polygonCoordinates(
                         form.getPolygonCoordinates() != null && !form.getPolygonCoordinates().isBlank()
                         ? form.getPolygonCoordinates() : null)
                 .status("READY")
+								.polygonCoordinates(form.getPolygonCoordinates())
                 .build();
 
         landRepository.save(land);
@@ -625,8 +677,9 @@ public class LeaderController {
                 .toList();
     }
 
-    private String csv(Object value) {
-        String s = value == null ? "" : String.valueOf(value);
-        return "\"" + s.replace("\"", "\"\"") + "\"";
-    }
+        private String csv(Object value) {
+                String s = value == null ? "" : String.valueOf(value);
+                return "\"" + s.replace("\"", "\"\"") + "\"";
+        }
+
 }
