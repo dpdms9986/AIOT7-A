@@ -50,18 +50,28 @@ public class SecurityConfig {
         // HTTP 보안 설정 시작
         http
                 .authorizeHttpRequests(authorize -> authorize
-                                .requestMatchers(
-                                    "/static/**", "/css/**", "/js/**", "/images/**", "/fonts/**"
-                                ).permitAll()              // "/static/**" 경로에 대한 모든 요청을 허용
-                                .requestMatchers("/admin/**", "/api/admin/**").hasRole("ADMIN")      // "/admin/**" 경로에 대한 요청은 ADMIN 권한 필요
-                                .requestMatchers("/pilot/**", "/api/pilot/**").hasRole("PILOT")     
-                                .requestMatchers("/leader/**", "/api/leader/**").hasRole("LEADER")  
-                                .requestMatchers(
-                                    "/", "/login", "/signin", "/signup", "/join", 
-                                    "/check-username", "/find-id", "/find-pw", "/terms/**", "/info"
-                                ).permitAll()   
-                                .requestMatchers("/api/**").permitAll()
-                .anyRequest().authenticated()                            // 주석 처리된 부분: 모든 다른 요청은 인증 필요
+                        // 1. [정적 리소스] CSS, JS, 이미지, 업로드 파일은 누구나 통과
+                        .requestMatchers(
+                            "/static/**", "/css/**", "/js/**", "/images/**", "/fonts/**", "/upload/**", "/favicon.ico"
+                        ).permitAll()
+
+                        // 2. ⭐ [최우선 철벽 방어 - 대안 B] 역할별 전용 방 먼저 잠그기!
+                        //    (위에서 먼저 걸러내므로 아래쪽에서 무슨 짓을 해도 이 방들은 절대 안 뚫립니다)
+                        .requestMatchers("/admin/**", "/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/leader/**", "/api/leader/**").hasRole("LEADER")
+                        .requestMatchers("/pilot/**", "/api/pilot/**").hasRole("PILOT")
+
+                        // 3. [공개 API] 인증/중복확인 및 공통 지도 마커 API
+                        .requestMatchers("/api/auth/**", "/api/hazards/**").permitAll()
+
+                        // 4. ⭐ [공개 페이지 편의성 - 대안 A] 단일 단계 와일드카드로 한 방에 열기!
+                        //    - "/" : 메인 홈
+                        //    - "/*" : /login, /signup, /join, /info, /find-id 등 1단계 주소 전부 허용!
+                        //    - "/terms/**" : 약관 하위 페이지 허용
+                        .requestMatchers("/", "/*", "/terms/**").permitAll()
+
+                        // 5. [철벽 마무리] 위에 적히지 않은 알 수 없는 모든 경로는 무조건 로그인 필수!
+                        .anyRequest().authenticated()
                 )
                 // 로그인 설정
                 .formLogin(form -> form
