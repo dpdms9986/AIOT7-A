@@ -233,7 +233,6 @@ public class LeaderAssetController {
         return "redirect:/leader/assetlist";
     }
 
-
     @Transactional
     @PostMapping("/assetlist/{id}/status")
     public String changeStatus(

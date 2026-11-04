@@ -71,6 +71,7 @@ public class LeaderController {
     /* =========================================================
        작업 배정 (탭 3개: assign / status / history)
        ========================================================= */
+    @Transactional(readOnly = true)
     @GetMapping("/task-assignment")
     public String getTaskAssignment(
             @RequestParam(value = "tab",     defaultValue = "assign") String tab,

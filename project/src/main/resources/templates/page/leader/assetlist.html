@@ -176,20 +176,11 @@
         <strong th:text="*{statusLabel}">운용 중</strong>
       </div>
 
-      <!-- 기본 정보 -->
-      <div class="asset-detail-grid">
-        
-
-        <th:block th:unless="*{drone}">
-          <div class="asset-detail-info"><span>약제 분류</span><strong th:text="*{subtitle}">분류: 살균제</strong></div>
-          <div class="asset-detail-info"><span>재고 상태</span><strong th:text="*{statusLabel}">정상</strong></div>
-          <div class="asset-detail-info"><span>현재 재고량</span><strong th:text="*{stock} ?: '-'">양호</strong></div>
-        </th:block>
-
-        <div class="asset-detail-info">
-          <span th:text="*{drone} ? '최근 관리일' : '최근 재고 갱신일'">최근 관리일</span>
-          <strong th:text="*{lastManagedAt != null} ? *{#temporals.format(lastManagedAt, 'yyyy-MM-dd')} : '기록 없음'">2026-10-20</strong>
-        </div>
+      <!-- 기본 정보 (약제만 표시, 드론은 숨김) -->
+      <div class="asset-detail-grid" th:unless="*{drone}">
+        <div class="asset-detail-info"><span>약제 분류</span><strong th:text="*{subtitle}">분류: 살균제</strong></div>
+        <div class="asset-detail-info"><span>재고 상태</span><strong th:text="*{statusLabel}">정상</strong></div>
+        <div class="asset-detail-info"><span>현재 재고량</span><strong th:text="*{stock} ?: '-'">양호</strong></div>
       </div>
 
       <!-- 상태 변경 (POST) -->
@@ -203,36 +194,6 @@
         </label>
         <button type="submit" class="asset-pilot-search-button">변경</button>
       </form>
-
-      <!-- 이력 -->
-      <div class="asset-detail-section">
-        <div class="asset-detail-section-heading">
-          <h4 th:text="*{drone} ? '정비 및 점검 이력' : '입고 이력'">정비 및 점검 이력</h4>
-        </div>
-        <div class="asset-detail-table-wrap">
-          <table class="asset-detail-table">
-            <thead>
-              <tr th:if="*{drone}">
-                <th>관리 일자</th><th>관리 유형</th><th>관리 내용</th><th>정비 비용</th>
-              </tr>
-              <tr th:unless="*{drone}">
-                <th>입고 일자</th><th>입고 수량</th><th>내용</th><th>비고</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr th:each="log : *{logs}">
-                <td th:text="${#temporals.format(log.date, 'yyyy-MM-dd')}">2026-10-20</td>
-                <td th:text="${log.kind}">정기 점검</td>
-                <td th:text="${log.content}">프로펠러 점검</td>
-                <td th:text="${log.note}">0원</td>
-              </tr>
-              <tr th:if="*{#lists.isEmpty(logs)}">
-                <td colspan="4" class="empty-row">이력이 없습니다.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
     </div>
   </section>
 

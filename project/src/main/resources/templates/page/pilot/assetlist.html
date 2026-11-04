@@ -125,15 +125,11 @@
             <td><span class="asset-pilot-badge" th:classappend="${a.status}" th:text="${a.statusLabel}">정상</span></td>
             <td th:text="${a.lastManagedAt != null} ? ${#temporals.format(a.lastManagedAt, 'yyyy-MM-dd')} : '기록 없음'">2026-10-20</td>
             <td>
-             <a class="asset-pilot-detail-button"
-              th:href="@{/pilot/assetlist(
-                  tab=${tab},
-                   id=${a.id},
-            assetType=${a.type}
-               )}">
-             상세보기
-             </a>
-             </td>
+              <a class="asset-pilot-detail-button"
+                 th:href="@{/pilot/assetlist#asset-detail(tab=${tab}, type=${type}, status=${status}, keyword=${keyword}, id=${a.id}, assetType=${a.type})}">
+                상세보기
+              </a>
+            </td>
             </tr>
 
           <tr th:if="${#lists.isEmpty(assets)}">
@@ -170,19 +166,33 @@
         <strong th:text="*{statusLabel}">운용 중</strong>
       </div>
 
-      <div class="asset-detail-grid">
+      <div class="asset-detail-grid" th:unless="*{drone}">
 
-        <th:block th:unless="*{drone}">
-          <div class="asset-detail-info"><span>약제 분류</span><strong th:text="*{subtitle}">분류: 살균제</strong></div>
-          <div class="asset-detail-info"><span>재고 상태</span><strong th:text="*{statusLabel}">정상</strong></div>
-          <div class="asset-detail-info"><span>현재 재고량</span><strong th:text="*{stock} ?: '-'">양호</strong></div>
-        </th:block>
+              <div class="asset-detail-grid" th:unless="*{drone}">
+                <div class="asset-detail-info"><span>약제 분류</span><strong th:text="*{subtitle}">분류: 살균제</strong></div>
+                <div class="asset-detail-info"><span>재고 상태</span><strong th:text="*{statusLabel}">정상</strong></div>
+                <div class="asset-detail-info"><span>현재 재고량</span><strong th:text="*{stock} ?: '-'">양호</strong></div>
+              </div>
 
         <div class="asset-detail-info">
           <span th:text="*{drone} ? '최근 관리일' : '최근 재고 갱신일'">최근 관리일</span>
           <strong th:text="*{lastManagedAt != null} ? *{#temporals.format(lastManagedAt, 'yyyy-MM-dd')} : '기록 없음'">2026-10-20</strong>
         </div>
       </div>
+<<<<<<< HEAD
+
+       <!-- 상태 변경 (POST) -->
+        <form class="asset-status-form"
+              th:action="@{/pilot/assetlist/{id}/status(id=*{id})}" method="post">
+            <label>
+          상태 변경
+          <select name="status">
+             <option th:each="s : *{statusOptions}" th:value="${s.key}" th:text="${s.value}"
+                    th:selected="${s.key == selected.status}">정상</option>
+                    </select>
+                  </label>
+                <button type="submit" class="asset-pilot-search-button">변경</button>
+            </form> 
 
       <div class="asset-detail-section">
         <div class="asset-detail-section-heading">
@@ -212,6 +222,8 @@
           </table>
         </div>
       </div>
+=======
+>>>>>>> rkgus
     </div>
   </section>
 

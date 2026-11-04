@@ -127,6 +127,9 @@ public class AdminPageController {
         model.addAttribute("weekLabels", weekLabels);
         model.addAttribute("weekCounts", weekCounts);
 
+        
+
+
         return "page/admin/dashboard"; // templates/page/admin/dashboard.html
     }
 
