@@ -62,6 +62,8 @@ public class AssetDto {
         case "AVAILABLE"   -> "normal";
         case "IN_USE"      -> "operating";
         case "MAINTENANCE" -> "maintenance";
+        case "IN_MAINTENANCE"  -> "in-maintenance";
+        case "FAULT"       -> "fault";
         default            -> "normal";
     };
 
@@ -82,9 +84,9 @@ public class AssetDto {
         return switch (uiStatus) {
             case "normal"        -> "AVAILABLE";
             case "operating"     -> "IN_USE";
-            case "maintenance",
-                "in-maintenance",
-                "fault"         -> "MAINTENANCE";
+            case "maintenance"     -> "MAINTENANCE";
+            case "in-maintenance"  -> "IN_MAINTENANCE";
+             case "fault"           -> "FAULT";
             default              -> "AVAILABLE";
         };
     }

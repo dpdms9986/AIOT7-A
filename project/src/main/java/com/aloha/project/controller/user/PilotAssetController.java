@@ -18,8 +18,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import com.aloha.project.domain.users.CustomUser;
+import org.springframework.web.bind.annotation.PathVariable;
 
+import com.aloha.project.domain.users.CustomUser;
 import com.aloha.project.domain.tasks.Drones;
 import com.aloha.project.domain.users.CustomUser;
 import com.aloha.project.domain.users.Users;
@@ -32,6 +33,7 @@ import com.aloha.project.repository.tasks.ChemicalRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 
 
 
@@ -254,6 +256,120 @@ public class PilotAssetController {
 
         return "redirect:/pilot/assetlist";
         }
+
+        /**
+ * 자산 상태 변경 (본인 소유 자산만 가능)
+ */
+        @PostMapping("/assetlist/{id}/status")
+    public String changeStatus(@PathVariable("id") String id,
+                            @RequestParam("status") String status,
+                            @AuthenticationPrincipal CustomUser customUser,
+                            RedirectAttributes redirectAttributes) {
+                        
+                log.info("자산 상태 변경 요청: {} → {}", id, status); 
+
+                // 1. 로그인 확인
+                if (customUser == null || customUser.getUser() == null) {
+                return "redirect:/login";
+                 }
+
+                // 2. 로그인한 파일럿 조회
+                 Users pilot = userRepository.findById(customUser.getUser().getNo())
+                  .orElse(null);
+
+                if (pilot == null || !"PILOT".equals(pilot.getRole())) {
+                redirectAttributes.addFlashAttribute(
+                "error", "파일럿 계정만 자산 상태를 변경할 수 있습니다."
+                 );
+                  return "redirect:/pilot/assetlist";
+                  }
+
+                try {
+                   // 1. 드론 상태 변경
+            if (id.startsWith("drone-")) {
+
+                Long droneNo = Long.parseLong(id.substring("drone-".length()));
+
+                Drones drone = droneRepository.findById(droneNo).orElse(null);
+
+                if (drone == null || drone.getUser() == null
+                  || !pilot.getNo().equals(drone.getUser().getNo())) {
+
+                    redirectAttributes.addFlashAttribute(
+                            "error", "드론 정보를 찾을 수 없거나 변경 권한이 없습니다."
+                    );
+
+                } else if (!List.of("normal", "operating", "maintenance",
+                        "in-maintenance", "fault").contains(status)) {
+
+                    redirectAttributes.addFlashAttribute(
+                            "error", "올바르지 않은 드론 상태입니다."
+                    );
+
+                } else {
+                drone.setStatus(AssetDto.toDbStatus(status));
+                droneRepository.save(drone);
+
+                redirectAttributes.addFlashAttribute(
+                        "message",
+                        drone.getModelName() + " 상태가 '"
+                                + AssetDto.STATUS_LABELS.getOrDefault(status, status)
+                                + "'(으)로 변경되었습니다."
+                );
+            }
+               
+               // 4. 약제 상태 변경
+        } else if (id.startsWith("chemical-")) {
+
+            Long chemicalNo = Long.parseLong(id.substring("chemical-".length()));
+
+            Chemicals chemical = chemicalRepository.findById(chemicalNo).orElse(null);
+
+            // 본인이 담당하는 약제인지 확인
+            if (chemical == null || chemical.getUser() == null
+                    || !pilot.getNo().equals(chemical.getUser().getNo())) {
+
+                redirectAttributes.addFlashAttribute(
+                        "error", "약제 정보를 찾을 수 없거나 변경 권한이 없습니다."
+                );
+
+            } else if (!List.of("normal", "low").contains(status)) {
+
+                redirectAttributes.addFlashAttribute(
+                        "error", "올바르지 않은 약제 상태입니다."
+                );
+
+               } else {
+                chemical.setStatus(status);
+                chemicalRepository.save(chemical);
+
+                redirectAttributes.addFlashAttribute(
+                        "message",
+                        chemical.getChemicalName() + " 상태가 '"
+                                + AssetDto.STATUS_LABELS.getOrDefault(status, status)
+                                + "'(으)로 변경되었습니다."
+                      );
+                }
+
+                 } else {
+                   redirectAttributes.addFlashAttribute(
+                    "error", "올바르지 않은 자산 ID입니다."
+                 );
+               }
+ 
+            } catch (NumberFormatException e) {
+             log.warn("잘못된 자산 ID: {}", id);
+
+            redirectAttributes.addFlashAttribute(
+                "error", "잘못된 자산 번호입니다."
+          );
+        }
+
+           // 5. 변경 후 기존 자산 상세 화면 유지
+            redirectAttributes.addAttribute("id", id);
+
+              return "redirect:/pilot/assetlist";
+         }
 
 
     /* =========================================================
