@@ -133,6 +133,7 @@ window.FieldSplit = (() => {
   //
   // hooks.onStatus(message, state)  : 안내 문구 ("active" | "success" | "error" | "")
   // hooks.onChange(coordinates)     : 꼭짓점이 추가될 때마다
+  // hooks.canPlace(lat, lng)        : false 를 돌려주면 그 지점은 찍히지 않음 (선택 사항)
   function createDrawer(map, hooks = {}) {
     let active = false;
     let coords = [];
@@ -240,6 +241,13 @@ window.FieldSplit = (() => {
         commit();
         return;
       }
+
+      // 허용 구역 검사: canPlace 훅이 있을 때만 동작하고, 없으면 기존처럼 어디든 찍힘
+      if (hooks.canPlace && !hooks.canPlace(event.latlng.lat, event.latlng.lng)) {
+        closePending();
+        return;
+      }
+
       showPending(event.latlng.lat, event.latlng.lng, event.containerPoint);
     }
 

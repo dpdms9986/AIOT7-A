@@ -145,6 +145,23 @@ document.addEventListener("DOMContentLoaded", () => {
     drawStatus.dataset.state = state;
   };
 
+  // 꼭짓점 좌표([[lat,lng], ...])로 면적(㎡) 계산 (3점 미만이면 null)
+  const calcArea = (coords) => {
+    if (!window.turf || !window.FieldSplit || !coords || coords.length < 3) return null;
+    try {
+      const polygon = turf.polygon([FieldSplit.closeRing(coords).map(([lat, lng]) => [lng, lat])]);
+      return Math.max(1, Math.round(turf.area(polygon)));
+    } catch (e) {
+      return null;   // 선이 꼬이는 등 계산이 안 될 때
+    }
+  };
+
+  // 면적 칸에 값 넣기 (null 이면 비움)
+  const setArea = (value) => {
+    const areaField = field("areaSize");
+    if (areaField) areaField.value = value == null ? "" : value;
+  };
+
   // 그린 외곽선 + 관련 입력칸 모두 초기화
   const clearDrawing = () => {
     if (outlineDrawer) outlineDrawer.clear();
@@ -153,6 +170,7 @@ document.addEventListener("DOMContentLoaded", () => {
       drawBtn.textContent = "지도에서 외곽 그리기";
       drawBtn.setAttribute("aria-pressed", "false");
     }
+    setArea(null); 
     setDrawStatus(DRAW_HINT);
   };
 
@@ -191,11 +209,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const center = L.latLngBounds(coords).getCenter();
     setPick(center.lat, center.lng);
 
-    if (window.turf && window.FieldSplit) {
-      const polygon = turf.polygon([FieldSplit.closeRing(coords).map(([lat, lng]) => [lng, lat])]);
-      const areaField = field("areaSize");
-      if (areaField) areaField.value = Math.max(1, Math.round(turf.area(polygon)));
-    }
+    const area = calcArea(coords);
+    if (area != null) setArea(area);
     return true;
   };
 
@@ -220,8 +235,21 @@ document.addEventListener("DOMContentLoaded", () => {
           setPick(e.latlng.lat, e.latlng.lng);
         });
 
-        if (window.FieldSplit) {
-          outlineDrawer = FieldSplit.createDrawer(pickMap, { onStatus: setDrawStatus });
+          if (window.FieldSplit) {
+          outlineDrawer = FieldSplit.createDrawer(pickMap, {
+            onStatus: setDrawStatus,
+            // 꼭짓점이 추가될 때마다 면적 자동 계산
+            onChange: (coords) => {
+              const area = calcArea(coords);
+              setArea(area);
+              if (area != null) {
+                setDrawStatus(
+                  `${coords.length}개 꼭짓점 · 현재 면적 약 ${area.toLocaleString()}㎡. 지도를 눌러 다음 점을 선택하세요.`,
+                  "active"
+                );
+              }
+            },
+          });
         }
       }
       resetPick();
