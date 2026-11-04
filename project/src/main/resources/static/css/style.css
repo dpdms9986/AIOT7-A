@@ -10783,6 +10783,22 @@ span.pilot-pin { cursor: default; opacity: 0.75; }
 }
 .findaccount-footer a:hover { text-decoration: underline; }
 
+/* 탭 패널: .login-form 이 display:flex 라서 hidden 이 먹도록 따로 지정 */
+.findaccount-panel[hidden] { display: none; }
+
+/* 결과 안내 박스 */
+.findaccount-result {
+  padding: 12px 14px;
+  border: 1px solid #cfe5d8;
+  border-radius: 8px;
+  background: #e8f3ec;
+  color: #203246;
+  font-size: 13px;
+  line-height: 1.6;
+  text-align: center;
+}
+.findaccount-result strong { color: #196b40; font-weight: 800; }
+
 @media (max-width: 480px) {
   .findaccount-page { padding: 20px 14px; }
   .findaccount-card { padding: 28px 22px; }
