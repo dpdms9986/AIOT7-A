@@ -25,34 +25,58 @@
     <span class="dash-more">단장·조종사가 고객센터에서 남긴 1:1 문의</span>
   </div>
 
-  <!-- 요약 -->
+  <!-- 요약 (아이콘 + 글씨, 클릭하면 해당 상태만 보기) -->
   <div class="adm-stats">
-    <div class="adm-stat"><small>전체 문의</small><strong th:text="${totalCount}">0</strong></div>
-    <div class="adm-stat warn"><small>답변 대기</small><strong th:text="${waitingCount}">0</strong></div>
-    <div class="adm-stat ok"><small>답변 완료</small><strong th:text="${completedCount}">0</strong></div>
+    <a class="adm-stat has-ico" th:classappend="${status == ''} ? 'on'"
+       th:href="@{/admin/inquiries(category=${category}, keyword=${keyword})}">
+      <span class="adm-stat-ico">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          <circle cx="8.5" cy="10" r="1" fill="currentColor" stroke="none"/>
+          <circle cx="12" cy="10" r="1" fill="currentColor" stroke="none"/>
+          <circle cx="15.5" cy="10" r="1" fill="currentColor" stroke="none"/>
+        </svg>
+      </span>
+      <span class="adm-stat-txt"><small>전체 문의</small><strong th:text="${totalCount}">0</strong></span>
+    </a>
+
+    <a class="adm-stat warn has-ico" th:classappend="${status == 'WAITING'} ? 'on'"
+       th:href="@{/admin/inquiries(status='WAITING', category=${category}, keyword=${keyword})}">
+      <span class="adm-stat-ico">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="9"/>
+          <path d="M12 7v5l3 2"/>
+        </svg>
+      </span>
+      <span class="adm-stat-txt"><small>답변 대기</small><strong th:text="${waitingCount}">0</strong></span>
+    </a>
+
+    <a class="adm-stat ok has-ico" th:classappend="${status == 'COMPLETED'} ? 'on'"
+       th:href="@{/admin/inquiries(status='COMPLETED', category=${category}, keyword=${keyword})}">
+      <span class="adm-stat-ico">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="9"/>
+          <path d="M8 12.5l3 3 5-6"/>
+        </svg>
+      </span>
+      <span class="adm-stat-txt"><small>답변 완료</small><strong th:text="${completedCount}">0</strong></span>
+    </a>
   </div>
 
-  <!-- 상태 탭 -->
-  <div class="um-tabs">
-    <a th:href="@{/admin/inquiries(category=${category}, keyword=${keyword})}" th:classappend="${status == ''} ? 'on'">전체</a>
-    <a th:href="@{/admin/inquiries(status='WAITING', category=${category}, keyword=${keyword})}" th:classappend="${status == 'WAITING'} ? 'on'">답변 대기</a>
-    <a th:href="@{/admin/inquiries(status='COMPLETED', category=${category}, keyword=${keyword})}" th:classappend="${status == 'COMPLETED'} ? 'on'">답변 완료</a>
-  </div>
-
-  <!-- 검색 -->
-  <form class="um-row" method="get" th:action="@{/admin/inquiries}">
+  <!-- 검색: 유형 + 검색창 + 버튼 한 줄 -->
+  <form class="iq-search" method="get" th:action="@{/admin/inquiries}">
     <input type="hidden" name="status" th:value="${status}">
-    <div class="um-group">
-      <select class="um-select" name="category" onchange="this.form.submit()">
-        <option value="">문의 유형 전체</option>
-        <option value="account" th:selected="${category == 'account'}">계정 · 로그인</option>
-        <option value="field"   th:selected="${category == 'field'}">농지 · 작업 배정</option>
-        <option value="drone"   th:selected="${category == 'drone'}">드론 · 약제</option>
-        <option value="etc"     th:selected="${category == 'etc'}">기타</option>
-      </select>
-      <input type="text" class="um-input w-search" name="keyword" th:value="${keyword}" placeholder="작성자 이름 또는 제목으로 검색">
-      <button type="submit" class="um-btn primary">검색</button>
-    </div>
+    <select class="um-select" name="category" onchange="this.form.submit()">
+      <option value="">문의 유형 전체</option>
+      <option value="account" th:selected="${category == 'account'}">계정 · 로그인</option>
+      <option value="field"   th:selected="${category == 'field'}">농지 · 작업 배정</option>
+      <option value="drone"   th:selected="${category == 'drone'}">드론 · 약제</option>
+      <option value="etc"     th:selected="${category == 'etc'}">기타</option>
+    </select>
+    <input type="text" class="um-input" name="keyword" th:value="${keyword}" placeholder="작성자 이름 또는 제목으로 검색">
+    <button type="submit" class="um-btn primary">검색</button>
+    <a class="iq-reset" th:if="${(keyword != null and keyword != '') or (category != null and category != '') or (status != null and status != '')}"
+       th:href="@{/admin/inquiries}">↺ 초기화</a>
   </form>
 
   <!-- 목록: 제목을 누르면 상세/답변 창이 열림 -->
