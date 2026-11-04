@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.bind.annotation.PathVariable;
+import com.aloha.project.repository.tasks.WorkAssignmentResourceRepository;
 
 import com.aloha.project.domain.users.CustomUser;
 import com.aloha.project.domain.tasks.Drones;
@@ -50,6 +51,7 @@ public class PilotAssetController {
     private final UserRepository userRepository;
     private final DroneRepository droneRepository;
     private final ChemicalRepository chemicalRepository;
+    private final WorkAssignmentResourceRepository workAssignmentResourceRepository;
 
     @Transactional(readOnly = true)
     @GetMapping("/assetlist")
@@ -370,6 +372,68 @@ public class PilotAssetController {
 
               return "redirect:/pilot/assetlist";
          }
+
+        /**
+ * 파일럿 자산 삭제 (본인 소유 자산만 가능)
+ */
+@Transactional
+@PostMapping("/assetlist/{id}/delete")
+public String deleteAsset(
+        @PathVariable("id") String id,
+        @AuthenticationPrincipal CustomUser customUser,
+        RedirectAttributes redirectAttributes) {
+
+    if (customUser == null || customUser.getUser() == null) {
+        return "redirect:/login";
+    }
+
+    Users pilot = userRepository.findById(customUser.getUser().getNo())
+            .orElse(null);
+
+    if (pilot == null || !"PILOT".equals(pilot.getRole())) {
+        redirectAttributes.addFlashAttribute("error", "파일럿 계정만 삭제할 수 있습니다.");
+        return "redirect:/pilot/assetlist";
+    }
+
+    try {
+        if (id.startsWith("drone-")) {
+            Long no = Long.parseLong(id.substring("drone-".length()));
+            Drones drone = droneRepository.findById(no).orElse(null);
+
+            if (drone == null || drone.getUser() == null
+                    || !pilot.getNo().equals(drone.getUser().getNo())) {
+                redirectAttributes.addFlashAttribute("error", "삭제 권한이 없습니다.");
+            } else if (workAssignmentResourceRepository.existsByDrone_No(no)) {
+                redirectAttributes.addFlashAttribute("error", "작업 배정에 사용 중인 드론은 삭제할 수 없습니다.");
+            } else {
+                droneRepository.delete(drone);
+                redirectAttributes.addFlashAttribute("message", "드론이 삭제되었습니다.");
+            }
+
+        } else if (id.startsWith("chemical-")) {
+            Long no = Long.parseLong(id.substring("chemical-".length()));
+            Chemicals chemical = chemicalRepository.findById(no).orElse(null);
+
+            if (chemical == null || chemical.getUser() == null
+                    || !pilot.getNo().equals(chemical.getUser().getNo())) {
+                redirectAttributes.addFlashAttribute("error", "삭제 권한이 없습니다.");
+            } else if (workAssignmentResourceRepository.existsByChemical_No(no)) {
+                redirectAttributes.addFlashAttribute("error", "작업 배정에 사용 중인 약제는 삭제할 수 없습니다.");
+            } else {
+                chemicalRepository.delete(chemical);
+                redirectAttributes.addFlashAttribute("message", "약제가 삭제되었습니다.");
+            }
+
+        } else {
+            redirectAttributes.addFlashAttribute("error", "올바르지 않은 자산 ID입니다.");
+        }
+
+    } catch (NumberFormatException e) {
+        redirectAttributes.addFlashAttribute("error", "잘못된 자산 번호입니다.");
+    }
+
+    return "redirect:/pilot/assetlist";
+}
 
 
     /* =========================================================

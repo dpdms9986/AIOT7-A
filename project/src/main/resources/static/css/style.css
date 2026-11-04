@@ -716,6 +716,7 @@
 @media (max-width: 1280px) {
   .leader-layout { grid-template-columns: 1fr; }
 }
+
 /* ===== assetlist.css ===== */
 .asset-team-page .main-content {
     box-sizing: border-box;
@@ -3224,6 +3225,90 @@ button.asset-role-chip:focus-visible {
     color: #16804b;
     font-size: 20px;
     font-weight: 750;
+}
+
+/* 자산 관리 - 가로형 상태 변경창 */
+.asset-pilot-table .asset-row-change {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    position: relative;
+    vertical-align: middle;
+    border: 0;
+    box-shadow: none;
+}
+
+.asset-pilot-table .asset-row-change summary {
+    display: inline-flex;
+    align-items: center;
+    list-style: none;
+    cursor: pointer;
+    border: 1px solid #b8cbdc !important;
+    box-shadow: none !important;
+    text-decoration: none !important;
+}
+
+.asset-pilot-table .asset-row-change summary::-webkit-details-marker {
+    display: none;
+}
+
+.asset-pilot-table .asset-row-change[open] form {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.asset-pilot-table .asset-row-change select {
+    width: 105px;
+    height: 32px;
+    padding: 0 6px;
+    border: 1px solid #d6dfe6;
+    border-radius: 6px;
+    background: #fff;
+    font-size: 12px;
+}
+
+.asset-pilot-table .asset-row-change .asset-pilot-search-button {
+    height: 32px;
+    padding: 0 10px;
+}
+
+.asset-pilot-table .asset-row-change form[hidden] {
+    display: none !important;
+}
+
+/* 변경 버튼 hover */
+.asset-pilot-table .asset-row-change > summary:hover {
+    border-color: #16804b !important;
+    color: #16804b;
+    background: #f2faf5;
+}
+
+/* 변경/삭제 버튼 가로 정렬 */
+.asset-row-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* 삭제 버튼 */
+.asset-row-actions .asset-row-delete-button {
+    color: #dc3545 !important;
+    background-color: #fff !important;
+    border: 1px solid #dc3545 !important;
+    transition: background-color 0.2s ease,
+                color 0.2s ease,
+                border-color 0.2s ease;
+}
+
+.asset-row-actions .asset-row-delete-button:hover {
+    color: #fff !important;
+    background-color: #dc3545 !important;
+    border-color: #dc3545 !important;
+}
+
+.asset-pilot-table .asset-row-change summary::after {
+    content: none !important;
 }
 
 /* ===== board.css ===== */

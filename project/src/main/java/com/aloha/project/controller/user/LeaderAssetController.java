@@ -28,6 +28,7 @@ import com.aloha.project.dto.AssetDto;
 import com.aloha.project.repository.tasks.DroneRepository;
 import com.aloha.project.repository.tasks.ChemicalRepository;
 import com.aloha.project.repository.users.UserRepository;
+import com.aloha.project.repository.tasks.WorkAssignmentResourceRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -47,6 +48,7 @@ public class LeaderAssetController {
     private final DroneRepository droneRepository;
     private final ChemicalRepository chemicalRepository;
     private final UserRepository userRepository;
+    private final WorkAssignmentResourceRepository workAssignmentResourceRepository;
 
     @Transactional(readOnly = true)
     @GetMapping("/assetlist")
@@ -56,7 +58,6 @@ public class LeaderAssetController {
             @RequestParam(value = "owner",   defaultValue = "") String owner,
             @RequestParam(value = "status",  defaultValue = "") String status,
             @RequestParam(value = "keyword", defaultValue = "") String keyword,
-            @RequestParam(value = "id",      required = false) String id,
             @AuthenticationPrincipal CustomUser customUser, // 👈 로그인 단장 주입
             Model model) {
 
@@ -117,11 +118,8 @@ public class LeaderAssetController {
         long chemicalCount    = all.size() - droneCount;
         long maintenanceCount = all.stream().filter(AssetDto::isMaintenanceNeeded).count();
 
-        // 3) 상세로 보여 줄 자산 (주소에 id 가 있을 때만)
-        AssetDto selected = (id == null) ? null
-                : all.stream().filter(a -> a.getId().equals(id)).findFirst().orElse(null);
 
-        // 4) 셀렉트 옵션
+        // 3) 셀렉트 옵션
         // 같은 방제단 소속 조종사 목록
         List<Users> owners = (myTeam == null)
                 ? new ArrayList<>()
@@ -141,7 +139,6 @@ public class LeaderAssetController {
         model.addAttribute("droneCount", droneCount);
         model.addAttribute("chemicalCount", chemicalCount);
         model.addAttribute("maintenanceCount", maintenanceCount);
-        model.addAttribute("selected", selected);
         model.addAttribute("owners", owners);
         model.addAttribute("statusOptions", statusOptions);                 // 검색용 (탭별)
         model.addAttribute("allStatusOptions", statusOptionsFor("all"));     // 자산 등록 팝업용 (전부)
@@ -337,11 +334,102 @@ public class LeaderAssetController {
             );
         }
 
-        // 변경 후에도 기존 자산 상세 화면 유지
-        redirectAttributes.addAttribute("id", id);
 
         return "redirect:/leader/assetlist";
     }
+
+           /**
+          * 방제단장 자산 삭제
+          * - 본인 방제단 소속 자산만 삭제 가능
+          * - 작업 배정에 사용된 자산은 삭제 불가
+             */
+         @Transactional
+         @PostMapping("/assetlist/{id}/delete")
+         public String deleteAsset(
+         @PathVariable("id") String id,
+         @AuthenticationPrincipal CustomUser customUser,
+         RedirectAttributes redirectAttributes) {
+
+    if (customUser == null) {
+        return "redirect:/login";
+    }
+
+    Users leader = userRepository.findById(customUser.getUser().getNo())
+            .orElse(null);
+
+    if (leader == null || leader.getTeam() == null) {
+        redirectAttributes.addFlashAttribute(
+                "error", "사용자 또는 소속 방제단 정보를 찾을 수 없습니다.");
+        return "redirect:/leader/assetlist";
+    }
+
+    try {
+        // 1. 드론 삭제
+        if (id.startsWith("drone-")) {
+
+            Long droneNo = Long.parseLong(id.substring("drone-".length()));
+            Drones drone = droneRepository.findById(droneNo).orElse(null);
+
+            if (drone == null || drone.getUser() == null
+                    || drone.getUser().getTeam() == null
+                    || !leader.getTeam().getNo().equals(
+                            drone.getUser().getTeam().getNo())) {
+
+                redirectAttributes.addFlashAttribute(
+                        "error", "드론 정보를 찾을 수 없거나 삭제 권한이 없습니다.");
+
+            } else if (workAssignmentResourceRepository.existsByDrone_No(droneNo)) {
+
+                redirectAttributes.addFlashAttribute(
+                        "error", "작업 배정에 사용 중인 드론은 삭제할 수 없습니다.");
+
+            } else {
+                droneRepository.delete(drone);
+
+                redirectAttributes.addFlashAttribute(
+                        "message", "드론이 삭제되었습니다.");
+            }
+
+        // 2. 약제 삭제
+        } else if (id.startsWith("chemical-")) {
+
+            Long chemicalNo = Long.parseLong(
+                    id.substring("chemical-".length()));
+
+            Chemicals chemical = chemicalRepository.findById(chemicalNo)
+                    .orElse(null);
+
+            if (chemical == null || chemical.getTeam() == null
+                    || !leader.getTeam().getNo().equals(
+                            chemical.getTeam().getNo())) {
+
+                redirectAttributes.addFlashAttribute(
+                        "error", "약제 정보를 찾을 수 없거나 삭제 권한이 없습니다.");
+
+            } else if (workAssignmentResourceRepository.existsByChemical_No(chemicalNo)) {
+
+                redirectAttributes.addFlashAttribute(
+                        "error", "작업 배정에 사용 중인 약제는 삭제할 수 없습니다.");
+
+            } else {
+                chemicalRepository.delete(chemical);
+
+                redirectAttributes.addFlashAttribute(
+                        "message", "약제가 삭제되었습니다.");
+            }
+
+        } else {
+            redirectAttributes.addFlashAttribute(
+                    "error", "올바르지 않은 자산 ID입니다.");
+        }
+
+    } catch (NumberFormatException e) {
+        redirectAttributes.addFlashAttribute(
+                "error", "잘못된 자산 번호입니다.");
+    }
+
+    return "redirect:/leader/assetlist";
+}
 
     /* =========================================================
        탭별 상태 검색 목록 (AssetDto.STATUS_LABELS 에서 골라 씀, DTO 는 수정 안 함)

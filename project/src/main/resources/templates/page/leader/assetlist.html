@@ -22,6 +22,7 @@
 
   <!-- 처리 결과 메시지 -->
   <p class="page-flash" th:if="${message}" th:text="${message}">메시지</p>
+  <p class="page-flash" th:if="${error}" th:text="${error}">오류 메시지</p>
 
   <!-- 탭: 링크 -->
   <section class="asset-pilot-tabs" aria-label="자산 종류 선택">
@@ -118,13 +119,11 @@
             <th>이름 / 모델명</th>
             <th>담당 조종사</th>
             <th>상태</th>
-            <th>최근 관리일</th>
             <th>관리</th>
           </tr>
         </thead>
         <tbody>
-          <tr th:each="a : ${assets}"
-              th:classappend="${selected != null and a.id == selected.id} ? 'selected'">
+          <tr th:each="a : ${assets}">
             <td th:text="${a.typeLabel}">🚁 드론</td>
             <td>
               <strong th:text="${a.name}">DJI Agras T40</strong>
@@ -135,68 +134,39 @@
             </td>
             <td th:text="${a.owner}">김민수</td>
             <td><span class="asset-pilot-badge" th:classappend="${a.status}" th:text="${a.statusLabel}">정상</span></td>
-            <td th:text="${a.lastManagedAt != null} ? ${#temporals.format(a.lastManagedAt, 'yyyy-MM-dd')} : '기록 없음'">2026-10-20</td>
             <td>
-              <!-- 지금 검색 조건 그대로 + id → 아래 상세 카드로 바로 이동(#asset-detail) -->
-              <a class="asset-pilot-detail-button"
-                 th:href="@{/leader/assetlist#asset-detail(tab=${tab}, type=${type}, owner=${owner}, status=${status}, keyword=${keyword}, id=${a.id})}">상세보기</a>
-            </td>
+            <div class="asset-row-actions">
+                <details class="asset-row-change">
+                <summary class="asset-pilot-detail-button">변경</summary>
+                <form th:action="@{/leader/assetlist/{id}/status(id=${a.id})}" method="post">
+                <select name="status" required>
+                <option th:each="s : ${a.statusOptions}"
+                th:value="${s.key}"
+                th:text="${s.value}"
+                th:selected="${s.key == a.status}">
+                정상
+               </option>
+           </select>
+         <button type="submit" class="asset-pilot-search-button">적용</button>
+       </form>
+      </details>
+
+         <form th:action="@{/leader/assetlist/{id}/delete(id=${a.id})}" method="post"
+         onsubmit="return confirm('이 자산을 삭제하시겠습니까?');">
+        <button type="submit"
+               class="asset-pilot-detail-button asset-row-delete-button"> 삭제</button>
+        </form>
+      </div>
+      </td>
+            
           </tr>
           <tr th:if="${#lists.isEmpty(assets)}">
-            <td colspan="6" class="asset-pilot-empty">조건에 맞는 자산이 없습니다.</td>
+            <td colspan="5" class="asset-pilot-empty">조건에 맞는 자산이 없습니다.</td>
           </tr>
         </tbody>
       </table>
     </div>
   </section>
-
-  <!-- ===== 선택된 자산 상세 (주소에 id 가 있을 때만) ===== -->
-  <section class="asset-pilot-detail-card" id="asset-detail"
-           th:if="${selected != null}" th:object="${selected}">
-
-    <div class="asset-pilot-detail-heading">
-      <div>
-        <h2>선택된 자산 상세 정보</h2>
-        <p>자산 기본 정보와 담당 조종사, 관리 이력을 확인합니다.</p>
-      </div>
-      <span class="asset-detail-type-label" th:text="*{drone} ? '드론 기체' : '농업용 약제'">드론 기체</span>
-    </div>
-
-    <div class="asset-detail-content">
-      <div class="asset-detail-title">
-        <h3 th:text="*{name}">DJI Agras T40</h3>
-       <p th:text="*{drone} ? '드론 관리 정보' : '농업용 약제 관리'">
-  드론 관리 정보
-</p>
-      </div>
-
-      <!-- [드론] 현재 가동 상태 -->
-      <div class="asset-current-status" th:if="*{drone}" th:classappend="*{currentStatusClass}">
-        <span class="asset-current-status-label">현재 가동 상태</span>
-        <strong th:text="*{statusLabel}">운용 중</strong>
-      </div>
-
-      <!-- 기본 정보 (약제만 표시, 드론은 숨김) -->
-      <div class="asset-detail-grid" th:unless="*{drone}">
-        <div class="asset-detail-info"><span>약제 분류</span><strong th:text="*{subtitle}">분류: 살균제</strong></div>
-        <div class="asset-detail-info"><span>재고 상태</span><strong th:text="*{statusLabel}">정상</strong></div>
-        <div class="asset-detail-info"><span>현재 재고량</span><strong th:text="*{stock} ?: '-'">양호</strong></div>
-      </div>
-
-      <!-- 상태 변경 (POST) -->
-      <form class="asset-status-form" th:action="@{/leader/assetlist/{id}/status(id=*{id})}" method="post">
-        <label>
-          상태 변경
-          <select name="status">
-            <option th:each="s : *{statusOptions}" th:value="${s.key}" th:text="${s.value}"
-                    th:selected="${s.key == selected.status}">정상</option>
-          </select>
-        </label>
-        <button type="submit" class="asset-pilot-search-button">변경</button>
-      </form>
-    </div>
-  </section>
-
 </main>
 
 <!-- ===== 자산 등록 팝업 (POST → AssetCreateRequest) ===== -->
