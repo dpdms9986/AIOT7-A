@@ -24,4 +24,8 @@ public class LandCreateRequest {
     private Double areaSize;   // name="areaSize"
 
     private String polygonCoordinates; // 다각형 그리기
+    
+    public Double getSafeAreaSize() {
+        return (areaSize != null && areaSize > 0) ? areaSize : 1000.0;
+    }
 }
