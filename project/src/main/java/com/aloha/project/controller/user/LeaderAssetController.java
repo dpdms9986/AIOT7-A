@@ -234,11 +234,13 @@ public class LeaderAssetController {
     }
 
 
+    @Transactional
     @PostMapping("/assetlist/{id}/status")
-    public String changeStatus(@PathVariable("id") String id,
-                            @RequestParam("status") String status,
-                            @AuthenticationPrincipal CustomUser customUser,
-                            RedirectAttributes redirectAttributes) {
+    public String changeStatus(
+            @PathVariable("id") String id,
+            @RequestParam("status") String status,
+            @AuthenticationPrincipal CustomUser customUser,
+            RedirectAttributes redirectAttributes) {
 
         log.info("자산 상태 변경 요청: {} → {}", id, status);
 
@@ -339,6 +341,96 @@ public class LeaderAssetController {
 
         // 변경 후에도 기존 자산 상세 화면 유지
         redirectAttributes.addAttribute("id", id);
+
+        return "redirect:/leader/assetlist";
+    }
+
+    /**
+     * 자산 삭제 (방제단장 권한)
+     */
+    @Transactional
+    @PostMapping("/assetlist/{id}/delete")
+    public String deleteAsset(
+            @PathVariable("id") String id,
+            @AuthenticationPrincipal CustomUser customUser,
+            RedirectAttributes redirectAttributes) {
+
+        log.info("자산 삭제 요청: {}", id);
+
+        if (customUser == null) {
+            return "redirect:/login";
+        }
+
+        Users leader = userRepository.findById(customUser.getUser().getNo()).orElse(null);
+
+        if (leader == null || !"LEADER".equals(leader.getRole())
+                || leader.getTeam() == null) {
+
+            redirectAttributes.addFlashAttribute(
+                    "error", "삭제 권한이 없거나 소속 방제단 정보를 찾을 수 없습니다."
+            );
+            return "redirect:/leader/assetlist";
+        }
+
+        try {
+            // 1. 드론 삭제
+            if (id.startsWith("drone-")) {
+
+                Long droneNo = Long.parseLong(id.substring("drone-".length()));
+
+                Drones drone = droneRepository.findById(droneNo).orElse(null);
+
+                if (drone == null || drone.getUser() == null
+                        || drone.getUser().getTeam() == null
+                        || !leader.getTeam().getNo().equals(drone.getUser().getTeam().getNo())) {
+
+                    redirectAttributes.addFlashAttribute(
+                            "error", "드론 정보를 찾을 수 없거나 삭제 권한이 없습니다."
+                    );
+
+                } else {
+                    droneRepository.delete(drone);
+
+                    redirectAttributes.addFlashAttribute(
+                            "message", drone.getModelName() + " 드론이 삭제되었습니다."
+                    );
+                }
+
+            // 2. 약제 삭제
+            } else if (id.startsWith("chemical-")) {
+
+                Long chemicalNo = Long.parseLong(id.substring("chemical-".length()));
+
+                Chemicals chemical = chemicalRepository.findById(chemicalNo).orElse(null);
+
+                if (chemical == null || chemical.getTeam() == null
+                        || !leader.getTeam().getNo().equals(chemical.getTeam().getNo())) {
+
+                    redirectAttributes.addFlashAttribute(
+                            "error", "약제 정보를 찾을 수 없거나 삭제 권한이 없습니다."
+                    );
+
+                } else {
+                    chemicalRepository.delete(chemical);
+
+                    redirectAttributes.addFlashAttribute(
+                            "message", chemical.getChemicalName() + " 약제가 삭제되었습니다."
+                    );
+                }
+
+            } else {
+                redirectAttributes.addFlashAttribute(
+                        "error", "올바르지 않은 자산 ID입니다."
+                );
+            }
+
+        } catch (NumberFormatException e) {
+            log.warn("잘못된 자산 ID: {}", id);
+
+            redirectAttributes.addFlashAttribute(
+                    "error", "잘못된 자산 번호입니다."
+            );
+        }
 
         return "redirect:/leader/assetlist";
     }
