@@ -179,6 +179,51 @@
           <strong th:text="*{lastManagedAt != null} ? *{#temporals.format(lastManagedAt, 'yyyy-MM-dd')} : '기록 없음'">2026-10-20</strong>
         </div>
       </div>
+<<<<<<< HEAD
+
+       <!-- 상태 변경 (POST) -->
+        <form class="asset-status-form"
+              th:action="@{/pilot/assetlist/{id}/status(id=*{id})}" method="post">
+            <label>
+          상태 변경
+          <select name="status">
+             <option th:each="s : *{statusOptions}" th:value="${s.key}" th:text="${s.value}"
+                    th:selected="${s.key == selected.status}">정상</option>
+                    </select>
+                  </label>
+                <button type="submit" class="asset-pilot-search-button">변경</button>
+            </form> 
+
+      <div class="asset-detail-section">
+        <div class="asset-detail-section-heading">
+          <h4 th:text="*{drone} ? '정비 및 점검 이력' : '입고 이력'">정비 및 점검 이력</h4>
+        </div>
+        <div class="asset-detail-table-wrap">
+          <table class="asset-detail-table">
+            <thead>
+              <tr th:if="*{drone}">
+                <th>관리 일자</th><th>관리 유형</th><th>관리 내용</th><th>정비 비용</th>
+              </tr>
+              <tr th:unless="*{drone}">
+                <th>입고 일자</th><th>입고 수량</th><th>내용</th><th>비고</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="log : *{logs}">
+                <td th:text="${#temporals.format(log.date, 'yyyy-MM-dd')}">2026-10-20</td>
+                <td th:text="${log.kind}">정기 점검</td>
+                <td th:text="${log.content}">프로펠러 점검</td>
+                <td th:text="${log.note}">0원</td>
+              </tr>
+              <tr th:if="*{#lists.isEmpty(logs)}">
+                <td colspan="4" class="empty-row">이력이 없습니다.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+=======
+>>>>>>> rkgus
     </div>
   </section>
 
