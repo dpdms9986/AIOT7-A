@@ -36,7 +36,6 @@ public class HomeController {
       return "page/signup";
   }
 
-
    // [깔끔하게 정리된 버전]
     @PostMapping("/signup")
     public String signupSubmit(@ModelAttribute SignupRequest signupDto, 
