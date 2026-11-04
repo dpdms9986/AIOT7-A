@@ -147,6 +147,34 @@ public class UserServiceImpl implements UserService {
             return false;
         }
     }
+
+    // 5. 회원 논리 삭제
+    @Transactional
+    @Override
+    public boolean deleteByUuid(String id) {
+        log.info("## 회원 권한 삭제: {} ##", id);
+
+        try {
+            // UUID로 기존 회원 조회
+            Users user = repository.findOneById(id).orElse(null);
+
+            if (user == null) {
+                log.warn("비활성화 처리할 회원을 찾을 수 없음: {}", id);
+                return false;
+            }
+
+            // 실제 삭제하지 않고 비활성화 처리
+            user.setEnabled(false);
+
+            log.info("회원 비활성화 처리 성공: {}", user.getUserName());
+            return true;
+
+        } catch (Exception e) {
+            log.error("회원 비활성화 처리 중 오류 발생: {}", e.getMessage(), e);
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            return false;
+        }
+    }
 }
    
     // @Override
