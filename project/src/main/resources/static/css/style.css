@@ -12296,8 +12296,8 @@ a.mp-stat-link:hover { border-color: var(--color-primary, #238451); transform: t
 .adm-empty { margin: 0; padding: 24px 0; text-align: center; color: #8491a0; font-size: 13px; }
 
 /* 드론 사진 칸: static/img/admin-drone.jpg 를 넣으면 사진이 나옴 */
-.adm-photo { display: grid; place-items: center; height: 170px; padding: 0; border: 0; font-size: 44px;
-  background: url('/img/admin-drone.jpg') center / cover, linear-gradient(135deg, #cfe6f2, #a9d4a6); }
+.adm-photo { height: 190px; padding: 0; border: 0; border-radius: 16px; overflow: hidden;
+  background: url('/img/admin-drone.jpg') center 40% / cover no-repeat, linear-gradient(135deg, #cfe6f2, #a9d4a6); }
 
 /* 주간 추이 막대 */
 .adm-bars { display: flex; align-items: flex-end; gap: 8px; height: 150px; }
