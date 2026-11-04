@@ -52,7 +52,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         // 1. [정적 리소스] CSS, JS, 이미지, 업로드 파일은 누구나 통과
                         .requestMatchers(
-                            "/static/**", "/css/**", "/js/**", "/images/**", "/fonts/**", "/upload/**", "/favicon.ico", "/.well-known/**", "/ws-drone/**"
+                            "/static/**", "/css/**", "/js/**", "/images/**", "/fonts/**", "/upload/**", "/favicon.ico",
+                             "/.well-known/**", "/ws-drone/**", "/find-account/**", "/find-password/**"
                         ).permitAll()
 
                         // 2. ⭐ [최우선 철벽 방어 - 대안 B] 역할별 전용 방 먼저 잠그기!
