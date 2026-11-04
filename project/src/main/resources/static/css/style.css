@@ -9392,6 +9392,7 @@ body.farm-drawer-open {
 .task-table tbody tr { cursor: pointer; }
 .task-table tbody tr:hover { background: #f8fbf9; }
 .task-table tbody tr.selected { background: var(--color-primary-light); }
+.task-table tbody tr.has-draft td:nth-child(2)::after { content: "✔ 임시저장"; margin-left: 8px; font-size: 12px; font-weight: 700; color: #238451; }
 .task-empty-cell { padding: 30px 12px; color: var(--color-text-sub); text-align: center; }
 
 /* ----- 오른쪽 조종사 배정 ----- */
@@ -12523,3 +12524,14 @@ a.adm-stat.has-ico { display: flex; align-items: center; gap: 14px; }
 .adm-stat.warn .adm-stat-ico { background: #fff1dc; color: #c26a00; }
 .adm-stat-txt small { display: block; margin-bottom: 2px; }
 .adm-stat-txt strong { display: block; line-height: 1.1; }
+
+/* ===== 작업 배정 탭 - 미배정 농지 표 (행정구역 컬럼 제거 후 폭 정리) ===== */
+#assign-form .task-table { table-layout: fixed; }
+#assign-form .task-table th:nth-child(1),
+#assign-form .task-table td:nth-child(1) { width: 110px; text-align: center; }  /* 선택 */
+#assign-form .task-table th:nth-child(2),
+#assign-form .task-table td:nth-child(2) { width: 36%; text-align: left; }      /* 주소 */
+#assign-form .task-table th:nth-child(3),
+#assign-form .task-table td:nth-child(3) { width: 22%; text-align: left; }      /* 면적 */
+#assign-form .task-table th:nth-child(4),
+#assign-form .task-table td:nth-child(4) { width: auto; text-align: left; }     /* 상태 */

@@ -70,7 +70,7 @@
             <tbody>
               <tr th:each="land : ${lands}">
                 <td th:text="${land.address}">전민동 15-2</td>
-                <td th:text="${land.region} + ' ' + ${land.dong}">유성구 전민동</td>
+                <td th:text="${land.region != null and land.dong != null} ? ${land.region} + ' ' + ${land.dong} : '-'">유성구 전민동</td>
                 <td th:text="${#numbers.formatDecimal(land.areaSize, 0, 'COMMA', 0, 'POINT')} + ' ㎡'">3,300 ㎡</td>
                 <td>
                   <span class="status-badge"
