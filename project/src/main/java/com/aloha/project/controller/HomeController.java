@@ -86,25 +86,25 @@ public class HomeController {
     return "page/login";
   }
 
-  /**
-   * 💻 아이디 찾기
-   * @return
-   */
-  @GetMapping("/find-id")
-  public String findId() {
-      log.info(":::::::::: 아이디 찾기 페이지 ::::::::::");
-      return "page/find-id";
-  }
+//   /**
+//    * 💻 아이디 찾기
+//    * @return
+//    */
+//   @GetMapping("/find-account")
+//   public String findId() {
+//       log.info(":::::::::: 아이디 찾기 페이지 ::::::::::");
+//       return "page/find-account";
+//   }
 
-  /**
-   * 💻 비밀번호 찾기
-   * @return
-   */
-  @GetMapping("/find-pw")
-  public String findPassword() {
-      log.info(":::::::::: 비밀번호 찾기 페이지 ::::::::::");
-      return "page/find-pw";
-  }
+//   /**
+//    * 💻 비밀번호 찾기
+//    * @return
+//    */
+//   @GetMapping("/find-password")
+//   public String findPassword() {
+//       log.info(":::::::::: 비밀번호 찾기 페이지 ::::::::::");
+//       return "page/find-password";
+//   }
 
   /**
    * 이용약관

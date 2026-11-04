@@ -13,57 +13,72 @@
     <section class="login-card">
       <header class="login-brand">
         <div class="login-brand-logo">A</div>
-        <h1>아이디 / 비밀번호 찾기</h1>
+        <h1>계정 찾기</h1>
         <p>가입 시 등록한 정보를 입력해 주세요.</p>
       </header>
 
-      <!-- 에러 또는 결과 메시지 출력 공간 -->
-      <div th:if="${errorMessage}" class="page-flash is-error" style="color: red; margin-bottom: 15px; text-align: center;">
+      <!-- 탭: 컨트롤러가 내려주는 activeTab 으로 초기 탭 결정 (없으면 아이디 찾기) -->
+      <div class="findaccount-tabs" role="tablist">
+        <button type="button" role="tab" data-tab="id"
+                th:classappend="${activeTab != 'password'} ? 'active'">아이디 찾기</button>
+        <button type="button" role="tab" data-tab="password"
+                th:classappend="${activeTab == 'password'} ? 'active'">비밀번호 찾기</button>
+      </div>
+
+      <!-- 에러 메시지 -->
+      <div th:if="${errorMessage}" class="page-flash is-error">
         <p th:text="${errorMessage}"></p>
       </div>
 
-      <!-- 아이디 찾기 폼 -->
-      <form class="login-form" th:action="@{/find-id}" method="post" style="margin-bottom: 30px;">
-        <h3 style="font-size: 1.1rem; margin-bottom: 10px; color: #333;">아이디(이메일) 찾기</h3>
+      <!-- 아이디 찾기 -->
+      <form class="login-form findaccount-panel" data-panel="id"
+            th:action="@{/find-id}" method="post" th:hidden="${activeTab == 'password'}">
         <div class="login-field">
           <label for="nameForId">이름</label>
           <input id="nameForId" name="name" type="text" placeholder="가입한 이름을 입력하세요" required>
         </div>
-        <!-- 전화번호나 기타 확인용 필드가 있다면 추가 가능 -->
-        <button type="submit" class="login-submit" style="margin-top: 10px;">아이디 찾기</button>
-        
-        <!-- 아이디 찾기 결과 표시 -->
-        <div th:if="${foundEmail}" style="margin-top: 10px; padding: 10px; background: #f9f9f9; border-radius: 5px; text-align: center;">
-          회원님의 아이디(이메일)는 <strong th:text="${foundEmail}" style="color: #2b7a78;"></strong> 입니다.
+        <div class="login-field">
+          <label for="phoneForId">연락처 (선택)</label>
+          <input id="phoneForId" name="phone" type="tel" placeholder="010-1234-5678" maxlength="13">
+        </div>
+
+        <button type="submit" class="login-submit">아이디 찾기</button>
+
+        <div th:if="${searchSuccess}" class="findaccount-result">
+          회원님의 아이디는 <strong th:text="${foundUsername}"></strong> 입니다.
         </div>
       </form>
 
-      <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-
-      <!-- 비밀번호 찾기 폼 -->
-      <form class="login-form" th:action="@{/find-password}" method="post">
-        <h3 style="font-size: 1.1rem; margin-bottom: 10px; color: #333;">비밀번호 찾기</h3>
+      <!-- 비밀번호 찾기 -->
+      <form class="login-form findaccount-panel" data-panel="password"
+            th:action="@{/find-password}" method="post" th:hidden="${activeTab != 'password'}">
         <div class="login-field">
-          <label for="emailForPw">아이디(이메일)</label>
+          <label for="emailForPw">이메일</label>
           <input id="emailForPw" name="email" type="email" placeholder="가입한 이메일을 입력하세요" required>
         </div>
         <div class="login-field">
           <label for="nameForPw">이름</label>
-          <input id="nameForPw" name="name" type="text" placeholder="이름을 입력하세요" required>
+          <input id="nameForPw" name="name" type="text" placeholder="가입한 이름을 입력하세요" required>
         </div>
-        <button type="submit" class="login-submit" style="margin-top: 10px;">임시 비밀번호 발급</button>
 
-        <!-- 비밀번호 찾기 결과 표시 -->
-        <div th:if="${pwMessage}" style="margin-top: 10px; padding: 10px; background: #f9f9f9; border-radius: 5px; text-align: center;">
-          <p th:text="${pwMessage}" style="color: #2b7a78; font-size: 0.9rem;"></p>
+        <button type="submit" class="login-submit">임시 비밀번호 발급</button>
+
+        <!-- 메일 발송 성공 -->
+        <div th:if="${pwSuccess}" class="findaccount-result">
+          <span th:text="${message}"></span>
+        </div>
+        <!-- 메일 발송 실패 (pwSuccess 없이 message 만 내려옴) -->
+        <div th:if="${message != null and pwSuccess == null}" class="page-flash is-error">
+          <p th:text="${message}"></p>
         </div>
       </form>
 
-      <div class="login-signup-link" style="margin-top: 20px;">
+      <div class="login-signup-link">
         기억나셨나요? <a th:href="@{/login}">로그인하기</a>
       </div>
     </section>
   </main>
 
+  <script th:src="@{/js/users/find-account.js}"></script>
 </body>
 </html>

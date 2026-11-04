@@ -58,6 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let targetCheckbox = null;   // 지도에 보여줄 등록 농지 (가장 최근에 체크한 것)
   let drawn = null;            // 직접 그린 영역 [[lat,lng],...]
+  let drawnInLand = false;     // true = 선택한 농지 안에서 그린 작업 영역
   let currentCoords = null;    // 지금 지도에 표시 중인 모영역
   let lastKey = "";            // 영역이 바뀌면 담당 매핑을 초기화하기 위한 값
   let pieces = [];             // 분할 결과 (GeoJSON Feature, 서→동 순)
@@ -115,12 +116,15 @@ document.addEventListener("DOMContentLoaded", () => {
   }).addTo(map);
   let resultLayer = null;
   let originalLayer = null;
+  let landOutline = null;      // 선택한 농지 윤곽선 (참고용)
 
   const clearMapLayers = () => {
     if (resultLayer) map.removeLayer(resultLayer);
     if (originalLayer) map.removeLayer(originalLayer);
+    if (landOutline) map.removeLayer(landOutline);
     resultLayer = null;
     originalLayer = null;
+    landOutline = null;
     pieceLayers = [];
   };
 
@@ -130,8 +134,41 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   /* ===================== 1단계: 지도에서 직접 영역 그리기 ===================== */
+
+  // 지금 그리기 대상인 농지 (체크된 농지가 없으면 null, 이때는 자유 그리기)
+  const currentDrawLand = () =>
+    (targetCheckbox && targetCheckbox.checked) ? targetCheckbox : null;
+
+  // 클릭한 지점이 선택한 농지 안에 있는지 검사 (Turf 는 [경도, 위도] 순서)
+  const isPointInLand = (lat, lng, land) => {
+    try {
+      const ring = FieldSplit.closeRing(landCoords(land)).map(([la, ln]) => [ln, la]);
+      return turf.booleanPointInPolygon(turf.point([lng, lat]), turf.polygon([ring]));
+    } catch {
+      return true;   // 좌표를 해석하지 못하면 막지 않음
+    }
+  };
+
+  let outsideTimer = null;
+
   const drawer = FieldSplit.createDrawer(map, {
     onStatus: (message, state) => { drawStatus.textContent = message; drawStatus.dataset.state = state || ""; },
+
+    // 선택한 농지 밖을 누르면 빨간 안내 문구를 띄우고 점을 찍지 않음
+    canPlace: (lat, lng) => {
+      const land = currentDrawLand();
+      if (!land) return true;
+
+      if (isPointInLand(lat, lng, land)) {
+        clearError();
+        return true;
+      }
+
+      showError("농지 구역이 아닙니다. 선택한 농지 안쪽을 눌러 주세요.");
+      clearTimeout(outsideTimer);
+      outsideTimer = setTimeout(clearError, 3000);   // 3초 뒤 자동으로 사라짐
+      return false;
+    },
   });
 
   const resetDrawUi = () => {
@@ -141,7 +178,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const cancelDrawing = () => {
     if (drawer.isActive()) { drawer.clear(); resetDrawUi(); drawStatus.textContent = DRAW_HINT; }
   };
-  const clearDrawn = () => { drawn = null; drawnWrap.hidden = true; };
+  const clearDrawn = () => { drawn = null; drawnInLand = false; drawnWrap.hidden = true; };
   const uncheckLands = () => {
     selectedLands().forEach((c) => {
       c.checked = false;
@@ -149,25 +186,73 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   };
 
-  const useDrawn = (coords) => {
+  const useDrawn = (coords, keepLand = false) => {
     cancelDrawing();
-    uncheckLands();                                  // 등록 농지 선택은 해제
+    if (!keepLand) uncheckLands();                   // 선택 농지 안에서 그린 경우엔 선택 유지
     drawn = coords.map(([lat, lng]) => [lat, lng]);
-    drawnWrap.hidden = false;
+    drawnInLand = keepLand;
+    drawnWrap.hidden = keepLand;                     // 농지 안 작업 영역은 이름 입력 불필요
     renderSplit();
   };
 
+    // 선택한 농지의 외곽 좌표 (저장된 외곽선이 없으면 위치 기준 임시 사각형)
+  const landCoords = (checkbox) => {
+    const d = checkbox.dataset;
+    return FieldSplit.parsePolygon(d.polygon)
+      || FieldSplit.fallbackPolygon(Number(d.lat), Number(d.lng), Number(d.area));
+  };
+
+  // 그린 영역이 선택한 농지 안에 완전히 들어가는지
+  const isInsideLand = (coords, land) => {
+    try {
+      const toPoly = (c) => turf.polygon([FieldSplit.closeRing(c).map(([lat, lng]) => [lng, lat])]);
+      return turf.booleanWithin(toPoly(coords), toPoly(landCoords(land)));
+    } catch { return true; }
+  };
+
+  // 그리는 동안: 선택은 유지하고 농지 윤곽선만 지도에 보여줌
+  const showLandForDrawing = (land) => {
+    pieces = [];
+    assignment = [];
+    lastKey = "";
+    clearMapLayers();
+    renderCards();                                   // 구역 카드 비우기
+    const coords = landCoords(land);
+    currentCoords = coords;
+    landOutline = L.polygon(FieldSplit.closeRing(coords), {
+      color: "#304f43", weight: 2, dashArray: "6 6",
+      fillColor: "#54a77b", fillOpacity: 0.08, interactive: false,
+    }).addTo(map);
+    map.fitBounds(L.latLngBounds(coords), { padding: [30, 30], maxZoom: 18 });
+    mapEmpty.hidden = true;
+    fallbackNote.hidden = true;
+    $("#fs-sum-count").textContent = "-";
+    $("#fs-map-region").textContent = `${land.dataset.address} 안에서 작업 영역 그리는 중`;
+  };
+
   drawBtn.addEventListener("click", () => {
+    const land = (targetCheckbox && targetCheckbox.checked) ? targetCheckbox : null;   // 선택한 농지
+
     if (drawer.isActive()) {                         // 그리기 완료
       const result = drawer.finish();
       resetDrawUi();
-      if (result.ok) { drawer.clear(); useDrawn(result.coordinates); }
+      if (result.ok) {
+        drawer.clear();
+        useDrawn(result.coordinates, !!land);
+        if (land && !isInsideLand(result.coordinates, land)) {
+          showError("그린 영역 일부가 선택한 농지 밖이에요. 필요하면 다시 그려 주세요.");
+        }
+      }
       return;
     }
     drawer.clear();                                  // 새로 그리기 시작
     clearDrawn();
-    uncheckLands();
-    resetView("지도에서 영역을 그리는 중");
+    if (land) {
+      showLandForDrawing(land);                      // 선택한 농지는 유지
+    } else {
+      uncheckLands();
+      resetView("지도에서 영역을 그리는 중");
+    }
     drawer.start();
     drawBtn.textContent = "✔ 그리기 완료";
     drawBtn.setAttribute("aria-pressed", "true");
@@ -299,6 +384,13 @@ document.addEventListener("DOMContentLoaded", () => {
       color: "#304f43", weight: 1.5, dashArray: "5 5", fill: false, interactive: false,
     }).addTo(map);
 
+    // 선택 농지 안에서 그린 영역이면 농지 윤곽선도 같이 표시
+    if (drawnInLand && targetCheckbox && targetCheckbox.checked) {
+      landOutline = L.polygon(FieldSplit.closeRing(landCoords(targetCheckbox)), {
+        color: "#8a8f87", weight: 2, dashArray: "2 6", fill: false, interactive: false,
+      }).addTo(map);
+    }
+
     map.fitBounds(L.latLngBounds(coords), { padding: [30, 30], maxZoom: 18, animate: true });
     window.setTimeout(() => map.invalidateSize(), 100);
   };
@@ -348,7 +440,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (drawn) {
       coords = drawn;
-      label = "직접 그린 영역";
+      label = (drawnInLand && targetCheckbox) ? `${targetCheckbox.dataset.address} 작업 영역` : "직접 그린 영역";
       areaM2 = areaOfCoords(drawn);
       key = `drawn:${JSON.stringify(drawn)}`;
     } else if (targetCheckbox && targetCheckbox.checked) {
@@ -414,11 +506,12 @@ document.addEventListener("DOMContentLoaded", () => {
   // 등록 농지 체크: 가장 최근에 체크한 농지를 지도에 보여줌 (직접 그린 영역은 해제)
   landChecks().forEach((c) => c.addEventListener("change", () => {
     if (c.checked) { cancelDrawing(); clearDrawn(); targetCheckbox = c; }
-    else pickTarget();
+    else { if (drawnInLand) clearDrawn(); pickTarget(); }   // 농지 선택을 풀면 그 안에서 그린 영역도 해제
     renderSplit();
   }));
   $("#check-all")?.addEventListener("change", () => {
     if ($("#check-all").checked) { cancelDrawing(); clearDrawn(); }
+    else if (drawnInLand) clearDrawn();
     targetCheckbox = null;
     pickTarget();
     renderSplit();
@@ -459,7 +552,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!pieces.length) { alert("먼저 영역을 선택하고 분할해 주세요."); return; }
 
     const lands = selectedLands();
-    if (!drawn && lands.length !== 1) {
+    if ((!drawn || drawnInLand) && lands.length !== 1) {
       alert(lands.length
         ? "구역별 배정은 농지를 1건만 선택해 주세요. 여러 농지를 한꺼번에 나눌 때는 '분배 설정'을 사용하세요."
         : "배정할 농지를 선택하거나 지도에서 영역을 그려 주세요.");
@@ -471,7 +564,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    if (drawn) {
+    if (drawn && !drawnInLand) {
       if (!drawnAddress.value.trim()) {
         alert("직접 그린 영역의 이름(주소)을 입력해 주세요.");
         drawnAddress.focus();
