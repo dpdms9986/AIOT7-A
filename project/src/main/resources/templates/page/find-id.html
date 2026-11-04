@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{UI/layouts/user/login_layout}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>아이디 찾기 - 스마트 농업 관제 시스템</title>
+</head>
+<body layout:fragment="content">
+
+  <main class="login-page">
+    <section class="login-card">
+      <header class="login-brand">
+        <div class="login-brand-logo">A</div>
+        <h1>아이디 찾기</h1>
+        <p>가입 시 등록한 이름과 연락처를 입력해 주세요.</p>
+      </header>
+
+      <div th:if="${errorMessage}" class="page-flash is-error">
+        <p th:text="${errorMessage}"></p>
+      </div>
+
+      <form class="login-form" th:action="@{/find-id}" method="post">
+        <div class="login-field">
+          <label for="nameForId">이름</label>
+          <input id="nameForId" name="name" type="text" placeholder="가입한 이름을 입력하세요" required autofocus>
+        </div>
+        <div class="login-field">
+          <label for="phoneForId">연락처</label>
+          <input id="phoneForId" name="phone" type="tel" placeholder="010-1234-5678" maxlength="13" required>
+        </div>
+
+        <button type="submit" class="login-submit">아이디 찾기</button>
+
+        <div th:if="${foundId}" class="findaccount-result">
+          회원님의 아이디는 <strong th:text="${foundId}"></strong> 입니다.
+        </div>
+      </form>
+
+      <div class="login-signup-link">
+        비밀번호가 기억나지 않으세요? <a th:href="@{/find-pw}">비밀번호 찾기</a>
+      </div>
+      <div class="login-signup-link">
+        <a th:href="@{/login}">로그인으로 돌아가기</a>
+      </div>
+    </section>
+  </main>
+
+  <script th:src="@{/js/users/find-id.js}"></script>
+</body>
+</html>
