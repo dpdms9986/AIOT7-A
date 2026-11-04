@@ -16,9 +16,12 @@ public interface UserService {
     // 페이징 조회
     PageInfo<Users> page(QueryParams queryParams);
 
-
     // 회원정보 수정
     boolean update(Users entity);                                     // 수정
+
+    // UUID로 회원 논리 삭제
+    boolean deleteByUuid(String id);
+    
     // boolean updateById(Users entity);
 
     // // 비밀번호 확인

@@ -12296,8 +12296,8 @@ a.mp-stat-link:hover { border-color: var(--color-primary, #238451); transform: t
 .adm-empty { margin: 0; padding: 24px 0; text-align: center; color: #8491a0; font-size: 13px; }
 
 /* 드론 사진 칸: static/img/admin-drone.jpg 를 넣으면 사진이 나옴 */
-.adm-photo { display: grid; place-items: center; height: 170px; padding: 0; border: 0; font-size: 44px;
-  background: url('/img/admin-drone.jpg') center / cover, linear-gradient(135deg, #cfe6f2, #a9d4a6); }
+.adm-photo { height: 190px; padding: 0; border: 0; border-radius: 16px; overflow: hidden;
+  background: url('/img/admin-drone.jpg') center 40% / cover no-repeat, linear-gradient(135deg, #cfe6f2, #a9d4a6); }
 
 /* 주간 추이 막대 */
 .adm-bars { display: flex; align-items: flex-end; gap: 8px; height: 150px; }
@@ -12335,6 +12335,16 @@ a.mp-stat-link:hover { border-color: var(--color-primary, #238451); transform: t
 .um-btn.danger  { border-color: #e5484d; background: #e5484d; color: #fff; }
 .um-btn:disabled { opacity: .45; cursor: not-allowed; }
 
+
+.um-grow { flex: 1 1 260px; min-width: 0; }
+.um-filter { display: flex; flex-direction: column; gap: 12px; margin-bottom: 14px; padding: 14px 16px; border: 1px solid #e3ece6; border-radius: 12px; background: #f7faf8; }
+.um-filter-row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 16px; }
+.um-field { display: flex; flex-direction: column; gap: 5px; }
+.um-field > label { font-size: 12px; font-weight: 700; color: #6b7a89; }
+.um-period { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.um-reset { align-self: flex-end; margin-left: auto; height: 38px; line-height: 38px; font-size: 13px; font-weight: 600; color: #6b7a89; text-decoration: none; }
+.um-reset:hover { color: #17803f; }
+.um-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
 .um-table th, .um-table td { text-align: center; }
 .um-table input[type=checkbox] { width: 16px; height: 16px; cursor: pointer; }
 .um-empty { padding: 28px; text-align: center; color: #8491a0; }
@@ -12354,6 +12364,16 @@ a.mp-stat-link:hover { border-color: var(--color-primary, #238451); transform: t
 .adm-stat strong { font-size: 26px; font-weight: 800; }
 .adm-stat.warn strong { color: #c26a00; }
 .adm-stat.ok strong   { color: #17803f; }
+/* 클릭 가능한 요약 카드 (탭 역할) */
+a.adm-stat { display: block; color: inherit; text-decoration: none; transition: border-color .15s, background .15s, box-shadow .15s; }
+a.adm-stat:hover { border-color: #b9d9c4; background: #f1f8f3; }
+a.adm-stat.on { border-color: #1f9d57; background: #e9f6ee; box-shadow: 0 0 0 2px rgba(31, 157, 87, .15); }
+
+/* 검색줄: 유형 + 검색창(남는 폭 전부) + 버튼 + 초기화 */
+.iq-search { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 14px; }
+.iq-search .um-input { flex: 1 1 240px; min-width: 0; }
+.iq-reset { padding: 0 6px; font-size: 13px; font-weight: 600; color: #6b7a89; text-decoration: none; }
+.iq-reset:hover { color: #17803f; }
 
 .um-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
 .um-tabs a { padding: 7px 14px; border: 1px solid #d6dfe6; border-radius: 999px; background: #fff; color: #334155; font-size: 13px; font-weight: 600; text-decoration: none; }
@@ -12505,3 +12525,13 @@ a.mp-stat-link:hover { border-color: var(--color-primary, #238451); transform: t
 
 /* 농지 등록 모달 : 외곽 그리기용으로 지도를 조금 키움 */
 #farm-register-modal .hz-pick-map { height: 300px; }
+
+
+/* 아이콘 + 글씨 요약 카드 (.has-ico 가 붙은 카드만 적용 → 다른 페이지의 adm-stat 은 영향 없음) */
+.adm-stat.has-ico,
+a.adm-stat.has-ico { display: flex; align-items: center; gap: 14px; }
+.adm-stat-ico { flex: none; display: grid; place-items: center; width: 46px; height: 46px; border-radius: 50%; background: #e3f4e9; color: #17803f; }
+.adm-stat-ico svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.adm-stat.warn .adm-stat-ico { background: #fff1dc; color: #c26a00; }
+.adm-stat-txt small { display: block; margin-bottom: 2px; }
+.adm-stat-txt strong { display: block; line-height: 1.1; }

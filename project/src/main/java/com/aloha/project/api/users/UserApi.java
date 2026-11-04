@@ -263,3 +263,48 @@
 //   }
 
 // }
+
+
+package com.aloha.project.api.users;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.aloha.project.service.inter.users.UserService;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@RestController
+@RequestMapping("/api/users")
+@RequiredArgsConstructor
+public class UserApi {
+
+    private final UserService userService;
+
+    // 회원 선택 삭제 (논리 삭제)
+    @DeleteMapping("/user/{id}")
+    public ResponseEntity<?> destroy(@PathVariable("id") String id) {
+        try {
+            boolean result = userService.deleteByUuid(id);
+
+            if (result) {
+                return ResponseEntity.ok().body("회원이 비활성화되었습니다.");
+            }
+
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("해당 회원을 찾을 수 없습니다.");
+
+        } catch (Exception e) {
+            log.error("회원 삭제 API 오류: {}", e.getMessage(), e);
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("회원 삭제 중 오류가 발생했습니다.");
+        }
+    }
+}
