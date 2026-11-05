@@ -38,6 +38,9 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   modal?.querySelector("[data-close-modal]")?.addEventListener("click", closeModal);
-  modal?.addEventListener("click", (e) => { if (e.target === modal) closeModal(); });
+  // 배경에서 누르고 배경에서 뗐을 때만 닫기
+  let downOnBackdrop = false;
+  modal?.addEventListener("pointerdown", (e) => { downOnBackdrop = (e.target === modal); });
+  modal?.addEventListener("click", (e) => { if (e.target === modal && downOnBackdrop) closeModal(); });
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && modal && !modal.hidden) closeModal(); });
 });
