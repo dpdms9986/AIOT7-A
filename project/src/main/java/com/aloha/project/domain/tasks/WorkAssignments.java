@@ -35,7 +35,7 @@ public class WorkAssignments {
     @JoinColumn(name = "lands_no", nullable = false)
     private Lands land; // 배정된 대상 농지 참조
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "users_no", nullable = false)
     private Users pilot; // 담당 조종사(Users.no) 참조
 
