@@ -2,7 +2,6 @@ package com.aloha.project.domain.common;
 
 import java.time.LocalDateTime;
 
-import com.aloha.project.domain.lands.Regions;
 import com.aloha.project.domain.users.Users;
 
 import jakarta.persistence.*;
@@ -51,11 +50,6 @@ public class HazardReports {
 
     @Column(nullable = false, length = 20)
     private String status = "ACTIVE"; // ACTIVE(주의 요망), RESOLVED(해소됨)
-
-    // TODO: 행정구역 관련 요소 삭제 대상 ( 위험게시판 화면디자인 확인 후 삭제 요망)
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "region_no")
-    private Regions region; // 행정구역별 필터링용 매핑 - BRD_002, BRD_004
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
