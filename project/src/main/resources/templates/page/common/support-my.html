@@ -38,7 +38,8 @@
           </tr>
         </thead>
         <tbody>
-          <tr th:each="q : ${myInquiries}">
+          <tr th:each="q : ${myInquiries}" class="sp-row"
+              th:data-href="@{/support/inquiries/{no}(no=${q.no})}">
             <td th:text="${q.typeLabel}">계정 · 로그인</td>
             <td class="sp-title-cell">
               <a th:href="@{/support/inquiries/{no}(no=${q.no})}" th:text="${q.title}">문의 제목</a>
@@ -65,5 +66,14 @@
   </article>
 </main>
 
+  <script>
+  // 행 아무 곳이나 클릭하면 상세로 이동 (제목 링크를 직접 누른 경우는 링크가 알아서 이동)
+  document.querySelectorAll('.sp-row').forEach(function (tr) {
+    tr.addEventListener('click', function (e) {
+      if (e.target.closest('a')) return;
+      location.href = tr.dataset.href;
+    });
+  });
+</script>
 </body>
 </html>

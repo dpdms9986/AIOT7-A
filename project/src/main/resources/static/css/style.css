@@ -12794,3 +12794,110 @@ select:not([multiple]):not([size]) {
 .um-pager.pager-std a.on {
     font-weight: 600;
 }
+
+
+.sp-table tbody tr.sp-row { cursor: pointer; }
+.sp-table tbody tr.sp-row:hover { background: var(--color-bg); }
+
+
+
+/* 관리 칸: 상세보기 / 대상 선택 / 재배정 (초록 테마) */
+.team-row-actions {
+    align-items: center;
+    gap: 8px;
+}
+
+.team-row-actions .team-row-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 36px;
+    padding: 0 14px;
+    border: 1px solid #bfe3cb;
+    border-radius: 10px;
+    background: #f3fbf5;
+    color: #1f7a45;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    transition: background 0.15s, box-shadow 0.15s;
+}
+
+.team-row-actions .team-row-btn:hover {
+    background: #e6f6ea;
+    box-shadow: 0 2px 6px rgba(35, 132, 81, 0.15);
+}
+
+/* 재배정 버튼: 채운 초록 */
+.team-row-actions .team-row-btn.reassign {
+    border-color: #cfeadb;
+    background: #dff3e4;
+    color: #1f7a45;
+}
+
+.team-row-actions .team-row-btn.reassign:hover {
+    background: #cfeadb;
+}
+
+/* 아이콘 (글자 앞에 CSS로 붙임) */
+.team-row-actions .team-row-btn::before {
+    content: "";
+    width: 14px;
+    height: 14px;
+    flex: 0 0 14px;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+}
+
+/* 상세보기 = 돋보기 */
+.team-row-actions .team-row-btn:not(.reassign)::before {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231f7a45' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M21 21l-4.3-4.3'/%3E%3C/svg%3E");
+}
+
+/* 재배정 = 새로고침 */
+.team-row-actions .team-row-btn.reassign::before {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231f7a45' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 12a9 9 0 0 1-15.5 6.2M3 12a9 9 0 0 1 15.5-6.2'/%3E%3Cpath d='M18.5 2v4h-4M5.5 22v-4h4'/%3E%3C/svg%3E");
+}
+
+/* 재배정 폼: 대상 선택 + 재배정 버튼을 한 줄로 */
+.team-reassign-form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+}
+
+/* 대상 선택 드롭다운 */
+.team-reassign-form select {
+    min-height: 36px;
+    padding: 0 34px 0 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background-color: #fff;
+    color: #334155;
+    font-family: inherit;
+    font-size: 12px;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23334155' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+}
+
+.team-reassign-form select:hover {
+    border-color: #bfe3cb;
+}
+
+.team-reassign-form select:focus {
+    outline: none;
+    border-color: #238451;
+    box-shadow: 0 0 0 3px rgba(35, 132, 81, 0.15);
+}
+
+
+.team-table thead th:last-child {
+    padding-left: 150px;
+}
