@@ -129,6 +129,8 @@ document.addEventListener("DOMContentLoaded", () => {
         popup(msg, "warn");
 
         // ▼ 테스트용 임시
+        // ▼ [테스트용] 메일 발송 실패(500)여도 입력창을 열어서, 서버 콘솔에 찍힌 인증코드로 테스트 가능
+        //   → Gmail 설정 완료 후 이 블록 삭제
         if (status === 500) {
           authBox.hidden = false;
           authCodeInput.readOnly = false;
