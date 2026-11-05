@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.aloha.project.domain.common.Pagination;
 import com.aloha.project.domain.lands.Lands;
 import com.aloha.project.domain.tasks.DispatchBatches;
 import com.aloha.project.domain.tasks.WorkAssignments;
@@ -571,6 +572,8 @@ public class LeaderController {
             @RequestParam(value = "keyword", defaultValue = "") String keyword,
             @RequestParam(value = "status",  defaultValue = "") String status,
             @RequestParam(value = "sort",    defaultValue = "") String sort,
+            @RequestParam(value = "page",    defaultValue = "1") int page,
+            @RequestParam(value = "size",    defaultValue = "10") int size,
             @AuthenticationPrincipal CustomUser customUser,
             Model model) {
 
@@ -594,6 +597,16 @@ public class LeaderController {
                 .sorted(farmCmp)
                 .toList();
 
+        // 페이지네이션 (필터/정렬이 끝난 목록을 페이지 크기로 자름)
+        int pageSize = (size < 1 || size > 100) ? 10 : size;
+        Pagination pagination = new Pagination(Math.max(page, 1), pageSize, 10, lands.size());
+        if (pagination.getPage() > pagination.getLast()) {          // 마지막 페이지보다 큰 값 방지
+            pagination = new Pagination(pagination.getLast(), pageSize, 10, lands.size());
+        }
+        int fromIdx = (int) Math.min(pagination.getIndex(), lands.size());
+        int toIdx   = (int) Math.min(fromIdx + pageSize, lands.size());
+        List<LandDto> pagedLands = lands.subList(fromIdx, toIdx);
+
         List<String> dongs = allLands.stream()
                 .map(LandDto::getDong)
                 .filter(d -> d != null && !d.isBlank())
@@ -601,7 +614,9 @@ public class LeaderController {
                 .sorted()
                 .toList();
 
-        model.addAttribute("lands", lands);
+        model.addAttribute("lands", pagedLands);        // 현재 페이지 목록만
+        model.addAttribute("pagination", pagination);
+        model.addAttribute("pageSize", pageSize);
         model.addAttribute("dongs", dongs);
         model.addAttribute("dong", dong);
         model.addAttribute("keyword", keyword);
