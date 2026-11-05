@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.aloha.project.domain.common.Inquiries;
+import com.aloha.project.domain.common.Pagination;
 import com.aloha.project.domain.users.CustomUser;
 import com.aloha.project.dto.InquiryDto;
 import com.aloha.project.service.inter.common.InquiryService;
@@ -61,6 +62,7 @@ public class SupportController {
     @GetMapping("/my")
     public String getMyInquiries(
             @AuthenticationPrincipal CustomUser customUser,
+            @RequestParam(value = "page", defaultValue = "1") int page,
             Model model) {
 
         if (customUser == null) return "redirect:/login";
@@ -71,7 +73,18 @@ public class SupportController {
                 .map(this::toInquiryDto)
                 .toList();
 
-        model.addAttribute("myInquiries", myInquiries);
+        // 페이지네이션 (10개씩)
+        final int pageSize = 10;
+        Pagination pagination = new Pagination(Math.max(page, 1), pageSize, 10, myInquiries.size());
+        if (pagination.getPage() > pagination.getLast()) {
+            pagination = new Pagination(pagination.getLast(), pageSize, 10, myInquiries.size());
+        }
+        int fromIdx = (int) Math.min(pagination.getIndex(), myInquiries.size());
+        int toIdx   = Math.min(fromIdx + pageSize, myInquiries.size());
+
+        model.addAttribute("myInquiries", myInquiries.subList(fromIdx, toIdx));
+        model.addAttribute("myTotal", myInquiries.size());
+        model.addAttribute("pagination", pagination);
 
         return "page/common/support-my";
     }

@@ -1,5 +1,6 @@
 package com.aloha.project.controller.admin;
 
+import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -10,15 +11,20 @@ import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.aloha.project.domain.common.PageInfo;
 import com.aloha.project.domain.common.Pagination;
+import com.aloha.project.domain.common.QueryParams;
 import com.aloha.project.domain.tasks.WorkAssignments;
+import com.aloha.project.domain.users.Users;
 import com.aloha.project.dto.AdminPilotDto;
 import com.aloha.project.repository.tasks.WorkAssignmentRepository;
 import com.aloha.project.repository.users.TeamRepository;
 import com.aloha.project.repository.users.UserRepository;
+import com.aloha.project.service.inter.users.UserService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,10 +43,13 @@ public class AdminPilotController {
     private final UserRepository userRepository;
     private final TeamRepository teamRepository;
     private final WorkAssignmentRepository workAssignmentRepository;
+    private final UserService userService;
 
     @Transactional(readOnly = true) // WorkAssignments.pilot 이 LAZY 라서 트랜잭션 안에서 처리
     @GetMapping
     public String list(
+            @RequestParam(value = "tab", defaultValue = "users") String tab,
+            @ModelAttribute QueryParams queryParams,
             @RequestParam(value = "search", defaultValue = "") String search,   // 이름 / 아이디 / 연락처
             @RequestParam(value = "teamNo", defaultValue = "") String teamNo,   // 방제단 번호 (빈값=전체)
             @RequestParam(value = "status", defaultValue = "") String status,   // WORKING / READY / DISABLED
@@ -48,6 +57,15 @@ public class AdminPilotController {
             @RequestParam(value = "size", defaultValue = "10") int size,
             Model model) {
 
+        // 기본 탭은 사용자 관리. 잘못된 tab 값도 기본 탭으로 처리
+        if (!"pilots".equals(tab)) {
+            tab = "users";
+            loadUsers(queryParams, model);
+            model.addAttribute("tab", tab);
+            return "page/admin/pilots";
+        }
+
+        model.addAttribute("tab", tab);
         size = (size < 1 || size > 100) ? 10 : size;
 
         // TODO(백엔드) 아래는 findAll() 로 전체를 읽어 메모리에서 계산 중 (데이터가 많아지면 느려짐)
@@ -98,5 +116,73 @@ public class AdminPilotController {
         model.addAttribute("disabledCount", disabledCount);
 
         return "page/admin/pilots";
+    }
+
+    /**
+     * 사용자 관리 탭 데이터 조회
+     */
+    private void loadUsers(QueryParams queryParams, Model model) {
+        if (queryParams.getPage() == null || queryParams.getPage() < 1) {
+            queryParams.setPage(1);
+        }
+        if (queryParams.getSize() == null || queryParams.getSize() < 1) {
+            queryParams.setSize(10);
+        }
+
+        // 검색어 기준 전체 조회 후 관리자 계정 및 추가 필터 적용
+        QueryParams allParams = new QueryParams();
+        allParams.setPage(1);
+        allParams.setSize(Integer.MAX_VALUE);
+        allParams.setSearch(queryParams.getSearch());
+        List<Users> users = userService.page(allParams).getList();
+
+        Map<String, Object> params = queryParams.getParams();
+        String role = param(params, "role");
+        String enabled = param(params, "enabled");
+        LocalDate start = toDate(param(params, "start"));
+        LocalDate end = toDate(param(params, "end"));
+
+        List<Users> filtered = users.stream()
+                .filter(u -> !"ADMIN".equals(u.getRole()))
+                .filter(u -> role == null || role.equals(u.getRole()))
+                .filter(u -> enabled == null
+                        || ("1".equals(enabled) == Boolean.TRUE.equals(u.getEnabled())))
+                .filter(u -> start == null || (u.getCreatedAt() != null
+                        && !u.getCreatedAt().toLocalDate().isBefore(start)))
+                .filter(u -> end == null || (u.getCreatedAt() != null
+                        && !u.getCreatedAt().toLocalDate().isAfter(end)))
+                .toList();
+
+        int page = queryParams.getPage();
+        int pageSize = queryParams.getSize();
+        long total = filtered.size();
+        Pagination pagination = new Pagination(page, pageSize, 10, total);
+        if (page > pagination.getLast()) {
+            page = (int) pagination.getLast();
+            pagination = new Pagination(page, pageSize, 10, total);
+        }
+
+        int from = (int) Math.min(pagination.getIndex(), total);
+        int to = (int) Math.min((long) from + pageSize, total);
+        PageInfo<Users> pageInfo = new PageInfo<>(filtered.subList(from, to), total, page, pageSize);
+
+        model.addAttribute("pageInfo", pageInfo);
+        model.addAttribute("pagination", pagination);
+        model.addAttribute("queryParams", queryParams);
+    }
+
+    private String param(Map<String, Object> params, String key) {
+        if (params == null || params.get(key) == null) return null;
+        String value = params.get(key).toString().trim();
+        return value.isEmpty() ? null : value;
+    }
+
+    private LocalDate toDate(String value) {
+        if (value == null) return null;
+        try {
+            return LocalDate.parse(value);
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

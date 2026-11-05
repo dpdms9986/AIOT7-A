@@ -11,6 +11,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -45,6 +46,7 @@ public class LeaderDashboardController {
     private final WorkAssignmentRepository workAssignmentRepository;
     private final DispatchBatchRepository dispatchBatchRepository;
 
+    @Transactional(readOnly = true)
     @GetMapping
     public String getDashboard(
             @RequestParam(value = "landNo", required = false) Long landNo,
