@@ -98,36 +98,4 @@ public class EmailServiceImpl implements EmailService {
             + "</html>";
     }
 
-    @Override
-    public void sendVerificationCodeMail(String to, String code) {
-        String subject = "[스마트 농업 관제] 회원가입 이메일 인증번호 안내";
-        String html = buildVerificationCodeHtml(code);
-        sendHtmlMail(to, subject, html);
-        log.info("인증번호 이메일 발송 완료: to={}, code={}", to, code);
-    }
-
-    private String buildVerificationCodeHtml(String code) {
-        return "<!DOCTYPE html>"
-            + "<html lang=\"ko\">"
-            + "<head><meta charset=\"UTF-8\"></head>"
-            + "<body style=\"font-family: Arial, sans-serif; background-color: #f4f6f8; padding: 20px;\">"
-            + "  <div style=\"max-width: 480px; margin: 20px auto; background-color: #ffffff;"
-            + "              border-radius: 8px; padding: 36px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);\">"
-            + "    <h2 style=\"color: #238451; border-bottom: 2px solid #238451; padding-bottom: 12px; margin-top: 0;\">"
-            + "      🌱 이메일 인증 안내"
-            + "    </h2>"
-            + "    <p style=\"color: #444; font-size: 15px;\">스마트 농업 관제 시스템에 오신 것을 환영합니다.</p>"
-            + "    <p style=\"color: #555; font-size: 14px;\">회원가입 창에 아래 <strong>6자리 인증번호</strong>를 입력해 주세요.</p>"
-            + "    <div style=\"background-color: #eaf4ee; border: 1px solid #238451; border-radius: 6px;"
-            + "                padding: 18px; text-align: center; margin: 24px 0;\">"
-            + "      <p style=\"margin: 0; font-size: 12px; color: #666;\">인증번호 (3분간 유효)</p>"
-            + "      <p style=\"margin: 8px 0 0; font-size: 28px; font-weight: bold; letter-spacing: 6px;"
-            + "                color: #238451; font-family: monospace;\">" + code + "</p>"
-            + "    </div>"
-            + "    <p style=\"color: #888; font-size: 12px;\">본 메일은 발신 전용이며, 요청하지 않은 경우 무시하셔도 됩니다.</p>"
-            + "  </div>"
-            + "</body>"
-            + "</html>";
-    }
-
 }

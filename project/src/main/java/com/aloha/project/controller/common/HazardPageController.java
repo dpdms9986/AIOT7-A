@@ -17,11 +17,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.aloha.project.domain.common.HazardComments;
 import com.aloha.project.domain.common.HazardImages;
 import com.aloha.project.domain.common.HazardReports;
 import com.aloha.project.domain.users.CustomUser;
 import com.aloha.project.domain.users.Users;
 import com.aloha.project.dto.HazardRequest;
+import com.aloha.project.repository.common.HazardCommentRepository;
 import com.aloha.project.repository.common.HazardImageRepository;
 import com.aloha.project.repository.common.HazardRepository;
 import com.aloha.project.repository.users.UserRepository;
@@ -38,6 +40,7 @@ public class HazardPageController {
     @Value("${upload.path}")
     private String uploadPath;
     private final HazardImageRepository hazardImageRepository;
+    private final HazardCommentRepository hazardCommentRepository;
     private final HazardRepository hazardRepository;
     private final UserRepository userRepository;
 
@@ -244,4 +247,70 @@ public class HazardPageController {
         }
     }
 
+    /**
+     * 6. 댓글 작성 (POST /hazards/{no}/comments)
+     */
+    @PostMapping("/{no}/comments")
+    public String addComment(@PathVariable("no") Long hazardNo,
+                             @RequestParam("content") String content,
+                             @AuthenticationPrincipal CustomUser customUser,
+                             RedirectAttributes redirectAttributes) {
+
+        if (customUser == null) return "redirect:/login";
+
+        if (content == null || content.trim().isEmpty()) {
+            redirectAttributes.addFlashAttribute("errorMessage", "댓글 내용을 입력해 주세요.");
+            return "redirect:/hazards";
+        }
+
+        HazardReports hazard = hazardRepository.findById(hazardNo).orElse(null);
+        Users author = userRepository.findById(customUser.getUser().getNo()).orElse(null);
+
+        if (hazard != null && author != null) {
+            HazardComments comment = HazardComments.builder()
+                    .hazard(hazard)
+                    .user(author)
+                    .content(content.trim())
+                    .build();
+
+            hazardCommentRepository.save(comment);
+            log.info("댓글 등록 완료: 위험글({}) -> 작성자({})", hazardNo, author.getName());
+            redirectAttributes.addFlashAttribute("successMessage", "댓글이 등록되었습니다.");
+        }
+
+        return "redirect:/hazards";
+    }
+
+    /**
+     * 7. 댓글 삭제 (POST /hazards/comments/{commentNo}/delete)
+     * - 본인 또는 관리자(ADMIN)만 삭제 가능
+     */
+    @PostMapping("/comments/{commentNo}/delete")
+    public String deleteComment(@PathVariable("commentNo") Long commentNo,
+                                @AuthenticationPrincipal CustomUser customUser,
+                                RedirectAttributes redirectAttributes) {
+
+        if (customUser == null) return "redirect:/login";
+
+        HazardComments comment = hazardCommentRepository.findById(commentNo).orElse(null);
+        if (comment == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "존재하지 않는 댓글입니다.");
+            return "redirect:/hazards";
+        }
+
+        Users loginUser = customUser.getUser();
+        boolean isAuthor = comment.getUser() != null && comment.getUser().getNo().equals(loginUser.getNo());
+        boolean isAdmin = "ADMIN".equals(loginUser.getRole());
+
+        if (!isAuthor && !isAdmin) {
+            redirectAttributes.addFlashAttribute("errorMessage", "댓글 삭제 권한이 없습니다.");
+            return "redirect:/hazards";
+        }
+
+        hazardCommentRepository.delete(comment);
+        log.info("댓글 삭제 완료: 댓글번호={}", commentNo);
+        redirectAttributes.addFlashAttribute("successMessage", "댓글이 삭제되었습니다.");
+
+        return "redirect:/hazards";
+    }
 }

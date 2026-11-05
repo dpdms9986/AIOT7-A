@@ -22,7 +22,6 @@ public class Lands {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long no;
 
-    // TODO: 작업이력에서도 행정구역 관련 사항 확인하고 지울 것. 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "region_id")
     private Regions region; // 어느 행정구역에 속하는지 매핑
