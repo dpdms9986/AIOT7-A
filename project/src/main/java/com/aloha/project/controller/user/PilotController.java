@@ -318,9 +318,6 @@ public class PilotController {
 
         return LandDto.builder()
                 .no(land.getNo())
-                .city(land.getRegion() == null ? null : land.getRegion().getSido())
-                .region(land.getRegion() == null ? null : land.getRegion().getSigungu())
-                .dong(land.getRegion() == null ? null : land.getRegion().getEupmyeondong())
                 .address(land.getAddress())
                 .latitude(land.getLatitude())
                 .longitude(land.getLongitude())
@@ -336,17 +333,6 @@ public class PilotController {
         private PilotTaskDto toPilotTaskDto(WorkAssignments assignment) {
         Lands land = assignment.getLand();
 
-        String region = null;
-
-        if (land.getRegion() != null) {
-                region = String.join(" ",
-                        land.getRegion().getSigungu() == null
-                                ? "" : land.getRegion().getSigungu(),
-                        land.getRegion().getEupmyeondong() == null
-                                ? "" : land.getRegion().getEupmyeondong())
-                        .trim();
-        }
-
         // 작업 시작 시 선택한 드론과 약제 정보 조회
         WorkAssignmentResources resources = workAssignmentResourceRepository
                 .findByWorkAssignment_No(assignment.getNo())
@@ -355,7 +341,6 @@ public class PilotController {
         return PilotTaskDto.builder()
                 .no(assignment.getNo())
                 .address(land.getAddress())
-                .region(region)
                 .areaSize(land.getAreaSize())
                 .status(assignment.getStatus())
                 .pilotName(assignment.getPilot() == null

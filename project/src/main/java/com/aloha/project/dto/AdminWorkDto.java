@@ -3,7 +3,6 @@ package com.aloha.project.dto;
 import java.time.LocalDateTime;
 
 import com.aloha.project.domain.lands.Lands;
-import com.aloha.project.domain.lands.Regions;
 import com.aloha.project.domain.tasks.WorkAssignments;
 
 import lombok.AllArgsConstructor;
@@ -34,22 +33,13 @@ public class AdminWorkDto {
 
     public static AdminWorkDto from(WorkAssignments w) {
         Lands land = w.getLand();
-        String region = "-";
-        if (land != null) {
-            Regions r = land.getRegion();
-            if (r != null && r.getEupmyeondong() != null) {
-                region = ((r.getSigungu() == null ? "" : r.getSigungu() + " ") + r.getEupmyeondong()).trim();
-            } else if (land.getAddress() != null) {
-                region = land.getAddress();
-            }
-        }
+   
         LocalDateTime date = w.getCompletedAt() != null ? w.getCompletedAt()
                 : w.getStartedAt() != null ? w.getStartedAt()
                 : w.getCreatedAt();
 
         return AdminWorkDto.builder()
                 .workDate(date)
-                .region(region)
                 .pilotName(w.getPilot() != null ? w.getPilot().getName() : "-")
                 .status(w.getStatus())
                 .build();
