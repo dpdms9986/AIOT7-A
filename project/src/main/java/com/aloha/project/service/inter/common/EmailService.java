@@ -26,4 +26,5 @@ public interface EmailService {
      */
     void sendTempPasswordMail(String to, String username, String tempPassword);
 
+    void sendVerificationCodeMail(String to, String code);
 }
