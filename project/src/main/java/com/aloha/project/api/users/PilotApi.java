@@ -103,6 +103,12 @@ public class PilotApi {
                     .body("조종사 로그인이 필요합니다.");
         }
 
+        // 작업 시작은 반드시 /work/start API를 이용해야 함
+        if ("IN_PROGRESS".equals(dto.getStatus())) {
+            return ResponseEntity.badRequest()
+                    .body("작업 시작은 드론과 약제를 선택한 후 진행할 수 있습니다.");
+        }
+
         workAssignmentService.updateAssignmentStatus(
                 assignmentNo,
                 dto.getStatus(),
