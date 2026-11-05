@@ -93,11 +93,11 @@ public class LeaderController {
         Teams myTeam = (leader != null) ? leader.getTeam() : null;
         final String inviteCode = (myTeam != null && myTeam.getInviteCode() != null) ? myTeam.getInviteCode() : "";
 
-        // [DB 연동 1] 전체 농지 목록 조회 (LandDto 변환)
-        List<LandDto> allLands = landRepository.findAll().stream()
-                .map(LandDto::from)
-                .sorted(Comparator.comparing(LandDto::getNo).reversed())
-                .toList();
+        // 1. 헬퍼 메서드로 채운 뒤 기본 번호 최신순 정렬
+				List<Lands> rawLands = (myTeam != null) ? landRepository.findByTeam(myTeam) : List.of();
+				List<LandDto> allLands = convertToLandDtosWithAssignment(rawLands).stream()
+								.sorted(Comparator.comparing(LandDto::getNo).reversed())
+								.toList();
 
         // [DB 연동 2] 소속 조종사 목록 조회 (TeamMemberDto 변환)
         List<TeamMemberDto> pilots = new ArrayList<>();
@@ -110,7 +110,7 @@ public class LeaderController {
                     .toList();
         }
 
-        /* ----- [배정 탭] 미배정(READY) 농지 + 지역 검색 ----- */
+        /* ----- [배정 탭] 미배정(READY) 농지 ----- */
         String[] words = region.trim().isEmpty() ? new String[0] : region.trim().split("\\s+");
         List<LandDto> readyLands = allLands.stream()
                 .filter(l -> "READY".equals(l.getStatus()))
@@ -136,15 +136,8 @@ public class LeaderController {
 
         /* ----- [이력 탭] 완료된 작업 + 기간/지역/조종사 검색 ----- */
         boolean dateError = from != null && to != null && from.isAfter(to);
-        List<PilotTaskDto> history = dateError ? List.of() : filterHistory(from, to, hRegion, hPilot);
+        List<PilotTaskDto> history = dateError ? List.of() : filterHistory(from, to, hPilot);
         double hArea = history.stream().mapToDouble(h -> h.getAreaSize() == null ? 0 : h.getAreaSize()).sum();
-        double hUsed = history.stream().mapToDouble(h -> {
-            try {
-                return (h.getUsedAmount() != null) ? Double.parseDouble(h.getUsedAmount()) : 0.0;
-            } catch (Exception e) {
-                return 0.0; // "양호" 같은 글자일 경우 0.0 처리
-            }
-        }).sum();
         List<String> historyPilots = pilots.stream().map(TeamMemberDto::getName).toList();
 
         /* ----- 화면으로 보낼 값 ----- */
@@ -180,18 +173,16 @@ public class LeaderController {
     public ResponseEntity<byte[]> downloadHistoryCsv(
             @RequestParam(value = "from", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam(value = "to",   required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
-            @RequestParam(value = "hRegion", defaultValue = "") String hRegion,
             @RequestParam(value = "hPilot",  defaultValue = "") String hPilot) {
 
-        List<PilotTaskDto> rows = filterHistory(from, to, hRegion, hPilot);
+        List<PilotTaskDto> rows = filterHistory(from, to, hPilot);
 
         StringBuilder sb = new StringBuilder("\uFEFF");   // 엑셀 한글 깨짐 방지
-        sb.append("완료 일시,주소,행정구역,면적(㎡),담당 조종사,배정 일시,사용 약제\r\n");
+        sb.append("완료 일시,주소,면적(㎡),담당 조종사,배정 일시,사용 약제\r\n");
         for (PilotTaskDto r : rows) {
             sb.append(String.join(",",
                     csv(r.getCompletedAt() == null ? "" : r.getCompletedAt().format(DT)),
                     csv(r.getAddress()),
-                    csv(r.getRegion()),
                     csv(r.getAreaSize()),
                     csv(r.getPilotName()),
                     csv(r.getAssignedAt() == null ? "" : r.getAssignedAt().format(DT)),
@@ -567,10 +558,9 @@ public class LeaderController {
        ========================================================= */
     @GetMapping("/farmlist")
     public String getFarmList(
-            @RequestParam(value = "dong",    defaultValue = "") String dong,
+            @RequestParam(value = "status",  defaultValue = "") String status, // 👈 F/E 상태 필터
+            @RequestParam(value = "sort",    defaultValue = "") String sort,   // 👈 F/E 정렬 ("oldest")
             @RequestParam(value = "keyword", defaultValue = "") String keyword,
-            @RequestParam(value = "status",  defaultValue = "") String status,
-            @RequestParam(value = "sort",    defaultValue = "") String sort,
             @AuthenticationPrincipal CustomUser customUser,
             Model model) {
 
@@ -584,34 +574,23 @@ public class LeaderController {
                 ? landRepository.findByTeam(myTeam) 
                 : List.of();
                 
-        List<LandDto> allLands = rawLands.stream().map(LandDto::from).toList();
+				// 헬퍼 메서드로 조종사명, 배정일시 채우기
+        List<LandDto> allLands = convertToLandDtosWithAssignment(rawLands);
 
-        // 정렬 기준 (등록일순은 번호가 클수록 최근 등록)
-        Comparator<LandDto> farmCmp = switch (sort) {
-            case "oldest"   -> Comparator.comparing(LandDto::getNo);
-            case "areaDesc" -> Comparator.comparing(LandDto::getAreaSize, Comparator.nullsLast(Comparator.reverseOrder()));
-            case "areaAsc"  -> Comparator.comparing(LandDto::getAreaSize, Comparator.nullsLast(Comparator.naturalOrder()));
-            default         -> Comparator.comparing(LandDto::getNo).reversed();
-        };
+        // 정렬 처리: "oldest"면 번호 오름차순, 기본은 번호 최신순(내림차순)
+        Comparator<LandDto> comp = "oldest".equals(sort)
+                ? Comparator.comparing(LandDto::getNo)
+                : Comparator.comparing(LandDto::getNo).reversed();
+
+			  allLands = allLands.stream().sorted(comp).toList();
 
         String kw = keyword.trim();
         List<LandDto> lands = allLands.stream()
-                .filter(l -> dong.isEmpty() || (l.getDong() != null && l.getDong().equals(dong)))
                 .filter(l -> kw.isEmpty() || (l.getAddress() != null && l.getAddress().contains(kw)))
                 .filter(l -> status.isEmpty() || status.equals(l.getStatus()))
-                .sorted(farmCmp)
-                .toList();
-
-        List<String> dongs = allLands.stream()
-                .map(LandDto::getDong)
-                .filter(d -> d != null && !d.isBlank())
-                .distinct()
-                .sorted()
                 .toList();
 
         model.addAttribute("lands", lands);
-        model.addAttribute("dongs", dongs);
-        model.addAttribute("dong", dong);
         model.addAttribute("keyword", keyword);
         model.addAttribute("status", status);
         model.addAttribute("sort", sort);
@@ -686,46 +665,68 @@ public class LeaderController {
     /* =========================================================
        작업 이력 검색 (실제 DB WorkAssignments 조회)
        ========================================================= */
-    private List<PilotTaskDto> filterHistory(LocalDate from, LocalDate to, String region, String pilot) {
+    private List<PilotTaskDto> filterHistory(LocalDate from, LocalDate to, String pilot) {
         // DB에서 완료(COMPLETED)된 작업만 가져와 PilotTaskDto로 매핑
         List<WorkAssignments> completed = workAssignmentRepository.findAll().stream()
                 .filter(w -> "COMPLETED".equals(w.getStatus()))
                 .toList();
 
         List<PilotTaskDto> dtos = completed.stream().map(w -> {
-            // 읍/면/동 행정구역 이름 추출
-            String regionName = (w.getLand() != null && w.getLand().getRegion() != null)
-                    ? w.getLand().getRegion().getEupmyeondong()
-                    : "-";
-
             return PilotTaskDto.builder()
                     .no(w.getNo())
                     .address(w.getLand() != null ? w.getLand().getAddress() : "-")
-                    .region(regionName)
                     .areaSize(w.getLand() != null ? w.getLand().getAreaSize() : 0.0)
                     .status(w.getStatus())
                     .pilotName(w.getPilot() != null ? w.getPilot().getName() : "-")
                     .assignedAt(w.getCreatedAt())
                     .completedAt(w.getCompletedAt() != null ? w.getCompletedAt() : w.getCreatedAt())
                     .chemicalName("기본 살충제")
-                    .usedAmount("0.0")
                     .build();
         }).toList();
 
-        String[] words = region.trim().isEmpty() ? new String[0] : region.trim().split("\\s+");
         return dtos.stream()
-                .filter(h -> from == null || (h.getCompletedAt() != null && !h.getCompletedAt().toLocalDate().isBefore(from)))
-                .filter(h -> to == null   || (h.getCompletedAt() != null && !h.getCompletedAt().toLocalDate().isAfter(to)))
-                .filter(h -> Arrays.stream(words)
-                        .allMatch(w -> ((h.getRegion() != null ? h.getRegion() : "") + " " + (h.getAddress() != null ? h.getAddress() : "")).contains(w)))
                 .filter(h -> pilot.isEmpty() || pilot.equals(h.getPilotName()))
                 .sorted(Comparator.comparing(PilotTaskDto::getNo, Comparator.nullsLast(Comparator.reverseOrder())))
                 .toList();
     }
 
-        private String csv(Object value) {
-                String s = value == null ? "" : String.valueOf(value);
-                return "\"" + s.replace("\"", "\"\"") + "\"";
-        }
+    private String csv(Object value) {
+            String s = value == null ? "" : String.valueOf(value);
+            return "\"" + s.replace("\"", "\"\"") + "\"";
+    }
+
+    /**
+     * 농지 엔티티 목록을 LandDto로 변환하면서, 
+     * 현재 배정/작업 중인 최신 배정 정보(조종사명, 배정일시)를 함께 채워주는 헬퍼 메서드
+     */
+    private List<LandDto> convertToLandDtosWithAssignment(List<Lands> rawLands) {
+        // 1. 현재 활성 상태(ASSIGNED, IN_PROGRESS)인 배정 작업들 조회
+        List<WorkAssignments> activeAssignments = workAssignmentRepository.findAll().stream()
+                .filter(w -> w.getLand() != null)
+                .filter(w -> "ASSIGNED".equals(w.getStatus()) || "IN_PROGRESS".equals(w.getStatus()))
+                .toList();
+
+        // 2. 농지 번호별 최신 배정 작업 맵핑 (Map<landNo, WorkAssignments>)
+        Map<Long, WorkAssignments> assignmentMap = activeAssignments.stream()
+                .collect(Collectors.toMap(
+                        w -> w.getLand().getNo(),
+                        w -> w,
+                        (oldVal, newVal) -> newVal, // 중복 시 최신값 유지
+                        LinkedHashMap::new
+                ));
+
+        // 3. LandDto 변환 및 pilotName, assignedAt 주입
+        return rawLands.stream().map(land -> {
+            LandDto dto = LandDto.from(land);
+            WorkAssignments wa = assignmentMap.get(land.getNo());
+            if (wa != null) {
+                if (wa.getPilot() != null) {
+                    dto.setPilotName(wa.getPilot().getName());
+                }
+                dto.setAssignedAt(wa.getCreatedAt()); // 배정 일시
+            }
+            return dto;
+        }).toList();
+    }
 
 }

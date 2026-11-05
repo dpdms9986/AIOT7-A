@@ -53,27 +53,43 @@ public class LeaderDashboardController {
 
         if (customUser == null) return "redirect:/login";
 
-        // [DB 연동 1] 로그인 단장 및 소속 방제단 조회
+        // 로그인 단장 및 소속 방제단 조회
         Users leader = userRepository.findById(customUser.getUser().getNo()).orElse(null);
         Teams myTeam = (leader != null) ? leader.getTeam() : null;
-        final String inviteCode = (myTeam != null && myTeam.getInviteCode() != null) ? myTeam.getInviteCode() : "";
 
-        // [DB 연동 2] 실제 농지 목록 조회 (LandDto 변환)
-        List<LandDto> lands = landRepository.findAll().stream()
-                .map(LandDto::from)
-                .toList();
+				List<Lands> rawLands = (myTeam != null) ? landRepository.findByTeam(myTeam) : List.of();
 
-        // [DB 연동 3] 실제 우리 방제단 소속 조종사 목록 조회 (TeamMemberDto 변환)
-        List<TeamMemberDto> pilots = new ArrayList<>();
-        if (!inviteCode.isEmpty()) {
-            pilots = userRepository.findAll().stream()
-                    .filter(u -> u.getTeam() != null 
-                              && inviteCode.equals(u.getTeam().getInviteCode())
-                              && !"LEADER".equals(u.getRole()))
-                    .map(TeamMemberDto::from)
-                    .toList();
-        }
+        // 활성 배정 작업 조회 및 맵핑
+        List<WorkAssignments> activeAssignments = workAssignmentRepository.findAll().stream()
+            .filter(w -> w.getLand() != null)
+            .filter(w -> "ASSIGNED".equals(w.getStatus()) || "IN_PROGRESS".equals(w.getStatus()))
+            .toList();
 
+        Map<Long, WorkAssignments> assignmentMap = activeAssignments.stream()
+            .collect(Collectors.toMap(w -> w.getLand().getNo(), w -> w, (a, b) -> b, LinkedHashMap::new));;
+
+				// pilotName, assignedAt 채운 lands 목록 생성
+				List<LandDto> lands = rawLands.stream().map(land -> {
+						LandDto dto = LandDto.from(land);
+						WorkAssignments wa = assignmentMap.get(land.getNo());
+						if (wa != null && wa.getPilot() != null) {
+								dto.setPilotName(wa.getPilot().getName());
+								dto.setAssignedAt(wa.getCreatedAt());
+						}
+						return dto;
+				}).toList();
+
+        List<TeamMemberDto> pilots = (myTeam != null)
+        ? userRepository.findByTeam(myTeam).stream()
+                .filter(u -> "PILOT".equals(u.getRole()))
+                .map(TeamMemberDto::from)
+                .toList()
+        : List.of();
+
+				// 3. 화면 헤더에 초대코드 표기가 필요하다면 모델에 전달
+				if (myTeam != null) {
+						model.addAttribute("inviteCode", myTeam.getInviteCode());
+				}
         // ========================================================
         // 👇 프론트엔드 팀원이 작성한 자동 계산 및 Model 바인딩 (100% 보존!)
         // ========================================================
