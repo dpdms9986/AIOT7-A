@@ -597,6 +597,7 @@ public class LeaderController {
     /* =========================================================
        농지 관리
        ========================================================= */
+    @Transactional(readOnly = true)
     @GetMapping("/farmlist")
     public String getFarmList(
             @RequestParam(value = "status",  defaultValue = "") String status,

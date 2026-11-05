@@ -667,6 +667,12 @@
 .assign-actions { display: flex; gap: 6px; margin-top: 4px; }
 .assign-actions .dash-btn-primary,
 .assign-actions .dash-btn-outline { flex: 1; }
+.assign-actions a.dash-btn-outline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
 .assign-actions .btn-danger {
   border-color: var(--color-high);
   color: var(--color-high);

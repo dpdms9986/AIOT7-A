@@ -79,6 +79,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (canAssign) {
       $("#ap-land-no").value = f.no;
+      // 작업배정 페이지로 이동할 때 선택한 농지가 미리 체크되도록 번호를 붙임
+      $("#ap-go-assign").href = `${ctx}/leader/task-assignment?landNo=${f.no}`;
       $("#ap-submit").textContent = f.status === "READY" ? "✅ 배정하기" : "🔄 재배정";
       // 이미 배정된 조종사 미리 선택
       const opt = [...pilotSelect.options].find((o) => o.dataset.name === f.pilotName);
