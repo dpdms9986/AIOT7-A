@@ -29,11 +29,6 @@ public class Lands {
     @JoinColumn(name = "team_no")
     private Teams team; // 어느 방제단의 농지인지 매핑
 
-    // TODO: 작업이력에서도 행정구역 관련 사항 확인하고 지울 것. 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "region_id")
-    private Regions region; // 어느 행정구역에 속하는지 매핑
-
     @Column(nullable = false, length = 200)
     private String address;
 
