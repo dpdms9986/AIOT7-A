@@ -19,11 +19,7 @@
     </div>
     <button type="button" class="asset-role-chip" id="asset-register-btn">+ 자산 등록</button>
   </section>
-
-  <!-- 처리 결과 메시지 -->
-  <p class="page-flash" th:if="${message}" th:text="${message}">메시지</p>
-  <p class="page-flash" th:if="${error}" th:text="${error}">오류 메시지</p>
-
+  
   <!-- 탭: 링크 -->
   <section class="asset-pilot-tabs" aria-label="자산 종류 선택">
     <a class="asset-pilot-tab" th:classappend="${tab == 'all'} ? 'active'"
@@ -94,11 +90,15 @@
       </label>
       <label>
         상태
-        <select name="status">
+        <select name="status" id="asset-search-status">
           <option value="">전체</option>
           <!-- 탭에 맞는 상태만 (컨트롤러가 골라서 보냄) -->
-          <option th:each="s : ${statusOptions}" th:value="${s.key}" th:text="${s.value}"
-                  th:selected="${s.key == status}">정상</option>
+          <option th:each="s : ${statusOptions}" 
+                  th:value="${s.key}" 
+                  th:text="${s.value}"
+                  th:selected="${s.key == status}"
+                  th:attr="data-asset-type=${s.key == 'normal' ? 'both' : (s.key == 'low' ? 'chemical' : 'drone')}">
+                  >정상</option>
         </select>
       </label>
       <label class="asset-pilot-keyword">
