@@ -154,23 +154,20 @@ public class PilotController {
                 .or(() -> all.stream().findFirst())
                 .orElse(null);
 
-        // 4) 내 방제단에서 사용 가능한 드론 목록
-        List<OptionDto> drones = pilot.getTeam() == null
-                ? new ArrayList<>()
-                : droneRepository.findByUser_TeamAndStatus(pilot.getTeam(), "AVAILABLE")
-                        .stream()
-                        .map(this::toOptionDto)
-                        .toList();
+        // 4) 로그인 조종사 본인 소유의 사용 가능한 드론 목록
+        List<OptionDto> drones = droneRepository.findByUser_No(pilot.getNo())
+                .stream()
+                .filter(drone -> "AVAILABLE".equals(drone.getStatus()))
+                .map(this::toOptionDto)
+                .toList();
 
-        // 5) 내 방제단에 등록된 약제 목록
-        List<OptionDto> chemicals = pilot.getTeam() == null
-                ? new ArrayList<>()
-                : chemicalRepository.findByTeam_No(pilot.getTeam().getNo())
-                        .stream()
-                        .map(chemical -> new OptionDto(
-                                chemical.getNo(),
-                                chemical.getChemicalName()))
-                        .toList();
+        // 5) 로그인 조종사 본인이 담당하는 약제 목록
+        List<OptionDto> chemicals = chemicalRepository.findByUser_No(pilot.getNo())
+                .stream()
+                .map(chemical -> new OptionDto(
+                        chemical.getNo(),
+                        chemical.getChemicalName()))
+                .toList();
 
         // 6) 화면으로 보낼 값 (기존 Model 변수명 유지)
         model.addAttribute("filter", filter);

@@ -66,11 +66,18 @@ public class PilotServiceImpl implements PilotService {
             );
         }
 
-        // 작업 배정 및 농지 상태 변경
-        workAssignmentService.updateAssignmentStatus(
+        // 드론과 약제 선택 여부 확인
+        if (req.getDroneNo() == null || req.getChemicalNo() == null) {
+        throw new IllegalArgumentException(
+                "작업에 사용할 드론과 약제를 선택해야 합니다.");
+        }
+
+        // 작업 시작 및 선택한 자원 저장
+        workAssignmentService.startAssignment(
                 assignment.getNo(),
-                "IN_PROGRESS",
-                pilotNo
+                pilotNo,
+                req.getDroneNo(),
+                req.getChemicalNo()
         );
 
         log.info("작업 시작 요청: 조종사 번호={}, 작업 번호={}",
