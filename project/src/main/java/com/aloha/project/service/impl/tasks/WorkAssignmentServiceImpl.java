@@ -129,17 +129,37 @@ public class WorkAssignmentServiceImpl implements WorkAssignmentService {
                 .orElseThrow(() ->
                         new IllegalArgumentException("존재하지 않는 약제입니다."));
 
-        // 5. 같은 방제단 소속 자원인지 확인
-        Long teamNo = assignment.getPilot().getTeam().getNo();
-
-        if (!Objects.equals(drone.getUser().getTeam().getNo(), teamNo)) {
-            throw new IllegalArgumentException(
-                    "해당 방제단에서 사용할 수 없는 드론입니다.");
+        // 5. 로그인 조종사와 자산 담당자가 일치하는지 확인
+        if (drone.getUser() == null
+                || !Objects.equals(drone.getUser().getNo(), pilotNo)) {
+        throw new IllegalArgumentException(
+                "본인에게 등록된 드론만 작업에 사용할 수 있습니다.");
         }
 
-        if (!Objects.equals(chemical.getTeam().getNo(), teamNo)) {
-            throw new IllegalArgumentException(
-                    "해당 방제단에서 사용할 수 없는 약제입니다.");
+        if (chemical.getUser() == null
+                || !Objects.equals(chemical.getUser().getNo(), pilotNo)) {
+        throw new IllegalArgumentException(
+                "본인이 담당하는 약제만 작업에 사용할 수 있습니다.");
+        }
+
+        // 6. 같은 방제단 소속 자원인지 확인
+        if (assignment.getPilot().getTeam() == null) {
+        throw new IllegalArgumentException(
+                "조종사의 방제단 정보가 없습니다.");
+        }
+
+        Long teamNo = assignment.getPilot().getTeam().getNo();
+
+        if (drone.getUser().getTeam() == null
+                || !Objects.equals(drone.getUser().getTeam().getNo(), teamNo)) {
+        throw new IllegalArgumentException(
+                "해당 방제단에서 사용할 수 없는 드론입니다.");
+        }
+
+        if (chemical.getTeam() == null
+                || !Objects.equals(chemical.getTeam().getNo(), teamNo)) {
+        throw new IllegalArgumentException(
+                "해당 방제단에서 사용할 수 없는 약제입니다.");
         }
 
         // 6. 드론 사용 가능 상태 확인
