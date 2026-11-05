@@ -10773,6 +10773,19 @@ span.pilot-pin { cursor: default; opacity: 0.75; }
 .btn-mini:hover {
   background: #e8f3ec;
 }
+.btn-mini:disabled { opacity: .5; cursor: not-allowed; }
+
+/* 인증번호 3분 타이머 */
+.signup-timer {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  min-width: 46px;
+  color: #238451;
+  font-size: 13px;
+  font-weight: 700;
+}
+.signup-timer.expired { color: #e5484d; }  /* 만료 시 붉은색 */
 
 
 
