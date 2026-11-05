@@ -38,7 +38,7 @@ import lombok.extern.slf4j.Slf4j;
 
 
 /**
- * 조종사 - 드론·자산 (본인 및 같은 방제단 드론 조회, 보기 전용)
+ * 조종사 - 본인 소유 드론 및 담당 약제 조회·관리
  * 예) /pilot/assetlist?tab=drone&id=DR-001
  */
 @Slf4j
@@ -64,7 +64,6 @@ public class PilotAssetController {
             @RequestParam(value = "assetType", required = false) String assetType,
             @RequestParam(value = "page", defaultValue = "1") int page,
             @RequestParam(value = "size", defaultValue = "10") int size,
-            @RequestParam(value = "owner", defaultValue = "") String owner,
             Model model) {
 
         // 1. 로그인 조종사 확인
@@ -80,18 +79,7 @@ public class PilotAssetController {
             throw new IllegalStateException("조종사 계정만 접근할 수 있습니다.");
         }
 
-<<<<<<< HEAD
-        // 같은 방제단 소속 조종사 목록 (검색 필터용)
-        List<Users> owners = (pilot.getTeam() == null)
-        ? new ArrayList<>()
-        : userRepository.findByTeam(pilot.getTeam()).stream()
-                .filter(u -> "PILOT".equals(u.getRole()))
-                .toList();
-=======
         
-        // 조종사는 본인에게만 자산을 등록할 수 있음
-        List<Users> owners = List.of(pilot);
->>>>>>> Hyojung
 
         // 2. 로그인 조종사 본인 소유 드론만 조회
         List<Drones> drones = droneRepository.findByUser_No(pilot.getNo());
@@ -135,8 +123,6 @@ public class PilotAssetController {
                 .filter(a -> kw.isEmpty()
                         || (a.getId() + " " + a.getName() + " "
                                 + a.getSubtitle()).contains(kw))
-                .filter(a -> owner.isEmpty()
-                        || owner.equals(a.getOwner()))
                 .toList();
 
              // ========================================================
@@ -222,8 +208,6 @@ public class PilotAssetController {
         model.addAttribute("keyword", keyword);
         model.addAttribute("currentUser", pilot);
         model.addAttribute("allStatusOptions", statusOptionsFor("all"));
-        model.addAttribute("owners", owners);
-        model.addAttribute("owner", owner);
         return "page/pilot/assetlist";
     }
 
@@ -324,7 +308,7 @@ public class PilotAssetController {
                   || !pilot.getNo().equals(drone.getUser().getNo())) {
 
                     redirectAttributes.addFlashAttribute(
-                            "error", "드론 정보를 찾을 수 없거나 변경 권한이 없습니다."
+                            "error", "자산 정보를 확인할 수 없습니다."
                     );
 
                 } else if (!List.of("normal", "operating", "maintenance",
@@ -358,7 +342,7 @@ public class PilotAssetController {
                     || !pilot.getNo().equals(chemical.getUser().getNo())) {
 
                 redirectAttributes.addFlashAttribute(
-                        "error", "약제 정보를 찾을 수 없거나 변경 권한이 없습니다."
+                        "error", "자산 정보를 확인할 수 없습니다."
                 );
 
             } else if (!List.of("normal", "low").contains(status)) {
@@ -428,7 +412,7 @@ public String deleteAsset(
 
             if (drone == null || drone.getUser() == null
                     || !pilot.getNo().equals(drone.getUser().getNo())) {
-                redirectAttributes.addFlashAttribute("error", "삭제 권한이 없습니다.");
+                redirectAttributes.addFlashAttribute("error", "자산 정보를 확인할 수 없습니다.");
             } else if (workAssignmentResourceRepository.existsByDrone_No(no)) {
                 redirectAttributes.addFlashAttribute("error", "작업 배정에 사용 중인 드론은 삭제할 수 없습니다.");
             } else {
@@ -442,7 +426,7 @@ public String deleteAsset(
 
             if (chemical == null || chemical.getUser() == null
                     || !pilot.getNo().equals(chemical.getUser().getNo())) {
-                redirectAttributes.addFlashAttribute("error", "삭제 권한이 없습니다.");
+                redirectAttributes.addFlashAttribute("error", "자산 정보를 확인할 수 없습니다.");
             } else if (workAssignmentResourceRepository.existsByChemical_No(no)) {
                 redirectAttributes.addFlashAttribute("error", "작업 배정에 사용 중인 약제는 삭제할 수 없습니다.");
             } else {

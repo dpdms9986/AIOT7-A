@@ -15,7 +15,7 @@
     <div class="page-heading-icon" aria-hidden="true">🚁</div>
     <div>
       <h1>드론 · 약제 관리</h1>
-      <p>내게 배정된 드론과 담당 약제, 정비 상태를 확인합니다.</p>
+      <p>내 소유 드론과 담당 약제, 정비 상태를 관리합니다.</p>
     </div>
     <button type="button" class="asset-pilot-register-button" id="open-asset-register">+ 자산 등록</button>
   </section>
@@ -110,7 +110,6 @@
           <tr>
             <th>자산 유형</th>
             <th>이름 / 모델명</th>
-            <th>담당 조종사</th>
             <th>상태</th>
             <th>관리</th>
           </tr>
@@ -125,7 +124,6 @@
                분류: 살균제
              </small>
             </td>
-            <td th:text="${a.owner}">담당 조종사</td>
             <td><span class="asset-pilot-badge" th:classappend="${a.status}" th:text="${a.statusLabel}">정상</span></td>
             <td>
 
@@ -156,7 +154,7 @@
             </tr>
 
           <tr th:if="${#lists.isEmpty(assets)}">
-            <td colspan="5" class="asset-pilot-empty">조건에 맞는 자산이 없습니다.</td>
+            <td colspan="4" class="asset-pilot-empty">조건에 맞는 자산이 없습니다.</td>
           </tr>
         </tbody>
       </table>
@@ -254,7 +252,6 @@
 
 <script th:src="@{/js/pilot/assetlist.js}"></script>
 
-<!-- 자산 등록 성공 팝업 -->
-</script>
+
 </body>
 </html>
