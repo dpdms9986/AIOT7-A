@@ -19,11 +19,7 @@
     </div>
     <button type="button" class="asset-role-chip" id="asset-register-btn">+ 자산 등록</button>
   </section>
-
-  <!-- 처리 결과 메시지 -->
-  <p class="page-flash" th:if="${message}" th:text="${message}">메시지</p>
-  <p class="page-flash" th:if="${error}" th:text="${error}">오류 메시지</p>
-
+  
   <!-- 탭: 링크 -->
   <section class="asset-pilot-tabs" aria-label="자산 종류 선택">
     <a class="asset-pilot-tab" th:classappend="${tab == 'all'} ? 'active'"
