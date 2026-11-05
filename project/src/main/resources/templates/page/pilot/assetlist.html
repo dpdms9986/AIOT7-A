@@ -88,11 +88,14 @@
 
       <label>
         상태
-        <select name="status">
+        <select name="status" id="asset-search-status">
           <option value="">전체</option>
           <!-- 탭에 맞는 상태만 (컨트롤러가 골라서 보냄) -->
-          <option th:each="s : ${statusOptions}" th:value="${s.key}" th:text="${s.value}"
-                  th:selected="${s.key == status}">정상</option>
+          <option th:each="s : ${statusOptions}" 
+                  th:value="${s.key}" 
+                  th:text="${s.value}"
+                  th:selected="${s.key == status}"
+                  th:attr="data-asset-type=${s.key == 'normal' ? 'both' : (s.key == 'low' ? 'chemical' : 'drone')}">정상</option>
         </select>
       </label>
 

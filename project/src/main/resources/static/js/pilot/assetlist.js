@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 자산 종류에 따른 입력 항목 및 상태 선택지 설정
     const updateForm = (type) => {
-        statusSelect.innerHTML = "";
+        searchStatusSelect.innerHTML = "";
 
         if (type === "drone") {
             nameLabel.textContent = "이름 / 모델명";
@@ -105,4 +105,51 @@ document.addEventListener("DOMContentLoaded", () => {
             closeModal();
         }
     });
+
+    // 전체 자산 탭 - 자산 유형에 따른 상태 검색 옵션 변경
+        const filterForm = document.querySelector(".asset-pilot-filters");
+        const filterTypeSelect = filterForm?.querySelector('select[name="type"]');
+        const searchStatusSelect = document.querySelector("#asset-search-status");
+
+    // 전체 탭이 아니면 자산 유형 선택창이 아니므로 종료
+    if (filterTypeSelect && searchStatusSelect) {
+
+    // 서버가 전달한 상태 옵션을 원본으로 보관
+    const allOptions = Array.from(searchStatusSelect.options)
+        .filter(option => option.value !== "")
+        .map(option => option.cloneNode(true));
+
+    const applyStatusOptions = () => {
+        const selectedType = filterTypeSelect.value;
+        const previousStatus = searchStatusSelect.value;
+
+    // 기존 옵션 초기화
+    searchStatusSelect.innerHTML = '<option value="">전체</option>';
+
+    // 선택한 자산 유형에 맞는 상태만 표시
+        allOptions
+            .filter(option => {
+                const assetType = option.dataset.assetType;
+
+                return selectedType === ""
+                    || assetType === "both"
+                    || assetType === selectedType;
+            })
+            .forEach(option => {
+                 searchStatusSelect.add(option.cloneNode(true));
+            });
+            
+
+            // 이전 상태가 현재 유형에서도 유효하면 유지
+             const isValidStatus = Array.from(searchStatusSelect.options)
+            .some(option => option.value === previousStatus);
+
+            searchStatusSelect.value = isValidStatus ? previousStatus : "";
+          };
+
+             filterTypeSelect.addEventListener("change", applyStatusOptions);
+
+            // 페이지 최초 진입 시에도 적용
+            applyStatusOptions();
+}
 });
