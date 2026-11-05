@@ -43,6 +43,7 @@
       const signupSuccess = /*[[${signupSuccess}]]*/ false;
       const message = /*[[${message}]]*/ null;
       const error = /*[[${error}]]*/ null
+      const assetRegistered = /*[[${assetRegistered}]]*/ false;
 
       document.addEventListener("DOMContentLoaded", () => {
       if (loginMessage) {
@@ -53,8 +54,12 @@
       showPopup(error, "warn");
       } else if (message) {
       showPopup(message);
+      } else if (assetRegistered) {
+        showPopup("자산이 등록되었습니다.");
       } else {
-      try {
+      
+      
+        try {
       const pending = sessionStorage.getItem("loginPopup");
       if (pending) {
         sessionStorage.removeItem("loginPopup");

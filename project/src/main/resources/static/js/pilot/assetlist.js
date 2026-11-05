@@ -7,7 +7,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const cancelBtn = document.querySelector("#cancel-asset-register");
 
     const typeSelect = document.querySelector("#asset-type");
-    const ownerSelect = document.querySelector("#asset-owner");
     const nameLabel = document.querySelector("#asset-name-label");
     const nameInput = document.querySelector("#asset-name");
 
@@ -18,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (
         !modal || !openBtn || !closeBtn || !cancelBtn ||
-        !typeSelect || !ownerSelect || !nameLabel || !nameInput ||
+        !typeSelect || !nameLabel || !nameInput ||
         !subtitleLabel || !subtitleInput || !statusSelect
     ) {
         console.error("자산 등록 모달 요소를 찾을 수 없습니다.");
@@ -27,7 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 자산 종류에 따른 입력 항목 및 상태 선택지 설정
     const updateForm = (type) => {
-        searchStatusSelect.innerHTML = "";
+        statusSelect.innerHTML = "";
 
         if (type === "drone") {
             nameLabel.textContent = "이름 / 모델명";

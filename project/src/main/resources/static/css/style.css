@@ -1882,7 +1882,7 @@
 }
 
 /* ===== 조종사 자산 등록 모달: 단장 화면 스타일에 맞춤 ===== */
-#asset-register-modal .team-modal {
+#asset-register-modal .asset-register-modal-content {
     width: min(520px, calc(100% - 32px));
     max-width: 520px;
     padding: 22px 20px 18px;
@@ -1891,26 +1891,26 @@
 }
 
 /* 모달 제목 */
-#asset-register-modal .team-modal-heading {
+#asset-register-modal .asset-register-modal-heading {
     padding-bottom: 14px;
     margin-bottom: 16px;
     border-bottom: 1px solid #e5eaf0;
 }
 
-#asset-register-modal .team-modal-heading h2 {
+#asset-register-modal .asset-register-modal-heading h2 {
     margin: 0 0 5px;
     font-size: 17px;
     font-weight: 700;
 }
 
-#asset-register-modal .team-modal-heading p {
+#asset-register-modal .asset-register-modal-heading p {
     margin: 0;
     font-size: 12px;
     color: #8491a3;
 }
 
 /* 입력 항목 2열 배치 */
-#asset-register-modal .team-form-grid {
+#asset-register-modal .asset-register-form-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px 14px;
@@ -1918,7 +1918,7 @@
 }
 
 /* 입력 라벨 */
-#asset-register-modal .team-form-grid label {
+#asset-register-modal .asset-register-form-grid label {
     display: flex;
     flex-direction: column;
     gap: 5px;
@@ -1929,8 +1929,8 @@
 }
 
 /* 입력창 */
-#asset-register-modal .team-form-grid input,
-#asset-register-modal .team-form-grid select {
+#asset-register-modal .asset-register-form-grid input,
+#asset-register-modal .asset-register-form-grid select {
     width: 100%;
     height: 38px;
     padding: 0 11px;
@@ -1943,13 +1943,13 @@
 }
 
 /* 취소 / 등록 버튼 */
-#asset-register-modal .team-modal-actions {
+#asset-register-modal .asset-register-modal-actions {
     display: flex;
     flex-direction: column;
     gap: 5px;
 }
 
-#asset-register-modal .team-modal-actions .team-btn {
+#asset-register-modal .asset-register-modal-actions .asset-register-button {
     width: 100%;
     height: 38px;
     border-radius: 5px;
@@ -1957,9 +1957,23 @@
     font-weight: 700;
 }
 
+/* 취소 버튼 */
+#asset-register-modal .asset-register-button-outline {
+    border: 1px solid #d5deea;
+    background: #fff;
+    color: #475569;
+}
+
+/* 등록 버튼 */
+#asset-register-modal .asset-register-button-primary {
+    border: 1px solid #13834f;
+    background: #13834f;
+    color: #fff;
+}
+
 /* 작은 화면에서는 한 줄씩 표시 */
 @media (max-width: 560px) {
-    #asset-register-modal .team-form-grid {
+    #asset-register-modal .asset-register-form-grid {
         grid-template-columns: 1fr;
     }
 }

@@ -84,7 +84,9 @@
         담당 조종사
         <select name="owner">
           <option value="">전체 조종사</option>
-          <option th:each="o : ${owners}" th:value="${o}" th:text="${o}"
+          <option th:each="o : ${owners}" 
+                  th:value="${o.name}" 
+                  th:text="${o.name}"
                   th:selected="${o == owner}">김민수</option>
         </select>
       </label>
@@ -212,6 +214,15 @@
             <option th:each="o : ${owners}" th:value="${o.no}" th:text="${o.name}"></option>
           </select>
         </label>
+        <label>
+    담당 조종사
+    <select name="owner">
+        <option value="">전체 조종사</option>
+        <option th:each="o : ${owners}" th:value="${o.name}" th:text="${o.name}" th:selected="${o.name == owner}">
+            김민수
+        </option>
+    </select>
+        </label>
         <label>상태
           <select name="status" required>
             <option th:each="s : ${allStatusOptions}" th:value="${s.key}" th:text="${s.value}" th:attr="data-asset-type=${s.key == 'normal' ? 'both' : (s.key == 'low' ? 'chemical' : 'drone')}">
@@ -236,8 +247,6 @@
 
 
 <!-- 자산 등록 성공 팝업 -->
-<script th:if="${assetRegistered}">
-    showPopup('자산이 등록되었습니다.');
 </script>
 </body>
 </html>

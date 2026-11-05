@@ -64,6 +64,7 @@ public class PilotAssetController {
             @RequestParam(value = "assetType", required = false) String assetType,
             @RequestParam(value = "page", defaultValue = "1") int page,
             @RequestParam(value = "size", defaultValue = "10") int size,
+            @RequestParam(value = "owner", defaultValue = "") String owner,
             Model model) {
 
         // 1. 로그인 조종사 확인
@@ -79,13 +80,12 @@ public class PilotAssetController {
             throw new IllegalStateException("조종사 계정만 접근할 수 있습니다.");
         }
 
-        // 같은 방제단 소속 조종사 목록
-        List<Users> owners = userRepository.findAll().stream()
-        .filter(u -> "PILOT".equals(u.getRole()))
-        .filter(u -> u.getTeam() != null
-                && pilot.getTeam() != null
-                && u.getTeam().getNo().equals(pilot.getTeam().getNo()))
-        .toList();
+        // 같은 방제단 소속 조종사 목록 (검색 필터용)
+        List<Users> owners = (pilot.getTeam() == null)
+        ? new ArrayList<>()
+        : userRepository.findByTeam(pilot.getTeam()).stream()
+                .filter(u -> "PILOT".equals(u.getRole()))
+                .toList();
 
        
         // 2. 본인 및 같은 방제단의 드론 조회
@@ -142,6 +142,8 @@ public class PilotAssetController {
                 .filter(a -> kw.isEmpty()
                         || (a.getId() + " " + a.getName() + " "
                                 + a.getSubtitle()).contains(kw))
+                .filter(a -> owner.isEmpty()
+                        || owner.equals(a.getOwner()))
                 .toList();
 
              // ========================================================
@@ -225,10 +227,10 @@ public class PilotAssetController {
         model.addAttribute("type", typeFilter);
         model.addAttribute("status", statusFilter);
         model.addAttribute("keyword", keyword);
-        model.addAttribute("owners", owners);
         model.addAttribute("currentUser", pilot);
         model.addAttribute("allStatusOptions", statusOptionsFor("all"));
-
+        model.addAttribute("owners", owners);
+        model.addAttribute("owner", owner);
         return "page/pilot/assetlist";
     }
 

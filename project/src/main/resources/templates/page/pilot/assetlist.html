@@ -156,7 +156,7 @@
             </tr>
 
           <tr th:if="${#lists.isEmpty(assets)}">
-            <td colspan="4" class="asset-pilot-empty">조건에 맞는 자산이 없습니다.</td>
+            <td colspan="5" class="asset-pilot-empty">조건에 맞는 자산이 없습니다.</td>
           </tr>
         </tbody>
       </table>
@@ -179,26 +179,26 @@
  
         
 <!-- ===== 자산 등록 팝업 (POST → AssetCreateRequest) ===== -->
-<div class="team-modal-backdrop" id="asset-register-modal" hidden>
-  <section class="team-modal"
+<div class="asset-register-modal" id="asset-register-modal" hidden>
+  <section class="asset-register-modal-content"
            role="dialog"
            aria-modal="true"
            aria-labelledby="asset-register-title">
 
-    <div class="team-modal-heading">
+    <div class="asset-register-modal-heading">
       <div>
         <h2 id="asset-register-title">자산 등록</h2>
         <p>새 드론 기체나 약제를 등록합니다.</p>
       </div>
 
       <button type="button"
-              class="team-modal-close"
+              class="asset-register-modal-close"
               id="close-asset-register"
               aria-label="닫기">×</button>
     </div>
 
     <form th:action="@{/pilot/assetlist}" method="post">
-      <div class="team-form-grid">
+      <div class="asset-register-form-grid">
 
         <label>자산 유형
           <select id="asset-type" name="type" required>
@@ -224,16 +224,6 @@
                  placeholder="예) 분류: 살균제">
         </label>
 
-        <label>담당 조종사
-  <select id="asset-owner" name="owner" required>
-    <option th:each="o : ${owners}"
-            th:value="${o.no}"
-            th:text="${o.name}"
-            th:selected="${o.no == currentUser.no}">
-    </option>
-  </select>
-</label>
-
         <label>상태
   <select id="asset-status" name="status" required>
     <option th:each="s : ${allStatusOptions}"
@@ -246,13 +236,13 @@
 
       </div>
 
-      <div class="team-modal-actions">
+      <div class="asset-register-modal-actions">
         <button type="button"
-                class="team-btn team-btn-outline"
+                class="asset-register-button asset-register-button-outline"
                 id="cancel-asset-register">취소</button>
 
         <button type="submit"
-                class="team-btn team-btn-primary">등록</button>
+                class="asset-register-button asset-register-button-primary">등록</button>
       </div>
     </form>
   </section>
@@ -265,8 +255,6 @@
 <script th:src="@{/js/pilot/assetlist.js}"></script>
 
 <!-- 자산 등록 성공 팝업 -->
-<script th:if="${assetRegistered}">
-    showPopup('자산이 등록되었습니다.');
 </script>
 </body>
 </html>
