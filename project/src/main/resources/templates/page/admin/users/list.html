@@ -1,14 +1,4 @@
-<!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-      layout:decorate="~{UI/layouts/admin/admin_layout}">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>관리자 | 사용자 관리</title>
-</head>
-<body layout:fragment="content">
-
+<th:block xmlns:th="http://www.thymeleaf.org" th:fragment="usersContent">
 <article class="dash-card">
   <div class="dash-card-head">
     <h2>👥 사용자 관리</h2>
@@ -56,7 +46,7 @@
         </div>
       </div>
 
-      <a class="um-reset" th:href="@{/admin/users}">↺ 초기화</a>
+      <a class="um-reset" th:href="@{/admin/pilots(tab='users')}">↺ 초기화</a>
     </div>
   </div>
 
@@ -178,7 +168,7 @@
       if (v !== null && v !== undefined && String(v).trim() !== '') params.set(k, String(v).trim());
     });
 
-    location.href = '/admin/users?' + params.toString();
+    location.href = '/admin/pilots?tab=users&' + params.toString();
   }
 
   // 기간 버튼: 1주일 / 1개월
@@ -227,6 +217,4 @@
     });
   }
 </script>
-
-</body>
-</html>
+</th:block>
