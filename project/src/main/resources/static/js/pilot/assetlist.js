@@ -90,9 +90,13 @@ document.addEventListener("DOMContentLoaded", () => {
         updateForm(typeSelect.value);
     });
 
-    // 바깥 영역 클릭
+    // 바깥 영역 클릭 (배경에서 누르고 배경에서 뗐을 때만 닫기)
+    let downOnBackdrop = false;
+    modal.addEventListener("pointerdown", (event) => {
+        downOnBackdrop = (event.target === modal);
+    });
     modal.addEventListener("click", (event) => {
-        if (event.target === modal) {
+        if (event.target === modal && downOnBackdrop) {
             closeModal();
         }
     });

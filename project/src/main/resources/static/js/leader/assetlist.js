@@ -21,7 +21,10 @@ const close = () => {
 
   openBtn.addEventListener("click", open);
   modal.querySelectorAll("[data-close-modal]").forEach((b) => b.addEventListener("click", close));
-  modal.addEventListener("click", (e) => { if (e.target === modal) close(); });
+  // 배경에서 누르고 배경에서 뗐을 때만 닫기
+  let downOnBackdrop = false;
+  modal.addEventListener("pointerdown", (e) => { downOnBackdrop = (e.target === modal); });
+  modal.addEventListener("click", (e) => { if (e.target === modal && downOnBackdrop) close(); });
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !modal.hidden) close(); });
 
   // ===== 자산 유형에 따라 상태 목록 바꾸기 =====

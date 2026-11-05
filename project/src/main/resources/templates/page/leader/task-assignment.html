@@ -43,7 +43,7 @@
   <section class="task-panel" th:if="${tab == 'assign'}">
     <article class="dash-card">
       <div class="dash-card-head task-map-head">
-        <h2>🌱 미배정 농지 목록 <span class="task-count" th:text="${#lists.size(readyLands)} + '건'">0건</span></h2>
+        <h2>🌱 미배정 농지 목록 <span class="task-count" th:text="${readyTotal} + '건'">0건</span></h2>
 
         <form class="task-search" th:action="@{/leader/task-assignment}" method="get">
           <input type="hidden" name="tab" value="assign">
@@ -90,6 +90,16 @@
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <!-- 페이지 번호 (11건 이상, 즉 2페이지 이상일 때만 표시) -->
+        <div class="um-pager pager-std" th:if="${pagination.last > 1}">
+          <a th:href="@{/leader/task-assignment(tab='assign', region=${region}, page=1)}">«</a>
+          <a th:each="p : ${#numbers.sequence(pagination.start, pagination.end)}"
+             th:href="@{/leader/task-assignment(tab='assign', region=${region}, page=${p})}"
+             th:classappend="${p == pagination.page} ? 'on'"
+             th:text="${p}">1</a>
+          <a th:href="@{/leader/task-assignment(tab='assign', region=${region}, page=${pagination.last})}">»</a>
         </div>
 
         <div class="task-select-bar">
@@ -245,7 +255,7 @@
 
     <article class="dash-card">
       <div class="dash-card-head task-map-head">
-        <h2>📄 배정 현황 <span class="task-count" th:text="${#lists.size(assigned)} + ' / ' + ${assignedTotal} + '건'">0건</span></h2>
+        <h2>📄 배정 현황 <span class="task-count" th:text="${assignedCount} + ' / ' + ${assignedTotal} + '건'">0건</span></h2>
 
         <form class="task-search" th:action="@{/leader/task-assignment}" method="get">
           <input type="hidden" name="tab" value="status">
@@ -306,6 +316,16 @@
           </tbody>
         </table>
       </div>
+
+      <!-- 페이지 번호 (1건 이상이면 항상 표시) -->
+        <div class="um-pager" th:if="${pagination.total > 0}">
+        <a th:href="@{/leader/task-assignment(tab='status', status=${status}, pilot=${pilot}, sort=${sort}, page=1)}">«</a>
+        <a th:each="p : ${#numbers.sequence(pagination.start, pagination.end)}"
+           th:href="@{/leader/task-assignment(tab='status', status=${status}, pilot=${pilot}, sort=${sort}, page=${p})}"
+           th:classappend="${p == pagination.page} ? 'on'"
+           th:text="${p}">1</a>
+        <a th:href="@{/leader/task-assignment(tab='status', status=${status}, pilot=${pilot}, sort=${sort}, page=${pagination.last})}">»</a>
+      </div>
     </article>
   </section>
 
@@ -315,7 +335,7 @@
   <section class="task-panel" th:if="${tab == 'history'}">
     <article class="dash-card">
       <div class="dash-card-head">
-        <h2>🕘 작업 이력 <span class="task-count" th:text="${#lists.size(history)} + '건'">0건</span></h2>
+        <h2>🕘 작업 이력 <span class="task-count" th:text="${historyTotal} + '건'">0건</span></h2>
         <!-- 지금 검색 조건 그대로 CSV 받기 -->
         <a class="dash-btn-outline"
            th:href="@{/leader/task-assignment/history.csv(from=${from}, to=${to}, hRegion=${hRegion}, hPilot=${hPilot})}">⬇ CSV 다운로드</a>
@@ -349,7 +369,7 @@
       <p class="page-flash is-error" th:if="${dateError}">시작일이 종료일보다 늦을 수 없습니다.</p>
 
       <p class="task-history-sum" th:unless="${#lists.isEmpty(history)}"
-         th:text="|총 ${#lists.size(history)}건 · 면적 ${#numbers.formatDecimal(hArea, 0, 'COMMA', 0, 'POINT')}㎡|">
+         th:text="|총 ${historyTotal}건 · 면적 ${#numbers.formatDecimal(hArea, 0, 'COMMA', 0, 'POINT')}㎡|">
         총 5건 · 면적 10,700㎡
       </p>
 
@@ -379,6 +399,16 @@
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- 페이지 번호 (1건 이상이면 항상 표시) -->
+      <div class="um-pager pager-std" th:if="${pagination.total > 0}">
+        <a th:href="@{/leader/task-assignment(tab='history', from=${from}, to=${to}, hPilot=${hPilot}, hRegion=${hRegion}, page=1)}">«</a>
+        <a th:each="p : ${#numbers.sequence(pagination.start, pagination.end)}"
+           th:href="@{/leader/task-assignment(tab='history', from=${from}, to=${to}, hPilot=${hPilot}, hRegion=${hRegion}, page=${p})}"
+           th:classappend="${p == pagination.page} ? 'on'"
+           th:text="${p}">1</a>
+        <a th:href="@{/leader/task-assignment(tab='history', from=${from}, to=${to}, hPilot=${hPilot}, hRegion=${hRegion}, page=${pagination.last})}">»</a>
       </div>
     </article>
   </section>
