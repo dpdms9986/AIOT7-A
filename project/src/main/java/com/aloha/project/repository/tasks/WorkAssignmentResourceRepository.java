@@ -13,11 +13,11 @@ public interface WorkAssignmentResourceRepository
     Optional<WorkAssignmentResources> findByWorkAssignment_No(Long workAssignmentNo);
 
 
-// 드론이 작업 배정에 사용 중인지 확인
-boolean existsByDrone_No(Long droneNo);
+    // 드론이 작업 배정에 사용 중인지 확인
+    boolean existsByDrone_No(Long droneNo);
 
-// 약제가 작업 배정에 사용 중인지 확인
-boolean existsByChemical_No(Long chemicalNo);
+    // 약제가 작업 배정에 사용 중인지 확인
+    boolean existsByChemical_No(Long chemicalNo);
 
 
 
