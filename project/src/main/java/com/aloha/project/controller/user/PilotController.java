@@ -123,15 +123,20 @@ public class PilotController {
         // 1) 탭으로 거르기
         List<PilotTaskDto> tasks = all.stream()
                 .filter(t -> switch (filter) {
-                    case "active" -> !t.isDone();
+                    case "waiting" -> "ASSIGNED".equals(t.getStatus());
+                    case "active" -> "IN_PROGRESS".equals(t.getStatus());
                     case "done" -> t.isDone();
                     default -> true;
                 })
                 .toList();
 
         // 2) 탭 개수 + 완료 면적
+        long waitingCount = all.stream()
+                .filter(t -> "ASSIGNED".equals(t.getStatus()))
+                .count();
+
         long activeCount = all.stream()
-                .filter(t -> !t.isDone())
+                .filter(t -> "IN_PROGRESS".equals(t.getStatus()))
                 .count();
 
         List<PilotTaskDto> done = all.stream()
@@ -175,6 +180,7 @@ public class PilotController {
         model.addAttribute("filter", filter);
         model.addAttribute("tasks", tasks);
         model.addAttribute("allCount", all.size());
+        model.addAttribute("waitingCount", waitingCount);
         model.addAttribute("activeCount", activeCount);
         model.addAttribute("doneCount", done.size());
         model.addAttribute("doneArea", doneArea);

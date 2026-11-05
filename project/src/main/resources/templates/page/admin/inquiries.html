@@ -151,8 +151,12 @@
   const $modal = $('#iqModal');
 
   // 제목 클릭 → 상세 창 열기 (data-* 값은 .attr 로 읽어서 숫자/JSON 으로 바뀌지 않게 함)
-  $(document).on('click', '.iq-open', function () {
-    const tr = $(this).closest('tr');
+  // 줄 아무 곳이나 클릭 → 상세 창 열기 (data-* 값은 .attr 로 읽어서 숫자/JSON 으로 바뀌지 않게 함)
+  $(document).on('click', '.iq-row', function () {
+    // 글자를 드래그로 선택한 경우에는 열지 않음
+    if (window.getSelection().toString().length > 0) return;
+
+    const tr = $(this);
     const get = k => tr.attr('data-' + k) || '';
 
     $('#iqNo').val(get('no'));
