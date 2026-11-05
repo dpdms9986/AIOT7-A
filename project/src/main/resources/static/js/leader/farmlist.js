@@ -20,7 +20,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 패널 내용 채우기
     $("#drawer-address").textContent = d.address;
-    $("#drawer-region").textContent = d.fullRegion;
     drawerStatus.textContent = d.status;
     drawerStatus.className = `status-badge ${d.statusClass}`;   // 색 클래스 교체
     $("#drawer-id").textContent = `LAND-${d.no.padStart(4, "0")}`;
@@ -30,9 +29,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 삭제 폼의 숨은 칸에 번호 넣기 + 대기 상태가 아니면 버튼 비활성
     deleteNoInput.value = d.no;
-    const deletable = d.deletable === "true";   // data- 값은 항상 글자
+    const deletable = d.deletable === "true";   // data- 값은 항상 글자 (대기 상태일 때만 true)
     deleteBtn.disabled = !deletable;
     deleteBtn.title = deletable ? "" : "대기 상태인 농지만 삭제할 수 있습니다.";
+    // 대기가 아니면 [삭제] [작업 배정] 영역 자체를 숨김
+    document.querySelector(".drawer-footer").style.display = deletable ? "" : "none";
 
     // 작업 배정 링크 (주소는 타임리프가 만들어 둠)
     assignLink.href = d.assignUrl;

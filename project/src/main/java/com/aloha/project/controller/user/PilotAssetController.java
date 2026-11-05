@@ -80,45 +80,38 @@ public class PilotAssetController {
             throw new IllegalStateException("조종사 계정만 접근할 수 있습니다.");
         }
 
+<<<<<<< HEAD
         // 같은 방제단 소속 조종사 목록 (검색 필터용)
         List<Users> owners = (pilot.getTeam() == null)
         ? new ArrayList<>()
         : userRepository.findByTeam(pilot.getTeam()).stream()
                 .filter(u -> "PILOT".equals(u.getRole()))
                 .toList();
+=======
+        
+        // 조종사는 본인에게만 자산을 등록할 수 있음
+        List<Users> owners = List.of(pilot);
+>>>>>>> Hyojung
 
-       
-        // 2. 본인 및 같은 방제단의 드론 조회
-        Map<Long, Drones> droneMap = new LinkedHashMap<>();
-
-        // 본인 소유 드론
-        droneRepository.findByUser_No(pilot.getNo())
-                .forEach(drone -> droneMap.put(drone.getNo(), drone));
-
-        // 같은 방제단 전체 드론
-        if (pilot.getTeam() != null) {
-            droneRepository.findByUser_Team_No(pilot.getTeam().getNo())
-                    .forEach(drone -> droneMap.put(drone.getNo(), drone));
-        }
+        // 2. 로그인 조종사 본인 소유 드론만 조회
+        List<Drones> drones = droneRepository.findByUser_No(pilot.getNo());
 
         // 3. Entity → DTO 변환
         List<AssetDto> all = new ArrayList<>(
-        droneMap.values().stream()
-                .map(AssetDto::from)
-                .toList()
+                drones.stream()
+                        .map(AssetDto::from)
+                        .toList()
         );
 
-   
-        // 같은 방제단의 약제 조회
-        if (pilot.getTeam() != null) {
-         List<AssetDto> chemicals = chemicalRepository
-            .findByTeam_No(pilot.getTeam().getNo())
-            .stream()
-            .map(AssetDto::from)
-            .toList();
+        // 4. 로그인 조종사 본인이 담당하는 약제만 조회
+        List<AssetDto> chemicals = chemicalRepository
+                .findByUser_No(pilot.getNo())
+                .stream()
+                .map(AssetDto::from)
+                .toList();
 
-         all.addAll(chemicals);
-        }
+        all.addAll(chemicals);
+
 
 
         // 4. 기존 탭 및 검색 조건
