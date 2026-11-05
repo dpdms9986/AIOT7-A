@@ -57,10 +57,18 @@ public class AdminPageController {
     public String getDashboard(@AuthenticationPrincipal CustomUser customUser, Model model) {
         log.info("관리자 대시보드 접근: {}", customUser != null ? customUser.getUsername() : "anonymous");
 
-        // 1. 시스템 전체 회원 현황
+        // 1. 시스템 전체 회원 현황 (활성화된 회원만 집계)
         List<Users> allUsers = userRepository.findAll();
-        long leaderCount = allUsers.stream().filter(u -> "LEADER".equals(u.getRole())).count();
-        long pilotCount  = allUsers.stream().filter(u -> "PILOT".equals(u.getRole())).count();
+
+        long leaderCount = allUsers.stream()
+                .filter(u -> Boolean.TRUE.equals(u.getEnabled()))
+                .filter(u -> "LEADER".equals(u.getRole()))
+                .count();
+
+        long pilotCount = allUsers.stream()
+                .filter(u -> Boolean.TRUE.equals(u.getEnabled()))
+                .filter(u -> "PILOT".equals(u.getRole()))
+                .count();
 
         // 2. 등록된 전체 방제단(Teams) 현황
         long totalTeamCount = teamRepository.findAll().size();
