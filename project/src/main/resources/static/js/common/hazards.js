@@ -68,6 +68,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const $ = (id) => document.getElementById(id);
 
   function select(row, fromMarker) {
+    if (fromMarker) showPageOf(row);   // 마커를 눌렀는데 그 행이 다른 페이지면 그 페이지로 이동
     rows.forEach((r) => r.classList.toggle("selected", r === row));
     const d = row.dataset;
 
@@ -110,32 +111,78 @@ document.addEventListener("DOMContentLoaded", () => {
   const countEl = document.getElementById("hz-count");
   const noResult = document.getElementById("hz-no-result");
 
+  /* ----- 페이지 나누기 (검색 결과를 10건씩 보여줌) ----- */
+  const PAGE_SIZE = 10;
+  const pagerEl = document.getElementById("hz-pager");
+  let matched = rows.slice();      // 검색 조건에 맞는 행들
+  let currentPage = 1;
+
+  function renderPage(page) {
+    const totalPages = Math.max(1, Math.ceil(matched.length / PAGE_SIZE));
+    currentPage = Math.min(Math.max(page, 1), totalPages);
+    const from = (currentPage - 1) * PAGE_SIZE;
+    const visible = new Set(matched.slice(from, from + PAGE_SIZE));
+    rows.forEach((row) => { row.hidden = !visible.has(row); });
+    renderPager(totalPages);
+  }
+
+  function renderPager(totalPages) {
+    if (!pagerEl) return;
+    pagerEl.innerHTML = "";
+    if (matched.length === 0) return;              // 1페이지뿐이면 숨김
+
+    const GROUP = 10;                          // 한 번에 보이는 번호 개수
+    const start = Math.floor((currentPage - 1) / GROUP) * GROUP + 1;
+    const end = Math.min(start + GROUP - 1, totalPages);
+
+    const add = (label, page, on) => {
+      const a = document.createElement("a");
+      a.href = "#";
+      a.textContent = label;
+      if (on) a.classList.add("on");
+      a.addEventListener("click", (e) => { e.preventDefault(); renderPage(page); });
+      pagerEl.appendChild(a);
+    };
+
+    add("«", 1, false);
+    for (let p = start; p <= end; p++) add(String(p), p, p === currentPage);
+    add("»", totalPages, false);
+  }
+
+  function showPageOf(row) {
+    const idx = matched.indexOf(row);
+    if (idx < 0) return;
+    const page = Math.floor(idx / PAGE_SIZE) + 1;
+    if (page !== currentPage) renderPage(page);
+  }
+
   function applyFilter() {
     const kw = (fKeyword?.value || "").trim();
     const type = fType?.value || "";
     const status = fStatus?.value || "";
-    let shown = 0;
 
-    rows.forEach((row) => {
+    matched = rows.filter((row) => {
       const d = row.dataset;
       const text = `${d.title} ${d.content} ${d.author}`;
-      const match = (!kw || text.includes(kw))
-                 && (!type || d.type === type)
-                 && (!status || d.status === status);
+      return (!kw || text.includes(kw))
+          && (!type || d.type === type)
+          && (!status || d.status === status);
+    });
+    const matchSet = new Set(matched);
 
-      row.hidden = !match;
-      if (match) shown++;
-
-      // 지도 마커도 같이 숨기기/보이기
+    // 지도 마커: 조건에 맞는 건 페이지와 상관없이 전부 표시
+    rows.forEach((row) => {
       const marker = markers.get(row);
       if (map && marker) {
-        if (match) marker.addTo(map);
+        if (matchSet.has(row)) marker.addTo(map);
         else marker.remove();
       }
     });
 
-    if (countEl) countEl.textContent = shown + "건";
-    if (noResult) noResult.hidden = shown > 0 || rows.length === 0;
+    if (countEl) countEl.textContent = matched.length + "건";
+    if (noResult) noResult.hidden = matched.length > 0 || rows.length === 0;
+
+    renderPage(1);                             // 검색하면 1페이지부터
   }
 
   // [검색] 버튼 / 검색칸에서 Enter 를 누를 때만 거르기
@@ -152,6 +199,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (fStatus) fStatus.value = "";
     applyFilter();
   });
+
+  renderPage(1);   // 처음 열었을 때도 10건씩만 보이게
 
   /* ---------- 2-1) 상세보기 팝업 (내용이 길어도 전부 보이게) ---------- */
   const viewModal = document.getElementById("hz-view-modal");

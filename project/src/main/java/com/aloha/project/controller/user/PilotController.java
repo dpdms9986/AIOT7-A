@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.aloha.project.domain.common.Pagination;
 import com.aloha.project.domain.lands.Lands;
 import com.aloha.project.domain.tasks.Drones;
 import com.aloha.project.domain.tasks.WorkAssignmentResources;
@@ -110,6 +111,7 @@ public class PilotController {
             @AuthenticationPrincipal CustomUser customUser,
             @RequestParam(value = "filter", defaultValue = "all") String filter,
             @RequestParam(value = "no", required = false) Long no,
+            @RequestParam(value = "page", defaultValue = "1") int page,
             Model model) {
 
         if (customUser == null) return "redirect:/login";
@@ -130,6 +132,16 @@ public class PilotController {
                     default -> true;
                 })
                 .toList();
+
+        // 1-2) 페이지네이션 (탭으로 거른 목록을 10개씩 자름)
+        final int pageSize = 10;
+        Pagination pagination = new Pagination(Math.max(page, 1), pageSize, 10, tasks.size());
+        if (pagination.getPage() > pagination.getLast()) {
+            pagination = new Pagination(pagination.getLast(), pageSize, 10, tasks.size());
+        }
+        int fromIdx = (int) Math.min(pagination.getIndex(), tasks.size());
+        int toIdx   = Math.min(fromIdx + pageSize, tasks.size());
+        List<PilotTaskDto> pagedTasks = tasks.subList(fromIdx, toIdx);
 
         // 2) 탭 개수 + 완료 면적
         long waitingCount = all.stream()
@@ -176,7 +188,8 @@ public class PilotController {
 
         // 6) 화면으로 보낼 값 (기존 Model 변수명 유지)
         model.addAttribute("filter", filter);
-        model.addAttribute("tasks", tasks);
+        model.addAttribute("tasks", pagedTasks);
+        model.addAttribute("pagination", pagination);
         model.addAttribute("allCount", all.size());
         model.addAttribute("waitingCount", waitingCount);
         model.addAttribute("activeCount", activeCount);

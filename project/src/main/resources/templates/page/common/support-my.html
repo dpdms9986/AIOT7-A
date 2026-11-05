@@ -23,7 +23,7 @@
 
   <article class="dash-card">
     <div class="dash-card-head">
-      <h2>📋 내 문의내역 <span class="task-count" th:text="${#lists.size(myInquiries)} + '건'">0건</span></h2>
+      <h2>📋 내 문의내역 <span class="task-count" th:text="${myTotal} + '건'">0건</span></h2>
       <a class="dash-btn-primary" th:href="@{/support}">뒤로가기</a>
     </div>
 
@@ -51,6 +51,16 @@
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <!-- 페이지 번호 (2페이지 이상일 때만 표시) -->
+    <div class="um-pager pager-std" th:if="${pagination.total > 0}">
+      <a th:href="@{/support/my(page=1)}">«</a>
+      <a th:each="p : ${#numbers.sequence(pagination.start, pagination.end)}"
+         th:href="@{/support/my(page=${p})}"
+         th:classappend="${p == pagination.page} ? 'on'"
+         th:text="${p}">1</a>
+      <a th:href="@{/support/my(page=${pagination.last})}">»</a>
     </div>
   </article>
 </main>

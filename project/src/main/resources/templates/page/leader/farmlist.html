@@ -106,8 +106,8 @@
           </table>
         </div>
 
-      <!-- 페이지 번호 (2페이지 이상일 때만 표시) -->
-        <div class="um-pager" th:if="${pagination.last > 1}">
+      <!-- 페이지 번호 (1건 이상이면 항상 표시) -->
+        <div class="um-pager" th:if="${pagination.total > 0}">
           <a th:href="@{/leader/farmlist(page=1, size=${pageSize}, keyword=${keyword}, status=${status}, sort=${sort})}">«</a>
 
           <a th:each="p : ${#numbers.sequence(pagination.start, pagination.end)}"
