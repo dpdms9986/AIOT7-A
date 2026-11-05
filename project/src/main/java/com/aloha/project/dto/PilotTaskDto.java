@@ -2,7 +2,6 @@ package com.aloha.project.dto;
 
 import java.time.LocalDateTime;
 
-import com.aloha.project.domain.lands.Regions;
 import com.aloha.project.domain.tasks.WorkAssignments;
 
 import lombok.AllArgsConstructor;
@@ -71,12 +70,6 @@ public class PilotTaskDto {
 
         // 농지 정보 추출
         String landAddress = (assignment.getLand() != null) ? assignment.getLand().getAddress() : "-";
-        String landRegion = "-";
-        if (assignment.getLand() != null && assignment.getLand().getRegion() != null) {
-            Regions r = assignment.getLand().getRegion();
-            // 시/군/구 + 읍/면/동 합치기 (예: "동구 어남동")
-            landRegion = (r.getSigungu() != null ? r.getSigungu() + " " : "") + r.getEupmyeondong();
-        }
         Double area = (assignment.getLand() != null) ? assignment.getLand().getAreaSize() : 0.0;
 
         // 조종사 이름 추출
@@ -85,7 +78,6 @@ public class PilotTaskDto {
         return PilotTaskDto.builder()
                 .no(assignment.getNo())
                 .address(landAddress)
-                .region(landRegion)
                 .areaSize(area)
                 .status(assignment.getStatus())
                 .pilotName(pilot)
