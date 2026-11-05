@@ -48,7 +48,7 @@
         <form class="task-search" th:action="@{/leader/task-assignment}" method="get">
           <input type="hidden" name="tab" value="assign">
           <input type="text" class="dash-input" name="region" th:value="${region}"
-                 placeholder="🔍 행정구역 검색 (예: 유성구, 전민동)">
+            placeholder="🔍 주소 검색 (예: 전민동 15-2)">
           <button type="submit" class="dash-btn-primary">검색</button>
           <a class="dash-btn-outline" th:href="@{/leader/task-assignment}">전체</a>
         </form>
@@ -64,6 +64,7 @@
                 <th>주소</th>
                 <th>면적(㎡)</th>
                 <th>상태</th>
+                <th>등록 일시</th>
               </tr>
             </thead>
             <tbody>
@@ -82,9 +83,10 @@
                 <td th:text="${land.address}">전민동 15-2</td>
                 <td th:text="${#numbers.formatDecimal(land.areaSize, 0, 'COMMA', 0, 'POINT')}">3,300</td>
                 <td><span class="pilot-status st-ready">READY</span></td>
+                <td th:text="${land.createdAt != null} ? ${#temporals.format(land.createdAt, 'yyyy-MM-dd HH:mm')} : '-'">2026-11-04 14:54</td>
               </tr>
               <tr th:if="${#lists.isEmpty(readyLands)}">
-                <td colspan="4" class="task-empty-cell">해당 지역에 미배정 농지가 없습니다.</td>
+                <td colspan="5" class="task-empty-cell">해당 지역에 미배정 농지가 없습니다.</td>
               </tr>
             </tbody>
           </table>
@@ -258,6 +260,10 @@
                     th:value="${p.name}" th:text="${p.name}"
                     th:selected="${p.name == pilot}">김민수</option>
           </select>
+          <select class="task-select" name="sort" aria-label="정렬" onchange="this.form.submit()">
+            <option value="">배정일순 (최신)</option>
+            <option value="assignedAsc" th:selected="${sort == 'assignedAsc'}">배정일순 (오래된)</option>
+          </select>
         </form>
       </div>
 
@@ -266,7 +272,6 @@
           <thead>
             <tr>
               <th>주소</th>
-              <th>행정구역</th>
               <th>면적(㎡)</th>
               <th>담당 조종사</th>
               <th>배정 일시</th>
@@ -277,7 +282,6 @@
           <tbody>
             <tr th:each="land : ${assigned}">
               <td th:text="${land.address}">노은동 2-8</td>
-              <td th:text="${land.region} + ' ' + ${land.dong}">유성구 노은동</td>
               <td th:text="${#numbers.formatDecimal(land.areaSize, 0, 'COMMA', 0, 'POINT')}">2,150</td>
               <td th:text="${land.pilotName}">이서연</td>
               <td th:text="${#temporals.format(land.assignedAt, 'yyyy-MM-dd HH:mm')}">2026-10-29 09:30</td>
@@ -297,7 +301,7 @@
               </td>
             </tr>
             <tr th:if="${#lists.isEmpty(assigned)}">
-              <td colspan="7" class="task-empty-cell">조건에 맞는 배정 내역이 없습니다.</td>
+              <td colspan="6" class="task-empty-cell">조건에 맞는 배정 내역이 없습니다.</td>
             </tr>
           </tbody>
         </table>
@@ -329,10 +333,6 @@
           <input type="date" name="to" th:value="${to}">
         </label>
         <label class="task-field">
-          <span>행정구역</span>
-          <input type="text" name="hRegion" th:value="${hRegion}" placeholder="예: 유성구, 노은동">
-        </label>
-        <label class="task-field">
           <span>담당 조종사</span>
           <select name="hPilot">
             <option value="">전체</option>
@@ -357,27 +357,25 @@
         <table class="task-table plain">
           <thead>
             <tr>
-              <th>완료 일시</th>
               <th>주소</th>
-              <th>행정구역</th>
               <th>면적(㎡)</th>
               <th>담당 조종사</th>
               <th>배정 일시</th>
+              <th>완료 일시</th>
               <th>사용 약제</th>
             </tr>
           </thead>
           <tbody>
             <tr th:each="h : ${history}">
-              <td th:text="${#temporals.format(h.completedAt, 'yyyy-MM-dd HH:mm')}">2026-10-28 15:10</td>
               <td th:text="${h.address}">노은동 112</td>
-              <td th:text="${h.region}">유성구 노은동</td>
               <td th:text="${#numbers.formatDecimal(h.areaSize, 0, 'COMMA', 0, 'POINT')}">1,200</td>
               <td th:text="${h.pilotName}">박지훈</td>
               <td th:text="${#temporals.format(h.assignedAt, 'yyyy-MM-dd HH:mm')}">2026-10-28 14:00</td>
+              <td th:text="${#temporals.format(h.completedAt, 'yyyy-MM-dd HH:mm')}">2026-10-28 15:10</td>
               <td th:text="${h.chemicalName}">살균제 A</td>
             </tr>
             <tr th:if="${#lists.isEmpty(history)}">
-              <td colspan="7" class="task-empty-cell">조건에 맞는 작업 이력이 없습니다.</td>
+              <td colspan="6" class="task-empty-cell">조건에 맞는 작업 이력이 없습니다.</td>
             </tr>
           </tbody>
         </table>
