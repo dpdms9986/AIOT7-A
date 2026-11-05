@@ -23,6 +23,7 @@ import com.aloha.project.repository.tasks.WorkAssignmentResourceRepository;
 import com.aloha.project.domain.users.CustomUser;
 import com.aloha.project.domain.tasks.Drones;
 import com.aloha.project.domain.users.Users;
+import com.aloha.project.domain.common.Pagination;
 import com.aloha.project.dto.AssetDto;
 import com.aloha.project.repository.tasks.DroneRepository;
 import com.aloha.project.repository.users.UserRepository;
@@ -61,6 +62,8 @@ public class PilotAssetController {
             @RequestParam(value = "keyword", defaultValue = "") String keyword,
             @RequestParam(value = "id", required = false) String id,
             @RequestParam(value = "assetType", required = false) String assetType,
+            @RequestParam(value = "page", defaultValue = "1") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size,
             Model model) {
 
         // 1. 로그인 조종사 확인
@@ -105,6 +108,7 @@ public class PilotAssetController {
                 .toList()
         );
 
+   
         // 같은 방제단의 약제 조회
         if (pilot.getTeam() != null) {
          List<AssetDto> chemicals = chemicalRepository
@@ -139,6 +143,34 @@ public class PilotAssetController {
                         || (a.getId() + " " + a.getName() + " "
                                 + a.getSubtitle()).contains(kw))
                 .toList();
+
+             // ========================================================
+        // 페이지네이션
+        // ========================================================
+        size = 10;
+
+        Pagination pagination = new Pagination(
+        Math.max(page, 1),
+        size,
+        10,
+         assets.size()
+         );
+
+         // 마지막 페이지보다 큰 페이지 요청 방지
+        if (pagination.getPage() > pagination.getLast()) {
+            pagination = new Pagination(
+            pagination.getLast(),
+            size,
+            10,
+            assets.size()
+        );
+        }
+
+          int from = (int) Math.min(pagination.getIndex(), assets.size());
+         int to = (int) Math.min(from + size, assets.size());
+
+        List<AssetDto> pagedAssets = assets.subList(from, to);
+
 
         // 5. 요약 카드
         long droneCount = all.stream()
@@ -183,7 +215,8 @@ public class PilotAssetController {
         // 7. 기존 화면 Model 변수명 유지
         model.addAttribute("tab", tab);
         model.addAttribute("tabTitle", tabTitle);
-        model.addAttribute("assets", assets);
+        model.addAttribute("assets", pagedAssets);
+        model.addAttribute("pagination", pagination);
         model.addAttribute("droneCount", droneCount);
         model.addAttribute("chemicalCount", chemicalCount);
         model.addAttribute("maintenanceCount", maintenanceCount);

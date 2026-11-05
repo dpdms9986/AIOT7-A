@@ -23,6 +23,7 @@ import com.aloha.project.domain.tasks.Chemicals;
 import com.aloha.project.domain.users.CustomUser;
 import com.aloha.project.domain.users.Teams;
 import com.aloha.project.domain.users.Users;
+import com.aloha.project.domain.common.Pagination;
 import com.aloha.project.dto.AssetCreateRequest;
 import com.aloha.project.dto.AssetDto;
 import com.aloha.project.repository.tasks.DroneRepository;
@@ -58,6 +59,8 @@ public class LeaderAssetController {
             @RequestParam(value = "owner",   defaultValue = "") String owner,
             @RequestParam(value = "status",  defaultValue = "") String status,
             @RequestParam(value = "keyword", defaultValue = "") String keyword,
+            @RequestParam(value = "page",    defaultValue = "1") int page,
+            @RequestParam(value = "size",    defaultValue = "10") int size,
             @AuthenticationPrincipal CustomUser customUser, // 👈 로그인 단장 주입
             Model model) {
 
@@ -113,6 +116,33 @@ public class LeaderAssetController {
                           || (a.getId() + " " + a.getName() + " " + a.getSubtitle() + " " + a.getOwner()).contains(kw))
                 .toList();
 
+
+        // ========================================================
+        // 페이지네이션
+        // ========================================================
+
+       
+         size = (size < 1 || size > 100) ? 10 : size;
+
+        Pagination pagination = new Pagination(
+              Math.max(page, 1),
+              size,
+              10,
+              assets.size()
+               );
+
+        // 마지막 페이지보다 큰 페이지 요청 방지
+        if (pagination.getPage() > pagination.getLast()) {
+        pagination = new Pagination(pagination.getLast(), size, 10, assets.size());
+        }
+
+        int from = (int) Math.min(pagination.getIndex(), assets.size());
+        int to = (int) Math.min(from + size, assets.size());
+
+        List<AssetDto> pagedAssets = assets.subList(from, to);
+
+
+
         // 2) 요약 카드 (전체 기준)
         long droneCount       = all.stream().filter(AssetDto::isDrone).count();
         long chemicalCount    = all.size() - droneCount;
@@ -135,7 +165,8 @@ public class LeaderAssetController {
 
         model.addAttribute("tab", tab);
         model.addAttribute("tabTitle", tabTitle);
-        model.addAttribute("assets", assets);
+        model.addAttribute("assets", pagedAssets);
+        model.addAttribute("pagination", pagination);
         model.addAttribute("droneCount", droneCount);
         model.addAttribute("chemicalCount", chemicalCount);
         model.addAttribute("maintenanceCount", maintenanceCount);
@@ -339,101 +370,6 @@ public class LeaderAssetController {
         return "redirect:/leader/assetlist";
     }
 
-<<<<<<< HEAD
-           /**
-          * 방제단장 자산 삭제
-          * - 본인 방제단 소속 자산만 삭제 가능
-          * - 작업 배정에 사용된 자산은 삭제 불가
-             */
-         @Transactional
-         @PostMapping("/assetlist/{id}/delete")
-         public String deleteAsset(
-         @PathVariable("id") String id,
-         @AuthenticationPrincipal CustomUser customUser,
-         RedirectAttributes redirectAttributes) {
-
-    if (customUser == null) {
-        return "redirect:/login";
-    }
-
-    Users leader = userRepository.findById(customUser.getUser().getNo())
-            .orElse(null);
-
-    if (leader == null || leader.getTeam() == null) {
-        redirectAttributes.addFlashAttribute(
-                "error", "사용자 또는 소속 방제단 정보를 찾을 수 없습니다.");
-        return "redirect:/leader/assetlist";
-    }
-
-    try {
-        // 1. 드론 삭제
-        if (id.startsWith("drone-")) {
-
-            Long droneNo = Long.parseLong(id.substring("drone-".length()));
-            Drones drone = droneRepository.findById(droneNo).orElse(null);
-
-            if (drone == null || drone.getUser() == null
-                    || drone.getUser().getTeam() == null
-                    || !leader.getTeam().getNo().equals(
-                            drone.getUser().getTeam().getNo())) {
-
-                redirectAttributes.addFlashAttribute(
-                        "error", "드론 정보를 찾을 수 없거나 삭제 권한이 없습니다.");
-
-            } else if (workAssignmentResourceRepository.existsByDrone_No(droneNo)) {
-
-                redirectAttributes.addFlashAttribute(
-                        "error", "작업 배정에 사용 중인 드론은 삭제할 수 없습니다.");
-
-            } else {
-                droneRepository.delete(drone);
-
-                redirectAttributes.addFlashAttribute(
-                        "message", "드론이 삭제되었습니다.");
-            }
-
-        // 2. 약제 삭제
-        } else if (id.startsWith("chemical-")) {
-
-            Long chemicalNo = Long.parseLong(
-                    id.substring("chemical-".length()));
-
-            Chemicals chemical = chemicalRepository.findById(chemicalNo)
-                    .orElse(null);
-
-            if (chemical == null || chemical.getTeam() == null
-                    || !leader.getTeam().getNo().equals(
-                            chemical.getTeam().getNo())) {
-
-                redirectAttributes.addFlashAttribute(
-                        "error", "약제 정보를 찾을 수 없거나 삭제 권한이 없습니다.");
-
-            } else if (workAssignmentResourceRepository.existsByChemical_No(chemicalNo)) {
-
-                redirectAttributes.addFlashAttribute(
-                        "error", "작업 배정에 사용 중인 약제는 삭제할 수 없습니다.");
-
-            } else {
-                chemicalRepository.delete(chemical);
-
-                redirectAttributes.addFlashAttribute(
-                        "message", "약제가 삭제되었습니다.");
-            }
-
-        } else {
-            redirectAttributes.addFlashAttribute(
-                    "error", "올바르지 않은 자산 ID입니다.");
-        }
-
-    } catch (NumberFormatException e) {
-        redirectAttributes.addFlashAttribute(
-                "error", "잘못된 자산 번호입니다.");
-    }
-
-    return "redirect:/leader/assetlist";
-}
-
-=======
     /**
      * 자산 삭제 (방제단장 권한)
      */
@@ -524,7 +460,6 @@ public class LeaderAssetController {
         return "redirect:/leader/assetlist";
     }
 
->>>>>>> develop
     /* =========================================================
        탭별 상태 검색 목록 (AssetDto.STATUS_LABELS 에서 골라 씀, DTO 는 수정 안 함)
        ========================================================= */

@@ -70,6 +70,7 @@
     <h2 th:text="${tabTitle}">전체 자산</h2>
     <p>본인에게 배정된 자산만 표시됩니다.</p>
   </div>
+  <span>총 <strong th:text="${pagination.total}">0</strong>건</span>
   </div>
 
         <!-- 검색 (GET) : 자산 유형은 전체 탭에서만 / 순서는 단장 화면과 같게 (유형 → 상태 → 검색어) -->
@@ -161,7 +162,19 @@
         </tbody>
       </table>
     </div>
-  </section>
+
+    <!-- 페이지 번호 -->
+    <div class="um-pager">
+    <a th:href="@{/pilot/assetlist(page=1, size=10, tab=${tab}, type=${type}, status=${status}, keyword=${keyword})}">«</a>
+
+    <a th:each="p : ${#numbers.sequence(pagination.start, pagination.end)}"
+       th:href="@{/pilot/assetlist(page=${p}, size=10, tab=${tab}, type=${type}, status=${status}, keyword=${keyword})}"
+       th:classappend="${p == pagination.page} ? 'on'"
+       th:text="${p}">1</a>
+
+     <a th:href="@{/pilot/assetlist(page=${pagination.last}, size=10, tab=${tab}, type=${type}, status=${status}, keyword=${keyword})}">»</a>
+      </div>
+      </section>
 
   </main>
  
