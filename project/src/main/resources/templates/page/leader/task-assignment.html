@@ -60,9 +60,8 @@
           <table class="task-table">
             <thead>
               <tr>
-                <th><input type="checkbox" id="check-all" aria-label="전체 선택"></th>
+                <th>선택<input type="checkbox" id="check-all" aria-label="전체 선택" style="display:none"></th>
                 <th>주소</th>
-                <th>행정구역</th>
                 <th>면적(㎡)</th>
                 <th>상태</th>
               </tr>
@@ -81,12 +80,11 @@
                          th:attr="aria-label=${land.address} + ' 선택'">
                 </td>
                 <td th:text="${land.address}">전민동 15-2</td>
-                <td th:text="${land.region} + ' ' + ${land.dong}">유성구 전민동</td>
                 <td th:text="${#numbers.formatDecimal(land.areaSize, 0, 'COMMA', 0, 'POINT')}">3,300</td>
                 <td><span class="pilot-status st-ready">READY</span></td>
               </tr>
               <tr th:if="${#lists.isEmpty(readyLands)}">
-                <td colspan="5" class="task-empty-cell">해당 지역에 미배정 농지가 없습니다.</td>
+                <td colspan="4" class="task-empty-cell">해당 지역에 미배정 농지가 없습니다.</td>
               </tr>
             </tbody>
           </table>
@@ -94,7 +92,7 @@
 
         <div class="task-select-bar">
           <p>선택한 농지 <strong id="sel-count">0</strong>필지 · 총 <strong id="sel-area">0</strong>㎡</p>
-          <button type="button" class="dash-btn-primary" id="open-assign">👥 분배 설정</button>
+          <button type="button" class="dash-btn-primary" id="open-assign" style="display:none">👥 분배 설정</button>
         </div>
 
          <!-- 구역 분할 배정 -->
@@ -126,7 +124,7 @@
               <label class="fs-label" for="splitCount" style="display:block;margin-top:14px">분할할 조각 수</label>
               <div class="fs-count">
                 <button type="button" id="fs-dec" aria-label="분할 개수 줄이기">−</button>
-                <input id="splitCount" type="number" min="2" max="12" value="3" inputmode="numeric">
+                <input id="splitCount" type="number" min="2" max="12" value="2" inputmode="numeric">
                 <button type="button" id="fs-inc" aria-label="분할 개수 늘리기">+</button>
                 <span>조각</span>
               </div>
@@ -165,7 +163,6 @@
           <div class="fs-results">
             <div class="fs-results-head" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
               <h3>3. 구역별 담당 조종사 <span id="fs-result-count" class="count-pill">0</span></h3>
-              <button type="button" class="dash-btn-outline task-mini-btn" id="fs-copy-all">좌표 JSON 복사</button>
               <span class="fs-hint" id="fs-copy-msg"></span>
             </div>
             <div id="resultCards" class="result-cards"></div>

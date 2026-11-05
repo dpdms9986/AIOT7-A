@@ -63,7 +63,68 @@ document.addEventListener("DOMContentLoaded", () => {
   let lastKey = "";            // 영역이 바뀌면 담당 매핑을 초기화하기 위한 값
   let pieces = [];             // 분할 결과 (GeoJSON Feature, 서→동 순)
   let pieceLayers = [];
-  let assignment = [];         // 구역 index → 조종사 번호 ("" = 미지정)
+    let assignment = [];         // 구역 index → 조종사 번호 ("" = 미지정)
+
+  /* ----- 농지별 임시저장 (새로고침 전까지 유지) ----- */
+  const drafts = new Map();    // 농지 번호 → { key, drawn, drawnInLand, address, count, assignment, pieces, label }
+
+  // 지금 작업 중인 농지의 상태를 저장 (그린 영역이나 조종사 선택이 있을 때만)
+  const saveDraft = (landEl) => {
+    if (!landEl) return;
+    if (drawn && !drawnInLand) return;                 // 농지 밖에서 직접 그린 영역은 저장 대상 아님
+    const hasWork = pieces.length > 0 && (drawnInLand || assignment.some((v) => v));
+    if (hasWork) {
+      drafts.set(landEl.value, {
+        key: lastKey,
+        drawn: drawn ? drawn.map((p) => [...p]) : null,
+        drawnInLand,
+        address: drawnAddress.value,
+        count: countInput.value,
+        assignment: assignment.slice(),
+        pieces,
+        label: landEl.dataset.address,
+      });
+    } else {
+      drafts.delete(landEl.value);
+    }
+    landEl.closest("tr")?.classList.toggle("has-draft", drafts.has(landEl.value));
+  };
+
+  // 저장해 둔 작업이 있으면 복원 (renderSplit 호출 전에 실행)
+  const restoreDraft = (landEl) => {
+    const d = drafts.get(landEl.value);
+    if (!d) return;
+    drawn = d.drawn ? d.drawn.map((p) => [...p]) : null;
+    drawnInLand = d.drawnInLand;
+    drawnWrap.hidden = true;
+    drawnAddress.value = d.address;
+    countInput.value = d.count;
+    lastKey = d.key;                                   // 같은 key 면 담당 조종사가 초기화되지 않음
+    assignment = d.assignment.slice();
+  };
+
+  // 임시저장된 다른 농지들을 지도에 흐리게 표시
+  let draftLayer = null;
+  const renderDraftLayer = () => {
+    if (draftLayer) { map.removeLayer(draftLayer); draftLayer = null; }
+    const currentNo = targetCheckbox ? targetCheckbox.value : null;
+    const group = L.featureGroup();
+    drafts.forEach((d, no) => {
+      if (no === currentNo) return;                    // 지금 작업 중인 농지는 본 레이어가 그림
+      d.pieces.forEach((feature, i) => {
+        const color = COLORS[feature.properties.sliceIndex % COLORS.length];
+        const layer = L.geoJSON(feature, {
+          style: { color: color.line, weight: 1.5, opacity: 0.7, dashArray: "4 4",
+                   fillColor: color.fill, fillOpacity: 0.15 },
+        });
+        layer.bindTooltip(
+          `${d.label} · 구역 ${pad2(feature.properties.sliceIndex + 1)} · ${pilotNameOf(d.assignment[i]) || "담당 미지정"}`,
+          { sticky: true, direction: "top" });
+        layer.addTo(group);
+      });
+    });
+    if (group.getLayers().length) draftLayer = group.addTo(map);
+  };
 
   /* ===================== 도우미 ===================== */
   const pad2 = (n) => String(n).padStart(2, "0");
@@ -350,14 +411,6 @@ document.addEventListener("DOMContentLoaded", () => {
         card.append(hint);
       }
 
-      const copyBtn = document.createElement("button");
-      copyBtn.type = "button";
-      copyBtn.className = "dash-btn-outline task-mini-btn";
-      copyBtn.textContent = "좌표 복사";
-      copyBtn.addEventListener("click", () => {
-        copyText(JSON.stringify(toLatLng(piece.geometry), null, 2), `구역 ${pad2(sliceNo + 1)} 좌표를 복사했어요.`);
-      });
-      card.append(copyBtn);
 
       cardsBox.append(card);
     });
@@ -505,21 +558,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 등록 농지 체크: 가장 최근에 체크한 농지를 지도에 보여줌 (직접 그린 영역은 해제)
   landChecks().forEach((c) => c.addEventListener("change", () => {
-    if (c.checked) { cancelDrawing(); clearDrawn(); targetCheckbox = c; }
-    else { if (drawnInLand) clearDrawn(); pickTarget(); }   // 농지 선택을 풀면 그 안에서 그린 영역도 해제
+    if (c.checked) {
+      saveDraft(targetCheckbox);                       // 이전 농지 작업 임시저장
+      cancelDrawing(); clearDrawn();
+      targetCheckbox = c;
+      restoreDraft(c);                                 // 이 농지에 저장해 둔 작업이 있으면 복원
+    } else {
+      if (c === targetCheckbox) saveDraft(c);
+      if (drawnInLand) clearDrawn();
+      pickTarget();
+    }
     renderSplit();
+    renderDraftLayer();                                // 임시저장된 다른 농지를 지도에 같이 표시
   }));
-  $("#check-all")?.addEventListener("change", () => {
-    if ($("#check-all").checked) { cancelDrawing(); clearDrawn(); }
-    else if (drawnInLand) clearDrawn();
-    targetCheckbox = null;
-    pickTarget();
-    renderSplit();
-  });
 
   // 조각 수는 단장이 직접 정한다 (조종사 수와 무관)
   const changeCount = (amount) => {
-    const current = Number(countInput.value) || 3;
+    const current = Number(countInput.value) || 2;
     countInput.value = String(Math.min(12, Math.max(2, current + amount)));
     renderSplit();
   };
@@ -528,43 +583,27 @@ document.addEventListener("DOMContentLoaded", () => {
   countInput.addEventListener("change", renderSplit);
 
   $("#fs-fit").addEventListener("click", () => {
-    if (!currentCoords) return;
-    map.fitBounds(L.latLngBounds(currentCoords), { padding: [30, 30], maxZoom: 18, animate: true });
+    const bounds = L.latLngBounds([]);
+    if (currentCoords) bounds.extend(L.latLngBounds(currentCoords));
+    if (draftLayer) bounds.extend(draftLayer.getBounds());   // 임시저장된 농지까지 포함
+    if (bounds.isValid()) map.fitBounds(bounds, { padding: [30, 30], maxZoom: 18, animate: true });
   });
 
-  $("#fs-copy-all").addEventListener("click", () => {
-    if (!pieces.length) { setCopyMsg("먼저 영역을 분할해 주세요."); return; }
-    const output = pieces.map((feature, i) => ({
-      zone: pad2(feature.properties.sliceIndex + 1),
-      pilot: pilotNameOf(assignment[i]) || null,
-      areaSqm: Math.round(turf.area(feature)),
-      type: feature.geometry.type,
-      coordinates: toLatLng(feature.geometry),
-    }));
-    copyText(JSON.stringify(output, null, 2), "구역 좌표 JSON을 복사했어요.");
-  });
 
   /* ----- 배정 확정 -----
      구역마다 담당 조종사 + 구역 다각형(pieceAssignmentsJson)을 서버로 보낸다.
      직접 그린 영역이면 영역 정보(drawn*)도 같이 보낸다. */
-  $("#fs-confirm").addEventListener("click", () => {
+    $("#fs-confirm").addEventListener("click", async () => {
     clearError();
-    if (!pieces.length) { alert("먼저 영역을 선택하고 분할해 주세요."); return; }
 
-    const lands = selectedLands();
-    if ((!drawn || drawnInLand) && lands.length !== 1) {
-      alert(lands.length
-        ? "구역별 배정은 농지를 1건만 선택해 주세요. 여러 농지를 한꺼번에 나눌 때는 '분배 설정'을 사용하세요."
-        : "배정할 농지를 선택하거나 지도에서 영역을 그려 주세요.");
-      return;
-    }
-    const emptyIdx = assignment.findIndex((v) => !v);
-    if (emptyIdx >= 0) {
-      alert(`구역 ${pad2(pieces[emptyIdx].properties.sliceIndex + 1)}의 담당 조종사를 선택하세요.`);
-      return;
-    }
-
+    /* A. 농지 밖에서 직접 그린 영역: 기존처럼 1건 제출 */
     if (drawn && !drawnInLand) {
+      if (!pieces.length) { alert("먼저 영역을 선택하고 분할해 주세요."); return; }
+      const emptyIdx = assignment.findIndex((v) => !v);
+      if (emptyIdx >= 0) {
+        alert(`구역 ${pad2(pieces[emptyIdx].properties.sliceIndex + 1)}의 담당 조종사를 선택하세요.`);
+        return;
+      }
       if (!drawnAddress.value.trim()) {
         alert("직접 그린 영역의 이름(주소)을 입력해 주세요.");
         drawnAddress.focus();
@@ -575,19 +614,59 @@ document.addEventListener("DOMContentLoaded", () => {
       hidden("drawnLat").value = center.lat.toFixed(6);
       hidden("drawnLng").value = center.lng.toFixed(6);
       hidden("drawnArea").value = String(Math.max(1, Math.round(areaOfCoords(drawn))));
-    } else {
-      ["drawnPolygon", "drawnLat", "drawnLng", "drawnArea"].forEach((n) => { hidden(n).value = ""; });
+      pieceInput.value = JSON.stringify(pieces.map((piece, i) => ({
+        sliceIndex: piece.properties.sliceIndex,
+        pilotNo: Number(assignment[i]),
+        areaSize: Math.round(turf.area(piece)),
+        geometry: piece.geometry,
+      })));
+      form.dataset.pieceMode = "1";
+      form.requestSubmit();
+      return;
     }
 
-    pieceInput.value = JSON.stringify(pieces.map((piece, i) => ({
-      sliceIndex: piece.properties.sliceIndex,
-      pilotNo: Number(assignment[i]),
-      areaSize: Math.round(turf.area(piece)),
-      geometry: piece.geometry,                         // 구역 다각형 (GeoJSON, [경도, 위도])
-    })));
+    /* B. 등록 농지: 임시저장된 농지를 전부 한 번에 배정 */
+    saveDraft(targetCheckbox);                         // 지금 보고 있는 농지도 포함
+    if (!drafts.size) {
+      alert(pieces.length
+        ? "구역별 담당 조종사를 선택하세요."
+        : "배정할 농지를 선택하거나 지도에서 영역을 그려 주세요.");
+      return;
+    }
+    for (const d of drafts.values()) {                 // 조종사를 다 안 고른 농지가 있는지 검사
+      const idx = d.pieces.findIndex((_, i) => !d.assignment[i]);
+      if (idx >= 0) {
+        alert(`[${d.label}] 구역 ${pad2(d.pieces[idx].properties.sliceIndex + 1)}의 담당 조종사를 선택하세요.\n(농지를 다시 눌러 이어서 설정할 수 있어요)`);
+        return;
+      }
+    }
 
-    form.dataset.pieceMode = "1";                       // task-assignment.js 의 필지 수 검사를 건너뜀
-    form.requestSubmit();
+    const confirmBtn = $("#fs-confirm");
+    confirmBtn.disabled = true;
+    const csrf = form.querySelector("input[name='_csrf']");
+    let done = 0;
+    try {
+      for (const [landNo, d] of drafts) {              // 농지마다 서버에 1건씩 전송
+        const body = new URLSearchParams();
+        if (csrf) body.append(csrf.name, csrf.value);
+        body.append("landNos", landNo);
+        body.append("pieceAssignmentsJson", JSON.stringify(d.pieces.map((piece, i) => ({
+          sliceIndex: piece.properties.sliceIndex,
+          pilotNo: Number(d.assignment[i]),
+          areaSize: Math.round(turf.area(piece)),
+          geometry: piece.geometry,
+        }))));
+        const res = await fetch(form.getAttribute("action"), {
+          method: "POST", body, credentials: "same-origin",
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        done += 1;
+      }
+      alert(`${done}개 농지 배정 요청을 보냈습니다.`);
+    } catch (err) {
+      alert(`${done}개 배정 후 오류가 발생했습니다. 목록을 새로 불러옵니다.\n(${err.message})`);
+    }
+    window.location.href = form.getAttribute("action") || "/leader/task-assignment";
   });
 
   // 모달의 '배정 확정'(일반 배정)으로 제출하면 구역 정보는 보내지 않는다
@@ -600,6 +679,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   /* ===================== 처음 열렸을 때 ===================== */
+
   // (농지 관리에서 ?landNo= 로 넘어와 미리 체크돼 있으면 바로 모영역을 표시)
   pickTarget();
   renderSplit();
