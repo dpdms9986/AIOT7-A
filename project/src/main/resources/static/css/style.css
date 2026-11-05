@@ -3293,39 +3293,34 @@ button.asset-role-chip:focus-visible {
 }
 
 
-/* 파일럿 자산관리 테이블 가로 폭 조정 */
-.asset-pilot-table {
+/* 파일럿 자산관리 테이블 전용 */
+.pilot-asset-page .asset-pilot-table {
     width: 100%;
     min-width: 850px;
     table-layout: fixed;
 }
 
-/* 자산 유형 */
-.asset-pilot-table th:nth-child(1),
-.asset-pilot-table td:nth-child(1) {
+.pilot-asset-page .asset-pilot-table th:nth-child(1),
+.pilot-asset-page .asset-pilot-table td:nth-child(1) {
     width: 14%;
 }
 
-/* 이름 / 모델명 */
-.asset-pilot-table th:nth-child(2),
-.asset-pilot-table td:nth-child(2) {
+.pilot-asset-page .asset-pilot-table th:nth-child(2),
+.pilot-asset-page .asset-pilot-table td:nth-child(2) {
     width: 34%;
 }
 
-/* 상태 */
-.asset-pilot-table th:nth-child(3),
-.asset-pilot-table td:nth-child(3) {
+.pilot-asset-page .asset-pilot-table th:nth-child(3),
+.pilot-asset-page .asset-pilot-table td:nth-child(3) {
     width: 18%;
 }
 
-/* 관리 */
-.asset-pilot-table th:nth-child(4),
-.asset-pilot-table td:nth-child(4) {
+.pilot-asset-page .asset-pilot-table th:nth-child(4),
+.pilot-asset-page .asset-pilot-table td:nth-child(4) {
     width: 34%;
 }
 
-/* 관리 버튼 간격 */
-.asset-pilot-table .asset-row-actions {
+.pilot-asset-page .asset-pilot-table .asset-row-actions {
     display: flex;
     align-items: center;
     gap: 10px;

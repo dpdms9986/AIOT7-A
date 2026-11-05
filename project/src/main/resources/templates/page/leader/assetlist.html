@@ -170,7 +170,7 @@
     </div>
 
     <!-- 페이지 번호 -->
-    <div class="um-pager">
+    <div class="um-pager" th:if="${pagination.total > 10}">
     <a th:href="@{/leader/assetlist(page=1, size=10, tab=${tab}, type=${type}, owner=${owner}, status=${status}, keyword=${keyword})}">«</a>
 
     <a th:each="p : ${#numbers.sequence(pagination.start, pagination.end)}"
