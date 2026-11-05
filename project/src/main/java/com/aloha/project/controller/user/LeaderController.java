@@ -433,7 +433,7 @@ public class LeaderController {
 
         redirectAttributes.addFlashAttribute("message",
                 pieceList.size() + "개 구역을 " + areaByPilot.size() + "명의 조종사에게 배정했습니다.");
-        return "redirect:/leader/task-assignment";
+        return "redirect:/leader/task-assignment?tab=status";
     }
 
     /**
@@ -566,7 +566,15 @@ public class LeaderController {
             Model model) {
 
         if (customUser == null) return "redirect:/login";
-        List<Lands> rawLands = landRepository.findAll();
+
+        // 1. 로그인 단장의 방제단(팀) 정보 가져오기
+        Users leader = userRepository.findById(customUser.getUser().getNo()).orElse(null);
+        Teams myTeam = (leader != null) ? leader.getTeam() : null;
+
+        List<Lands> rawLands = (myTeam != null) 
+                ? landRepository.findByTeam(myTeam) 
+                : List.of();
+                
         List<LandDto> allLands = rawLands.stream().map(LandDto::from).toList();
 
         String kw = keyword.trim();
@@ -592,28 +600,44 @@ public class LeaderController {
 
     @PostMapping("/farmlist")
     public String createLand(@ModelAttribute LandCreateRequest form,
+                             @AuthenticationPrincipal CustomUser customUser, // 👈 단장 로그인 세션 주입
                              RedirectAttributes redirectAttributes) {
-        log.info("신규 농지 등록: {}", form);
-				
-				Double finalArea = form.getAreaSize();
-				if (finalArea == null || finalArea <= 0) {
-						finalArea = 1000.0; // 기본값 안전 세팅
-				}
+        log.info("신규 농지 등록 요청: {}", form);
 
+        if (customUser == null) return "redirect:/login";
+
+        // 1. 단장의 방제단(팀) 정보 조회
+        Users leader = userRepository.findById(customUser.getUser().getNo()).orElse(null);
+        Teams myTeam = (leader != null) ? leader.getTeam() : null;
+
+        if (myTeam == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "소속된 방제단 정보가 없습니다.");
+            return "redirect:/leader/farmlist";
+        }
+
+        // 2. ⭐ 우리 팀에 해당 주소로 아직 완료되지 않은 농지가 있는지 중복 검증!
+        String targetAddress = form.getAddress().trim();
+        if (landRepository.existsByTeamAndAddressAndStatusNot(myTeam, targetAddress, "COMPLETED")) {
+            redirectAttributes.addFlashAttribute("errorMessage", 
+                    "해당 농지(" + targetAddress + ")는 현재 방제 대기 또는 진행 중인 작업이 있습니다.");
+            return "redirect:/leader/farmlist";
+        }
+
+        // 3. 검증 통과 시 방제단(team)을 포함하여 신규 등록
         Lands land = Lands.builder()
-                .address(form.getAddress())
+                .address(targetAddress)
+                .team(myTeam) // 👈 팀 소속 확실하게 저장!
                 .latitude(form.getLatitude() != null ? form.getLatitude() : 36.3504)
                 .longitude(form.getLongitude() != null ? form.getLongitude() : 127.3845)
                 .areaSize(form.getSafeAreaSize())
-                .polygonCoordinates(
-                        form.getPolygonCoordinates() != null && !form.getPolygonCoordinates().isBlank()
-                        ? form.getPolygonCoordinates() : null)
                 .status("READY")
-								.polygonCoordinates(form.getPolygonCoordinates())
+                .polygonCoordinates(form.getPolygonCoordinates())
                 .build();
 
         landRepository.save(land);
-        redirectAttributes.addFlashAttribute("message", form.getAddress() + " 농지가 등록되었습니다.");
+        log.info("농지 등록 완료: no={}, address={}, team={}", land.getNo(), targetAddress, myTeam.getTeamName());
+
+        redirectAttributes.addFlashAttribute("message", targetAddress + " 농지가 성공적으로 등록되었습니다.");
         return "redirect:/leader/farmlist";
     }
 

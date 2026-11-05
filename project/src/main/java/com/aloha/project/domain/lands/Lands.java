@@ -2,6 +2,8 @@ package com.aloha.project.domain.lands;
 
 import java.time.LocalDateTime;
 
+import com.aloha.project.domain.users.Teams;
+
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -21,6 +23,11 @@ public class Lands {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long no;
+
+    // Lands.java 내부
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "team_no")
+    private Teams team; // 어느 방제단의 농지인지 매핑
 
     // TODO: 작업이력에서도 행정구역 관련 사항 확인하고 지울 것. 
     @ManyToOne(fetch = FetchType.LAZY)
