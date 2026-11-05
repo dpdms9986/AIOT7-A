@@ -118,6 +118,7 @@ public class MyPageController {
     /* =========================================================
        비밀번호 변경 (현재 비밀번호 확인 후)
        ========================================================= */
+    @Transactional 
     @PostMapping("/password")
     public String changePassword(@RequestParam("currentPassword") String currentPassword,
                                  @RequestParam("newPassword") String newPassword,
@@ -133,6 +134,11 @@ public class MyPageController {
             redirectAttributes.addFlashAttribute("errorMessage", "현재 비밀번호가 맞지 않습니다.");
             return "redirect:/mypage";
         }
+
+        if (passwordEncoder.matches(newPassword, me.getPassword())) {
+        redirectAttributes.addFlashAttribute("errorMessage", "기존 비밀번호와 동일한 비밀번호로는 변경할 수 없습니다.");
+        return "redirect:/mypage";
+}
         if (newPassword.length() < 4) {
             redirectAttributes.addFlashAttribute("errorMessage", "새 비밀번호는 4자 이상으로 입력해 주세요.");
             return "redirect:/mypage";
