@@ -79,6 +79,7 @@ public class LeaderController {
             @RequestParam(value = "landNo",  required = false) Long landNo,
             @RequestParam(value = "status",  defaultValue = "") String status,
             @RequestParam(value = "pilot",   defaultValue = "") String pilot,
+            @RequestParam(value = "sort",    defaultValue = "") String sort,
             @RequestParam(value = "from", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam(value = "to",   required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
             @RequestParam(value = "hRegion", defaultValue = "") String hRegion,
@@ -95,6 +96,7 @@ public class LeaderController {
         // [DB 연동 1] 전체 농지 목록 조회 (LandDto 변환)
         List<LandDto> allLands = landRepository.findAll().stream()
                 .map(LandDto::from)
+                .sorted(Comparator.comparing(LandDto::getNo).reversed())
                 .toList();
 
         // [DB 연동 2] 소속 조종사 목록 조회 (TeamMemberDto 변환)
@@ -120,9 +122,13 @@ public class LeaderController {
         List<LandDto> allAssigned = allLands.stream()
                 .filter(l -> "ASSIGNED".equals(l.getStatus()) || "IN_PROGRESS".equals(l.getStatus()))
                 .toList();
+                Comparator<LandDto> assignedCmp = "assignedAsc".equals(sort)
+                ? Comparator.comparing(LandDto::getAssignedAt, Comparator.nullsLast(Comparator.naturalOrder()))
+                : Comparator.comparing(LandDto::getAssignedAt, Comparator.nullsLast(Comparator.reverseOrder()));
         List<LandDto> assigned = allAssigned.stream()
                 .filter(l -> status.isEmpty() || l.getStatus().equals(status))
                 .filter(l -> pilot.isEmpty()  || pilot.equals(l.getPilotName()))
+                .sorted(assignedCmp)
                 .toList();
         Map<String, Long> countByPilot = allAssigned.stream()
                 .filter(l -> l.getPilotName() != null)
@@ -153,6 +159,7 @@ public class LeaderController {
         model.addAttribute("countByPilot", countByPilot);
         model.addAttribute("status", status);
         model.addAttribute("pilot", pilot);
+        model.addAttribute("sort", sort);
 
         model.addAttribute("history", history);
         model.addAttribute("hArea", hArea);
@@ -433,7 +440,7 @@ public class LeaderController {
 
         redirectAttributes.addFlashAttribute("message",
                 pieceList.size() + "개 구역을 " + areaByPilot.size() + "명의 조종사에게 배정했습니다.");
-        return "redirect:/leader/task-assignment?tab=status";
+        return "redirect:/leader/task-assignment";
     }
 
     /**
@@ -562,6 +569,8 @@ public class LeaderController {
     public String getFarmList(
             @RequestParam(value = "dong",    defaultValue = "") String dong,
             @RequestParam(value = "keyword", defaultValue = "") String keyword,
+            @RequestParam(value = "status",  defaultValue = "") String status,
+            @RequestParam(value = "sort",    defaultValue = "") String sort,
             @AuthenticationPrincipal CustomUser customUser,
             Model model) {
 
@@ -569,10 +578,20 @@ public class LeaderController {
         List<Lands> rawLands = landRepository.findAll();
         List<LandDto> allLands = rawLands.stream().map(LandDto::from).toList();
 
+        // 정렬 기준 (등록일순은 번호가 클수록 최근 등록)
+        Comparator<LandDto> farmCmp = switch (sort) {
+            case "oldest"   -> Comparator.comparing(LandDto::getNo);
+            case "areaDesc" -> Comparator.comparing(LandDto::getAreaSize, Comparator.nullsLast(Comparator.reverseOrder()));
+            case "areaAsc"  -> Comparator.comparing(LandDto::getAreaSize, Comparator.nullsLast(Comparator.naturalOrder()));
+            default         -> Comparator.comparing(LandDto::getNo).reversed();
+        };
+
         String kw = keyword.trim();
         List<LandDto> lands = allLands.stream()
                 .filter(l -> dong.isEmpty() || (l.getDong() != null && l.getDong().equals(dong)))
                 .filter(l -> kw.isEmpty() || (l.getAddress() != null && l.getAddress().contains(kw)))
+                .filter(l -> status.isEmpty() || status.equals(l.getStatus()))
+                .sorted(farmCmp)
                 .toList();
 
         List<String> dongs = allLands.stream()
@@ -586,6 +605,8 @@ public class LeaderController {
         model.addAttribute("dongs", dongs);
         model.addAttribute("dong", dong);
         model.addAttribute("keyword", keyword);
+        model.addAttribute("status", status);
+        model.addAttribute("sort", sort);
 
         return "page/leader/farmlist";
     }
@@ -674,7 +695,7 @@ public class LeaderController {
                 .filter(h -> Arrays.stream(words)
                         .allMatch(w -> ((h.getRegion() != null ? h.getRegion() : "") + " " + (h.getAddress() != null ? h.getAddress() : "")).contains(w)))
                 .filter(h -> pilot.isEmpty() || pilot.equals(h.getPilotName()))
-                .sorted(Comparator.comparing(PilotTaskDto::getCompletedAt, Comparator.nullsLast(Comparator.reverseOrder())))
+                .sorted(Comparator.comparing(PilotTaskDto::getNo, Comparator.nullsLast(Comparator.reverseOrder())))
                 .toList();
     }
 

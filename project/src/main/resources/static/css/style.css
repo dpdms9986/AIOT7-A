@@ -8268,17 +8268,11 @@ body:has(#farm-list) .home-logo span {
     cursor: pointer;
 }
 
-#farm-list .status-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 5px 9px;
-    border-radius: 5px;
-    background: var(--color-primary-light);
-    color: var(--color-primary);
-    font-size: 12px;
-    line-height: 1.3;
-}
+#farm-list .status-badge { display: inline-flex; align-items: center; justify-content: center; padding: 5px 9px; border-radius: 5px; background: var(--color-primary-light); color: var(--color-primary); font-size: 12px; line-height: 1.3; }
+#farm-list .status-badge.status-ready     { background: #e5f4e9; color: #238451; }
+#farm-list .status-badge.status-assigned  { background: #fff3cf; color: #926900; }
+#farm-list .status-badge.status-progress  { background: #e4efff; color: #246ac0; }
+#farm-list .status-badge.status-completed { background: #edf0f1; color: #68747b; }
 
 /* 농지 상세 */
 #farm-detail .detail-header {
@@ -9477,6 +9471,7 @@ body.farm-drawer-open {
 .task-table tbody tr { cursor: pointer; }
 .task-table tbody tr:hover { background: #f8fbf9; }
 .task-table tbody tr.selected { background: var(--color-primary-light); }
+.task-table tbody tr.has-draft td:nth-child(2)::after { content: "✔ 임시저장"; margin-left: 8px; font-size: 12px; font-weight: 700; color: #238451; }
 .task-empty-cell { padding: 30px 12px; color: var(--color-text-sub); text-align: center; }
 
 /* ----- 오른쪽 조종사 배정 ----- */
@@ -9789,13 +9784,19 @@ span.pilot-pin { cursor: default; opacity: 0.75; }
 /* 선택 상자 (상태, 조종사) */
 .task-select {
   height: var(--input-height);
-  padding: 0 12px;
+  padding: 0 34px 0 12px;          /* 오른쪽은 화살표 자리 */
   border: 1px solid #dce3eb;
   border-radius: 8px;
-  background: #ffffff;
   color: var(--color-text);
   font-family: inherit;
   font-size: 13px;
+  cursor: pointer;
+  appearance: none;                 /* 기본 화살표 숨김 */
+  -webkit-appearance: none;
+  background:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' fill='none' stroke='%23667' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/></svg>")
+        no-repeat right 14px center / 12px 8px,
+    #ffffff;
 }
 
 /* 조종사별 현황 카드 */
@@ -9838,7 +9839,7 @@ span.pilot-pin { cursor: default; opacity: 0.75; }
 /* 작업 이력 검색 조건 */
 .task-filter {
   display: grid;
-  grid-template-columns: repeat(4, 1fr) auto;
+  grid-template-columns: repeat(3, 1fr) auto;
   gap: 12px;
   align-items: end;
   margin-bottom: 14px;
@@ -10772,6 +10773,19 @@ span.pilot-pin { cursor: default; opacity: 0.75; }
 .btn-mini:hover {
   background: #e8f3ec;
 }
+.btn-mini:disabled { opacity: .5; cursor: not-allowed; }
+
+/* 인증번호 3분 타이머 */
+.signup-timer {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  min-width: 46px;
+  color: #238451;
+  font-size: 13px;
+  font-weight: 700;
+}
+.signup-timer.expired { color: #e5484d; }  /* 만료 시 붉은색 */
 
 
 
@@ -11509,12 +11523,16 @@ a.task-tab {
 /* ===== 조종사 작업 이력 (2026-10-29) ===== */
 
 /* 탭이 <a> 링크 → 버튼과 같은 모양 */
+.pilot-tabs {
+  flex-wrap: wrap;
+}
 .pilot-tabs a {
-  flex: 1;
+  flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 36px;
+  height: 34px;
+  padding: 0 26px;
   border: 1px solid var(--color-border);
   border-radius: 8px;
   background: #ffffff;
@@ -11528,6 +11546,39 @@ a.task-tab {
   background: var(--color-primary);
   color: #ffffff;
 }
+
+
+/* 작업 이력: 탭 + 검색창 한 줄 */
+.pilot-filter-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.pilot-filter-row .pilot-tabs {
+  margin-bottom: 0;
+}
+.pilot-search {
+  flex: 1;
+  min-width: 180px;
+  
+}
+.pilot-search input {
+  width: 100%;
+  height: 34px;
+  box-sizing: border-box;
+  padding: 0 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: #ffffff;
+  font-size: 13px;
+  outline: none;
+}
+.pilot-search input:focus {
+  border-color: var(--color-primary);
+}
+
 
 /* 목록 항목이 <a> 링크 */
 a.pilot-task {
@@ -12450,10 +12501,26 @@ a.adm-stat.on { border-color: #1f9d57; background: #e9f6ee; box-shadow: 0 0 0 2p
 
 .um-link { padding: 0; border: 0; background: none; color: inherit; font: inherit; font-weight: 600; text-align: left; cursor: pointer; }
 .um-link:hover { color: #17803f; text-decoration: underline; }
+/* 문의 목록: 줄 전체 클릭 */
+.iq-row { cursor: pointer; }
+.iq-row:hover { background: #f3f8f5; }
+.iq-row:hover .um-link { color: #17803f; text-decoration: underline; }
 
 /* 문의 상세 / 답변 모달 */
 .iq-modal { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; background: rgba(15, 30, 22, .5); }
 .iq-modal[hidden] { display: none; }
+/* 팝업 열림 애니메이션: 배경은 페이드 인, 창은 살짝 위로 떠오르며 확대 */
+.iq-modal:not([hidden]) { animation: iq-fade .18s ease-out; }
+.iq-modal:not([hidden]) .iq-panel { animation: iq-pop .22s ease-out; }
+
+@keyframes iq-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes iq-pop {
+  from { opacity: 0; transform: translateY(16px) scale(.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
 .iq-panel { width: 100%; max-width: 640px; max-height: 90vh; overflow-y: auto; padding: 22px; border-radius: 16px; background: #fff; box-shadow: 0 20px 50px rgba(0, 0, 0, .25); }
 .iq-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
 .iq-close { border: 0; background: none; font-size: 18px; color: #6b7a89; cursor: pointer; }
@@ -12608,3 +12675,156 @@ a.adm-stat.has-ico { display: flex; align-items: center; gap: 14px; }
 .adm-stat.warn .adm-stat-ico { background: #fff1dc; color: #c26a00; }
 .adm-stat-txt small { display: block; margin-bottom: 2px; }
 .adm-stat-txt strong { display: block; line-height: 1.1; }
+
+/* ===== 작업 배정 탭 - 미배정 농지 표 (행정구역 컬럼 제거 후 폭 정리) ===== */
+#assign-form .task-table { table-layout: fixed; }
+#assign-form .task-table th:nth-child(1),
+#assign-form .task-table td:nth-child(1) { width: 110px; text-align: center; }  /* 선택 */
+#assign-form .task-table th:nth-child(2),
+#assign-form .task-table td:nth-child(2) { width: 30%; text-align: left; }      /* 주소 */
+#assign-form .task-table th:nth-child(3),
+#assign-form .task-table td:nth-child(3) { width: 18%; text-align: left; }      /* 면적 */
+#assign-form .task-table th:nth-child(4),
+#assign-form .task-table td:nth-child(4) { width: 16%; text-align: left; }      /* 상태 */
+#assign-form .task-table th:nth-child(5),
+#assign-form .task-table td:nth-child(5) { width: auto; text-align: left; }     /* 등록 일시 */
+
+/* ===== 농지 관리 상세 패널: 하단 버튼 디자인 ===== */
+#farm-detail-drawer .drawer-footer {
+    display: flex;
+    align-items: stretch;
+    gap: 10px;
+    padding: 16px 20px;
+    border-top: 1px solid var(--color-border, #dce4e9);
+    background: #fff;
+}
+
+/* 삭제 폼: 작게 고정, 버튼이 폼 높이를 꽉 채우게 */
+#farm-detail-drawer .drawer-footer form {
+    display: flex;
+    flex: 0 0 96px;
+    margin: 0;
+}
+
+#farm-detail-drawer .drawer-footer .button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 46px;
+    padding: 0 16px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color .15s, border-color .15s, box-shadow .15s, transform .1s;
+}
+
+/* 삭제: 연한 빨강 배경 */
+#farm-detail-drawer .drawer-footer .drawer-delete {
+    flex: 1;
+    width: 100%;
+    border: 1px solid #f5c2c2;
+    background: #fdf0f0;
+    color: #d93636;
+}
+#farm-detail-drawer .drawer-footer .drawer-delete:hover:not(:disabled) {
+    border-color: #ef4444;
+    background: #fbe0e0;
+}
+#farm-detail-drawer .drawer-footer .drawer-delete:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+}
+
+/* 작업 배정: 메인 초록 버튼, 남은 폭 전부 */
+#farm-detail-drawer .drawer-footer .primary-button {
+    flex: 1;
+    border: 1px solid var(--color-primary, #238451);
+    background: var(--color-primary, #238451);
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(35, 132, 81, .25);
+}
+#farm-detail-drawer .drawer-footer .primary-button:hover {
+    background: #1d6f44;
+    box-shadow: 0 6px 14px rgba(35, 132, 81, .32);
+    transform: translateY(-1px);
+}
+
+
+/* ===== 농지 관리: 제목 줄 + 검색 줄 정리 ===== */
+#farm-list .farm-page-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+/* 검색창 | 상태 드롭다운 | 초기화 | 검색(맨 오른쪽) */
+#farm-list form.filter-card {
+    grid-template-columns: minmax(240px, 1fr) 180px auto auto;
+}
+#farm-list form.filter-card > .button {
+    width: auto;
+    padding: 0 20px;
+}
+
+/* 상태 드롭다운 */
+#farm-list .status-group select {
+    cursor: pointer;
+    appearance: none;
+    padding-right: 34px;
+    background:
+        url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' fill='none' stroke='%23667' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/></svg>")
+        no-repeat right 12px center / 12px 8px,
+        var(--color-card);
+}
+#farm-list .status-group select:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(35, 132, 81, .12);
+}
+
+@media (max-width: 900px) {
+    #farm-list form.filter-card {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+    #farm-list form.filter-card .search-group {
+        grid-column: 1 / -1;
+    }
+    #farm-list form.filter-card > .button {
+        width: 100%;
+    }
+}
+
+/* 농지 목록 제목 줄: 제목·건수는 왼쪽, 농지 등록 버튼은 맨 오른쪽 */
+#farm-list .table-heading .sort-select {
+    margin-left: auto;   /* 정렬 칸 + 농지 등록 버튼을 오른쪽 끝으로 */
+    height: 40px;
+    padding: 0 12px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-card);
+    color: var(--color-text);
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+}
+#farm-list .table-heading #register-button {
+    min-height: 40px;
+    padding: 0 20px;
+}
+
+
+/* ===== 모든 선택 상자(select) 화살표 위치 통일 ===== */
+select:not([multiple]):not([size]) {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  padding-right: 36px !important;          /* 글자와 화살표 사이 여백 */
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' fill='none' stroke='%23667' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/></svg>") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 14px center !important;   /* 숫자를 키울수록 왼쪽으로 */
+  background-size: 12px 8px !important;
+  cursor: pointer;
+}

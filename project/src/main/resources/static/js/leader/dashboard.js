@@ -148,7 +148,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     if (followPilots) {
       const pts = Object.values(pilotMarkers).map((m) => m.getLatLng());
-      if (pts.length === 1) map.panTo(pts[0]); else map.fitBounds(pts, { padding: [40, 40], maxZoom: 17 });
+      if (pts.length === 1) map.panTo(pts[0]); else map.fitBounds(pts, { padding: [40, 40], maxZoom: map.getZoom() });
     } else if (name === selectedPilot) {
       map.panTo([lat, lng]);
     }
@@ -207,13 +207,20 @@ document.addEventListener("DOMContentLoaded", () => {
     Object.values(pilotMarkers).forEach((m) => pts.push(m.getLatLng()));
     if (pts.length) map.fitBounds(pts, { padding: [30, 30], maxZoom: 16 });
   };
+  // 따라가기 시작: 조종사만 대상으로 하고, 한 명이면 현재 줌을 유지한 채 이동만 함
+  const followNow = () => {
+    const pts = Object.values(pilotMarkers).map((m) => m.getLatLng());
+    if (pts.length === 0) return;                       // 조종사 위치가 아직 없으면 지도를 건드리지 않음
+    if (pts.length === 1) map.panTo(pts[0]);            // 줌 유지
+    else map.fitBounds(pts, { padding: [40, 40], maxZoom: map.getZoom() });  // 현재 줌보다 더 확대하지는 않음
+  };
   const toggleFollow = () => {
     followPilots = !followPilots;
     const btn = $("#follow-btn");
     btn.textContent = followPilots ? "⏹️ 따라가기 중지" : "🎯 조종사 따라가기";
     btn.classList.toggle("btn-real", !followPilots);
     btn.classList.toggle("btn-stop", followPilots);
-    if (followPilots) fitAll();
+    if (followPilots) followNow();
   };
   window.connect = connect;
   window.fitAll = fitAll;
@@ -221,7 +228,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* ===== 처음 실행 ===== */
   renderFarmMarkers();
-  fitAll();
+  // 처음엔 전체 축소 대신 확대된 기본 화면(대전 기준, 줌 14)으로 시작
+  // 전체가 보고 싶으면 [전체 보기] 버튼(fitAll)을 누르면 됨
   addHazardMarkers(map);
   if (selectedNo) selectFarm(selectedNo, false);   // 배정 후 돌아왔으면 그 농지 선택
   setTimeout(() => map.invalidateSize(), 100);

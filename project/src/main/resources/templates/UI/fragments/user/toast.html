@@ -41,18 +41,28 @@
       // ----- 서버가 보낸 1회용 메시지 자동 표시 -----
       const loginMessage  = /*[[${loginMessage}]]*/ null;
       const signupSuccess = /*[[${signupSuccess}]]*/ false;
+      const message = /*[[${message}]]*/ null;
+      const error = /*[[${error}]]*/ null
 
       document.addEventListener("DOMContentLoaded", () => {
-        if (loginMessage)  showPopup(loginMessage);
-        if (signupSuccess) showPopup("회원가입이 완료되었습니다. 로그인해 주세요.");
-        try {
-          const pending = sessionStorage.getItem("loginPopup");
-          if (pending) {
-            sessionStorage.removeItem("loginPopup");
-            showPopup(pending);
-          }
-        } catch (e) {}
-      });
+      if (loginMessage) {
+      showPopup(loginMessage);
+      } else if (signupSuccess) {
+      showPopup("회원가입이 완료되었습니다. 로그인해 주세요.");
+      } else if (error) {
+      showPopup(error, "warn");
+      } else if (message) {
+      showPopup(message);
+      } else {
+      try {
+      const pending = sessionStorage.getItem("loginPopup");
+      if (pending) {
+        sessionStorage.removeItem("loginPopup");
+        showPopup(pending);
+      }
+      } catch (e) {}
+      }
+    });
     })();
   </script>
 </th:block> 

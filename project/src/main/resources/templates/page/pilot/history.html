@@ -29,16 +29,25 @@
       </div>
 
       <!-- 탭: 링크. 지금 보던 작업(no)은 유지 -->
-      <div class="pilot-tabs">
-        <a th:href="@{/pilot/history(filter='all', no=${selected?.no})}"
-           th:classappend="${filter == 'all'} ? 'active'"
-           th:text="|전체 (${allCount})|">전체</a>
-        <a th:href="@{/pilot/history(filter='active', no=${selected?.no})}"
-           th:classappend="${filter == 'active'} ? 'active'"
-           th:text="|진행 중 (${activeCount})|">진행 중</a>
-        <a th:href="@{/pilot/history(filter='done', no=${selected?.no})}"
-           th:classappend="${filter == 'done'} ? 'active'"
-           th:text="|완료 (${doneCount})|">완료</a>
+            <div class="pilot-filter-row">
+        <div class="pilot-tabs">
+          <a th:href="@{/pilot/history(filter='all', no=${selected?.no})}"
+             th:classappend="${filter == 'all'} ? 'active'"
+             th:text="|전체 (${allCount})|">전체</a>
+          <a th:href="@{/pilot/history(filter='waiting', no=${selected?.no})}"
+             th:classappend="${filter == 'waiting'} ? 'active'"
+             th:text="|대기 (${waitingCount})|">대기</a>
+          <a th:href="@{/pilot/history(filter='active', no=${selected?.no})}"
+             th:classappend="${filter == 'active'} ? 'active'"
+             th:text="|진행 중 (${activeCount})|">진행 중</a>
+          <a th:href="@{/pilot/history(filter='done', no=${selected?.no})}"
+             th:classappend="${filter == 'done'} ? 'active'"
+             th:text="|완료 (${doneCount})|">완료</a>
+        </div>
+
+        <div class="pilot-search">
+          <input type="search" id="pilotSearch" placeholder="지역·주소 검색 (예: 선화동)" autocomplete="off">
+        </div>
       </div>
 
       <!-- 완료 요약 -->
@@ -49,7 +58,8 @@
 
       <!-- 목록: 각 작업이 상세를 여는 링크 -->
       <ul class="pilot-task-list">
-        <li th:each="t : ${tasks}">
+        <li th:each="t : ${tasks}"
+            th:attr="data-search=${(t.region ?: '') + ' ' + (t.address ?: '')}">
           <a class="pilot-task"
              th:href="@{/pilot/history(filter=${filter}, no=${t.no})}"
              th:classappend="${selected != null and t.no == selected.no} ? 'selected'">
@@ -62,6 +72,7 @@
           </a>
         </li>
         <li class="pilot-empty" th:if="${#lists.isEmpty(tasks)}">해당하는 작업이 없습니다.</li>
+        <li class="pilot-empty" id="pilotSearchEmpty" style="display:none">검색 결과가 없습니다.</li>
       </ul>
     </article>
 
@@ -133,6 +144,37 @@
     </article>
   </section>
 </main>
+
+</main>
+
+<script>
+(function () {
+  var input = document.getElementById('pilotSearch');
+  var emptyMsg = document.getElementById('pilotSearchEmpty');
+  if (!input) return;
+
+  var items = document.querySelectorAll('.pilot-task-list li[data-search]');
+
+  input.addEventListener('input', function () {
+    // 띄어쓰기로 나눠서 모든 단어가 들어 있는 항목만 표시 (예: "유성구 전민동")
+    var words = input.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    var shown = 0;
+
+    items.forEach(function (li) {
+      var text = li.getAttribute('data-search').toLowerCase();
+      var match = words.every(function (w) { return text.indexOf(w) > -1; });
+      li.style.display = match ? '' : 'none';
+      if (match) shown++;
+    });
+
+    if (emptyMsg) {
+      emptyMsg.style.display = (items.length > 0 && shown === 0) ? '' : 'none';
+    }
+  });
+})();
+</script>
+
+</body>
 
 </body>
 </html>

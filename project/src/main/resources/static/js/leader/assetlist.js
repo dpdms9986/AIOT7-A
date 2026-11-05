@@ -4,7 +4,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const modal = document.querySelector("#asset-register-modal");
     const openBtn = document.querySelector("#asset-register-btn");
 
-    if (!modal || !openBtn) return;
+    if (modal && openBtn) {
+    // 기존 자산 등록 팝업 코드 전체
 
 // 모달 열기
 const open = () => {
@@ -54,6 +55,53 @@ const close = () => {
 
     typeSel.addEventListener("change", applyType);
     applyType();   // 팝업을 처음 열 때도 맞춰 둠
-    
-  }
+   }
+}
+// ==============================
+// 전체 자산 탭 - 상태 검색 필터
+// ==============================
+const filterForm = document.querySelector(".asset-pilot-filters");
+const filterTypeSelect = filterForm?.querySelector('select[name="type"]');
+const searchStatusSelect = document.querySelector("#asset-search-status");
+
+// 전체 자산 탭에서만 실행
+if (filterTypeSelect && searchStatusSelect) {
+
+    // 서버가 전달한 상태 옵션 원본 보관
+    const allOptions = Array.from(searchStatusSelect.options)
+        .filter(option => option.value !== "")
+        .map(option => option.cloneNode(true));
+
+    const applyStatusOptions = () => {
+        const selectedType = filterTypeSelect.value;
+        const previousStatus = searchStatusSelect.value;
+
+        // 기존 옵션 초기화
+        searchStatusSelect.innerHTML = '<option value="">전체</option>';
+
+        // 선택한 자산 유형에 맞는 상태만 표시
+        allOptions
+            .filter(option => {
+                const assetType = option.dataset.assetType;
+
+                return selectedType === ""
+                    || assetType === "both"
+                    || assetType === selectedType;
+            })
+            .forEach(option => {
+                searchStatusSelect.add(option.cloneNode(true));
+            });
+
+        // 이전 상태가 현재 유형에서도 유효하면 유지
+        const isValidStatus = Array.from(searchStatusSelect.options)
+            .some(option => option.value === previousStatus);
+
+        searchStatusSelect.value = isValidStatus ? previousStatus : "";
+    };
+
+    filterTypeSelect.addEventListener("change", applyStatusOptions);
+
+    // 페이지 최초 진입 시에도 적용
+    applyStatusOptions();
+}
 });
