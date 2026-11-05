@@ -12527,6 +12527,11 @@ a.mp-stat-link:hover { border-color: var(--color-primary, #238451); transform: t
 /* =====================================================
    관리자 공통: 요약 카드 / 탭 / 모달 (문의현황, 조종사 관리)
    ===================================================== */
+.adm-tabs { display: flex; gap: 8px; margin: 0 0 16px; border-bottom: 1px solid #e4ebe6; }
+.adm-tabs a { display: inline-block; padding: 10px 18px; color: #6b7a89; font-weight: 600; text-decoration: none; border-bottom: 3px solid transparent; }
+.adm-tabs a:hover { color: var(--adm-green-dark, #17803f); }
+.adm-tabs a.active { color: var(--adm-green-dark, #17803f); border-bottom-color: var(--adm-green, #2fae6a); }
+
 .adm-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 16px; }
 .adm-stat { padding: 14px 16px; border: 1px solid #e4ebe6; border-radius: 14px; background: #f8fbf9; }
 .adm-stat small { display: block; color: #6b7a89; font-size: 12px; }

@@ -4,9 +4,23 @@
       layout:decorate="~{UI/layouts/admin/admin_layout}">
 <head>
   <meta charset="UTF-8">
-  <title>관리자 | 조종사 관리</title>
+  <title>관리자 | 사용자 관리</title>
 </head>
 <body layout:fragment="content">
+
+<!-- 사용자 / 파일럿 관리 통합 탭 -->
+<nav class="adm-tabs" aria-label="관리 메뉴">
+  <a th:href="@{/admin/pilots(tab='users')}"
+     th:classappend="${tab == 'users'} ? ' active'">사용자 관리</a>
+  <a th:href="@{/admin/pilots(tab='pilots')}"
+     th:classappend="${tab == 'pilots'} ? ' active'">파일럿 관리</a>
+</nav>
+
+<th:block th:if="${tab == 'users'}">
+  <th:block th:replace="~{page/admin/users/list :: usersContent}"></th:block>
+</th:block>
+
+<th:block th:if="${tab == 'pilots'}">
 
 <!--/*
   TODO(백엔드) 이 페이지에서 받는 값 (AdminPilotController#list)
@@ -34,7 +48,7 @@
   </div>
 
   <!-- 검색 / 필터 -->
-  <form class="um-row" method="get" th:action="@{/admin/pilots}">
+  <form class="um-row" method="get" th:action="@{/admin/pilots(tab='pilots')}">
     <div class="um-group">
       <input type="text" class="um-input w-search" name="search" th:value="${search}" placeholder="이름, 아이디, 연락처로 검색">
       <select class="um-select" name="teamNo" onchange="this.form.submit()">
@@ -84,13 +98,14 @@
 
   <!-- 페이지 번호 -->
   <div class="um-pager">
-    <a th:href="@{/admin/pilots(page=1, size=${pagination.size}, search=${search}, teamNo=${teamNo}, status=${status})}">«</a>
+    <a th:href="@{/admin/pilots(tab='pilots', page=1, size=${pagination.size}, search=${search}, teamNo=${teamNo}, status=${status})}">«</a>
     <a th:each="p : ${#numbers.sequence(pagination.start, pagination.end)}"
-       th:href="@{/admin/pilots(page=${p}, size=${pagination.size}, search=${search}, teamNo=${teamNo}, status=${status})}"
+       th:href="@{/admin/pilots(tab='pilots', page=${p}, size=${pagination.size}, search=${search}, teamNo=${teamNo}, status=${status})}"
        th:classappend="${p == pagination.page} ? 'on'" th:text="${p}">1</a>
-    <a th:href="@{/admin/pilots(page=${pagination.last}, size=${pagination.size}, search=${search}, teamNo=${teamNo}, status=${status})}">»</a>
+    <a th:href="@{/admin/pilots(tab='pilots', page=${pagination.last}, size=${pagination.size}, search=${search}, teamNo=${teamNo}, status=${status})}">»</a>
   </div>
 </article>
+</th:block>
 
 </body>
 </html>
