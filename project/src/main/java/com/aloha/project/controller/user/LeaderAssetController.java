@@ -23,11 +23,13 @@ import com.aloha.project.domain.tasks.Chemicals;
 import com.aloha.project.domain.users.CustomUser;
 import com.aloha.project.domain.users.Teams;
 import com.aloha.project.domain.users.Users;
+import com.aloha.project.domain.common.Pagination;
 import com.aloha.project.dto.AssetCreateRequest;
 import com.aloha.project.dto.AssetDto;
 import com.aloha.project.repository.tasks.DroneRepository;
 import com.aloha.project.repository.tasks.ChemicalRepository;
 import com.aloha.project.repository.users.UserRepository;
+import com.aloha.project.repository.tasks.WorkAssignmentResourceRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -47,6 +49,7 @@ public class LeaderAssetController {
     private final DroneRepository droneRepository;
     private final ChemicalRepository chemicalRepository;
     private final UserRepository userRepository;
+    private final WorkAssignmentResourceRepository workAssignmentResourceRepository;
 
     @Transactional(readOnly = true)
     @GetMapping("/assetlist")
@@ -56,7 +59,8 @@ public class LeaderAssetController {
             @RequestParam(value = "owner",   defaultValue = "") String owner,
             @RequestParam(value = "status",  defaultValue = "") String status,
             @RequestParam(value = "keyword", defaultValue = "") String keyword,
-            @RequestParam(value = "id",      required = false) String id,
+            @RequestParam(value = "page",    defaultValue = "1") int page,
+            @RequestParam(value = "size",    defaultValue = "10") int size,
             @AuthenticationPrincipal CustomUser customUser, // 👈 로그인 단장 주입
             Model model) {
 
@@ -112,16 +116,40 @@ public class LeaderAssetController {
                           || (a.getId() + " " + a.getName() + " " + a.getSubtitle() + " " + a.getOwner()).contains(kw))
                 .toList();
 
+
+        // ========================================================
+        // 페이지네이션
+        // ========================================================
+
+       
+         size = (size < 1 || size > 100) ? 10 : size;
+
+        Pagination pagination = new Pagination(
+              Math.max(page, 1),
+              size,
+              10,
+              assets.size()
+               );
+
+        // 마지막 페이지보다 큰 페이지 요청 방지
+        if (pagination.getPage() > pagination.getLast()) {
+        pagination = new Pagination(pagination.getLast(), size, 10, assets.size());
+        }
+
+        int from = (int) Math.min(pagination.getIndex(), assets.size());
+        int to = (int) Math.min(from + size, assets.size());
+
+        List<AssetDto> pagedAssets = assets.subList(from, to);
+
+
+
         // 2) 요약 카드 (전체 기준)
         long droneCount       = all.stream().filter(AssetDto::isDrone).count();
         long chemicalCount    = all.size() - droneCount;
         long maintenanceCount = all.stream().filter(AssetDto::isMaintenanceNeeded).count();
 
-        // 3) 상세로 보여 줄 자산 (주소에 id 가 있을 때만)
-        AssetDto selected = (id == null) ? null
-                : all.stream().filter(a -> a.getId().equals(id)).findFirst().orElse(null);
 
-        // 4) 셀렉트 옵션
+        // 3) 셀렉트 옵션
         // 같은 방제단 소속 조종사 목록
         List<Users> owners = (myTeam == null)
                 ? new ArrayList<>()
@@ -137,11 +165,11 @@ public class LeaderAssetController {
 
         model.addAttribute("tab", tab);
         model.addAttribute("tabTitle", tabTitle);
-        model.addAttribute("assets", assets);
+        model.addAttribute("assets", pagedAssets);
+        model.addAttribute("pagination", pagination);
         model.addAttribute("droneCount", droneCount);
         model.addAttribute("chemicalCount", chemicalCount);
         model.addAttribute("maintenanceCount", maintenanceCount);
-        model.addAttribute("selected", selected);
         model.addAttribute("owners", owners);
         model.addAttribute("statusOptions", statusOptions);                 // 검색용 (탭별)
         model.addAttribute("allStatusOptions", statusOptionsFor("all"));     // 자산 등록 팝업용 (전부)
@@ -338,8 +366,6 @@ public class LeaderAssetController {
             );
         }
 
-        // 변경 후에도 기존 자산 상세 화면 유지
-        redirectAttributes.addAttribute("id", id);
 
         return "redirect:/leader/assetlist";
     }
