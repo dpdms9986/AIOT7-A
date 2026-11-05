@@ -86,23 +86,43 @@ public class HomeController {
     return "page/login";
   }
 
-  // /**
-  //  * 이용약관
-  //  */
-  // @GetMapping("/terms/{page}")
-  // public String termsPage(@PathVariable("page") String page) {
-  //     return "page/terms/" + page;
-  // }
+//   /**
+//    * 💻 아이디 찾기
+//    * @return
+//    */
+//   @GetMapping("/find-account")
+//   public String findId() {
+//       log.info(":::::::::: 아이디 찾기 페이지 ::::::::::");
+//       return "page/find-account";
+//   }
+
+//   /**
+//    * 💻 비밀번호 찾기
+//    * @return
+//    */
+//   @GetMapping("/find-password")
+//   public String findPassword() {
+//       log.info(":::::::::: 비밀번호 찾기 페이지 ::::::::::");
+//       return "page/find-password";
+//   }
+
+  /**
+   * 이용약관
+   */
+  @GetMapping("/terms/{page}")
+  public String termsPage(@PathVariable("page") String page) {
+      return "page/terms/" + page;
+  }
   
 
-  // /**
-  //  * 고객안내
-  //  * @return
-  //  */
-  // @GetMapping("/info")
-  // public String info() {
-  //     return "page/info";
-  // }
+  /**
+   * 고객안내
+   * @return
+   */
+  @GetMapping("/info")
+  public String info() {
+      return "page/info";
+  }
   
   
   /**
