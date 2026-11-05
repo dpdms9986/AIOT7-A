@@ -14,7 +14,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -23,7 +22,6 @@ import com.aloha.project.repository.tasks.WorkAssignmentResourceRepository;
 
 import com.aloha.project.domain.users.CustomUser;
 import com.aloha.project.domain.tasks.Drones;
-import com.aloha.project.domain.users.CustomUser;
 import com.aloha.project.domain.users.Users;
 import com.aloha.project.dto.AssetDto;
 import com.aloha.project.repository.tasks.DroneRepository;

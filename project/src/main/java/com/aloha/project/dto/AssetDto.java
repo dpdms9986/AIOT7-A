@@ -1,7 +1,5 @@
 package com.aloha.project.dto;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,7 +42,6 @@ public class AssetDto {
     private String subtitle;         // 드론: 기체 설명 / 약제: 분류
     private String owner;            // 담당 조종사
     private String status;           // STATUS_LABELS 의 키
-    private LocalDate lastManagedAt; // 최근 관리일 (없으면 null)
 
     // 드론만
     // private Integer tankCapacity;    // 약제 탱크 용량 (L)
@@ -59,12 +56,12 @@ public class AssetDto {
 
     // Drones 엔티티의 상태(AVAILABLE 등) -> AssetDto 상태(normal, operating 등) 매핑
     String uiStatus = switch (drone.getStatus()) {
-        case "AVAILABLE"   -> "normal";
-        case "IN_USE"      -> "operating";
-        case "MAINTENANCE" -> "maintenance";
+        case "AVAILABLE"       -> "normal";
+        case "IN_USE"          -> "operating";
+        case "MAINTENANCE"     -> "maintenance";
         case "IN_MAINTENANCE"  -> "in-maintenance";
-        case "FAULT"       -> "fault";
-        default            -> "normal";
+        case "FAULT"           -> "fault";
+        default                -> "normal";
     };
 
     return AssetDto.builder()
@@ -82,12 +79,12 @@ public class AssetDto {
     // 화면 상태 코드 -> DB 상태
     public static String toDbStatus(String uiStatus) {
         return switch (uiStatus) {
-            case "normal"        -> "AVAILABLE";
-            case "operating"     -> "IN_USE";
-            case "maintenance"     -> "MAINTENANCE";
-            case "in-maintenance"  -> "IN_MAINTENANCE";
-             case "fault"           -> "FAULT";
-            default              -> "AVAILABLE";
+            case "normal"         -> "AVAILABLE";
+            case "operating"      -> "IN_USE";
+            case "maintenance"    -> "MAINTENANCE";
+            case "in-maintenance" -> "IN_MAINTENANCE";
+            case "fault"          -> "FAULT";
+            default               -> "AVAILABLE";
         };
     }
 
@@ -104,20 +101,9 @@ public static AssetDto from(Chemicals chemical) {
                     ? chemical.getUser().getName()
                     : "-")
             .status(chemical.getStatus())
-            .lastManagedAt(
-                    chemical.getUpdatedAt() != null
-                            ? chemical.getUpdatedAt().toLocalDate()
-                            : chemical.getCreatedAt() != null
-                                    ? chemical.getCreatedAt().toLocalDate()
-                                    : null
-            )
             .stock(null)
             .build();
 }
-
-    // 정비 이력(드론) / 입고 이력(약제)
-    @Builder.Default
-    private List<AssetLogDto> logs = new ArrayList<>();
 
     /* ===== 화면용 getter ===== */
 
