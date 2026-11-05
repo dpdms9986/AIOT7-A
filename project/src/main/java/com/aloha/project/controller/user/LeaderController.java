@@ -433,7 +433,7 @@ public class LeaderController {
 
         redirectAttributes.addFlashAttribute("message",
                 pieceList.size() + "개 구역을 " + areaByPilot.size() + "명의 조종사에게 배정했습니다.");
-        return "redirect:/leader/task-assignment?tab=status";
+        return "redirect:/leader/task-assignment";
     }
 
     /**

@@ -14,7 +14,12 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   const emailInput = document.querySelector("#signup-userId");
-  const checkBtn = document.querySelector("#check-userId-btn");
+  const sendBtn = document.querySelector("#btn-send-code");
+  const authBox = document.querySelector("#auth-box");
+  const authCodeInput = document.querySelector("#signup-auth-code");
+  const authTimer = document.querySelector("#auth-timer");
+  const verifyBtn = document.querySelector("#btn-verify-code");
+  const authMsg = document.querySelector("#auth-msg");
   const pwInput = document.querySelector("#signup-pw");
   const pw2Input = document.querySelector("#signup-pw2");
   const pwMsg = document.querySelector("#pw-msg");
@@ -23,51 +28,172 @@ document.addEventListener("DOMContentLoaded", () => {
   const teamInput = document.querySelector("#signup-team");
   const inviteInput = document.querySelector("#signup-invite");
   const phoneInput = document.querySelector("#signup-phone");
-  let checkedUserName = ""; // 중복확인을 통과한 이메일 저장 변수
+
+  // th:action 폼이 자동으로 넣어주는 CSRF 토큰 (없으면 POST 가 403)
+  const csrfToken = signupForm.querySelector('input[name="_csrf"]')?.value;
+
+  // ===== 이메일 인증 상태 =====
+  let isEmailVerified = false; // 이메일 인증 성공 여부
+  let verifiedEmail = "";      // 인증을 마친 이메일
+  let timerInterval = null;    // 3분 카운트다운 핸들러
 
   const isEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
-  // 이메일 입력값을 수정하면 중복확인 다시 하도록 초기화
-  emailInput.addEventListener("input", () => {
-    checkedUserName = "";
+  // 상태 메시지 (type: "ok" 녹색 / "warn" 붉은색 / "" 기본)
+  const setMsg = (text, type = "") => {
+    authMsg.textContent = text;
+    authMsg.className = `signup-hint ${type}`.trim();
+  };
+
+  // POST 공통 (파라미터는 쿼리스트링, CSRF 토큰은 헤더)
+  const postAuth = async (url, params) => {
+    const res = await fetch(`${url}?${new URLSearchParams(params)}`, {
+      method: "POST",
+      headers: csrfToken ? { "X-CSRF-TOKEN": csrfToken } : {},
+    });
+    const text = (await res.text()).trim();
+    return { ok: res.ok, status: res.status, text };
+  };
+
+  // 타이머
+  const stopTimer = () => {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  };
+
+  const startTimer = (seconds) => {
+    stopTimer();
+    let left = seconds;
+    authTimer.hidden = false;
+    authTimer.classList.remove("expired");
+
+    const tick = () => {
+      const m = String(Math.floor(left / 60)).padStart(2, "0");
+      const s = String(left % 60).padStart(2, "0");
+      authTimer.textContent = `${m}:${s}`;
+
+      if (left <= 0) {
+        stopTimer();
+        authTimer.classList.add("expired");
+        verifyBtn.disabled = true;
+        setMsg("인증 시간이 만료되었습니다. [재발송]을 눌러 주세요.", "warn");
+        return;
+      }
+      left--;
+    };
+    tick();
+    timerInterval = setInterval(tick, 1000);
+  };
+
+  // 인증 상태 전체 초기화
+  const resetAuth = () => {
+    stopTimer();
+    isEmailVerified = false;
+    verifiedEmail = "";
+    authBox.hidden = true;
+    authCodeInput.value = "";
+    authCodeInput.readOnly = false;
+    authTimer.hidden = false;
+    authTimer.textContent = "03:00";
+    authTimer.classList.remove("expired");
+    verifyBtn.disabled = false;
+    sendBtn.disabled = false;
+    sendBtn.textContent = "인증번호 받기";
+    setMsg("");
+  };
+
+  // 이메일을 수정하면 인증 다시 하도록 초기화
+  emailInput.addEventListener("input", resetAuth);
+
+  // 인증번호 입력칸은 숫자만
+  authCodeInput.addEventListener("input", () => {
+    authCodeInput.value = authCodeInput.value.replace(/\D/g, "");
   });
 
-  // 1. 이메일 중복확인 (비동기 유지)
-  checkBtn.addEventListener("click", async () => {
-    const userName = emailInput.value.trim();
+  // 1. [인증번호 받기 / 재발송]
+  sendBtn.addEventListener("click", async () => {
+    const email = emailInput.value.trim();
 
-    if (!isEmail(userName)) {
+    if (!isEmail(email)) {
       popup("올바른 이메일 형식으로 입력하세요. (예: user@example.com)", "warn", () => emailInput.focus());
       return;
     }
 
+    sendBtn.disabled = true; // 중복 클릭 방지
     try {
-      const response = await fetch(`/check-username?userName=${encodeURIComponent(userName)}`);
+      const { ok, status, text } = await postAuth("/api/auth/email/send-code", { email });
 
-      if (!response.ok) {
-        popup(`중복확인을 할 수 없습니다. (서버 응답: ${response.status})`, "warn");
+      if (!ok) {
+        const msg = text || "인증번호 발송에 실패했습니다.";
+        setMsg(msg, "warn");
+        popup(msg, "warn");
+
+        // ▼ 테스트용 임시
+        if (status === 500) {
+          authBox.hidden = false;
+          authCodeInput.readOnly = false;
+          verifyBtn.disabled = false;
+          sendBtn.textContent = "재발송";
+          startTimer(180);
+        }
+        // ▲ 테스트용 임시
         return;
       }
 
-      const result = await response.json();
-
-      // 서버 응답: true(중복), false(사용 가능)
-      if (result === true) {
-        popup("이미 사용 중인 이메일입니다.", "warn", () => emailInput.focus());
-        checkedUserName = "";
-      } else if (result === false) {
-        popup("사용 가능한 이메일입니다.");
-        checkedUserName = userName; // 성공한 이메일 기록
-      } else {
-        popup("서버 응답 형식이 예상과 다릅니다.", "warn");
-      }
+      // 성공: 인증번호 입력 영역 표시 + 3분 타이머
+      authBox.hidden = false;
+      authCodeInput.value = "";
+      authCodeInput.readOnly = false;
+      verifyBtn.disabled = false;
+      sendBtn.textContent = "재발송";
+      setMsg(text || "인증번호가 발송되었습니다. 메일함을 확인해 주세요.", "ok");
+      startTimer(180);
+      authCodeInput.focus();
     } catch (error) {
-      console.error("중복확인 에러:", error);
+      console.error("인증번호 발송 에러:", error);
+      popup("서버와 연결할 수 없습니다.", "warn");
+    } finally {
+      if (!isEmailVerified) sendBtn.disabled = false;
+    }
+  });
+
+  // 2. [인증 확인]
+  verifyBtn.addEventListener("click", async () => {
+    const email = emailInput.value.trim();
+    const code = authCodeInput.value.trim();
+
+    if (!/^\d{6}$/.test(code)) {
+      setMsg("인증번호 6자리를 입력하세요.", "warn");
+      authCodeInput.focus();
+      return;
+    }
+
+    try {
+      const { ok, text } = await postAuth("/api/auth/email/verify-code", { email, code });
+
+      // 서버 성공 응답: 200 + true
+      if (ok && text === "true") {
+        stopTimer();
+        authTimer.hidden = true;
+        emailInput.readOnly = true;
+        authCodeInput.readOnly = true;
+        verifyBtn.disabled = true;
+        sendBtn.disabled = true;
+        isEmailVerified = true;
+        verifiedEmail = email;
+        setMsg("✔ 이메일 인증이 완료되었습니다.", "ok");
+        return;
+      }
+
+      // 실패: 서버가 준 사유(불일치/만료) 표시
+      setMsg(text || "인증번호가 일치하지 않거나 만료되었습니다.", "warn");
+    } catch (error) {
+      console.error("인증번호 확인 에러:", error);
       popup("서버와 연결할 수 없습니다.", "warn");
     }
   });
 
-  // 2. 비밀번호 실시간 일치 검사
+  // 3. 비밀번호 실시간 일치 검사
   const checkPassword = () => {
     if (!pw2Input.value) {
       pwMsg.textContent = "";
@@ -83,7 +209,7 @@ document.addEventListener("DOMContentLoaded", () => {
   pwInput.addEventListener("input", checkPassword);
   pw2Input.addEventListener("input", checkPassword);
 
-  // 3. 역할 선택(단장/조종사)에 따라 입력창 토글
+  // 4. 역할 선택(단장/조종사)에 따라 입력창 토글
   signupForm.querySelectorAll('input[name="role"]').forEach((radio) => {
     radio.addEventListener("change", () => {
       const isLeader = radio.value === "LEADER";
@@ -105,17 +231,17 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // 4. 폼 제출 전 검사 → 통과하면 th:action 으로 그대로 전송
+  // 5. 폼 제출 전 검사 → 통과하면 th:action 으로 그대로 전송
   signupForm.addEventListener("submit", (event) => {
-    const userNameVal = emailInput.value.trim();
+    const emailVal = emailInput.value.trim();
     const pwVal = pwInput.value;
     const pw2Val = pw2Input.value;
     const selectedRole = signupForm.querySelector('input[name="role"]:checked')?.value;
 
-    // 검증 1: 중복확인 여부
-    if (userNameVal !== checkedUserName) {
+    // 검증 1: 이메일 인증 여부
+    if (!isEmailVerified || emailVal !== verifiedEmail) {
       event.preventDefault();
-      popup("이메일 중복확인을 해주세요.", "warn", () => emailInput.focus());
+      popup("이메일 인증을 완료해 주세요.", "warn", () => emailInput.focus());
       return;
     }
 

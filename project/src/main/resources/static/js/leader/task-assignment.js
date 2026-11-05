@@ -34,7 +34,11 @@ document.addEventListener("DOMContentLoaded", () => {
     checkAll.checked = all.length > 0 && all.every((c) => c.checked);
   };
 
-  landChecks().forEach((c) => c.addEventListener("change", () => {
+    landChecks().forEach((c) => c.addEventListener("change", () => {
+    if (c.checked) {
+      // 하나만 선택: 나머지는 해제 (작업 내용 저장은 task-split.js 가 처리)
+      landChecks().forEach((o) => { if (o !== c) o.checked = false; });
+    }
     renderSelection();
     evenDistribute();
   }));
@@ -133,6 +137,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // 통과: 아무것도 안 함 → landNos, quotas[번호] 가 POST 로 전송
   });
 
-  /* ===== 처음 열렸을 때 (농지 관리에서 ?landNo= 로 넘어온 경우 미리 체크돼 있음) ===== */
-  renderSelection();
+    /* ===== 처음 열렸을 때 (농지 관리에서 ?landNo= 로 넘어온 경우 미리 체크돼 있음) ===== */
+    renderSelection();
 });
