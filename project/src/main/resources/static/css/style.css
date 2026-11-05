@@ -12710,3 +12710,26 @@ select:not([multiple]):not([size]) {
 #farm-list .um-pager a.on {
     font-weight: 600;      /* 현재 페이지도 굵기를 같게, 색과 테두리로만 구분 */
 }
+
+
+/* ===== 페이지 번호 공통 (작업 배정 / 조종사 작업 이력 / 위험 구역 / 내 문의) ===== */
+.um-pager.pager-std {
+    margin-top: 0;
+    padding: 18px 0 22px;
+    align-items: center;
+}
+.um-pager.pager-std a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 10px;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1;
+}
+.um-pager.pager-std a.on {
+    font-weight: 600;
+}

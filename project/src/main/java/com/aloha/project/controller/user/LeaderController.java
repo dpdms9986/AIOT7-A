@@ -85,6 +85,7 @@ public class LeaderController {
             @RequestParam(value = "to",   required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
             @RequestParam(value = "hRegion", defaultValue = "") String hRegion,
             @RequestParam(value = "hPilot",  defaultValue = "") String hPilot,
+            @RequestParam(value = "page",    required = false) Integer page,
             @AuthenticationPrincipal CustomUser customUser,
             Model model) {
 
@@ -148,21 +149,54 @@ public class LeaderController {
         }).sum();
         List<String> historyPilots = pilots.stream().map(TeamMemberDto::getName).toList();
 
+        /* ----- 페이지네이션: 지금 열린 탭의 목록만 10개씩 자름 ----- */
+        final int pageSize = 10;
+        int total = switch (tab) {
+            case "status"  -> assigned.size();
+            case "history" -> history.size();
+            default        -> readyLands.size();
+        };
+
+        int reqPage = (page != null) ? page : 1;
+        // 농지 관리 등에서 ?landNo= 로 넘어오면, 그 농지가 있는 페이지를 바로 연다
+        if (page == null && landNo != null && !"status".equals(tab) && !"history".equals(tab)) {
+            for (int i = 0; i < readyLands.size(); i++) {
+                if (landNo.equals(readyLands.get(i).getNo())) {
+                    reqPage = i / pageSize + 1;
+                    break;
+                }
+            }
+        }
+
+        Pagination pagination = new Pagination(Math.max(reqPage, 1), pageSize, 10, total);
+        if (pagination.getPage() > pagination.getLast()) {          // 마지막 페이지보다 큰 값 방지
+            pagination = new Pagination(pagination.getLast(), pageSize, 10, total);
+        }
+        int fromIdx = (int) Math.min(pagination.getIndex(), total);
+
+        List<LandDto>      pagedReady    = slice(readyLands, fromIdx, pageSize);
+        List<LandDto>      pagedAssigned = slice(assigned,   fromIdx, pageSize);
+        List<PilotTaskDto> pagedHistory  = slice(history,    fromIdx, pageSize);
+
         /* ----- 화면으로 보낼 값 ----- */
         model.addAttribute("tab", tab);
-        model.addAttribute("readyLands", readyLands);
+        model.addAttribute("readyLands", pagedReady);          // 현재 페이지 목록만
+        model.addAttribute("readyTotal", readyLands.size());   // 전체 건수 (제목 옆 숫자)
+        model.addAttribute("pagination", pagination);
         model.addAttribute("pilots", pilots);
         model.addAttribute("region", region);
         model.addAttribute("landNo", landNo);
 
-        model.addAttribute("assigned", assigned);
+        model.addAttribute("assigned", pagedAssigned);
+        model.addAttribute("assignedCount", assigned.size());  // 필터 적용된 전체 건수
         model.addAttribute("assignedTotal", allAssigned.size());
         model.addAttribute("countByPilot", countByPilot);
         model.addAttribute("status", status);
         model.addAttribute("pilot", pilot);
         model.addAttribute("sort", sort);
 
-        model.addAttribute("history", history);
+        model.addAttribute("history", pagedHistory);
+        model.addAttribute("historyTotal", history.size());    // 검색 결과 전체 건수
         model.addAttribute("hArea", hArea);
         model.addAttribute("historyPilots", historyPilots);
         model.addAttribute("dateError", dateError);
@@ -172,6 +206,12 @@ public class LeaderController {
         model.addAttribute("hPilot", hPilot);
 
         return "page/leader/task-assignment";
+    }
+
+    /** 목록에서 from 번째부터 size개를 잘라낸다 (범위를 넘어가도 에러 없음) */
+    private static <T> List<T> slice(List<T> list, int from, int size) {
+        int f = Math.min(from, list.size());
+        return list.subList(f, Math.min(f + size, list.size()));
     }
 
     /**
