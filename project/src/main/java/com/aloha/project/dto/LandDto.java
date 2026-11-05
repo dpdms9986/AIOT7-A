@@ -32,6 +32,7 @@ public class LandDto {
     private String status;            // READY / ASSIGNED / IN_PROGRESS / COMPLETED
     private String pilotName;         // 배정 조종사 (없으면 null)
     private LocalDateTime assignedAt; // 배정 일시 (없으면 null)
+    private LocalDateTime createdAt;  // 등록 일시
 
     private String polygonCoordinates; // 다각형 좌표 그리기
 
@@ -46,6 +47,7 @@ public class LandDto {
                 .areaSize(land.getAreaSize())
                 .status(land.getStatus())
                 .polygonCoordinates(land.getPolygonCoordinates())
+                .createdAt(land.getCreatedAt())
                 .build();
     }
 
