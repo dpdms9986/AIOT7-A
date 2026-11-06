@@ -150,6 +150,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const emptyEl = $("#pilot-filter-empty");
     if (emptyEl) emptyEl.style.display = items.length > 0 && shown === 0 ? "" : "none";
+
+    // 작업 중 → 대기 → 오프라인 순으로 정렬 (같은 상태끼리는 기존 순서 유지)
+    const rank = (li) => {
+      const b = li.querySelector(".pilot-state");
+      return b.classList.contains("busy") ? 0 : b.classList.contains("ready") ? 1 : 2;
+    };
+    const list = $("#pilot-status-list");
+    const sorted = [...items].sort((a, b) => rank(a) - rank(b));
+    const changed = sorted.some((li, i) => li !== items[i]);
+    if (changed) sorted.forEach((li) => list.insertBefore(li, emptyEl));
   };
   if (pilotStateFilter) pilotStateFilter.addEventListener("change", applyPilotFilter);
 
@@ -166,6 +176,7 @@ document.addEventListener("DOMContentLoaded", () => {
     applyPilotFilter();
   };
   setInterval(refreshPilotStates, 5000);
+  refreshPilotStates(); // 처음 로딩 때 바로 정렬
 
   const updatePilotMarker = (name, lat, lng) => {
     pilotLastSeen[name] = Date.now();
