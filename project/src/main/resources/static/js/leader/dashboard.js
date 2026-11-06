@@ -199,20 +199,34 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const connect = () => {
     if (typeof SockJS === "undefined" || typeof Stomp === "undefined") return;
+    
+    const channelKey = $("#teamChannelKey")?.value?.trim();
+
+    if (!channelKey) {
+      const status = $("#status");
+      status.textContent = "⚠️ 소속 방제단 정보가 없어 관제 채널을 열 수 없습니다.";
+      status.style.color = "#dc3545";
+      return;
+    }
+
     if (stompClient && stompClient.connected) stompClient.disconnect();
-    const teamNo = $("#teamNoInput").value;
+
     stompClient = Stomp.over(new SockJS("/ws-drone"));
     stompClient.debug = null;
+  
     stompClient.connect({}, () => {
-      $("#status").textContent = `✅ ${teamNo}번 방제단 관제 연결됨`;
-      $("#status").style.color = "#238451";
-      stompClient.subscribe("/sub/team/" + teamNo, (message) => {
+      $("#status .status-text").textContent = "방제단 관제 연결됨";
+       $("#status").style.color = "#238451";
+
+      stompClient.subscribe("/sub/team/" + channelKey, (message) => {
         const d = JSON.parse(message.body);
         updatePilotMarker(d.pilotName, d.latitude, d.longitude);
       });
+
     }, () => {
-      $("#status").textContent = "🔄 연결 끊김 (3초 후 재연결...)";
-      $("#status").style.color = "#f2b705";
+      $("#status .status-text").textContent = "연결 끊김 (3초 후 재연결...)";
+       $("#status").style.color = "#f2b705";
+
       setTimeout(connect, 3000);
     });
   };
@@ -257,9 +271,19 @@ document.addEventListener("DOMContentLoaded", () => {
   const toggleFollow = () => {
     followPilots = !followPilots;
     const btn = $("#follow-btn");
-    btn.textContent = followPilots ? "⏹️ 따라가기 중지" : "🎯 조종사 따라가기";
+
+    btn.innerHTML = followPilots
+        ? '<i data-lucide="locate-off"></i><span>따라가기 중지</span>'
+        : '<i data-lucide="locate-fixed"></i><span>조종사 따라가기</span>';
+
     btn.classList.toggle("btn-real", !followPilots);
     btn.classList.toggle("btn-stop", followPilots);
+
+    // Lucide 아이콘 다시 렌더링
+    if (window.lucide) {
+        lucide.createIcons();
+    }
+
     if (followPilots) followNow();
   };
   window.connect = connect;
