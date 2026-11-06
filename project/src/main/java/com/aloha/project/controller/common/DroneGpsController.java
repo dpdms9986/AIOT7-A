@@ -1,3 +1,4 @@
+
 package com.aloha.project.controller.common;
 
 import java.security.Principal;
@@ -21,17 +22,17 @@ public class DroneGpsController {
     private final SimpMessagingTemplate messagingTemplate;
     private final UserRepository userRepository;
 
-    // 조종사 화면(JS)에서 stompClient.send("/pub/location", ...) 로 보낸 데이터 수신
+    // 조종사 화면에서 전송한 GPS 데이터 수신
     @MessageMapping("/location")
     public void handleLocation(GpsMessage message, Principal principal) {
-        
-         // 로그인 사용자 확인
+
+        // 1. 로그인 사용자 확인
         if (principal == null) {
             log.warn("GPS 수신 거부: 로그인 사용자 정보가 없습니다.");
             return;
         }
 
-         // 로그인 사용자 정보로 실제 소속 방제단 조회
+        // 2. 로그인 사용자 정보로 실제 조종사 조회
         Users pilot = userRepository.findByUserName(principal.getName())
                 .orElse(null);
 
@@ -41,7 +42,7 @@ public class DroneGpsController {
             return;
         }
 
-        // 소속 방제단 확인
+        // 3. 소속 방제단 확인
         if (pilot.getTeam() == null
                 || pilot.getTeam().getInviteCode() == null
                 || pilot.getTeam().getInviteCode().isBlank()) {
@@ -51,8 +52,11 @@ public class DroneGpsController {
             return;
         }
 
-        // 서버에서 확인한 실제 팀의 초대코드를 채널 키로 사용
+        // 4. 서버 DB 기준으로 실제 방제단 채널과 조종사 정보 확정
         String channelKey = pilot.getTeam().getInviteCode();
+
+        message.setPilotName(pilot.getName());
+        message.setTeamNo(pilot.getTeam().getNo());
 
         log.info("📡 조종사 위치 수신: 사용자={}, 방제단={}, 조종사={}, 좌표=({}, {})",
                 principal.getName(),
@@ -61,14 +65,10 @@ public class DroneGpsController {
                 message.getLatitude(),
                 message.getLongitude());
 
-        // 실제 소속 방제단 채널로 GPS 중계
+        // 5. 실제 소속 방제단 채널로 GPS 중계
         messagingTemplate.convertAndSend(
                 "/sub/team/" + channelKey,
                 message
         );
     }
 }
-        
-        
-        
-    

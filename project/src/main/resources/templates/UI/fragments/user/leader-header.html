@@ -1,23 +1,25 @@
 <th:block th:fragment="header">
     <header class="dash-header">
-      <a th:href="@{/leader/dashboard}" class="dash-logo"><span>🌱</span>스마트 농업 관제 시스템</a>
+      <a th:href="@{/}" class="dash-logo" title="스마트 농업 관제 시스템"><span class="dash-logo-img">
+        <img th:src="@{/img/header-logo.png}" alt="스마트 농업 드론 방제 시스템"></span>
+        <span class="dash-logo-text"><em>스마트 농업</em> 관제 시스템</span></a>
 
       <!-- 현재 주소로 시작하면 active -->
       <nav class="dash-topnav" id="gnb-menu">
         <a th:href="@{/leader/dashboard}"
-           th:classappend="${#strings.startsWith(currentUri, '/leader/dashboard')} ? 'active'">관제 대시보드</a>
-        <a th:href="@{/leader/task-assignment}"
-           th:classappend="${#strings.startsWith(currentUri, '/leader/task-assignment')} ? 'active'">작업 배정</a>
+           th:classappend="${#strings.startsWith(currentUri, '/leader/dashboard')} ? 'active'"><span class="material-icons-outlined">home</span>관제 대시보드</a>
         <a th:href="@{/leader/farmlist}"
-           th:classappend="${#strings.startsWith(currentUri, '/leader/farmlist')} ? 'active'">농지 관리</a>
+           th:classappend="${#strings.startsWith(currentUri, '/leader/farmlist')} ? 'active'"><span class="material-icons-outlined">landscape</span>농지 관리</a>
+        <a th:href="@{/leader/task-assignment}"
+           th:classappend="${#strings.startsWith(currentUri, '/leader/task-assignment')} ? 'active'"><span class="material-icons-outlined">assignment</span>작업 배정</a>
         <a th:href="@{/leader/team-management}"
-           th:classappend="${#strings.startsWith(currentUri, '/leader/team-management')} ? 'active'">방제단 관리</a>
+           th:classappend="${#strings.startsWith(currentUri, '/leader/team-management')} ? 'active'"><span class="material-icons-outlined">groups</span>방제단 관리</a>
         <a th:href="@{/leader/assetlist}"
-           th:classappend="${#strings.startsWith(currentUri, '/leader/assetlist')} ? 'active'">드론 · 약제</a>
+           th:classappend="${#strings.startsWith(currentUri, '/leader/assetlist')} ? 'active'"><span class="material-icons-outlined">flight</span>드론 · 약제</a>
         <a th:href="@{/hazards}"
-           th:classappend="${#strings.startsWith(currentUri, '/hazards')} ? 'active'">게시판</a>
+   th:classappend="${#strings.startsWith(currentUri, '/hazards')} ? 'active'"><span class="material-icons-outlined">warning_amber</span>게시판</a>
         <a th:href="@{/support}"
-           th:classappend="${#strings.startsWith(currentUri, '/support')} ? 'active'">고객센터</a>
+           th:classappend="${#strings.startsWith(currentUri, '/support')} ? 'active'"><span class="material-icons-outlined">support_agent</span>고객센터</a>
       </nav>
 
       <div class="dash-header-right">
@@ -25,8 +27,10 @@
 
           <!-- 단장만: 초대코드 (클릭하면 복사) -->
           <button type="button" class="gnb-invite" id="invite-btn"
+                  title="초대 코드 복사" aria-label="초대 코드 복사"
                   th:if="${headerInviteCode != null}">
-            초대 코드 <b id="invite-code" th:text="${headerInviteCode}">------</b> 📋
+            <span class="gnb-invite-text">초대 코드 <b id="invite-code" th:text="${headerInviteCode}">------</b></span>
+            <span class="gnb-invite-icon">📋</span>
           </button>
 
           <span class="dash-role" th:text="${roleLabel}">-</span>

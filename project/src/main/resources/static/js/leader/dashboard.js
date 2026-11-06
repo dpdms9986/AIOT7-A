@@ -127,6 +127,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const isOnline = (name) => pilotLastSeen[name] && Date.now() - pilotLastSeen[name] < LIVE_TIMEOUT_MS;
 
+  // 상태 드롭다운: 고른 상태의 조종사만 보여줌
+  const pilotStateFilter = $("#pilot-state-filter");
+
+  const applyPilotFilter = () => {
+    const want = pilotStateFilter ? pilotStateFilter.value : "all";
+    const items = document.querySelectorAll("#pilot-status-list .side-item");
+    let shown = 0;
+
+    items.forEach((li) => {
+      const badge = li.querySelector(".pilot-state");
+      const state = badge.classList.contains("busy") ? "busy"
+        : badge.classList.contains("ready") ? "ready"
+        : "offline";
+      const show = want === "all" || want === state;
+      li.style.display = show ? "" : "none";
+      if (show) shown++;
+    });
+
+    const countEl = $("#pilot-count");
+    if (countEl) countEl.textContent = `${shown}명`;
+
+    const emptyEl = $("#pilot-filter-empty");
+    if (emptyEl) emptyEl.style.display = items.length > 0 && shown === 0 ? "" : "none";
+  };
+  if (pilotStateFilter) pilotStateFilter.addEventListener("change", applyPilotFilter);
+
   // 작업 중이 아닌 조종사만: 위치가 오면 "대기", 끊기면 "오프라인"
   const refreshPilotStates = () => {
     document.querySelectorAll("#pilot-status-list .side-item").forEach((li) => {
@@ -137,6 +163,7 @@ document.addEventListener("DOMContentLoaded", () => {
       badge.classList.toggle("offline", !online);
       badge.lastChild.textContent = online ? "대기" : "오프라인";
     });
+    applyPilotFilter();
   };
   setInterval(refreshPilotStates, 5000);
 
