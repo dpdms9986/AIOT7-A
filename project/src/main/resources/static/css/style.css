@@ -329,6 +329,32 @@
 .dash-btn-outline { border: 1px solid var(--color-border); background: #ffffff; color: var(--color-text); }
 .dash-btn-outline:hover { background: var(--color-bg); }
 
+.dash-btn-primary,
+.dash-btn-outline,
+.dash-btn-danger {
+  height: var(--button-height);
+  padding: 0 16px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+/* 👈 저채도 레드(취소/중단) 버튼 스타일 */
+/* TODO: 가로폭 설정이 안 돼요  ㅠㅠ  */
+.dash-btn-danger {
+  border: 0;
+  background: #c25450; /* 차분하고 고급스러운 저채도 레드 */
+  color: #ffffff;
+}
+
+.dash-btn-danger:hover {
+  background: #ad4340; /* 호버 시 살짝 어두워지는 딥 레드 */
+}
+
 .dash-map {
   display: grid;
   place-items: center;

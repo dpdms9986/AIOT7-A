@@ -30,6 +30,7 @@ import com.aloha.project.dto.LandDto;
 import com.aloha.project.dto.OptionDto;
 import com.aloha.project.dto.PilotTaskDto;
 import com.aloha.project.dto.WorkStartRequest;
+import com.aloha.project.repository.lands.LandRepository;
 import com.aloha.project.repository.tasks.ChemicalRepository;
 import com.aloha.project.repository.tasks.DroneRepository;
 import com.aloha.project.repository.tasks.WorkAssignmentRepository;
@@ -58,6 +59,7 @@ public class PilotController {
     private final ChemicalRepository chemicalRepository;
     private final WorkAssignmentService workAssignmentService;
     private final WorkAssignmentResourceRepository workAssignmentResourceRepository;
+    private final LandRepository landRepository;
 
     /* =========================================================
        조종사 대시보드 - 내 작업 목록 + 지도
@@ -304,6 +306,60 @@ public class PilotController {
 
         return "redirect:/pilot/history";
         }
+
+        /**
+     * 작업 삭제 처리
+     * POST /pilot/history/{no}/delete
+     */
+    @Transactional
+    @PostMapping("/history/{no}/cancel")
+    public String cancelWork(@PathVariable("no") Long no,
+                             @AuthenticationPrincipal CustomUser customUser,
+                             RedirectAttributes redirectAttributes) {
+        if (customUser == null) return "redirect:/login";
+        Users pilot = getLoginPilot(customUser);
+
+        WorkAssignments task = workAssignmentRepository.findById(no).orElse(null);
+        if (task == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "존재하지 않는 작업입니다.");
+            return "redirect:/pilot/history";
+        }
+
+        // 1. 본인 작업인지 권한 확인
+        if (task.getPilot() == null || !task.getPilot().getNo().equals(pilot.getNo())) {
+            redirectAttributes.addFlashAttribute("errorMessage", "본인에게 배정된 작업만 삭제할 수 있습니다.");
+            return "redirect:/pilot/history";
+        }
+
+        //2. 이미 완료된 작업은 취소 불가 방어
+        if ("COMPLETED".equals(task.getStatus())) {
+						redirectAttributes.addFlashAttribute("errorMessage", "이미 완료된 작업은 취소 불가합니다.");
+            return "redirect:/pilot/history";
+        }
+
+        // 1. 선택했던 드론/약제 매핑 삭제 ( 다시 선택하도록 초기화! )
+				workAssignmentResourceRepository.findByWorkAssignment_No(task.getNo())
+							.ifPresent(workAssignmentResourceRepository::delete);
+
+				// 2. 상태를 다시 'ASSIGNED(대기)'로 되돌리고 시작 시간 초기화
+				task.setStatus("ASSIGNED");
+				task.setStartedAt(null);
+				workAssignmentRepository.save(task);
+
+				// 3. 농지 상태도 ASSIGNED 유지
+				if (task.getLand() != null) {
+					task.getLand().updateStatus("ASSIGNED");
+					landRepository.save(task.getLand());
+				}
+
+				log.info("작업 취소 및 대기 복구 완료: taskNo={}, pilot={}", no, pilot.getName());
+        redirectAttributes.addFlashAttribute("message", "작업이 취소되어 다시 '대기' 상태로 변경됩니다.");
+
+        // 작업 상세 번호 유지하며 리다이렉트
+        return "redirect:/pilot/history?no=" + no;
+    }
+
+
 
     /** 로그인한 조종사 엔티티를 DB에서 다시 조회 */
     private Users getLoginPilot(CustomUser customUser) {

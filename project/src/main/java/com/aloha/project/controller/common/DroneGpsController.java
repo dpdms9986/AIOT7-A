@@ -5,10 +5,6 @@ import java.security.Principal;
 
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-<<<<<<< HEAD
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-=======
->>>>>>> develop
 import org.springframework.stereotype.Controller;
 
 import com.aloha.project.domain.users.Users;
