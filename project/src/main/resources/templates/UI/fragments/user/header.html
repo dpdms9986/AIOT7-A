@@ -1,37 +1,46 @@
 <th:block th:fragment="header">
-    <header class="home-header">
-        <a href="/" class="home-logo"><span class="icon-leaf" aria-hidden="true">🌱</span><span>스마트 농업 관제 시스템</span></a>
-        <nav class="home-nav">
-          <a href="/intro">시스템 소개</a>
-          <a href="/features">주요 기능</a>
-          <a href="/guide">이용 안내</a>
-        </nav>
+    <header class="dash-header dash-header-main">
+
+      <!-- 로고 (단장/조종사 헤더와 동일) -->
+      <a th:href="@{/}" class="dash-logo" title="스마트 농업 관제 시스템">
+        <span class="dash-logo-img">
+          <img th:src="@{/images/header-logo.png}" alt="스마트 농업 드론 방제 시스템">
+        </span>
+        <span class="dash-logo-text"><em>스마트 농업</em> 관제 시스템</span>
+      </a>
+
+      <!-- 메뉴: 현재 주소면 active -->
+      <nav class="dash-topnav" id="gnb-menu">
+        <a th:href="@{/intro}"
+           th:classappend="${currentUri != null and #strings.startsWith(currentUri, '/intro')} ? 'active'"><span class="material-icons-outlined">info</span>시스템 소개</a>
+        <a th:href="@{/features}"
+           th:classappend="${currentUri != null and #strings.startsWith(currentUri, '/features')} ? 'active'"><span class="material-icons-outlined">widgets</span>주요 기능</a>
+        <a th:href="@{/guide}"
+           th:classappend="${currentUri != null and #strings.startsWith(currentUri, '/guide')} ? 'active'"><span class="material-icons-outlined">help_outline</span>이용 안내</a>
+      </nav>
+
+      <div class="dash-header-right">
 
         <!-- 🔐 로그인 ❌ -->
         <th:block sec:authorize="isAnonymous()">
-          <div class="home-auth">
-            <a href="/signup" class="home-btn home-btn-outline">회원가입</a>
-            <a href="/login" class="home-btn home-btn-primary">로그인</a>
-            <!-- <a href="/dashboard" class="home-btn home-btn-outline">대시보드</a> -->
-          </div>
+          <a th:href="@{/signup}" class="gnb-signup">회원가입</a>
+          <a th:href="@{/login}" class="gnb-login">로그인</a>
         </th:block>
 
-        <!-- [추가] 🔐 로그인 ⭕ : 내 대시보드로 가기, 로그아웃 -->
+        <!-- 🔐 로그인 ⭕ : 내 대시보드로 가기, 로그아웃 -->
         <th:block sec:authorize="isAuthenticated()">
-          <div class="home-auth">
-            <a th:href="@{/leader/dashboard}" class="home-btn home-btn-primary"
-               sec:authorize="hasRole('LEADER')">🌱 우리 농지 관제</a>
-            <a th:href="@{/pilot/dashboard}" class="home-btn home-btn-primary"
-               sec:authorize="hasRole('PILOT')">🌱 오늘의 작업</a>
-            <a th:href="@{/admin}" class="home-btn home-btn-primary"
-               sec:authorize="hasRole('ADMIN')">🛠 관리자 페이지</a>
+          <a th:href="@{/leader/dashboard}" class="gnb-dash"
+             sec:authorize="hasRole('LEADER')">🌱 우리 농지 관제</a>
+          <a th:href="@{/pilot/dashboard}" class="gnb-dash"
+             sec:authorize="hasRole('PILOT')">🌱 오늘의 작업</a>
+          <a th:href="@{/admin}" class="gnb-dash"
+             sec:authorize="hasRole('ADMIN')">🛠 관리자 페이지</a>
 
-            <form th:action="@{/logout}" method="post" style="display:inline;">
-              <button type="submit" class="home-btn home-btn-outline">로그아웃</button>
-            </form>
-          </div>
+          <form th:action="@{/logout}" method="post">
+            <button type="submit" class="dash-btn-outline gnb-logout">로그아웃</button>
+          </form>
         </th:block>
+
+      </div>
     </header>
 </th:block>
-
-

@@ -76,7 +76,7 @@
       </ul>
 
       <!-- 페이지 번호 (2페이지 이상일 때만 표시) -->
-      <div class="um-pager pager-std" th:if="${pagination.last > 1}">
+      <div class="um-pager pager-std" th:if="${pagination.last >= 1}">
         <a th:href="@{/pilot/history(filter=${filter}, no=${selected?.no}, page=1)}">«</a>
         <a th:each="p : ${#numbers.sequence(pagination.start, pagination.end)}"
            th:href="@{/pilot/history(filter=${filter}, no=${selected?.no}, page=${p})}"
