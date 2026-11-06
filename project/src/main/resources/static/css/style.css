@@ -501,6 +501,160 @@
   font-weight: 500;
 }
 
+
+
+/* ========================================
+   GPS Control Bar - Leader / Pilot
+   ======================================== */
+
+.gps-control-bar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    min-height: 52px;
+    padding: 8px 10px;
+    margin-bottom: 10px;
+    background: #f3f8f5;
+    border: 1px solid #dce9e1;
+    border-radius: 11px;
+    box-sizing: border-box;
+}
+
+/* 방제단 이름 배지 */
+.gps-control-bar .team-info-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: 34px;
+    padding: 0 13px;
+    border: 1px solid transparent;
+    border-radius: 20px;
+    background: #e1f3e8;
+    color: #176b43;
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.gps-control-bar .team-info-badge svg {
+    width: 17px;
+    height: 17px;
+    stroke-width: 2.4;
+}
+
+/* 배지와 버튼 사이 구분선 */
+.gps-control-bar .control-divider {
+    width: 1px;
+    height: 22px;
+    margin: 0 3px;
+    background: #b9cec1;
+}
+
+/* 공통 버튼 */
+.gps-control-bar .gps-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 34px;
+    padding: 0 13px;
+    border: 1px solid #176b43;
+    border-radius: 7px;
+    background: #176b43;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background 0.18s ease, border-color 0.18s ease;
+}
+
+.gps-control-bar .gps-btn:hover {
+    background: #238451;
+    border-color: #238451;
+}
+
+.gps-control-bar .gps-btn svg {
+    width: 15px;
+    height: 15px;
+    stroke-width: 2.2;
+}
+
+/* 보조 버튼 */
+.gps-control-bar .gps-btn.btn-real {
+    background: #fff;
+    color: #176b43;
+    border-color: #238451;
+}
+
+.gps-control-bar .gps-btn.btn-real:hover {
+    background: #e8f5ed;
+}
+
+/* 중지 버튼 */
+.gps-control-bar .gps-btn.btn-stop {
+    background: #7b8589;
+    color: #fff;
+    border-color: #7b8589;
+}
+
+.gps-control-bar .gps-btn.btn-stop:hover {
+    background: #626c70;
+}
+
+/* 조종사명 입력 */
+.gps-control-bar label {
+    color: #52645a;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.gps-control-bar input[type="text"] {
+    height: 34px;
+    padding: 0 9px;
+    border: 1px solid #d4e0d8;
+    border-radius: 7px;
+    background: #fff;
+    color: #263b30;
+    font-size: 12px;
+    box-sizing: border-box;
+}
+
+.gps-control-bar input[type="text"]:focus {
+    outline: none;
+    border-color: #238451;
+    box-shadow: 0 0 0 2px rgba(35, 132, 81, 0.10);
+}
+
+/* 상태 안내 문구 */
+.gps-control-bar .gps-status-text {
+    color: #64756b;
+    font-size: 11px;
+    line-height: 1.4;
+}
+
+/* 작은 화면 대응 */
+@media (max-width: 700px) {
+    .gps-control-bar {
+        gap: 7px;
+        padding: 9px;
+    }
+
+    .gps-control-bar .control-divider {
+        display: none;
+    }
+
+    .gps-control-bar .gps-status-text {
+        flex-basis: 100%;
+        padding: 2px 3px 0;
+    }
+}
+
+
+
+
 /* =====================================================
    10. 단장 대시보드 (leader-)
 ===================================================== */
