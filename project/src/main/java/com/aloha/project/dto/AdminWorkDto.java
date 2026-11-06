@@ -40,6 +40,7 @@ public class AdminWorkDto {
 
         return AdminWorkDto.builder()
                 .workDate(date)
+                .region(land != null ? land.getAddress() : "-")
                 .pilotName(w.getPilot() != null ? w.getPilot().getName() : "-")
                 .status(w.getStatus())
                 .build();
