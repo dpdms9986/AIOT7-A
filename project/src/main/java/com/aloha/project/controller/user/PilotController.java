@@ -354,6 +354,7 @@ public class PilotController {
                         ? null : resources.getDrone().getModelName())
                 .chemicalName(resources == null
                         ? null : resources.getChemical().getChemicalName())
+                .flightPath(assignment.getFlightPath())
                 .build();
         }
 
