@@ -15,32 +15,82 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
 
 const markers = {};
 
-// 로그인 정보로 방제단 번호·조종사명 채우고 채널 연결
+
+
+// 로그인 정보로 조종사명 채우기
 function applyUser(user) {
-  if (user?.teamNo) $("#teamNoInput").val(user.teamNo);
-  if (user?.userName) $("#pilotName").val(user.userName);
+  if (user?.userName) {
+    $("#pilotName").val(user.userName);
+  }
+}
+
+if (window.currentUser) {
+  applyUser(window.currentUser);
+} else {
+  document.addEventListener("user-ready", (e) => {
+    applyUser(e.detail);
+  }, { once: true });
+}
+
+// 페이지 진입 시 방제단 고유 채널 자동 연결
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", connect, { once: true });
+} else {
   connect();
 }
-if (window.currentUser) applyUser(window.currentUser);
-else document.addEventListener("user-ready", (e) => applyUser(e.detail), { once: true });
 
-// 1. 웹소켓 연결 및 구독 (끊어지면 3초 뒤 재연결)
+
+
+// 1. 웹소켓 자동 연결 및 팀별 채널 구독
 function connect() {
-  if (stompClient && stompClient.connected) stompClient.disconnect();
 
-  const teamNo = $("#teamNoInput").val();
+  const channelKey = document.getElementById("teamChannelKey")?.value?.trim();
+
+  if (!channelKey) {
+    $("#status")
+      .text("⚠️ 소속 방제단 정보가 없어 관제 채널을 열 수 없습니다.")
+      .css("color", "#dc3545");
+    return;
+  }
+
+  if (typeof SockJS === "undefined" || typeof Stomp === "undefined") {
+    $("#status")
+      .text("⚠️ 웹소켓 라이브러리를 불러오지 못했습니다.")
+      .css("color", "#dc3545");
+    return;
+  }
+
+  if (stompClient && stompClient.connected) {
+    stompClient.disconnect();
+  }
+
   const socket = new SockJS("/ws-drone");
   stompClient = Stomp.over(socket);
   stompClient.debug = null;
 
   stompClient.connect({}, () => {
-    $("#status").text(`✅ ${teamNo}번 방제단 관제 연결됨`).css("color", "#238451");
-    stompClient.subscribe("/sub/team/" + teamNo, (message) => {
+
+    $("#status")
+      .text("✅ 방제단 관제 채널 연결됨")
+      .css("color", "#238451");
+
+    // 로그인한 조종사의 소속 방제단 전용 채널 구독
+    stompClient.subscribe("/sub/team/" + channelKey, (message) => {
       const data = JSON.parse(message.body);
-      updateMarker(data.pilotName, data.latitude, data.longitude);
+
+      updateMarker(
+        data.pilotName,
+        data.latitude,
+        data.longitude
+      );
     });
+
   }, () => {
-    $("#status").text("🔄 연결 끊김 (3초 후 재연결...)").css("color", "#f2b705");
+
+    $("#status")
+      .text("🔄 연결 끊김 (3초 후 재연결...)")
+      .css("color", "#f2b705");
+
     setTimeout(connect, 3000);
   });
 }
@@ -89,8 +139,13 @@ function startRealGpsAuto() {
 }
 
 function sendLocation(latitude, longitude) {
+
+  if (!stompClient || !stompClient.connected) {
+    console.warn("GPS 전송 중단: 관제 채널이 연결되지 않았습니다.");
+    return;
+  }
+
   stompClient.send("/pub/location", {}, JSON.stringify({
-    teamNo: Number($("#teamNoInput").val()),
     pilotName: $("#pilotName").val(),
     latitude,
     longitude,

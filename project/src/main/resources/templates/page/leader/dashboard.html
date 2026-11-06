@@ -70,9 +70,17 @@
       </div>
 
       <div class="gps-control-bar">
-        <label>방제단 번호:</label>
-        <input type="number" id="teamNoInput" value="1" style="width: 45px;">
-        <button type="button" class="gps-btn" onclick="connect()">🔌 채널 연결</button>
+       
+       <input type="hidden" id="teamChannelKey"
+       th:value="${myTeamChannel}">
+
+      <div class="team-info-badge">
+      <span class="badge-icon">🛡️</span>
+      <strong th:text="${myTeamName != null ? myTeamName : '방제단 미배속'}">
+       방제단 명칭
+      </strong>
+      </div>
+      
         <button type="button" class="gps-btn" onclick="fitAll()">🗺 전체 보기</button>
         <button type="button" class="gps-btn btn-real" id="follow-btn" onclick="toggleFollow()">🎯 조종사 따라가기</button>
         <div id="autoStatus" class="gps-status-text">조종사 위치를 수신 대기 중입니다.</div>

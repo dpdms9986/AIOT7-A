@@ -35,19 +35,33 @@
                 </div>
 
                 <!-- 실시간 GPS 전송 조작 패널 -->
+                
                 <div class="gps-control-bar">
-                    <label>방제단 번호:</label>
-                    <input type="number" id="teamNoInput" value="1" style="width: 45px;">
-                    <label>조종사명:</label>
-                    <input type="text" id="pilotName" value="" style="width: 80px;">
 
-                    <button type="button" class="gps-btn" onclick="connect()">🔌 채널 연결</button>
-                    <button type="button" class="gps-btn" onclick="startFakeAuto()">✈️ 가상 비행</button>
-                    <button type="button" class="gps-btn btn-real" onclick="startRealGpsAuto()">📱 실제 GPS 시작</button>
-                    <button type="button" class="gps-btn btn-stop" onclick="stopAuto()">⏹️ 중지</button>
+                <!-- 로그인한 조종사의 팀 채널 키 -->
+                <input type="hidden" id="teamChannelKey"
+                 th:value="${myTeamChannel}">
 
-                    <div id="autoStatus" class="gps-status-text"></div>
-                </div>
+                <!-- 소속 방제단 표시 -->
+                 <div class="team-info-badge">
+                  <span class="badge-icon">🛡️</span>
+                 <strong th:text="${myTeamName != null ? myTeamName : '방제단 미배속'}">
+                  방제단 명칭
+                 </strong>
+                 </div>
+
+                  <!-- 기존 조종사명 입력 유지 -->
+                 <label>조종사명:</label>
+                 <input type="text" id="pilotName" value="" style="width: 80px;">
+
+                 <!-- 기존 GPS 조작 기능 유지 -->
+                <button type="button" class="gps-btn" onclick="startFakeAuto()">✈️ 가상 비행</button>
+                <button type="button" class="gps-btn btn-real" onclick="startRealGpsAuto()">📱 실제 GPS 시작</button>
+               <button type="button" class="gps-btn btn-stop" onclick="stopAuto()">⏹️ 중지</button>
+
+                <div id="autoStatus" class="gps-status-text"></div>
+               </div>
+
 
                 <div class="pilot-map" id="pilot-map"></div>
 

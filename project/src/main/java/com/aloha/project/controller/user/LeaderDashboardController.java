@@ -90,8 +90,13 @@ public class LeaderDashboardController {
 
 				// 3. 화면 헤더에 초대코드 표기가 필요하다면 모델에 전달
 				if (myTeam != null) {
-						model.addAttribute("inviteCode", myTeam.getInviteCode());
-				}
+				    model.addAttribute("inviteCode", myTeam.getInviteCode());
+				
+                    // 방제단 자동 관제 연결용
+                    model.addAttribute("myTeamChannel", myTeam.getInviteCode());
+                    model.addAttribute("myTeamName", myTeam.getTeamName());
+
+                    }
         // ========================================================
         // 👇 프론트엔드 팀원이 작성한 자동 계산 및 Model 바인딩 (100% 보존!)
         // ========================================================

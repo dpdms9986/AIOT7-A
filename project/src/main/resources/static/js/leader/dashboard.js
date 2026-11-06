@@ -161,20 +161,34 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const connect = () => {
     if (typeof SockJS === "undefined" || typeof Stomp === "undefined") return;
+    
+    const channelKey = $("#teamChannelKey")?.value?.trim();
+
+    if (!channelKey) {
+      const status = $("#status");
+      status.textContent = "⚠️ 소속 방제단 정보가 없어 관제 채널을 열 수 없습니다.";
+      status.style.color = "#dc3545";
+      return;
+    }
+
     if (stompClient && stompClient.connected) stompClient.disconnect();
-    const teamNo = $("#teamNoInput").value;
+
     stompClient = Stomp.over(new SockJS("/ws-drone"));
     stompClient.debug = null;
+  
     stompClient.connect({}, () => {
-      $("#status").textContent = `✅ ${teamNo}번 방제단 관제 연결됨`;
+      $("#status").textContent = `✅ 방제단 관제 연결됨`;
       $("#status").style.color = "#238451";
-      stompClient.subscribe("/sub/team/" + teamNo, (message) => {
+
+      stompClient.subscribe("/sub/team/" + channelKey, (message) => {
         const d = JSON.parse(message.body);
         updatePilotMarker(d.pilotName, d.latitude, d.longitude);
       });
+
     }, () => {
       $("#status").textContent = "🔄 연결 끊김 (3초 후 재연결...)";
       $("#status").style.color = "#f2b705";
+
       setTimeout(connect, 3000);
     });
   };
