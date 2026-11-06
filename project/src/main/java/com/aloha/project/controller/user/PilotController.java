@@ -68,6 +68,14 @@ public class PilotController {
 
         if (customUser == null) return "redirect:/login";
         Users pilot = getLoginPilot(customUser);
+        // 로그인 조종사의 소속 방제단 정보 전달
+        if (pilot.getTeam() != null) {
+         model.addAttribute("myTeamChannel", pilot.getTeam().getInviteCode());
+         model.addAttribute("myTeamName", pilot.getTeam().getTeamName());
+        } else {
+         model.addAttribute("myTeamChannel", null);
+         model.addAttribute("myTeamName", null);
+        }
 
         // 현재 로그인한 조종사에게 배정된 작업
         List<LandDto> myTasks = workAssignmentRepository.findByPilot_No(pilot.getNo())
