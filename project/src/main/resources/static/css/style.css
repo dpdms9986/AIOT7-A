@@ -13861,3 +13861,66 @@ body:has(.dash-header) > main.pub-section {
 
 
 
+/* =====================================================
+   [메인 헤더] 단장/조종사 헤더와 같은 디자인
+===================================================== */
+
+/* 로고 글씨 계속 보이기 */
+.dash-header.dash-header-main .dash-logo-text { display: inline; }
+@media (max-width: 700px) {
+    .dash-header.dash-header-main .dash-logo-text { display: none; }
+}
+
+/* 메뉴를 헤더 정중앙에 배치 */
+.dash-header.dash-header-main .dash-topnav {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin-right: 0;
+}
+@media (max-width: 1000px) {
+    .dash-header.dash-header-main .dash-topnav {
+        position: static;
+        transform: none;
+        margin: 0 auto;
+    }
+}
+
+/* 회원가입 / 로그인 / 대시보드 버튼 */
+.dash-header .gnb-signup,
+.dash-header .gnb-login,
+.dash-header .gnb-dash {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 34px;
+    padding: 0 16px;
+    border-radius: 999px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+}
+.dash-header .gnb-signup {
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    background: transparent;
+    color: #ffffff;
+}
+.dash-header .gnb-signup:hover { background: rgba(255, 255, 255, 0.16); }
+
+.dash-header .gnb-login,
+.dash-header .gnb-dash {
+    border: 1px solid #ffffff;
+    background: #ffffff;
+    color: var(--hd-bg, #1f5637);
+}
+.dash-header .gnb-login:hover,
+.dash-header .gnb-dash:hover { background: #e8f5ee; }
+
+/* 소개/기능/안내 페이지 폭 제한 */
+body:has(.dash-header) > main.pub-section {
+    max-width: 1120px;
+}

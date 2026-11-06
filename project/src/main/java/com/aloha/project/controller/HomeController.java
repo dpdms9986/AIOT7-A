@@ -86,23 +86,20 @@ public class HomeController {
     return "page/login";
   }
 
-  // /**
-  //  * 이용약관
-  //  */
-  // @GetMapping("/terms/{page}")
-  // public String termsPage(@PathVariable("page") String page) {
-  //     return "page/terms/" + page;
-  // }
-  
+ @GetMapping("/intro")
+  public String intro() {
+      return "page/info/intro";
+  }
 
-  // /**
-  //  * 고객안내
-  //  * @return
-  //  */
-  // @GetMapping("/info")
-  // public String info() {
-  //     return "page/info";
-  // }
+  @GetMapping("/features")
+  public String features() {
+      return "page/info/features";
+  }
+
+  @GetMapping("/guide")
+  public String guide() {
+      return "page/info/guide";
+  }
   
   
   /**
