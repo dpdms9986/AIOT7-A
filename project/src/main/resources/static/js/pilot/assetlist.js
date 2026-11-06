@@ -7,7 +7,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const cancelBtn = document.querySelector("#cancel-asset-register");
 
     const typeSelect = document.querySelector("#asset-type");
-    const ownerSelect = document.querySelector("#asset-owner");
     const nameLabel = document.querySelector("#asset-name-label");
     const nameInput = document.querySelector("#asset-name");
 
@@ -18,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (
         !modal || !openBtn || !closeBtn || !cancelBtn ||
-        !typeSelect || !ownerSelect || !nameLabel || !nameInput ||
+        !typeSelect || !nameLabel || !nameInput ||
         !subtitleLabel || !subtitleInput || !statusSelect
     ) {
         console.error("자산 등록 모달 요소를 찾을 수 없습니다.");
@@ -27,7 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 자산 종류에 따른 입력 항목 및 상태 선택지 설정
     const updateForm = (type) => {
-        searchStatusSelect.innerHTML = "";
+        statusSelect.innerHTML = "";
 
         if (type === "drone") {
             nameLabel.textContent = "이름 / 모델명";
@@ -57,8 +56,7 @@ document.addEventListener("DOMContentLoaded", () => {
             statusSelect.add(new Option("재고 부족", "low"));
         }
 
-        // 리더와 동일한 방식으로 설명란 숨김
-    // 리더와 동일하게 설명 입력 영역 전체 숨김
+       // 드론 선택 시 설명 입력 영역 숨김
      const subtitleField = subtitleInput.closest("label");
 
       if (subtitleField) {
@@ -92,9 +90,13 @@ document.addEventListener("DOMContentLoaded", () => {
         updateForm(typeSelect.value);
     });
 
-    // 바깥 영역 클릭
+    // 바깥 영역 클릭 (배경에서 누르고 배경에서 뗐을 때만 닫기)
+    let downOnBackdrop = false;
+    modal.addEventListener("pointerdown", (event) => {
+        downOnBackdrop = (event.target === modal);
+    });
     modal.addEventListener("click", (event) => {
-        if (event.target === modal) {
+        if (event.target === modal && downOnBackdrop) {
             closeModal();
         }
     });

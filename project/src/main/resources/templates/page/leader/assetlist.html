@@ -84,7 +84,9 @@
         담당 조종사
         <select name="owner">
           <option value="">전체 조종사</option>
-          <option th:each="o : ${owners}" th:value="${o}" th:text="${o}"
+          <option th:each="o : ${owners}" 
+                  th:value="${o.name}" 
+                  th:text="${o.name}"
                   th:selected="${o == owner}">김민수</option>
         </select>
       </label>
@@ -168,7 +170,7 @@
     </div>
 
     <!-- 페이지 번호 -->
-    <div class="um-pager">
+    <div class="um-pager" th:if="${pagination.total > 10}">
     <a th:href="@{/leader/assetlist(page=1, size=10, tab=${tab}, type=${type}, owner=${owner}, status=${status}, keyword=${keyword})}">«</a>
 
     <a th:each="p : ${#numbers.sequence(pagination.start, pagination.end)}"
@@ -236,8 +238,6 @@
 
 
 <!-- 자산 등록 성공 팝업 -->
-<script th:if="${assetRegistered}">
-    showPopup('자산이 등록되었습니다.');
 </script>
 </body>
 </html>

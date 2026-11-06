@@ -4,14 +4,14 @@
       layout:decorate="~{UI/layouts/user/pilot_layout}">
 <head>
   <meta charset="UTF-8">
-  <title>작업 이력 | 스마트 농업 관제 시스템</title>
+  <title>작업 관리 | 스마트 농업 관제 시스템</title>
 </head>
 <body layout:fragment="content">
 
 <main class="dash-main">
   <div class="dash-title-row">
     <div>
-      <h1>🕘 작업 이력</h1>
+      <h1>📖 작업 관리</h1>
       <p>작업을 시작하고, 끝나면 완료 보고를 하고, 끝낸 작업의 기록을 확인하세요.</p>
     </div>
   </div>
@@ -61,7 +61,7 @@
         <li th:each="t : ${tasks}"
             th:attr="data-search=${(t.region ?: '') + ' ' + (t.address ?: '')}">
           <a class="pilot-task"
-             th:href="@{/pilot/history(filter=${filter}, no=${t.no})}"
+             th:href="@{/pilot/history(filter=${filter}, no=${t.no}, page=${pagination.page})}"
              th:classappend="${selected != null and t.no == selected.no} ? 'selected'">
             <span class="pilot-dot" th:classappend="${t.stClass}"></span>
             <span class="pilot-task-body">
@@ -74,6 +74,16 @@
         <li class="pilot-empty" th:if="${#lists.isEmpty(tasks)}">해당하는 작업이 없습니다.</li>
         <li class="pilot-empty" id="pilotSearchEmpty" style="display:none">검색 결과가 없습니다.</li>
       </ul>
+
+      <!-- 페이지 번호 (2페이지 이상일 때만 표시) -->
+      <div class="um-pager pager-std" th:if="${pagination.last > 1}">
+        <a th:href="@{/pilot/history(filter=${filter}, no=${selected?.no}, page=1)}">«</a>
+        <a th:each="p : ${#numbers.sequence(pagination.start, pagination.end)}"
+           th:href="@{/pilot/history(filter=${filter}, no=${selected?.no}, page=${p})}"
+           th:classappend="${p == pagination.page} ? 'on'"
+           th:text="${p}">1</a>
+        <a th:href="@{/pilot/history(filter=${filter}, no=${selected?.no}, page=${pagination.last})}">»</a>
+      </div>
     </article>
 
     <!-- ===================== 오른쪽: 작업 상세 ===================== -->

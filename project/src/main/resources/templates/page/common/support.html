@@ -50,11 +50,11 @@
         </details>
         <details>
           <summary>작업은 어떻게 배정받나요?</summary>
-          <p>방제단장이 농지를 선택해 조종사에게 배정합니다. 조종사는 내 할당 필지와 작업 이력 화면에서 배정받은 작업을 확인할 수 있습니다.</p>
+          <p>방제단장이 농지를 선택해 조종사에게 배정합니다. 조종사는 내 할당 필지와 작업 관리 화면에서 배정받은 작업을 확인할 수 있습니다.</p>
         </details>
         <details>
           <summary>작업은 어떻게 시작하고 완료하나요?</summary>
-          <p>작업 이력 화면에서 대기 중인 작업을 선택하고, 사용할 드론과 약제를 고른 뒤 [작업 시작]을 누르세요. 방제가 끝나면 [작업 완료 보고]를 누르면 됩니다.</p>
+          <p>작업 관리 화면에서 대기 중인 작업을 선택하고, 사용할 드론과 약제를 고른 뒤 [작업 시작]을 누르세요. 방제가 끝나면 [작업 완료 보고]를 누르면 됩니다.</p>
         </details>
         <details>
           <summary>조종사도 농지를 등록할 수 있나요?</summary>
@@ -156,7 +156,10 @@
       modal.querySelector("select[name='type']")?.focus();
     });
     modal?.querySelectorAll("[data-sp-close]").forEach((b) => b.addEventListener("click", close));
-    modal?.addEventListener("click", (e) => { if (e.target === modal) close(); });
+    // 배경에서 누르고 배경에서 뗐을 때만 닫기 (팝업 안에서 드래그하다 밖에서 놓아도 안 닫힘)
+    let downOnBackdrop = false;
+    modal?.addEventListener("pointerdown", (e) => { downOnBackdrop = (e.target === modal); });
+    modal?.addEventListener("click", (e) => { if (e.target === modal && downOnBackdrop) close(); });
     document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !modal.hidden) close(); });
   });
 </script>

@@ -7,10 +7,8 @@
     <nav class="adm-menu">
       <a th:href="@{/admin}" th:classappend="${currentUri == '/admin'} ? 'active'">
         <span class="material-icons-outlined">home</span>전체 현황</a>
-      <a th:href="@{/admin/users}" th:classappend="${#strings.startsWith(currentUri, '/admin/users')} ? 'active'">
+      <a th:href="@{/admin/pilots(tab='users')}" th:classappend="${#strings.startsWith(currentUri, '/admin/pilots')} ? 'active'">
         <span class="material-icons-outlined">group</span>사용자 관리</a>
-      <a th:href="@{/admin/pilots}" th:classappend="${#strings.startsWith(currentUri, '/admin/pilots')} ? 'active'">
-        <span class="material-icons-outlined">flight</span>조종사 관리</a>
       <a th:href="@{/admin/inquiries}" th:classappend="${#strings.startsWith(currentUri, '/admin/inquiries')} ? 'active'">
         <span class="material-icons-outlined">support_agent</span>문의현황</a>
       <a th:href="@{/hazards}">
