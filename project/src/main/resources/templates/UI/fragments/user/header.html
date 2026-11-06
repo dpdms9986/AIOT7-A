@@ -1,7 +1,6 @@
 <th:block th:fragment="header">
     <header class="dash-header dash-header-main">
 
-      <!-- 로고 (단장/조종사 헤더와 동일) -->
       <a th:href="@{/}" class="dash-logo" title="스마트 농업 관제 시스템">
         <span class="dash-logo-img">
           <img th:src="@{/images/header-logo.png}" alt="스마트 농업 드론 방제 시스템">
@@ -9,7 +8,6 @@
         <span class="dash-logo-text"><em>스마트 농업</em> 관제 시스템</span>
       </a>
 
-      <!-- 메뉴: 현재 주소면 active -->
       <nav class="dash-topnav" id="gnb-menu">
         <a th:href="@{/intro}"
            th:classappend="${currentUri != null and #strings.startsWith(currentUri, '/intro')} ? 'active'"><span class="material-icons-outlined">info</span>시스템 소개</a>
@@ -21,13 +19,11 @@
 
       <div class="dash-header-right">
 
-        <!-- 🔐 로그인 ❌ -->
         <th:block sec:authorize="isAnonymous()">
           <a th:href="@{/signup}" class="gnb-signup">회원가입</a>
           <a th:href="@{/login}" class="gnb-login">로그인</a>
         </th:block>
 
-        <!-- 🔐 로그인 ⭕ : 내 대시보드로 가기, 로그아웃 -->
         <th:block sec:authorize="isAuthenticated()">
           <a th:href="@{/leader/dashboard}" class="gnb-dash"
              sec:authorize="hasRole('LEADER')">🌱 우리 농지 관제</a>
