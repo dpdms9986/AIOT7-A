@@ -12,6 +12,9 @@
 
   <main class="login-page">
     <section class="login-card">
+      <!-- 메인화면으로 이동 -->
+      <a th:href="@{/}" class="login-back">◀ 메인화면</a>
+
       <header class="login-brand">
         <div class="login-brand-logo">A</div>
         <h1>농업 드론 관제 시스템</h1>
@@ -54,6 +57,7 @@
       <div class="login-signup-link">
         계정이 없으신가요? <a th:href="@{/signup}">회원가입</a>
       </div>
+    </section>
     </section>
   </main>
 
