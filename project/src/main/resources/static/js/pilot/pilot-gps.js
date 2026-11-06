@@ -47,16 +47,18 @@ function connect() {
   const channelKey = document.getElementById("teamChannelKey")?.value?.trim();
 
   if (!channelKey) {
-    $("#status")
-      .text("⚠️ 소속 방제단 정보가 없어 관제 채널을 열 수 없습니다.")
-      .css("color", "#dc3545");
+    $("#status .status-text")
+     .text("⚠️ 소속 방제단 정보가 없어 관제 채널을 열 수 없습니다.");
+
+     $("#status").css("color", "#dc3545");
     return;
   }
 
   if (typeof SockJS === "undefined" || typeof Stomp === "undefined") {
-    $("#status")
-      .text("⚠️ 웹소켓 라이브러리를 불러오지 못했습니다.")
-      .css("color", "#dc3545");
+    $("#status .status-text")
+    .text("⚠️ 웹소켓 라이브러리를 불러오지 못했습니다.");
+
+     $("#status").css("color", "#dc3545");
     return;
   }
 
@@ -70,9 +72,10 @@ function connect() {
 
   stompClient.connect({}, () => {
 
-    $("#status")
-      .text("✅ 방제단 관제 채널 연결됨")
-      .css("color", "#238451");
+    $("#status .status-text")
+    .text("방제단 관제 채널 연결됨");
+
+     $("#status").css("color", "#238451");
 
     // 로그인한 조종사의 소속 방제단 전용 채널 구독
     stompClient.subscribe("/sub/team/" + channelKey, (message) => {
@@ -87,10 +90,10 @@ function connect() {
 
   }, () => {
 
-    $("#status")
-      .text("🔄 연결 끊김 (3초 후 재연결...)")
-      .css("color", "#f2b705");
+    $("#status .status-text")
+  .text("연결 끊김 (3초 후 재연결...)");
 
+   $("#status").css("color", "#f2b705");
     setTimeout(connect, 3000);
   });
 }

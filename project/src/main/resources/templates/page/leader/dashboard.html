@@ -66,25 +66,44 @@
     <article class="dash-card">
       <div class="dash-card-head">
         <h2>🗺 방제단 관제 지도</h2>
-        <span id="status" class="ws-status">현재 상태: 연결 대기 중</span>
+        <span id="status" class="ws-status">
+         <i data-lucide="radio-tower"></i>
+        <span class="status-text">현재 상태: 연결 대기 중</span>
+         </span>
       </div>
 
       <div class="gps-control-bar">
-       
-       <input type="hidden" id="teamChannelKey"
-       th:value="${myTeamChannel}">
 
-      <div class="team-info-badge">
-      <span class="badge-icon">🛡️</span>
-      <strong th:text="${myTeamName != null ? myTeamName : '방제단 미배속'}">
-       방제단 명칭
-      </strong>
+      <input type="hidden" id="teamChannelKey"
+           th:value="${myTeamChannel}">
+
+      <!-- 소속 방제단 고정 배지 -->
+        <div class="team-info-badge">
+        <i data-lucide="drone"></i>
+        <strong th:text="${myTeamName != null ? myTeamName : '방제단 미배속'}">
+            방제단 명칭
+        </strong>
       </div>
-      
-        <button type="button" class="gps-btn" onclick="fitAll()">🗺 전체 보기</button>
-        <button type="button" class="gps-btn btn-real" id="follow-btn" onclick="toggleFollow()">🎯 조종사 따라가기</button>
-        <div id="autoStatus" class="gps-status-text">조종사 위치를 수신 대기 중입니다.</div>
-      </div>
+
+      <span class="control-divider"></span>
+
+    <button type="button" class="gps-btn"
+            onclick="fitAll()"><i data-lucide="map"></i>
+        전체 보기
+    </button>
+
+    <button type="button" class="gps-btn btn-real"
+            id="follow-btn"
+            onclick="toggleFollow()"><i data-lucide="locate-fixed"></i>
+        조종사 따라가기
+    </button>
+
+    <span class="control-divider"></span>
+
+    <div id="autoStatus" class="gps-status-text">
+        조종사 위치를 수신 대기 중입니다.
+    </div>
+</div>
 
       <!-- data-selected: 처음 선택할 농지 번호 (배정 후 돌아왔을 때) -->
       <div id="leader-map" th:data-selected="${selectedLandNo}"></div>
@@ -216,5 +235,13 @@
 </script>
 <script th:src="@{/js/common/hazard-markers.js}"></script>
 <script th:src="@{/js/leader/dashboard.js}"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+    if (window.lucide) {
+        lucide.createIcons();
+    } else {
+        console.error("Lucide 라이브러리를 불러오지 못했습니다.");
+    }
+     </script>
 </body>
 </html>
