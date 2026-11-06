@@ -217,8 +217,58 @@ document.addEventListener("DOMContentLoaded", () => {
     $("hz-v-date").textContent = d.date || "-";
     $("hz-v-coord").textContent = `${d.lat}, ${d.lng}`;
     $("hz-v-content").textContent = d.content || "";
+    // 이미지 목록 연결
+    currentImages = JSON.parse(row.dataset.images || "[]");
+    currentImageIndex = 0;
+
+    if (currentImages.length > 0) {
+    showHazardImage(0);
+    } else {
+    viewImageGallery.hidden = true;
+    }
     viewModal.hidden = false;
+    }
+
+  /* ---------- 상세보기 이미지 갤러리 ---------- */
+  const viewImageGallery = $("hz-v-image-gallery");
+  const viewImage = $("hz-v-image");
+  const prevImageBtn = $("hz-image-prev");
+  const nextImageBtn = $("hz-image-next");
+  const imageCount = $("hz-image-count");
+
+  let currentImages = [];
+  let currentImageIndex = 0;
+
+  function showHazardImage(index) {
+    if (!currentImages.length) {
+        viewImageGallery.hidden = true;
+        return;
+    }
+
+  currentImageIndex = index;
+  viewImage.src = currentImages[currentImageIndex];
+  imageCount.textContent =
+      `${currentImageIndex + 1} / ${currentImages.length}`;
+
+  const hasMultipleImages = currentImages.length > 1;
+  prevImageBtn.hidden = !hasMultipleImages;
+  nextImageBtn.hidden = !hasMultipleImages;
+  imageCount.hidden = !hasMultipleImages;
+  viewImageGallery.hidden = false;
   }
+
+  prevImageBtn?.addEventListener("click", () => {
+    const index =
+        (currentImageIndex - 1 + currentImages.length) % currentImages.length;
+    showHazardImage(index);
+  });
+
+  nextImageBtn?.addEventListener("click", () => {
+    const index =
+        (currentImageIndex + 1) % currentImages.length;
+    showHazardImage(index);
+   });
+
   const closeView = () => { if (viewModal) viewModal.hidden = true; };
 
   document.querySelectorAll(".hz-view-btn").forEach((btn) => {
@@ -232,9 +282,102 @@ document.addEventListener("DOMContentLoaded", () => {
     // closeOnBackdrop(viewModal, closeView); - 바깥 클릭 시 팝업 꺼짐
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && viewModal && !viewModal.hidden) closeView(); });
 
+  
+
+  
+  
   /* ---------- 3) 신고 팝업 ---------- */
   const modal = document.getElementById("hz-modal");
   const openBtn = document.getElementById("hz-open-btn");
+  const imageInput = document.getElementById("hz-images");
+  const imagePreview = document.getElementById("hz-image-preview");
+
+  let selectedHazardFiles = [];
+  let previewUrls = [];
+
+     function renderImagePreview() {
+     if (!imagePreview) return;
+
+  // 기존 미리보기 URL 정리
+    previewUrls.forEach(url => URL.revokeObjectURL(url));
+    previewUrls = [];
+
+    imagePreview.innerHTML = "";
+
+    if (selectedHazardFiles.length === 0) {
+        imagePreview.innerHTML =
+            '<span class="hz-image-empty">선택된 이미지가 없습니다.</span>';
+        return;
+    }
+
+    // 선택된 파일 개수 표시
+    const count = document.createElement("p");
+    count.className = "hz-image-count";
+    count.textContent = `선택된 이미지 ${selectedHazardFiles.length}장`;
+    imagePreview.appendChild(count);
+
+    selectedHazardFiles.forEach((file, index) => {
+        const item = document.createElement("div");
+        item.className = "hz-preview-item";
+
+        const img = document.createElement("img");
+        const url = URL.createObjectURL(file);
+        previewUrls.push(url);
+
+        img.src = url;
+        img.alt = file.name;
+
+        const name = document.createElement("span");
+        name.textContent = file.name;
+
+        const removeBtn = document.createElement("button");
+        removeBtn.type = "button";
+        removeBtn.textContent = "×";
+        removeBtn.className = "hz-preview-remove";
+        removeBtn.setAttribute("aria-label", `${file.name} 삭제`);
+
+        removeBtn.addEventListener("click", () => {
+            selectedHazardFiles.splice(index, 1);
+            updateImageInput();
+        });
+
+        item.append(img, name, removeBtn);
+        imagePreview.appendChild(item);
+       });
+       }
+
+       // 누적된 파일 목록을 실제 form input에 반영
+     function updateImageInput() {
+    const dataTransfer = new DataTransfer();
+
+    selectedHazardFiles.forEach(file => {
+        dataTransfer.items.add(file);
+    });
+
+    imageInput.files = dataTransfer.files;
+
+    renderImagePreview();
+   }
+
+    // 파일을 새로 선택할 때 기존 파일에 추가
+    imageInput?.addEventListener("change", () => {
+    const newFiles = Array.from(imageInput.files);
+
+    newFiles.forEach(file => {
+        const alreadyExists = selectedHazardFiles.some(
+            existing =>
+                existing.name === file.name &&
+                existing.size === file.size &&
+                existing.lastModified === file.lastModified
+        );
+
+        if (!alreadyExists) {
+            selectedHazardFiles.push(file);
+        }
+    });
+
+    updateImageInput();
+ }); // change 이벤트 종료
   const latInput = document.getElementById("hz-lat");
   const lngInput = document.getElementById("hz-lng");
   let pickMap = null;

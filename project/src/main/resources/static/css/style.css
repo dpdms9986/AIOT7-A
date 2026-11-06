@@ -6274,6 +6274,167 @@ body.hazard-detail-page {
     }
 }
 
+/* 상세 내용 + 이미지 추가 버튼 */
+.hz-content-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.hazards-image-upload {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 12px;
+    border: 1px solid #238451;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #238451;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.hazards-image-upload:hover {
+    background: #f0f8f3;
+}
+
+/* 기본 파일 선택 입력창 숨김 */
+.hz-image-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* ===== 상세보기 이미지 갤러리 크기 고정 ===== */
+#hz-view-modal .hz-modal-box {
+    max-height: 90vh;
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+/* 이미지 표시 영역 */
+.hz-view-image-gallery {
+    position: relative;
+    width: 100%;
+    height: 360px;
+    margin: 16px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: #f8fafc;
+    border-radius: 8px;
+}
+
+/* 사진 크기 통일 */
+#hz-v-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* 이전 / 다음 버튼 */
+.hz-image-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 5;
+    width: 32px;
+    height: 32px;
+    border: 1px solid #ddd;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.9);
+    cursor: pointer;
+}
+
+#hz-image-prev {
+    left: 10px;
+}
+
+#hz-image-next {
+    right: 10px;
+}
+
+/* 이미지 번호 */
+#hz-image-count {
+    position: absolute;
+    right: 12px;
+    bottom: 10px;
+    z-index: 5;
+    padding: 4px 9px;
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.65);
+    color: white;
+    font-size: 12px;
+}
+
+/* 신고 이미지 미리보기 */
+.hazard-image-gallery {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.hz-image-count {
+    width: 100%;
+    margin: 0 0 4px;
+    color: #238451;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.hz-image-empty {
+    color: #999;
+    font-size: 12px;
+}
+
+.hz-preview-item {
+    position: relative;
+    width: 90px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.hz-preview-item img {
+    width: 90px;
+    height: 75px;
+    object-fit: cover;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+}
+
+.hz-preview-item span {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: 11px;
+    color: #555;
+}
+
+.hz-preview-remove {
+    position: absolute;
+    top: -7px;
+    right: -7px;
+    width: 22px;
+    height: 22px;
+    border: none;
+    border-radius: 50%;
+    background: #333;
+    color: white;
+    cursor: pointer;
+    font-size: 15px;
+}
 
 /* ===== 공지사항 목록 ===== */
 .notice-page,
