@@ -44,6 +44,9 @@ public class WorkAssignments {
     @Column(nullable = false, length = 20)
     private String status = "ASSIGNED"; // ASSIGNED(배정됨), IN_PROGRESS(작업중), COMPLETED(완료)
 
+    @Column(columnDefinition = "TEXT")
+    private String flightPath;
+
     private LocalDateTime startedAt; // 작업 시작 일시
 
     private LocalDateTime completedAt; // 작업 완료 일시

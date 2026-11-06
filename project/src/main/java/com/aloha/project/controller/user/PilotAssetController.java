@@ -34,9 +34,6 @@ import com.aloha.project.repository.tasks.ChemicalRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-
-
-
 /**
  * 조종사 - 본인 소유 드론 및 담당 약제 조회·관리
  * 예) /pilot/assetlist?tab=drone&id=DR-001

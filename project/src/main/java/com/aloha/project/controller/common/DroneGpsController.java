@@ -1,12 +1,10 @@
 package com.aloha.project.controller.common;
 
-import java.beans.Customizer;
 import java.security.Principal;
 
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.stereotype.Controller;
 
 import com.aloha.project.domain.users.CustomUser;

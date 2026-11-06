@@ -10,8 +10,6 @@ import org.springframework.security.web.savedrequest.SavedRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.FlashMap;
 import org.springframework.web.servlet.support.SessionFlashMapManager;
-import org.springframework.web.servlet.FlashMap;
-import org.springframework.web.servlet.support.SessionFlashMapManager;
 
 import com.aloha.project.domain.users.CustomUser;
 

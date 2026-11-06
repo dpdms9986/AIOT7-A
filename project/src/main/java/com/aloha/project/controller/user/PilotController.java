@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.aloha.project.domain.common.Pagination;
@@ -358,4 +360,28 @@ public class PilotController {
     private OptionDto toOptionDto(Drones drone) {
         return new OptionDto(drone.getNo(), drone.getModelName());
     }
+
+    /**
+     * 조종사 비행 중 궤적 저장 또는 작업 일시 중단 (파일럿 1)
+     * POST /pilot/tasks/{no}/save-path
+     */
+    @Transactional
+    @PostMapping("/tasks/{no}/save-path")
+    @ResponseBody
+    public ResponseEntity<?> saveFlightPath(@PathVariable("no") Long assignmentNo,
+                                            @RequestParam("flightPath") String flightPath,
+																						@AuthenticationPrincipal CustomUser customUser) 
+			{
+			if (customUser == null) return ResponseEntity.status(401).build();
+
+			WorkAssignments task = workAssignmentRepository.findById(assignmentNo).orElse(null);
+			if (task == null) return ResponseEntity.badRequest().body("작업을 찾을 수 없습니다.");
+
+			// 궤적 좌표 JSON 업데이트 (예: "[[23.1233, 123.1223].[36.123, 127.1212]]")
+			task.setFlightPath(flightPath);
+			workAssignmentRepository.save(task);
+
+			return ResponseEntity.ok(true);
+			}
+			
 }
