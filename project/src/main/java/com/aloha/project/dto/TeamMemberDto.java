@@ -4,7 +4,9 @@ import java.time.LocalDate;
 import java.util.List;
 
 import com.aloha.project.domain.tasks.WorkAssignments;
+import com.aloha.project.domain.tasks.WorkAssignmentResources;
 import com.aloha.project.domain.users.Users;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -32,7 +34,7 @@ public class TeamMemberDto {
     private int completed;      // 금일 완료 건수
     private String skill;       // 초급 / 중급 / 베테랑
 
-    // 👇 [백엔드 필수 메서드 추가] Users 엔티티 -> TeamMemberDto 변환
+    // Users 엔티티 -> TeamMemberDto 변환
     public static TeamMemberDto from(Users user) {
         if (user == null) return null;
 
@@ -41,28 +43,57 @@ public class TeamMemberDto {
                 .name(user.getName())
                 .username(user.getUserName())
                 .phone(user.getPhone() != null ? user.getPhone() : "-")
-                .status("online")  // 기본 접속 상태
-                .drone("-")        // 배정 기체
-                .currentTask("-")  // 배정 작업
+                .status("online")
+                .drone("-")
+                .currentTask("-")
                 .completed(0)
-                .skill("중급")     // 기본 숙련도
+                .skill("중급")
                 .build();
     }
 
-    // 작업 목록을 같이 받아서 상태/현재작업/금일완료를 채우는 버전
-    public static TeamMemberDto from(Users user, List<WorkAssignments> works) {
+    // 작업 목록을 받아 상태/현재 작업/금일 완료를 채우는 버전
+    public static TeamMemberDto from(
+            Users user,
+            List<WorkAssignments> works) {
+
+        return from(user, works, null);
+    }
+
+    // 현재 작업에 연결된 자원 정보까지 받아 사용 드론을 채우는 버전
+    public static TeamMemberDto from(
+            Users user,
+            List<WorkAssignments> works,
+            WorkAssignmentResources resources) {
+
         TeamMemberDto dto = from(user);
+
         if (dto == null) return null;
 
+        // 현재 작업 중인 배정 건 조회
         WorkAssignments current = works.stream()
                 .filter(w -> "IN_PROGRESS".equals(w.getStatus()))
-                .findFirst().orElse(null);
+                .findFirst()
+                .orElse(null);
 
         if (current != null) {
+
+            // 작업 상태 변경
             dto.setStatus("working");
-            dto.setCurrentTask(current.getLand().getAddress());
+
+            // 현재 작업 농지 주소
+            dto.setCurrentTask(
+                    current.getLand() != null
+                            ? current.getLand().getAddress()
+                            : "-"
+            );
+
+            // 현재 작업에 선택된 드론 모델명
+            if (resources != null && resources.getDrone() != null) {
+                dto.setDrone(resources.getDrone().getModelName());
+            }
         }
 
+        // 금일 완료 작업 건수
         dto.setCompleted((int) works.stream()
                 .filter(w -> "COMPLETED".equals(w.getStatus())
                           && w.getCompletedAt() != null

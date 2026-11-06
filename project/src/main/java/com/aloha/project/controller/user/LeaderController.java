@@ -32,6 +32,7 @@ import com.aloha.project.domain.common.Pagination;
 import com.aloha.project.domain.lands.Lands;
 import com.aloha.project.domain.tasks.DispatchBatches;
 import com.aloha.project.domain.tasks.WorkAssignments;
+import com.aloha.project.domain.tasks.WorkAssignmentResources;
 import com.aloha.project.domain.users.CustomUser;
 import com.aloha.project.domain.users.Teams;
 import com.aloha.project.domain.users.Users;
@@ -43,6 +44,7 @@ import com.aloha.project.dto.TeamMemberDto;
 import com.aloha.project.repository.lands.LandRepository;
 import com.aloha.project.repository.tasks.DispatchBatchRepository;
 import com.aloha.project.repository.tasks.WorkAssignmentRepository;
+import com.aloha.project.repository.tasks.WorkAssignmentResourceRepository;
 import com.aloha.project.repository.users.UserRepository;
 
 import lombok.Getter;
@@ -66,6 +68,7 @@ public class LeaderController {
     private final UserRepository userRepository;
     private final LandRepository landRepository;
     private final WorkAssignmentRepository workAssignmentRepository;
+    private final WorkAssignmentResourceRepository workAssignmentResourceRepository;
     private final DispatchBatchRepository dispatchBatchRepository;
     private final ObjectMapper objectMapper;
 
@@ -536,9 +539,29 @@ public class LeaderController {
         if (!inviteCode.isEmpty()) {
             allMembers = userRepository.findAll().stream()
                     .filter(u -> u.getTeam() != null
-                              && inviteCode.equals(u.getTeam().getInviteCode())
-                              && !"LEADER".equals(u.getRole()))
-                    .map(u -> TeamMemberDto.from(u, worksByPilot.getOrDefault(u.getNo(), List.of())))
+                            && inviteCode.equals(u.getTeam().getInviteCode())
+                            && !"LEADER".equals(u.getRole()))
+                    .map(u -> {
+                        // 해당 조종사의 전체 작업 목록
+                        List<WorkAssignments> pilotWorks =
+                                worksByPilot.getOrDefault(u.getNo(), List.of());
+
+                        // 현재 작업 중인 배정 건 조회
+                        WorkAssignments currentWork = pilotWorks.stream()
+                                .filter(w -> "IN_PROGRESS".equals(w.getStatus()))
+                                .findFirst()
+                                .orElse(null);
+
+                        // 현재 작업에 연결된 드론 및 약제 정보 조회
+                        WorkAssignmentResources resources = currentWork != null
+                                ? workAssignmentResourceRepository
+                                        .findByWorkAssignment_No(currentWork.getNo())
+                                        .orElse(null)
+                                : null;
+
+                        // 작업 정보와 선택한 드론 정보를 DTO에 전달
+                        return TeamMemberDto.from(u, pilotWorks, resources);
+                    })
                     .toList();
         }
 

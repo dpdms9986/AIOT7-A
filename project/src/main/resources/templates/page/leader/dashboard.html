@@ -161,10 +161,22 @@
       <section class="dash-card side-card">
         <div class="side-card-head">
           <h2>👨‍🌾 소속 조종사</h2>
-          <span class="count-label" th:text="${#lists.size(pilots)} + '명'">0명</span>
+          <span class="count-label" id="pilot-count" th:text="${#lists.size(pilots)} + '명'">0명</span>
         </div>
         <div class="side-body">
           <p class="panel-caption">조종사를 누르면 지도에서 현재 위치로 이동해요</p>
+
+          <!-- 상태별로 골라 보기 -->
+          <label class="pilot-filter">
+            <span>상태</span>
+            <select id="pilot-state-filter">
+              <option value="all">전체</option>
+              <option value="busy">작업 중</option>
+              <option value="ready">대기</option>
+              <option value="offline">오프라인</option>
+            </select>
+          </label>
+
           <ul class="side-list" id="pilot-status-list">
             <li class="side-item" tabindex="0" th:each="p : ${pilots}"
                 th:data-name="${p.name}"
@@ -182,6 +194,7 @@
               </span>
             </li>
             <li class="side-empty" th:if="${#lists.isEmpty(pilots)}">소속 조종사가 없습니다.</li>
+            <li class="side-empty" id="pilot-filter-empty" style="display:none">해당하는 조종사가 없습니다.</li>
           </ul>
         </div>
       </section>
