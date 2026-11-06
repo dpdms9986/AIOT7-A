@@ -1,7 +1,6 @@
 package com.aloha.project.controller.user;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,7 +11,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -60,7 +58,12 @@ public class LeaderDashboardController {
         Users leader = userRepository.findById(customUser.getUser().getNo()).orElse(null);
         Teams myTeam = (leader != null) ? leader.getTeam() : null;
 
-				List<Lands> rawLands = (myTeam != null) ? landRepository.findByTeam(myTeam) : List.of();
+        if (myTeam != null) {
+        model.addAttribute("inviteCode", myTeam.getInviteCode());
+        model.addAttribute("myTeamChannel", myTeam.getInviteCode()); 
+        model.addAttribute("myTeamName", myTeam.getTeamName());       // (화면 표시용 방제단 이름 필요 시)
+}
+		List<Lands> rawLands = (myTeam != null) ? landRepository.findByTeam(myTeam) : List.of();
 
         // 활성 배정 작업 조회 및 맵핑
         List<WorkAssignments> activeAssignments = workAssignmentRepository.findAll().stream()
@@ -94,7 +97,7 @@ public class LeaderDashboardController {
 						model.addAttribute("inviteCode", myTeam.getInviteCode());
 				}
         // ========================================================
-        // 👇 프론트엔드 팀원이 작성한 자동 계산 및 Model 바인딩 (100% 보존!)
+        // 👇 작성한 자동 계산 및 Model 바인딩 (100% 보존!)
         // ========================================================
 
         // 1) 요약 카드 숫자
@@ -214,4 +217,6 @@ public class LeaderDashboardController {
     private long countStatus(List<LandDto> lands, String status) {
         return lands.stream().filter(l -> status.equals(l.getStatus())).count();
     }
+
+    
 }
