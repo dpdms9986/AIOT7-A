@@ -3,6 +3,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -29,6 +31,9 @@ import com.aloha.project.repository.users.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
+
 @Slf4j
 @Controller
 @RequestMapping("/hazards")
@@ -40,6 +45,7 @@ public class HazardPageController {
     private final HazardImageRepository hazardImageRepository;
     private final HazardRepository hazardRepository;
     private final UserRepository userRepository;
+    private final ObjectMapper objectMapper;
 
     /**
      * 1. 위험 구역 목록 화면 (단장/조종사 공통)
@@ -50,6 +56,36 @@ public class HazardPageController {
 
         // 최신순 위험 목록 조회
         List<HazardReports> hazards = hazardRepository.findAllByOrderByCreatedAtDesc();
+        // 위험 구역별 이미지 목록 조회
+        Map<Long, List<HazardImages>> hazardImagesMap = new HashMap<>();
+        Map<Long, String> hazardImagePathsMap = new HashMap<>();
+
+        for (HazardReports hazard : hazards) {
+            List<HazardImages> images =
+                 hazardImageRepository.findByHazard(hazard);
+
+            hazardImagesMap.put(hazard.getNo(), images);
+
+            List<String> imagePaths = images.stream()
+                   .map(HazardImages::getFilePath)
+                   .toList();
+            
+            // JS에서 사용할 JSON 문자열로 변환
+              try {
+             hazardImagePathsMap.put(
+                          hazard.getNo(),
+                    objectMapper.writeValueAsString(imagePaths)
+             );
+         } catch (JacksonException e) {
+              log.error("위험 구역 이미지 경로 변환 실패: 번호={}",
+                     hazard.getNo(), e);
+              hazardImagePathsMap.put(hazard.getNo(), "[]");
+           }
+         }
+        
+
+model.addAttribute("hazardImagesMap", hazardImagesMap);
+model.addAttribute("hazardImagePathsMap", hazardImagePathsMap);
 
         // 상단 요약 통계 집계
         long totalCount = hazards.size();
@@ -75,7 +111,7 @@ public class HazardPageController {
      */
     @PostMapping
     public String createHazard(@ModelAttribute HazardRequest request,
-                               @RequestParam(value = "image", required = false) MultipartFile image,
+                               @RequestParam(value = "images", required = false) List<MultipartFile> images,
                                @AuthenticationPrincipal CustomUser customUser,
                                RedirectAttributes redirectAttributes) {
         if (customUser == null) return "redirect:/login";
@@ -97,11 +133,15 @@ public class HazardPageController {
             hazardRepository.save(hazard);
 
             // 2. 첨부 사진 파일이 있으면 로컬 폴더 및 DB 저장
-            if (image != null && !image.isEmpty()) {
+            if (images != null && !images.isEmpty()) {
+                for (MultipartFile image : images) {
+                if (image != null && !image.isEmpty()) {
                 saveHazardImage(hazard, image);
             }
+        }
+    }
 
-            log.info("위험 요소 등록 성공: {} (사진 첨부: {})", hazard.getTitle(), (image != null && !image.isEmpty()));
+            log.info("위험 요소 등록 성공: {} (첨부 사진: {}장)", hazard.getTitle(), (images == null ? 0 : images.size()));
             redirectAttributes.addFlashAttribute("successMessage", "위험 구역이 성공적으로 등록되었습니다.");
 
         } catch (Exception e) {
