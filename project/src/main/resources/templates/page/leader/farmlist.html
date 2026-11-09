@@ -54,8 +54,8 @@
           <span>총 <strong th:text="${pagination.total}">0</strong>건</span>
           <select name="sort" form="farm-filter-form" class="sort-select" aria-label="정렬"
               onchange="this.form.submit()">
-            <option value="">등록일순 (최신)</option>
-            <option value="oldest"   th:selected="${sort == 'oldest'}">등록일순 (오래된)</option>
+            <option value="">최신순</option>
+            <option value="oldest"   th:selected="${sort == 'oldest'}">등록순</option>
           </select>
           <button type="button" id="register-button" class="button primary-button">+ 농지 등록</button>
         </div>
