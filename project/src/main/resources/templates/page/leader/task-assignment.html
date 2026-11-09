@@ -125,13 +125,19 @@
             <section class="fs-panel" aria-labelledby="fs-set-title">
               <h3 id="fs-set-title">1. 영역 선택 · 2. 분할</h3>
 
-              <button type="button" class="dash-btn-outline" id="fs-draw-btn" aria-pressed="false">✏️ 지도에서 직접 영역 그리기</button>
-              <p class="fs-hint" id="fs-draw-status">등록된 농지를 체크하거나, 지도를 눌러 꼭짓점을 찍어 영역을 잡을 수 있어요.</p>
-              <div id="fs-drawn-wrap" hidden>
-                <label class="fs-label" for="fs-drawn-address">직접 그린 영역 이름(주소)</label>
-                <input type="text" id="fs-drawn-address" name="drawnAddress" maxlength="200"
-                       placeholder="예) 전민동 15-2 옆 밭" style="width:100%">
+              <div style="display: flex; gap: 8px;">
+                <button type="button" class="dash-btn-outline" id="fs-draw-btn" aria-pressed="false">✏️ 지도에서 직접 영역 그리기</button>
+
+                <!-- 그리기 중에만 나타나는 든든한 '취소' 버튼! -->
+                  <button type="button" class="dash-btn-danger" id="fs-draw-cancel-btn" hidden style="white-space: nowrap;">❌ 취소</button>
               </div>
+                <p class="fs-hint" id="fs-draw-status">등록된 농지를 체크하거나, 지도를 눌러 꼭짓점을 찍어 영역을 잡을 수 있어요.</p>
+                <div id="fs-drawn-wrap" hidden>
+                  <label class="fs-label" for="fs-drawn-address">직접 그린 영역 이름(주소)</label>
+                  <input type="text" id="fs-drawn-address" name="drawnAddress" maxlength="200"
+                        placeholder="예) 전민동 15-2 옆 밭" style="width:100%">
+                </div>
+              
 
               <label class="fs-label" for="splitCount" style="display:block;margin-top:14px">분할할 조각 수</label>
               <div class="fs-count">
