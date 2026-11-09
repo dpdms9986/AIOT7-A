@@ -61,9 +61,23 @@ document.addEventListener("DOMContentLoaded", () => {
   const goAssignBtn = $("#ap-go-assign"); // 바로가기 버튼
   const currentDashboardPolygon = null;
 
+  // [작업 진행중] 상세 패널을 표시할 위치
+  const workingPanelSlot = $("#working-assign-panel-slot");
+  const unassignedPanelSlot = $("#unassigned-assign-panel-slot");
+
   // 1. 하단 패널 내용 채우기 함수
   function fillPanel(f) {
     if (!panel) return;
+
+    // 농지 상태에 따라 상세 패널 위치 이동
+    const targetSlot = f.status === "IN_PROGRESS"
+        ? workingPanelSlot
+        : unassignedPanelSlot;
+
+    if (targetSlot && panel.parentElement !== targetSlot) {
+        targetSlot.appendChild(panel);
+    }
+
     panel.hidden = false;
     if ($("#ap-title")) $("#ap-title").textContent = `🌱 ${f.address}`;
     if ($("#ap-status")) {
@@ -124,7 +138,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // 2. 👈 [복구 완료] 농지 선택 함수
   function selectFarm(no, moveMap = true) {
     selectedNo = Number(no);
-    document.querySelectorAll("#unassigned-farm-list .side-item").forEach((li) =>
+    document.querySelectorAll("#unassigned-farm-list .side-item #leader-working-list .side-item").forEach((li) =>
       li.classList.toggle("selected", Number(li.dataset.no) === selectedNo));
     if (typeof renderFarmMarkers === "function") renderFarmMarkers();
 
@@ -156,8 +170,12 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // 4. 미배정 농지 목록 클릭 시 selectFarm 실행!
+  // 4. 미배정 농지 목록 클릭
   onActivate("#unassigned-farm-list", (li) => selectFarm(li.dataset.no));
+
+
+  // 작업 중인 농지 목록 클릭
+  onActivate("#leader-working-list", (li) => selectFarm(li.dataset.no));
 
   /* ===== 3. 조종사 실시간 위치 (웹소켓) ===== */
   const LIVE_TIMEOUT_MS = 15000;
