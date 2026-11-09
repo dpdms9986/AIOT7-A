@@ -281,7 +281,7 @@ window.FieldSplit = (() => {
         try {
           const polygon = turf.polygon([closeRing(coords).map(([lat, lng]) => [lng, lat])]);
           if (typeof turf.kinks === "function" && turf.kinks(polygon).features.length > 0) {
-            const message = "외곽 선이 서로 교차합니다. 다시 그려 주세요.";
+            const message = "외곽 선이 서로 교차합니다. 꼭짓점 입력 순서를 확인하고 다시 그려 주세요." ;
             say(message, "error");
             return { ok: false, coordinates: this.getCoordinates(), message };
           }
