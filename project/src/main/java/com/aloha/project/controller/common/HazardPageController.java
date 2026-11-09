@@ -59,33 +59,54 @@ public class HazardPageController {
         // 위험 구역별 이미지 목록 조회
         Map<Long, List<HazardImages>> hazardImagesMap = new HashMap<>();
         Map<Long, String> hazardImagePathsMap = new HashMap<>();
+        Map<Long, String> hazardImageDataMap = new HashMap<>();
 
+        
         for (HazardReports hazard : hazards) {
             List<HazardImages> images =
-                 hazardImageRepository.findByHazard(hazard);
+                    hazardImageRepository.findByHazard(hazard);
 
             hazardImagesMap.put(hazard.getNo(), images);
 
+            // 상세보기에서 사용할 이미지 경로 목록
             List<String> imagePaths = images.stream()
-                   .map(HazardImages::getFilePath)
-                   .toList();
-            
-            // JS에서 사용할 JSON 문자열로 변환
-              try {
-             hazardImagePathsMap.put(
-                          hazard.getNo(),
-                    objectMapper.writeValueAsString(imagePaths)
-             );
-         } catch (JacksonException e) {
-              log.error("위험 구역 이미지 경로 변환 실패: 번호={}",
-                     hazard.getNo(), e);
-              hazardImagePathsMap.put(hazard.getNo(), "[]");
-           }
-         }
+                    .map(HazardImages::getFilePath)
+                    .toList();
+
+            // 수정 팝업에서 사용할 이미지 번호 + 경로 목록
+            List<Map<String, Object>> imageData = images.stream()
+                    .map(image -> {
+                        Map<String, Object> data = new HashMap<>();
+                        data.put("no", image.getNo());
+                        data.put("filePath", image.getFilePath());
+                        return data;
+                    })
+                    .toList();
+
+            try {
+                hazardImagePathsMap.put(
+                        hazard.getNo(),
+                        objectMapper.writeValueAsString(imagePaths)
+                );
+
+                hazardImageDataMap.put(
+                        hazard.getNo(),
+                        objectMapper.writeValueAsString(imageData)
+                );
+            } catch (JacksonException e) {
+                log.error("위험 구역 이미지 경로 변환 실패: 번호={}",
+                        hazard.getNo(), e);
+
+                hazardImagePathsMap.put(hazard.getNo(), "[]");
+                hazardImageDataMap.put(hazard.getNo(), "[]");
+            }
+        }
+
         
 
-model.addAttribute("hazardImagesMap", hazardImagesMap);
-model.addAttribute("hazardImagePathsMap", hazardImagePathsMap);
+        model.addAttribute("hazardImagesMap", hazardImagesMap);
+        model.addAttribute("hazardImagePathsMap", hazardImagePathsMap);
+        model.addAttribute("hazardImageDataMap", hazardImageDataMap);
 
         // 상단 요약 통계 집계
         long totalCount = hazards.size();
@@ -101,6 +122,7 @@ model.addAttribute("hazardImagePathsMap", hazardImagePathsMap);
 
         // 수정/삭제 버튼 노출 여부 판단을 위해 현재 로그인 사용자 번호 전달
         model.addAttribute("currentLoginUserNo", customUser.getUser().getNo());
+        model.addAttribute("currentLoginUserRole", customUser.getUser().getRole());
 
         return "page/common/hazards"; // templates/page/hazards.html
     }
@@ -152,14 +174,16 @@ model.addAttribute("hazardImagePathsMap", hazardImagePathsMap);
         return "redirect:/hazards";
     }
 
+    
     /**
-     * 3. 위험 구역 내용 수정 (사진 교체 지원))
+     * 3. 위험 구역 내용 수정 (사진 교체 지원)
      * - 작성자 본인 또는 관리자(ADMIN)만 가능
      */
     @PostMapping("/{no}/update")
     public String updateHazard(@PathVariable("no") Long no,
                                @ModelAttribute HazardRequest request,
-                               @RequestParam(value = "image", required = false) MultipartFile image,
+                               @RequestParam(value = "images", required = false) List<MultipartFile> images,
+                               @RequestParam(value = "deleteImageNos", required = false) List<Long> deleteImageNos,
                                @AuthenticationPrincipal CustomUser customUser,
                                RedirectAttributes redirectAttributes) {
 
@@ -181,27 +205,68 @@ model.addAttribute("hazardImagePathsMap", hazardImagePathsMap);
             return "redirect:/hazards";
         }
 
+        // 필수 입력값 확인
+        if (request.getTitle() == null || request.getTitle().isBlank()
+                || request.getContent() == null || request.getContent().isBlank()) {
+            redirectAttributes.addFlashAttribute("errorMessage", "제목과 상세 내용을 입력해주세요.");
+            return "redirect:/hazards";
+        }
+
         // 내용 업데이트 (JPA 더티 체킹으로 자동 저장)
         hazard.update(
             request.getTitle().trim(),
             request.getContent().trim(),
-            request.getHazardType(),
+            request.getHazardType() != null ? request.getHazardType() : hazard.getHazardType(),
             request.getAddress() != null ? request.getAddress().trim() : hazard.getAddress(),
             request.getLatitude(),
             request.getLongitude()
         );
         hazardRepository.save(hazard);
 
-        // 새 사진이 올라왔다면 기존 사진 교체
-        if (image != null && !image.isEmpty()) {
-            hazardImageRepository.deleteByHazard(hazard); // 기존 사진 삭제
-            saveHazardImage(hazard, image); // 새 사진 저장
+        
+        // 사용자가 삭제 선택한 기존 이미지 처리
+        if (deleteImageNos != null && !deleteImageNos.isEmpty()) {
+
+            // 현재 위험 구역에 속한 이미지인지 확인
+            List<HazardImages> deleteTargets =
+                    hazardImageRepository.findByNoInAndHazard(deleteImageNos, hazard);
+
+            File imageDir = new File(uploadPath, "hazards");
+
+            for (HazardImages existingImage : deleteTargets) {
+
+                // 실제 서버 이미지 파일 삭제
+                File existingFile = new File(
+                        imageDir,
+                        existingImage.getSaveName()
+                );
+
+                if (existingFile.exists() && !existingFile.delete()) {
+                    log.warn("이미지 파일 삭제 실패: {}",
+                            existingFile.getAbsolutePath());
+                }
+            }
+
+            // 선택된 이미지의 DB 정보만 삭제
+            hazardImageRepository.deleteAll(deleteTargets);
         }
+
+        // 새 사진은 기존 사진을 유지하면서 추가 저장
+        if (images != null) {
+            for (MultipartFile image : images) {
+                if (image != null && !image.isEmpty()) {
+                    saveHazardImage(hazard, image);
+                }
+            }
+        }
+
+
 
         log.info("위험 구역 수정 완료: 번호={}", no);
         redirectAttributes.addFlashAttribute("successMessage", "위험 구역 정보가 수정되었습니다.");
         return "redirect:/hazards";
     }
+
 
     /**
      * 4. 위험 구역 삭제 (POST /hazards/{no}/delete)
