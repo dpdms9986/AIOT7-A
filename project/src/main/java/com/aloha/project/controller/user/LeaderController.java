@@ -415,20 +415,44 @@ public class LeaderController {
     private String assignByPieces(AssignRequest req, List<PieceAssignment> pieceList, Users leader, Teams myTeam,
                                   RedirectAttributes redirectAttributes) {
         Lands land;
-        if (req.getDrawnPolygon() != null && !req.getDrawnPolygon().isBlank()) {
-            land = createDrawnLand(req);
-            if (land == null) {
-                redirectAttributes.addFlashAttribute("errorMessage",
-                        "직접 그린 영역을 농지로 저장하지 못했습니다. (행정구역 연결 작업이 필요합니다)");
-                return "redirect:/leader/task-assignment";
-            }
-        } else {
-            if (req.getLandNos() == null || req.getLandNos().size() != 1) {
-                redirectAttributes.addFlashAttribute("errorMessage", "구역별 배정은 농지를 1건만 선택해 주세요.");
-                return "redirect:/leader/task-assignment";
-            }
-            land = landRepository.findById(req.getLandNos().get(0)).orElse(null);
-        }
+
+// 기존 농지를 선택한 경우: 기존 레코드 사용
+if (req.getLandNos() != null && req.getLandNos().size() == 1) {
+
+    land = landRepository.findById(req.getLandNos().get(0)).orElse(null);
+
+    if (land != null && "READY".equals(land.getStatus())
+            && req.getDrawnPolygon() != null
+            && !req.getDrawnPolygon().isBlank()) {
+
+        // 기존 농지의 외곽선 및 면적 갱신
+        land.setPolygonCoordinates(req.getDrawnPolygon());
+
+        if (req.getDrawnLat() != null) land.setLatitude(req.getDrawnLat());
+        if (req.getDrawnLng() != null) land.setLongitude(req.getDrawnLng());
+        if (req.getDrawnArea() != null) land.setAreaSize(req.getDrawnArea());
+
+        land = landRepository.save(land);
+    }
+
+// 기존 농지 없이 직접 그린 경우에만 신규 생성
+} else if ((req.getLandNos() == null || req.getLandNos().isEmpty())
+        && req.getDrawnPolygon() != null
+        && !req.getDrawnPolygon().isBlank()) {
+
+    land = createDrawnLand(req);
+
+    if (land == null) {
+        redirectAttributes.addFlashAttribute("errorMessage",
+                "직접 그린 영역을 농지로 저장하지 못했습니다.");
+        return "redirect:/leader/task-assignment";
+    }
+
+} else {
+    redirectAttributes.addFlashAttribute("errorMessage",
+            "구역별 배정은 농지를 1건만 선택해 주세요.");
+    return "redirect:/leader/task-assignment";
+}
 
         if (land == null || !"READY".equals(land.getStatus())) {
             redirectAttributes.addFlashAttribute("errorMessage", "대기 상태의 농지만 배정할 수 있습니다.");
