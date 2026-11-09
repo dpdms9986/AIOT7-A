@@ -215,6 +215,7 @@ public class LeaderController {
      * 작업 이력 CSV 다운로드
      */
     @GetMapping("/task-assignment/history.csv")
+    @Transactional(readOnly = true)
     public ResponseEntity<byte[]> downloadHistoryCsv(
             @RequestParam(value = "from", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam(value = "to",   required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
