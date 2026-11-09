@@ -54,67 +54,85 @@ document.addEventListener("DOMContentLoaded", () => {
       farmMarkers[f.no] = m;
     });
   };
-
-  /* ===== 2. 농지 선택 → 목록 표시 + 배정 칸 채우기 ===== */
+/* ===== 2. 농지 선택 → 목록 표시 + 배정 칸 채우기 ===== */
   const panel = $("#assign-panel");
-  const assignForm = $("#ap-assign-form");
   const cancelForm = $("#ap-cancel-form");
   const note = $("#ap-note");
-  const pilotSelect = $("#ap-pilot-select");
+  const goAssignBtn = $("#ap-go-assign"); // 바로가기 버튼
 
-  const fillPanel = (f) => {
+  // 1. 하단 패널 내용 채우기 함수
+  function fillPanel(f) {
+    if (!panel) return;
     panel.hidden = false;
-    $("#ap-title").textContent = `🌱 ${f.address}`;
-    $("#ap-status").textContent = `● ${f.statusLabel}`;
-    $("#ap-status").style.color = f.color;
-    $("#ap-area").textContent = `${Number(f.area || 0).toLocaleString()}㎡`;
-    $("#ap-date").textContent = f.assignedAt || "-";
-    $("#ap-pilot").textContent = f.pilotName || "미배정";
-
-    // 상태에 따라 보여 줄 것
-    const canAssign = f.status === "READY" || f.status === "ASSIGNED";
-    assignForm.hidden = !canAssign;
-    cancelForm.hidden = f.status !== "ASSIGNED";
-    note.hidden = canAssign;
-
-    if (canAssign) {
-      $("#ap-land-no").value = f.no;
-      // 작업배정 페이지로 이동할 때 선택한 농지가 미리 체크되도록 번호를 붙임
-      $("#ap-go-assign").href = `${ctx}/leader/task-assignment?landNo=${f.no}`;
-      $("#ap-submit").textContent = f.status === "READY" ? "✅ 배정하기" : "🔄 재배정";
-      // 이미 배정된 조종사 미리 선택
-      const opt = [...pilotSelect.options].find((o) => o.dataset.name === f.pilotName);
-      pilotSelect.value = opt ? opt.value : "";
+    if ($("#ap-title")) $("#ap-title").textContent = `🌱 ${f.address}`;
+    if ($("#ap-status")) {
+      $("#ap-status").textContent = `● ${f.statusLabel}`;
+      $("#ap-status").style.color = f.color;
     }
-    if (f.status === "ASSIGNED") $("#ap-cancel-no").value = f.no;
-    if (f.status === "IN_PROGRESS") note.textContent = `🚁 ${f.pilotName} 조종사가 작업 중입니다.`;
-    if (f.status === "COMPLETED") note.textContent = "완료된 작업입니다.";
-  };
+    if ($("#ap-area")) $("#ap-area").textContent = `${Number(f.area || 0).toLocaleString()}㎡`;
+    if ($("#ap-date")) $("#ap-date").textContent = f.assignedAt || "-";
+    if ($("#ap-pilot")) $("#ap-pilot").textContent = f.pilotName || "미배정";
 
-  const selectFarm = (no, moveMap = true) => {
+    const canAssign = f.status === "READY" || f.status === "ASSIGNED";
+
+    // 바로가기 버튼에 농지 번호 달아주기
+    if (goAssignBtn) {
+      goAssignBtn.hidden = !canAssign;
+      if (canAssign) {
+        goAssignBtn.href = `/leader/task-assignment?landNo=${f.no}`;
+      }
+    }
+
+    if (cancelForm) {
+      cancelForm.hidden = f.status !== "ASSIGNED";
+      if (f.status === "ASSIGNED" && $("#ap-cancel-no")) {
+        $("#ap-cancel-no").value = f.no;
+      }
+    }
+
+    if (note) {
+      note.hidden = canAssign;
+      if (f.status === "IN_PROGRESS") note.textContent = `🚁 ${f.pilotName} 조종사가 작업 중입니다.`;
+      if (f.status === "COMPLETED") note.textContent = "완료된 작업입니다.";
+    }
+  }
+
+  // 2. 👈 [복구 완료] 농지 선택 함수
+  function selectFarm(no, moveMap = true) {
     selectedNo = Number(no);
     document.querySelectorAll("#unassigned-farm-list .side-item").forEach((li) =>
       li.classList.toggle("selected", Number(li.dataset.no) === selectedNo));
-    renderFarmMarkers();
+    if (typeof renderFarmMarkers === "function") renderFarmMarkers();
 
-    const f = findFarm(selectedNo);
+    const f = typeof findFarm === "function" ? findFarm(selectedNo) : null;
     if (!f) return;
-    fillPanel(f);
-    const m = farmMarkers[f.no];
-    if (moveMap && m) map.flyTo([f.lat, f.lng], 16, { duration: 0.8 });
-    if (m) m.openPopup();
-  };
+    fillPanel(f); // 👈 여기서 팝업 패널을 띄웁니다!
+    if (typeof farmMarkers !== "undefined") {
+      const m = farmMarkers[f.no];
+      if (moveMap && m && map) map.flyTo([f.lat, f.lng], 16, { duration: 0.8 });
+      if (m) m.openPopup();
+    }
+  }
 
-  // 클릭 / 엔터로 선택 (목록 공통)
-  const onActivate = (listSel, handler) => {
+  // 3. 클릭 및 키보드 엔터 선택 이벤트 등록 함수
+  function onActivate(listSel, handler) {
     const list = $(listSel);
-    list.addEventListener("click", (e) => { const li = e.target.closest(".side-item"); if (li) handler(li); });
+    if (!list) return;
+    list.addEventListener("click", (e) => { 
+      const li = e.target.closest(".side-item"); 
+      if (li) handler(li); 
+    });
     list.addEventListener("keydown", (e) => {
       if (e.key !== "Enter" && e.key !== " ") return;
       const li = e.target.closest(".side-item");
-      if (li) { e.preventDefault(); handler(li); }
+      if (li) { 
+        e.preventDefault(); 
+        handler(li); 
+      }
     });
-  };
+  }
+
+  // 4. 미배정 농지 목록 클릭 시 selectFarm 실행!
   onActivate("#unassigned-farm-list", (li) => selectFarm(li.dataset.no));
 
   /* ===== 3. 조종사 실시간 위치 (웹소켓) ===== */

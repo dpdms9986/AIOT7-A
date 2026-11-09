@@ -148,28 +148,15 @@
               <dt>조종사</dt> <dd id="ap-pilot">-</dd>
             </dl>
 
-            <!-- 배정하기 / 재배정 (READY, ASSIGNED 일 때) -->
-            <form class="assign-form" id="ap-assign-form" th:action="@{/leader/dashboard/assign}" method="post">
-              <input type="hidden" name="landNo" id="ap-land-no">
-              <label>조종사
-                <select name="pilotNo" id="ap-pilot-select" required>
-                  <option value="">조종사 선택</option>
-                  <option th:each="p : ${pilots}"
-                          th:value="${p.no}"
-                          th:data-name="${p.name}"
-                          th:text="|${p.name} (배정 ${activeCount.get(p.name) ?: 0}건)|">김민수 (배정 1건)</option>
-                </select>
-              </label>
-              <label>작업 예정일
-                <input type="date" name="workDate" th:min="${today}" th:value="${today}" required>
-              </label>
-              <div class="assign-actions">
-                <button type="submit" class="dash-btn-primary" id="ap-submit">✅ 배정하기</button>
-                <a class="dash-btn-outline" id="ap-go-assign"
-                   th:href="@{/leader/task-assignment}"
-                   title="여러 조종사에게 나눠서 배정할 수 있어요">🧑‍✈️ 작업배정 바로가기</a>
-              </div>
-            </form>
+            <!-- 작업 배정 연동 수정! 11.09 예은 -->
+            <div class="assign-actions" style="margin-top: 16px;">
+              <a class="dash-btn-primary" 
+                id="ap-go-assign"
+                th:href="@{/leader/task-assignment}"
+                style="display: block; text-align: center; text-decoration: none; line-height: var(--button-height);">
+                🧑‍✈️ 작업 배정하러 가기
+              </a>
+            </div>
 
             <!-- 배정 취소 (ASSIGNED 일 때) -->
             <form id="ap-cancel-form" th:action="@{/leader/dashboard/unassign}" method="post"
