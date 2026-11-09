@@ -94,6 +94,7 @@
                           th:data-polygon="${land.polygonCoordinates}"
                           th:data-pilot="${land.pilotName} ?: '미배정'"
                           th:data-assigned-at="${land.assignedAt != null} ? ${#temporals.format(land.assignedAt, 'yyyy-MM-dd HH:mm')} : '-'"
+                          th:data-completed-at="${land.completedAt != null} ? ${#temporals.format(land.completedAt, 'yyyy-MM-dd HH:mm')} : '-'"
                           th:data-deletable="${land.deletable}"
                           th:data-assign-url="@{/leader/task-assignment(landNo=${land.no})}">상세</button>
                 </td>
@@ -156,6 +157,7 @@
       <dl class="drawer-info">
         <dt>배정 조종사</dt> <dd id="drawer-pilot">미배정</dd>
         <dt>배정 일시</dt>   <dd id="drawer-assigned-at">-</dd>
+        <dt>완료 일시</dt>   <dd id="drawer-completed-at">-</dd>
       </dl>
     </section>
   </div>
