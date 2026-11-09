@@ -1,7 +1,7 @@
-
 package com.aloha.project.service.impl.tasks;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 
 import org.springframework.stereotype.Service;
@@ -60,11 +60,6 @@ public class WorkAssignmentServiceImpl implements WorkAssignmentService {
                         "배정된 작업만 시작할 수 있습니다.");
             }
 
-            if (!"ASSIGNED".equals(assignment.getLand().getStatus())) {
-                throw new IllegalStateException(
-                        "현재 작업을 시작할 수 없는 농지입니다.");
-            }
-
             assignment.setStartedAt(LocalDateTime.now());
         }
 
@@ -74,11 +69,6 @@ public class WorkAssignmentServiceImpl implements WorkAssignmentService {
             if (!"IN_PROGRESS".equals(currentStatus)) {
                 throw new IllegalStateException(
                         "진행 중인 작업만 완료할 수 있습니다.");
-            }
-
-            if (!"IN_PROGRESS".equals(assignment.getLand().getStatus())) {
-                throw new IllegalStateException(
-                        "현재 완료할 수 없는 농지입니다.");
             }
 
             assignment.setCompletedAt(LocalDateTime.now());
@@ -93,8 +83,16 @@ public class WorkAssignmentServiceImpl implements WorkAssignmentService {
         // 6. 작업 배정 상태 변경
         assignment.updateStatus(status);
 
-        // 7. 농지 상태 변경
-        assignment.getLand().updateStatus(status);
+        // 7. 농지에 배정된 전체 작업 상태를 기준으로 농지 상태 변경
+        List<WorkAssignments> landAssignments =
+                workAssignmentRepository.findByLand(assignment.getLand());
+
+        boolean allCompleted = !landAssignments.isEmpty()
+                && landAssignments.stream()
+                        .allMatch(work -> "COMPLETED".equals(work.getStatus()));
+
+        assignment.getLand().updateStatus(
+                allCompleted ? "COMPLETED" : "IN_PROGRESS");
 
         log.info("작업 상태 변경 완료: 작업 번호={}, 상태={}",
                 assignmentNo, status);
@@ -132,34 +130,34 @@ public class WorkAssignmentServiceImpl implements WorkAssignmentService {
         // 5. 로그인 조종사와 자산 담당자가 일치하는지 확인
         if (drone.getUser() == null
                 || !Objects.equals(drone.getUser().getNo(), pilotNo)) {
-        throw new IllegalArgumentException(
-                "본인에게 등록된 드론만 작업에 사용할 수 있습니다.");
+            throw new IllegalArgumentException(
+                    "본인에게 등록된 드론만 작업에 사용할 수 있습니다.");
         }
 
         if (chemical.getUser() == null
                 || !Objects.equals(chemical.getUser().getNo(), pilotNo)) {
-        throw new IllegalArgumentException(
-                "본인이 담당하는 약제만 작업에 사용할 수 있습니다.");
+            throw new IllegalArgumentException(
+                    "본인이 담당하는 약제만 작업에 사용할 수 있습니다.");
         }
 
         // 6. 같은 방제단 소속 자원인지 확인
         if (assignment.getPilot().getTeam() == null) {
-        throw new IllegalArgumentException(
-                "조종사의 방제단 정보가 없습니다.");
+            throw new IllegalArgumentException(
+                    "조종사의 방제단 정보가 없습니다.");
         }
 
         Long teamNo = assignment.getPilot().getTeam().getNo();
 
         if (drone.getUser().getTeam() == null
                 || !Objects.equals(drone.getUser().getTeam().getNo(), teamNo)) {
-        throw new IllegalArgumentException(
-                "해당 방제단에서 사용할 수 없는 드론입니다.");
+            throw new IllegalArgumentException(
+                    "해당 방제단에서 사용할 수 없는 드론입니다.");
         }
 
         if (chemical.getTeam() == null
                 || !Objects.equals(chemical.getTeam().getNo(), teamNo)) {
-        throw new IllegalArgumentException(
-                "해당 방제단에서 사용할 수 없는 약제입니다.");
+            throw new IllegalArgumentException(
+                    "해당 방제단에서 사용할 수 없는 약제입니다.");
         }
 
         // 6. 드론 사용 가능 상태 확인
