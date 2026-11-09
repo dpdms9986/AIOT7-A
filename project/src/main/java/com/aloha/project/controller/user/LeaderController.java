@@ -3,6 +3,7 @@ package com.aloha.project.controller.user;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -214,6 +215,7 @@ public class LeaderController {
      * 작업 이력 CSV 다운로드
      */
     @GetMapping("/task-assignment/history.csv")
+    @Transactional(readOnly = true)
     public ResponseEntity<byte[]> downloadHistoryCsv(
             @RequestParam(value = "from", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
             @RequestParam(value = "to",   required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
@@ -298,8 +300,7 @@ public class LeaderController {
                 }
             }
 
-						long pilotCount = req.getQuotas().values().stream().filter(v -> v != null && v > 0).count();
-            double weight = (pilotCount > 0) ? (1.0 / pilotCount) : 1.0;
+		long pilotCount = req.getQuotas().values().stream().filter(v -> v != null && v > 0).count();
 
             // 3. 선택된 농지에 순서대로 조종사 매핑하여 WorkAssignments 저장
 					if (req.getLandNos().size() == 1) {
@@ -405,7 +406,6 @@ public class LeaderController {
                     .status("READY")
                     .build());
         } catch (Exception e) {
-            // TODO(백엔드): lands.region_id 가 NOT NULL 이라 행정구역 연결 전에는 여기서 실패함
             log.warn("직접 그린 영역 농지 저장 실패: {}", e.getMessage());
             return null;
         }
@@ -600,20 +600,40 @@ public class LeaderController {
     public String reassign(@PathVariable("no") Long no,
                            @RequestParam("targetNo") Long targetNo,
                            RedirectAttributes redirectAttributes) {
-        log.info("미완료 작업 재배정: {} → {}", no, targetNo);
+        log.info("작업 인수인계(재배정): 이전 조종사={} → 신규조종사={}", no, targetNo);
 
         Users targetPilot = userRepository.findById(targetNo).orElse(null);
-        if (targetPilot != null) {
-            List<WorkAssignments> tasks = workAssignmentRepository.findAll().stream()
-                    .filter(w -> w.getPilot() != null && no.equals(w.getPilot().getNo()) && !"COMPLETED".equals(w.getStatus()))
-                    .toList();
-            for (WorkAssignments w : tasks) {
-                w.setPilot(targetPilot);
-                workAssignmentRepository.save(w);
-            }
-            redirectAttributes.addFlashAttribute("message", "미완료 작업이 " + targetPilot.getName() + " 조종사에게 재배정되었습니다.");
+        if (targetPilot == null) {
+            redirectAttributes.addFlashAttribute("errormessage", "인계받을 조종사를 찾을 수 없습니다.");
+            return "redirect:/leader/team-management";
+        }
+        // 1. 이전 조종사(no)의 미완료 작업 조회 (IN_PROGRESS 또는 ASSIGNED)
+        List<WorkAssignments> tasks = workAssignmentRepository.findAll().stream()
+        .filter(w -> w.getPilot() != null && no.equals(w.getPilot().getNo()))
+        .filter(w -> "IN_PROGRESS".equals(w.getStatus()) || "ASSIGNED".equals(w.getStatus()))
+        .toList();
+
+        for (WorkAssignments oldTask : tasks) {
+        // 2. 파일럿 1의 기존 작업은 '중단/인계(STOPPED)' 처리하고 중단 시간 기록
+        oldTask.setStatus("STOPPED"); 
+        oldTask.setCompletedAt(LocalDateTime.now());
+        workAssignmentRepository.save(oldTask);
+
+        // 3. 파일럿 2를 위한 '새로운 배정 건' 생성 (대기 상태로 출발)
+        WorkAssignments newTask = WorkAssignments.builder()
+                .dispatchBatch(oldTask.getDispatchBatch())
+                .land(oldTask.getLand())
+                .pilot(targetPilot)        // 새 조종사
+                .weightRatio(oldTask.getWeightRatio())
+                .status("ASSIGNED")
+                .flightPath(oldTask.getFlightPath())
+                .build();
+
+        workAssignmentRepository.save(newTask);
         }
 
+        redirectAttributes.addFlashAttribute("message", 
+                "작업이" + targetPilot.getName() + "조종사에게 안전하게 인계되었습니다." );
         return "redirect:/leader/team-management";
     }
 

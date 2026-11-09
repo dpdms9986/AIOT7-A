@@ -29,6 +29,9 @@ public class PilotTaskDto {
     private String pilotName;          // 담당 조종사               (단장 화면용)
     private LocalDateTime assignedAt;  // 배정 일시
 
+    // 배정 이전 시 사용될 비행궤적 JSON 문자열 
+    private String flightPath;
+
     // 작업 시작 때 채워짐
     private String droneName;          // 사용 드론
     private String chemicalName;       // 사용 약제
@@ -81,6 +84,7 @@ public class PilotTaskDto {
                 .areaSize(area)
                 .status(assignment.getStatus())
                 .pilotName(pilot)
+                .flightPath(assignment.getFlightPath())
                 .assignedAt(assignment.getCreatedAt())
                 .startedAt(assignment.getStartedAt())
                 .completedAt(assignment.getCompletedAt() != null ? assignment.getCompletedAt() : assignment.getCreatedAt())
