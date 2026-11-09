@@ -722,6 +722,216 @@
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.4));
 }
 
+/* =========================================
+   단장 대시보드 - 미배정 농지 목록
+   파일럿 작업 목록 디자인 통일
+========================================= */
+
+/* 목록 */
+.leader-unassigned-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    max-height: 420px;
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    margin: 0;
+    padding: 2px 6px 2px 0;
+    list-style: none;
+
+    scrollbar-width: thin;
+    scrollbar-color: #b8c9bd #f1f5f2;
+}
+
+/* 농지 카드 */
+.leader-unassigned-list .leader-unassigned-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    padding: 12px;
+
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    background: #ffffff;
+
+    color: var(--color-text);
+    font-family: inherit;
+    text-align: left;
+
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+}
+
+/* 마우스 오버 */
+.leader-unassigned-list .leader-unassigned-item:hover {
+    border-color: var(--color-primary);
+}
+
+/* 선택된 카드 */
+.leader-unassigned-list .leader-unassigned-item.selected {
+    border-color: var(--color-primary);
+    background: var(--color-primary-light);
+}
+
+/* 키보드 포커스 */
+.leader-unassigned-list .leader-unassigned-item:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+/* 상태 점 */
+.leader-unassigned-dot {
+    flex-shrink: 0;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #238451;
+}
+
+/* 농지 주소 및 면적 */
+.leader-unassigned-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.leader-unassigned-body strong {
+    display: block;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--color-text);
+}
+
+.leader-unassigned-body small {
+    display: block;
+    margin-top: 2px;
+    color: var(--color-text-sub);
+    font-size: 12px;
+}
+
+/* 미배정 상태 배지 */
+.leader-unassigned-status {
+    flex-shrink: 0;
+    padding: 3px 10px;
+
+    border-radius: 999px;
+    background: #e8f3ec;
+    color: #238451;
+
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+/* 스크롤바 */
+.leader-unassigned-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.leader-unassigned-list::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    background: #b8c9bd;
+}
+
+.leader-unassigned-list::-webkit-scrollbar-track {
+    background: #f1f5f2;
+}
+
+/* =========================================
+   단장 대시보드 - 작업 중인 농지
+========================================= */
+
+.leader-working-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    max-height: 300px;
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    margin: 0;
+    padding: 2px 6px 2px 0;
+    list-style: none;
+
+    scrollbar-width: thin;
+    scrollbar-color: #b8c9bd #f1f5f2;
+}
+
+.leader-working-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    padding: 12px;
+
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    background: #fff;
+
+    color: var(--color-text);
+}
+
+.leader-working-dot {
+    flex-shrink: 0;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #2f80ed;
+}
+
+.leader-working-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.leader-working-body strong {
+    display: block;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.leader-working-body small {
+    display: block;
+    margin-top: 2px;
+    color: var(--color-text-sub);
+    font-size: 12px;
+}
+
+.leader-working-status {
+    flex-shrink: 0;
+    padding: 3px 10px;
+
+    border-radius: 999px;
+    background: #e8f0ff;
+    color: #2f80ed;
+
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.leader-working-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.leader-working-list::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    background: #b8c9bd;
+}
+
+.leader-working-list::-webkit-scrollbar-track {
+    background: #f1f5f2;
+}
+
 /* ======= 위험구역 게시판 마커 ======= */
 .hazard-icon {
   width: 26px;
