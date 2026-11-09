@@ -222,14 +222,34 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const pilotAnimations = {};
   const pilotTracks = {};
+  // 조종사별 고유 비행선 컬러 팔레트 (선명하고 겹치지 않는 색상군)
+  const TRACK_COLORS = [
+    "#0284c7", // 선명한 테크 블루 (조종사 1)
+    "#16a34a", // 에메랄드 그린 (조종사 2)
+    "#ea580c", // 생동감 있는 오렌지 (조종사 3)
+    "#9333ea", // 퍼플 (조종사 4)
+    "#e11d48", // 로즈 레드 (조종사 5)
+    "#0d9488"  // 딥 틸 (조종사 6)
+  ];
+
+  function getPilotColor(name) {
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      hash = name.charCodeAt(i) + ((hash << 5 ) - hash );
+    }
+    const index = Math.abs(hash) % TRACK_COLORS.length;
+    return TRACK_COLORS[index];
+  }
 
   const updatePilotMarker = (name, lat, lng) => {
     pilotLastSeen[name] = Date.now();
 
     // 1. 해당 조종사의 실시간 비행선이 없으면 생성
     if (!pilotTracks[name]) {
+      const pilotColor = getPilotColor(name); // 보유 
+      
       pilotTracks[name] = L.polyline([], {
-        color: "#0284c7",
+        color: pilotColor,
         weight: 4,
         opacity: 0.9
       }).addTo(map);
