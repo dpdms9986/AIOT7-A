@@ -38,6 +38,7 @@ public class LandDto {
     private LocalDateTime completedAt;  // 완료 일시
     private LocalDateTime createdAt;  // 등록 일시
 
+    private String flightPath;
     private String polygonCoordinates; // 다각형 좌표 그리기
 
     public static LandDto from(Lands land) {
