@@ -59,6 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const cancelForm = $("#ap-cancel-form");
   const note = $("#ap-note");
   const goAssignBtn = $("#ap-go-assign"); // 바로가기 버튼
+  const currentDashboardPolygon = null;
 
   // [작업 진행중] 상세 패널을 표시할 위치
   const workingPanelSlot = $("#working-assign-panel-slot");
@@ -237,20 +238,92 @@ document.addEventListener("DOMContentLoaded", () => {
   setInterval(refreshPilotStates, 5000);
   refreshPilotStates(); // 처음 로딩 때 바로 정렬
 
+  const pilotAnimations = {};
+  const pilotTracks = {};
+  // 조종사별 고유 비행선 컬러 팔레트 (선명하고 겹치지 않는 색상군)
+  const TRACK_COLORS = [
+    "#0284c7", // 선명한 테크 블루 (조종사 1)
+    "#16a34a", // 에메랄드 그린 (조종사 2)
+    "#ea580c", // 생동감 있는 오렌지 (조종사 3)
+    "#9333ea", // 퍼플 (조종사 4)
+    "#e11d48", // 로즈 레드 (조종사 5)
+    "#0d9488"  // 딥 틸 (조종사 6)
+  ];
+
+  function getPilotColor(name) {
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      hash = name.charCodeAt(i) + ((hash << 5 ) - hash );
+    }
+    const index = Math.abs(hash) % TRACK_COLORS.length;
+    return TRACK_COLORS[index];
+  }
+
   const updatePilotMarker = (name, lat, lng) => {
     pilotLastSeen[name] = Date.now();
-    if (pilotMarkers[name]) {
-      pilotMarkers[name].setLatLng([lat, lng]);
-    } else {
+
+    // 1. 해당 조종사의 실시간 비행선이 없으면 생성
+    if (!pilotTracks[name]) {
+      const pilotColor = getPilotColor(name); // 보유 
+      
+      pilotTracks[name] = L.polyline([], {
+        color: pilotColor,
+        weight: 4,
+        opacity: 0.9
+      }).addTo(map);
+    }
+
+    // 핵심: 새 좌표가 오자마자 비행선에 점을 무조건 즉시 추가! (선이 끊기지 않음)
+    pilotTracks[name].addLatLng([lat, lng]);
+    console.log(`📍[${name} 궤적 점 누적]:`, pilotTracks[name].getLatLngs().length, "개");
+
+    // 2. 마커가 처음 생성되는 경우
+    if (!pilotMarkers[name]) {
       pilotMarkers[name] = L.marker([lat, lng], { icon: droneIcon, zIndexOffset: 1000 })
         .addTo(map).bindPopup(popupOf([`🚁 ${name}`]));
+
+      if (name === selectedPilot) {
+        map.panTo([lat, lng]);
+      }
+    } else {
+      // 3. 이미 마커가 있는 경우: 선형 보간(Lerp)으로 부드럽게 이동!
+      if (pilotAnimations[name]) {
+        cancelAnimationFrame(pilotAnimations[name]);
+      }
+
+      const marker = pilotMarkers[name];
+      const startLatLng = marker.getLatLng();
+      const startLat = startLatLng.lat;
+      const startLng = startLatLng.lng;
+      const startTime = performance.now();
+      const duration = 1800; // 1.8초 동안 부드럽게 이동
+
+      const animate = (currentTime) => {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1.0);
+
+        const ease = 1 - Math.pow(1 - progress, 3);
+        const curLat = startLat + (lat - startLat) * ease;
+        const curLng = startLng + (lng - startLng) * ease;
+
+        marker.setLatLng([curLat, curLng]);
+
+        if (followPilots) {
+          const pts = Object.values(pilotMarkers).map((m) => m.getLatLng());
+          if (pts.length === 1) map.panTo(pts[0]);
+          else map.fitBounds(pts, { padding: [40, 40], maxZoom: map.getZoom() });
+        } else if (name === selectedPilot) {
+          map.panTo([curLat, curLng]);
+        }
+
+        if (progress < 1.0) {
+          pilotAnimations[name] = requestAnimationFrame(animate);
+        }
+      };
+
+      pilotAnimations[name] = requestAnimationFrame(animate);
     }
-    if (followPilots) {
-      const pts = Object.values(pilotMarkers).map((m) => m.getLatLng());
-      if (pts.length === 1) map.panTo(pts[0]); else map.fitBounds(pts, { padding: [40, 40], maxZoom: map.getZoom() });
-    } else if (name === selectedPilot) {
-      map.panTo([lat, lng]);
-    }
+
     const onlineCount = Object.keys(pilotLastSeen).filter(isOnline).length;
     setStatus(`🚁 조종사 ${onlineCount}명 실시간 위치 수신 중`, "#238451");
     refreshPilotStates();
@@ -279,6 +352,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       stompClient.subscribe("/sub/team/" + channelKey, (message) => {
         const d = JSON.parse(message.body);
+        console.log("🚁 [단장 화면 실시간 수신 성공!]:", d);
         updatePilotMarker(d.pilotName, d.latitude, d.longitude);
       });
 
@@ -290,7 +364,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   };
 
-  // 조종사 선택 → 실시간 위치, 없으면 작업 중 농지로
+  // 조종사 선택 → 실시간 위치, 없으면 작업 중 농지-로
   const selectPilot = (li) => {
     selectedPilot = li.dataset.name;
     document.querySelectorAll("#pilot-status-list .side-item").forEach((x) =>
