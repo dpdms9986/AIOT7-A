@@ -309,7 +309,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (drawer.isActive()) {
       // 👈 점을 1개도 찍지 않고 버튼을 다시 누르면 취소(원복) 처리!
-      const currentPoints = drawer.getPoints ? drawer.getPoints() : [];
+      const currentPoints = drawer.getCoordinates();
+      
       if (currentPoints.length === 0) {
         cancelDrawing();
         return;
@@ -321,8 +322,12 @@ document.addEventListener("DOMContentLoaded", () => {
         resetDrawUi();
         drawer.clear();
         useDrawn(result.coordinates, !!land);
-      }
-      return;
+      } else {
+  resetDrawUi();
+}
+
+return; // 완료 처리 후 새 그리기 시작 코드로 넘어가지 않도록 종료
+
     }
 
     // 새로 그리기 시작
