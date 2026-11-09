@@ -12,6 +12,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.Objects;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
@@ -835,12 +836,18 @@ if (req.getLandNos() != null && req.getLandNos().size() == 1) {
      */
    private List<LandDto> convertToLandDtosWithAssignment(List<Lands> rawLands) {
 
-    List<WorkAssignments> activeAssignments = workAssignmentRepository.findAll().stream()
+    // 전체 배정 작업 조회
+    List<WorkAssignments> allAssignments = workAssignmentRepository.findAll().stream()
             .filter(w -> w.getLand() != null)
+            .toList();
+
+    // 현재 활성 상태인 작업
+    List<WorkAssignments> activeAssignments = allAssignments.stream()
             .filter(w -> "ASSIGNED".equals(w.getStatus())
                     || "IN_PROGRESS".equals(w.getStatus()))
             .toList();
 
+    // 농지 번호별 활성 작업 전체 그룹화 (공동분할 지원)
     Map<Long, List<WorkAssignments>> assignmentMap = activeAssignments.stream()
             .collect(Collectors.groupingBy(
                     w -> w.getLand().getNo(),
@@ -848,13 +855,26 @@ if (req.getLandNos() != null && req.getLandNos().size() == 1) {
                     Collectors.toList()
             ));
 
-    return rawLands.stream().map(land -> {
+    // 농지 번호별 최신 완료 일시
+    Map<Long, LocalDateTime> completedAtMap = allAssignments.stream()
+            .filter(w -> "COMPLETED".equals(w.getStatus()))
+            .filter(w -> w.getCompletedAt() != null)
+            .collect(Collectors.toMap(
+                    w -> w.getLand().getNo(),
+                    WorkAssignments::getCompletedAt,
+                    (oldDate, newDate) ->
+                            oldDate.isAfter(newDate) ? oldDate : newDate,
+                    LinkedHashMap::new
+            ));
 
+    return rawLands.stream().map(land -> {
         LandDto dto = LandDto.from(land);
 
         List<WorkAssignments> assignments =
                 assignmentMap.getOrDefault(land.getNo(), List.of());
 
+        
+        // 공동분할 조종사 이름 전체 추출
         List<String> pilotNames = assignments.stream()
                 .map(WorkAssignments::getPilot)
                 .filter(p -> p != null && p.getName() != null)
@@ -863,16 +883,19 @@ if (req.getLandNos() != null && req.getLandNos().size() == 1) {
                 .toList();
 
         dto.setPilotNames(pilotNames);
-
         dto.setPilotName(
                 pilotNames.isEmpty() ? null : String.join(", ", pilotNames)
         );
 
+        // 가장 최근 배정 일시
         assignments.stream()
                 .map(WorkAssignments::getCreatedAt)
-                .filter(date -> date != null)
+                .filter(Objects::nonNull)
                 .max(Comparator.naturalOrder())
                 .ifPresent(dto::setAssignedAt);
+
+        // 완료 일시
+        dto.setCompletedAt(completedAtMap.get(land.getNo()));
 
         return dto;
 

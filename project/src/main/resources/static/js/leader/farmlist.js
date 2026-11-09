@@ -26,6 +26,8 @@ document.addEventListener("DOMContentLoaded", () => {
     $("#drawer-coordinates").textContent = d.lat && d.lng ? `${d.lat}, ${d.lng}` : "미등록";
     $("#drawer-pilot").textContent = d.pilot;
     $("#drawer-assigned-at").textContent = d.assignedAt;
+    $("#drawer-assigned-at").textContent = d.assignedAt;
+    $("#drawer-completed-at").textContent = d.completedAt || "-";
 
     // 삭제 폼의 숨은 칸에 번호 넣기 + 대기 상태가 아니면 버튼 비활성
     deleteNoInput.value = d.no;
