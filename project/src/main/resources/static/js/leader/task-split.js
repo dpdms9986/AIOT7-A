@@ -43,6 +43,7 @@ document.addEventListener("DOMContentLoaded", () => {
   ];
   const DRAW_HINT = "등록된 농지를 체크하거나, 지도를 눌러 꼭짓점을 찍어 영역을 잡을 수 있어요.";
   const DRAW_LABEL = "✏️ 지도에서 직접 영역 그리기";
+  const CANCEL_LABEL = "❌ 그리기 취소"; 
 
   /* ===================== 상태 ===================== */
   const landChecks = () => [...form.querySelectorAll(".land-check")];
@@ -194,7 +195,9 @@ document.addEventListener("DOMContentLoaded", () => {
     return `구역 ${pad2(pieces[index].properties.sliceIndex + 1)} · ${name || "담당 미지정"}`;
   };
 
-  /* ===================== 1단계: 지도에서 직접 영역 그리기 ===================== */
+ /* ===================== 1단계: 지도에서 직접 영역 그리기 ===================== */
+
+  const cancelBtn = $("#fs-draw-cancel-btn"); // (HTML에 취소 버튼이 있을 경우 대비)
 
   // 지금 그리기 대상인 농지 (체크된 농지가 없으면 null, 이때는 자유 그리기)
   const currentDrawLand = () =>
@@ -225,10 +228,28 @@ document.addEventListener("DOMContentLoaded", () => {
   const resetDrawUi = () => {
     drawBtn.textContent = DRAW_LABEL;
     drawBtn.setAttribute("aria-pressed", "false");
+    if (cancelBtn) cancelBtn.hidden = true;
   };
+
+  // ⭐ [보강] 그리기 취소 및 원래 농지 다각형 복원 전용 함수
   const cancelDrawing = () => {
-    if (drawer.isActive()) { drawer.clear(); resetDrawUi(); drawStatus.textContent = DRAW_HINT; }
+    if (drawer.isActive()) { 
+      drawer.clear(); 
+      resetDrawUi(); 
+      clearError();
+      clearDrawn();
+      drawStatus.textContent = DRAW_HINT;
+
+      // 선택되어 있던 원래 농지가 있다면 원래 다각형과 분할 상태로 복원!
+      const land = currentDrawLand();
+      if (land) {
+        renderSplit();
+      } else {
+        resetView();
+      }
+    }
   };
+
   const clearDrawn = () => { drawn = null; drawnInLand = false; drawnWrap.hidden = true; };
   const uncheckLands = () => {
     selectedLands().forEach((c) => {
@@ -246,7 +267,7 @@ document.addEventListener("DOMContentLoaded", () => {
     renderSplit();
   };
 
-    // 선택한 농지의 외곽 좌표 (저장된 외곽선이 없으면 위치 기준 임시 사각형)
+  // 선택한 농지의 외곽 좌표 (저장된 외곽선이 없으면 위치 기준 임시 사각형)
   const landCoords = (checkbox) => {
     const d = checkbox.dataset;
     return FieldSplit.parsePolygon(d.polygon)
@@ -282,22 +303,33 @@ document.addEventListener("DOMContentLoaded", () => {
     $("#fs-map-region").textContent = `${land.dataset.address} 안에서 작업 영역 그리는 중`;
   };
 
+  // 그리기 버튼 클릭 (스마트 완료 / 취소 토글)
   drawBtn.addEventListener("click", () => {
-    const land = (targetCheckbox && targetCheckbox.checked) ? targetCheckbox : null;   // 선택한 농지
+    const land = currentDrawLand();
 
-    if (drawer.isActive()) {                         // 그리기 완료
+    if (drawer.isActive()) {
+      // 👈 점을 1개도 찍지 않고 버튼을 다시 누르면 취소(원복) 처리!
+      const currentPoints = drawer.getPoints ? drawer.getPoints() : [];
+      if (currentPoints.length === 0) {
+        cancelDrawing();
+        return;
+      }
+
+      // 점이 찍혀있을 때는 정상적으로 그리기 완료 시도
       const result = drawer.finish();
-      resetDrawUi();
       if (result.ok) {
+        resetDrawUi();
         drawer.clear();
         useDrawn(result.coordinates, !!land);
       }
       return;
     }
-    drawer.clear();                                  // 새로 그리기 시작
+
+    // 새로 그리기 시작
+    drawer.clear();
     clearDrawn();
     if (land) {
-      showLandForDrawing(land);                      // 선택한 농지는 유지
+      showLandForDrawing(land);
     } else {
       uncheckLands();
       resetView("지도에서 영역을 그리는 중");
@@ -305,6 +337,19 @@ document.addEventListener("DOMContentLoaded", () => {
     drawer.start();
     drawBtn.textContent = "✔ 그리기 완료";
     drawBtn.setAttribute("aria-pressed", "true");
+    if (cancelBtn) cancelBtn.hidden = false;
+  });
+
+  // 취소 버튼이 있을 경우 클릭 이벤트 연결
+  if (cancelBtn) {
+    cancelBtn.addEventListener("click", cancelDrawing);
+  }
+
+  // ⭐ [웹 표준 UX] 키보드 ESC 키를 누르면 언제든지 그리기 즉시 취소!
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && drawer.isActive()) {
+      cancelDrawing();
+    }
   });
 
   $("#fs-coords-apply").addEventListener("click", () => {
