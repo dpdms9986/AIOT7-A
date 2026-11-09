@@ -12,6 +12,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.Objects;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
@@ -133,12 +134,17 @@ public class LeaderController {
                 : Comparator.comparing(LandDto::getAssignedAt, Comparator.nullsLast(Comparator.reverseOrder()));
         List<LandDto> assigned = allAssigned.stream()
                 .filter(l -> status.isEmpty() || l.getStatus().equals(status))
-                .filter(l -> pilot.isEmpty()  || pilot.equals(l.getPilotName()))
+                .filter(l -> pilot.isEmpty()  || (l.getPilotNames() != null && l.getPilotNames().contains(pilot)))
                 .sorted(assignedCmp)
                 .toList();
         Map<String, Long> countByPilot = allAssigned.stream()
-                .filter(l -> l.getPilotName() != null)
-                .collect(Collectors.groupingBy(LandDto::getPilotName, LinkedHashMap::new, Collectors.counting()));
+        .filter(l -> l.getPilotNames() != null)
+        .flatMap(l -> l.getPilotNames().stream())
+        .collect(Collectors.groupingBy(
+            name -> name,
+            LinkedHashMap::new,
+            Collectors.counting()
+        ));
 
         /* ----- [이력 탭] 완료된 작업 + 기간/지역/조종사 검색 ----- */
         boolean dateError = from != null && to != null && from.isAfter(to);
@@ -415,20 +421,44 @@ public class LeaderController {
     private String assignByPieces(AssignRequest req, List<PieceAssignment> pieceList, Users leader, Teams myTeam,
                                   RedirectAttributes redirectAttributes) {
         Lands land;
-        if (req.getDrawnPolygon() != null && !req.getDrawnPolygon().isBlank()) {
-            land = createDrawnLand(req);
-            if (land == null) {
-                redirectAttributes.addFlashAttribute("errorMessage",
-                        "직접 그린 영역을 농지로 저장하지 못했습니다. (행정구역 연결 작업이 필요합니다)");
-                return "redirect:/leader/task-assignment";
-            }
-        } else {
-            if (req.getLandNos() == null || req.getLandNos().size() != 1) {
-                redirectAttributes.addFlashAttribute("errorMessage", "구역별 배정은 농지를 1건만 선택해 주세요.");
-                return "redirect:/leader/task-assignment";
-            }
-            land = landRepository.findById(req.getLandNos().get(0)).orElse(null);
-        }
+
+// 기존 농지를 선택한 경우: 기존 레코드 사용
+if (req.getLandNos() != null && req.getLandNos().size() == 1) {
+
+    land = landRepository.findById(req.getLandNos().get(0)).orElse(null);
+
+    if (land != null && "READY".equals(land.getStatus())
+            && req.getDrawnPolygon() != null
+            && !req.getDrawnPolygon().isBlank()) {
+
+        // 기존 농지의 외곽선 및 면적 갱신
+        land.setPolygonCoordinates(req.getDrawnPolygon());
+
+        if (req.getDrawnLat() != null) land.setLatitude(req.getDrawnLat());
+        if (req.getDrawnLng() != null) land.setLongitude(req.getDrawnLng());
+        if (req.getDrawnArea() != null) land.setAreaSize(req.getDrawnArea());
+
+        land = landRepository.save(land);
+    }
+
+// 기존 농지 없이 직접 그린 경우에만 신규 생성
+} else if ((req.getLandNos() == null || req.getLandNos().isEmpty())
+        && req.getDrawnPolygon() != null
+        && !req.getDrawnPolygon().isBlank()) {
+
+    land = createDrawnLand(req);
+
+    if (land == null) {
+        redirectAttributes.addFlashAttribute("errorMessage",
+                "직접 그린 영역을 농지로 저장하지 못했습니다.");
+        return "redirect:/leader/task-assignment";
+    }
+
+} else {
+    redirectAttributes.addFlashAttribute("errorMessage",
+            "구역별 배정은 농지를 1건만 선택해 주세요.");
+    return "redirect:/leader/task-assignment";
+}
 
         if (land == null || !"READY".equals(land.getStatus())) {
             redirectAttributes.addFlashAttribute("errorMessage", "대기 상태의 농지만 배정할 수 있습니다.");
@@ -437,9 +467,15 @@ public class LeaderController {
 
         // 조종사별 담당 면적 합산 (한 명이 여러 구역을 맡아도 한 줄로)
         Map<Long, Double> areaByPilot = new LinkedHashMap<>();
+
         for (PieceAssignment p : pieceList) {
-            areaByPilot.merge(p.getPilotNo(), p.getAreaSize() != null ? p.getAreaSize() : 0.0, Double::sum);
-        }
+        Long pilotNo = p.getPilotNo();
+
+        areaByPilot.merge(pilotNo,
+        p.getAreaSize() != null ? p.getAreaSize() : 0.0,
+        Double::sum);
+
+}
         areaByPilot.keySet().removeIf(no -> !userRepository.existsById(no));
         if (areaByPilot.isEmpty()) {
             redirectAttributes.addFlashAttribute("errorMessage", "담당 조종사를 찾을 수 없습니다.");
@@ -459,8 +495,8 @@ public class LeaderController {
             Users pilot = userRepository.findById(e.getKey()).orElse(null);
             if (pilot == null) continue;
 
-            // TODO(백엔드): 이 조종사가 맡은 구역 다각형(pieceList 중 pilotNo 가 같은 것의 geometry)을
-            //               WorkAssignments 에 저장하면 조종사 화면으로 구역 위치를 전달할 수 있음
+            
+            
             workAssignmentRepository.save(WorkAssignments.builder()
                     .dispatchBatch(batch)
                     .land(land)
@@ -798,34 +834,72 @@ public class LeaderController {
      * 농지 엔티티 목록을 LandDto로 변환하면서, 
      * 현재 배정/작업 중인 최신 배정 정보(조종사명, 배정일시)를 함께 채워주는 헬퍼 메서드
      */
-    private List<LandDto> convertToLandDtosWithAssignment(List<Lands> rawLands) {
-        // 1. 현재 활성 상태(ASSIGNED, IN_PROGRESS)인 배정 작업들 조회
-        List<WorkAssignments> activeAssignments = workAssignmentRepository.findAll().stream()
-                .filter(w -> w.getLand() != null)
-                .filter(w -> "ASSIGNED".equals(w.getStatus()) || "IN_PROGRESS".equals(w.getStatus()))
+   private List<LandDto> convertToLandDtosWithAssignment(List<Lands> rawLands) {
+
+    // 전체 배정 작업 조회
+    List<WorkAssignments> allAssignments = workAssignmentRepository.findAll().stream()
+            .filter(w -> w.getLand() != null)
+            .toList();
+
+    // 현재 활성 상태인 작업
+    List<WorkAssignments> activeAssignments = allAssignments.stream()
+            .filter(w -> "ASSIGNED".equals(w.getStatus())
+                    || "IN_PROGRESS".equals(w.getStatus()))
+            .toList();
+
+    // 농지 번호별 활성 작업 전체 그룹화 (공동분할 지원)
+    Map<Long, List<WorkAssignments>> assignmentMap = activeAssignments.stream()
+            .collect(Collectors.groupingBy(
+                    w -> w.getLand().getNo(),
+                    LinkedHashMap::new,
+                    Collectors.toList()
+            ));
+
+    // 농지 번호별 최신 완료 일시
+    Map<Long, LocalDateTime> completedAtMap = allAssignments.stream()
+            .filter(w -> "COMPLETED".equals(w.getStatus()))
+            .filter(w -> w.getCompletedAt() != null)
+            .collect(Collectors.toMap(
+                    w -> w.getLand().getNo(),
+                    WorkAssignments::getCompletedAt,
+                    (oldDate, newDate) ->
+                            oldDate.isAfter(newDate) ? oldDate : newDate,
+                    LinkedHashMap::new
+            ));
+
+    return rawLands.stream().map(land -> {
+        LandDto dto = LandDto.from(land);
+
+        List<WorkAssignments> assignments =
+                assignmentMap.getOrDefault(land.getNo(), List.of());
+
+        
+        // 공동분할 조종사 이름 전체 추출
+        List<String> pilotNames = assignments.stream()
+                .map(WorkAssignments::getPilot)
+                .filter(p -> p != null && p.getName() != null)
+                .map(Users::getName)
+                .distinct()
                 .toList();
 
-        // 2. 농지 번호별 최신 배정 작업 맵핑 (Map<landNo, WorkAssignments>)
-        Map<Long, WorkAssignments> assignmentMap = activeAssignments.stream()
-                .collect(Collectors.toMap(
-                        w -> w.getLand().getNo(),
-                        w -> w,
-                        (oldVal, newVal) -> newVal, // 중복 시 최신값 유지
-                        LinkedHashMap::new
-                ));
+        dto.setPilotNames(pilotNames);
+        dto.setPilotName(
+                pilotNames.isEmpty() ? null : String.join(", ", pilotNames)
+        );
 
-        // 3. LandDto 변환 및 pilotName, assignedAt 주입
-        return rawLands.stream().map(land -> {
-            LandDto dto = LandDto.from(land);
-            WorkAssignments wa = assignmentMap.get(land.getNo());
-            if (wa != null) {
-                if (wa.getPilot() != null) {
-                    dto.setPilotName(wa.getPilot().getName());
-                }
-                dto.setAssignedAt(wa.getCreatedAt()); // 배정 일시
-            }
-            return dto;
-        }).toList();
-    }
+        // 가장 최근 배정 일시
+        assignments.stream()
+                .map(WorkAssignments::getCreatedAt)
+                .filter(Objects::nonNull)
+                .max(Comparator.naturalOrder())
+                .ifPresent(dto::setAssignedAt);
+
+        // 완료 일시
+        dto.setCompletedAt(completedAtMap.get(land.getNo()));
+
+        return dto;
+
+    }).toList();
+}
 
 }

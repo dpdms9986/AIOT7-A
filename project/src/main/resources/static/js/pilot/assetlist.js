@@ -47,7 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
             nameLabel.textContent = "약제명";
             nameInput.placeholder = "약제명을 입력하세요";
 
-            subtitleLabel.textContent = "약제 분류";
+            subtitleLabel.textContent = "설명 / 분류";
             subtitleInput.placeholder = "예: 살충제, 살균제";
             subtitleInput.value = "";
             subtitleInput.required = true;
