@@ -2,8 +2,10 @@
 package com.aloha.project.controller.user;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -179,16 +181,32 @@ public class PilotController {
                 .or(() -> all.stream().findFirst())
                 .orElse(null);
 
-        // 4) 로그인 조종사 본인 소유의 사용 가능한 드론 목록
+        // 3-1) 진행 중(IN_PROGRESS) 작업에서 이미 사용 중인 드론/약제 번호 모으기
+        Set<Long> usedDroneNos = new HashSet<>();
+        Set<Long> usedChemicalNos = new HashSet<>();
+
+        workAssignmentRepository.findByPilot_No(pilot.getNo())
+                .stream()
+                .filter(a -> "IN_PROGRESS".equals(a.getStatus()))
+                .forEach(a -> workAssignmentResourceRepository
+                        .findByWorkAssignment_No(a.getNo())
+                        .ifPresent(r -> {
+                            usedDroneNos.add(r.getDrone().getNo());
+                            usedChemicalNos.add(r.getChemical().getNo());
+                        }));
+
+        // 4) 로그인 조종사 본인 소유의 사용 가능한 드론 목록 (사용 중인 드론 제외)
         List<OptionDto> drones = droneRepository.findByUser_No(pilot.getNo())
                 .stream()
                 .filter(drone -> "AVAILABLE".equals(drone.getStatus()))
+                .filter(drone -> !usedDroneNos.contains(drone.getNo()))
                 .map(this::toOptionDto)
                 .toList();
 
-        // 5) 로그인 조종사 본인이 담당하는 약제 목록
+        // 5) 로그인 조종사 본인이 담당하는 약제 목록 (사용 중인 약제 제외)
         List<OptionDto> chemicals = chemicalRepository.findByUser_No(pilot.getNo())
                 .stream()
+                .filter(chemical -> !usedChemicalNos.contains(chemical.getNo()))
                 .map(chemical -> new OptionDto(
                         chemical.getNo(),
                         chemical.getChemicalName()))

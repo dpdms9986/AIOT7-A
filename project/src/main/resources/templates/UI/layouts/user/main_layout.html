@@ -8,11 +8,13 @@
     <!-- [SCRIPT] -->
     <th:block th:replace="~{UI/fragments/user/script::script}"></th:block>
 </head>
-<body>
+<body class="layout-main">
     <!-- [HEADER] -->
     <th:block th:replace="~{UI/fragments/user/header::header}"></th:block>
     <!-- [CONTENT]-->
-    <th:block layout:fragment="content"></th:block>
+    <div class="layout-main-content">
+        <th:block layout:fragment="content"></th:block>
+    </div>
     <!-- [FOOTER]-->
     <th:block th:replace="~{UI/fragments/user/footer::footer}"></th:block>
     
