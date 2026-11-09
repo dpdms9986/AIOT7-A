@@ -12,6 +12,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.Objects;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
@@ -897,14 +898,21 @@ if (req.getLandNos() != null && req.getLandNos().size() == 1) {
             // 최신 배정 일시 설정
             latestAssignments.stream()
                     .map(WorkAssignments::getCreatedAt)
-                    .filter(date -> date != null)
+                    .filter(Objects::nonNull)
                     .max(Comparator.naturalOrder())
                     .ifPresent(dto::setAssignedAt);
+
+            // 완료 일시
+            assignments.stream()
+                    .filter(w -> "COMPLETED".equals(w.getStatus()))
+                    .map(WorkAssignments::getCompletedAt)
+                    .filter(Objects::nonNull)
+                    .max(Comparator.naturalOrder())
+                    .ifPresent(dto::setCompletedAt);
 
             return dto;
 
         }).toList();
-    }
 
-
+        }
 }

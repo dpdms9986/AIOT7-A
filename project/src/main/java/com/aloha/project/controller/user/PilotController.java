@@ -440,6 +440,8 @@ public class PilotController {
                 .pilotName(assignment.getPilot() == null
                         ? null : assignment.getPilot().getName())
                 .assignedAt(assignment.getCreatedAt())
+                .polygonCoordinates(land != null ? land.getPolygonCoordinates() : null)
+                .flightPath(assignment.getFlightPath())
                 .build();
     }
 

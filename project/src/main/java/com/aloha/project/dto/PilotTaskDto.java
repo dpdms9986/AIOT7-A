@@ -29,6 +29,9 @@ public class PilotTaskDto {
     private String pilotName;          // 담당 조종사               (단장 화면용)
     private LocalDateTime assignedAt;  // 배정 일시
 
+
+    // 다격형 변수 
+    private String polygonCoordinates;
     // 배정 이전 시 사용될 비행궤적 JSON 문자열 
     private String flightPath;
 
@@ -75,6 +78,9 @@ public class PilotTaskDto {
         String landAddress = (assignment.getLand() != null) ? assignment.getLand().getAddress() : "-";
         Double area = (assignment.getLand() != null) ? assignment.getLand().getAreaSize() : 0.0;
 
+        // 농지 다각형 외곽선 추출
+        String polygon = (assignment.getLand() != null) ? assignment.getLand().getPolygonCoordinates() : null;
+
         // 조종사 이름 추출
         String pilot = (assignment.getPilot() != null) ? assignment.getPilot().getName() : "-";
 
@@ -84,6 +90,7 @@ public class PilotTaskDto {
                 .areaSize(area)
                 .status(assignment.getStatus())
                 .pilotName(pilot)
+                .polygonCoordinates(polygon)
                 .flightPath(assignment.getFlightPath())
                 .assignedAt(assignment.getCreatedAt())
                 .startedAt(assignment.getStartedAt())

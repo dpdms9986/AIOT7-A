@@ -95,6 +95,29 @@ document.addEventListener("DOMContentLoaded", () => {
       if (f.status === "IN_PROGRESS") note.textContent = `🚁 ${f.pilotName} 조종사가 작업 중입니다.`;
       if (f.status === "COMPLETED") note.textContent = "완료된 작업입니다.";
     }
+
+    // 선택한 농지의 다각형 외곽선 지도에 렌더링
+    if (currentDashboardPolygon && map) {
+      map.removeLayer(currentDashboardPolygon);   // 이전 밭 다각형 지우기
+      currentDashboardPolygon = null;
+    }
+    
+    if (f.polygonCooredinates && f.polygonCooredinates.trim() !== "") {
+      try {
+        const coords = JSON.parse(f.polygonCooredinates);
+        if (Array.isArray(coords) && coords.length >= 3 && map) {
+          currentDashboardPolygon = L.polygon(coords, {
+            color: f.color || "#238451", // 농지 상태 색상 (READY면 초록, ASSIGNED 면 노랑 등)
+            weight: 3, 
+            dashArray: "4, 4",
+            fillColor: f.color || "#54a77b",
+            fillOpacity: 0.18
+          }).addTo(map);
+        }
+      } catch (e) {
+        console.error("단장 대시보드 다각형 파싱 에러: ", e)
+      }
+    }
   }
 
   // 2. 👈 [복구 완료] 농지 선택 함수

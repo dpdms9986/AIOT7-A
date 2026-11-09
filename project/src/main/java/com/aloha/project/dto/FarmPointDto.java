@@ -23,6 +23,7 @@ public class FarmPointDto {
     private Double lng;
     private String pilotName;
     private String assignedAt;   // "2026-10-29 09:30" 같은 글자 (없으면 null)
+    private String polygonCoordinates;
 
     private static final DateTimeFormatter DT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
@@ -31,6 +32,7 @@ public class FarmPointDto {
                 l.getNo(), l.getAddress(), l.getAreaSize(),
                 l.getStatus(), l.getStatusLabel(), l.getStColor(),
                 l.getLatitude(), l.getLongitude(), l.getPilotName(),
-                l.getAssignedAt() == null ? null : l.getAssignedAt().format(DT));
+                l.getAssignedAt() == null ? null : l.getAssignedAt().format(DT),
+                l.getPolygonCoordinates() );
     }
 }
