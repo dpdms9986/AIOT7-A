@@ -144,22 +144,23 @@
           <button type="submit" class="dash-btn-primary">작업 시작</button>
         </form>
 
-        <!-- [진행 중] → 완료 보고 (입력칸 없이 버튼만) -->
-        <form th:if="*{status == 'IN_PROGRESS'}"
-              th:action="@{/pilot/history/{no}/complete(no=*{no})}" method="post"
-              onsubmit="return confirm('작업 완료를 보고할까요?');">
-          <button type="submit" class="dash-btn-primary">작업 완료 보고</button>
-        </form>
+                 <!-- [진행 중] 및 [작업 취소] 버튼 가로 정렬 컨테이너 -->
+        <div th:if="*{status == 'IN_PROGRESS'}" style="display: flex; gap: 12px; margin-top: 15px; width: 100%;">
+          
+          <!-- [진행 중] → 완료 보고 -->
+          <form th:action="@{/pilot/history/{no}/complete(no=*{no})}" method="post"
+                onsubmit="return confirm('작업 완료를 보고할까요?');" style="flex: 1;">
+            <button type="submit" class="dash-btn-primary" style="width: 100%; height: 38px !important; display: flex; align-items: center; justify-content: center; padding: 0 !important; margin: 0 !important; box-sizing: border-box !important;">작업 완료 보고</button>
+          </form>
 
-       <!-- 작업 진행 중(IN_PROGRESS)일 때 취소 버튼 노출 -->
-        <form th:if="${selected != null and selected.status == 'IN_PROGRESS'}"
-              th:action="@{/pilot/history/{no}/cancel(no=${selected.no})}" 
-              method="post" 
-              style="display: inline;" 
-              onsubmit="return confirm('작업을 취소하고 다시 대기 상태로 되돌리시겠습니까? (선택한 드론/약제가 초기화됩니다)');">
-            <button type="submit" class="dash-btn-danger">작업 취소</button>
-        </form>
-      </div>
+          <!-- 작업 진행 중(IN_PROGRESS)일 때 취소 버튼 노출 -->
+          <form th:action="@{/pilot/history/{no}/cancel(no=${selected.no})}" method="post" 
+                onsubmit="return confirm('작업을 취소하고 다시 대기 상태로 되돌리시겠습니까? (선택한 드론/약제가 초기화됩니다)');" style="flex: 1;">
+            <button type="submit" class="dash-btn-danger" style="width: 100%; height: 38px !important; display: flex; align-items: center; justify-content: center; padding: 0 !important; margin: 0 !important; box-sizing: border-box !important;">작업 취소</button>
+          </form>
+          
+        </div>
+
     </article>
   </section>
 </main>
