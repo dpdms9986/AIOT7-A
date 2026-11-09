@@ -1290,11 +1290,11 @@
 
 .asset-role-chip {
     margin-left: auto;
-    padding: 9px 12px;
-    border: 1px solid #d3eadc;
+    padding: 0px 12px;
+    border: 1px solid #13834f;
     border-radius: 8px;
-    background: #eff9f2;
-    color: #117347;
+    background: #13834f;
+    color: #fff;
     font-size: 12px;
     font-weight: 700;
     white-space: nowrap;
@@ -2295,8 +2295,8 @@ button.asset-role-chip {
 }
 
 button.asset-role-chip:hover {
-    border-color: #13834f;
-    background: #dff3e6;
+    border-color: #0d5734;
+    background: #0d5734;
 }
 
 button.asset-role-chip:focus-visible {
@@ -2307,10 +2307,10 @@ button.asset-role-chip:focus-visible {
 .asset-role-chip {
     margin-left: auto;
     padding: 9px 12px;
-    border: 1px solid #d3eadc;
+    border: 1px solid #13834f;
     border-radius: 8px;
-    background: #eff9f2;
-    color: #117347;
+    background: #13834f;
+    color: #fff;
     font-size: 12px;
     font-weight: 700;
     white-space: nowrap;
@@ -12100,7 +12100,7 @@ main.asset-page-main .asset-pilot-tab {
   font-size: 12px;
   font-weight: 700;
 }
-.hz-status.active   { background: #fff4e0; color: #c26a00; }
+.hz-status.active   { background: #f0e6ff; color: #7b3fc6; }
 .hz-status.resolved { background: #eef1f4; color: #6b7570; }
 
 /* 해소 완료 버튼 */
@@ -14425,4 +14425,78 @@ body:has(.dash-header) > main.pub-section {
 /* 소개/기능/안내 페이지 폭 제한 */
 body:has(.dash-header) > main.pub-section {
     max-width: 1120px;
+}
+
+/* ========================================
+   공통 오버레이 스크롤바
+   ======================================== */
+
+/* 브라우저 기본 스크롤바 완전히 숨김 */
+html,
+body,
+body * {
+    scrollbar-width: none !important;
+    scrollbar-color: transparent transparent !important;
+}
+
+/* Chrome / Edge / Safari */
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+body *::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent !important;
+}
+
+/* 기존 scrollbar-gutter 공간 예약 해제 */
+html {
+    scrollbar-gutter: auto !important;
+}
+
+/* 오버레이 스크롤바 트랙 */
+.overlay-scrollbar {
+    position: fixed;
+    z-index: 2147483647;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+/* 스크롤 중에만 표시 */
+.overlay-scrollbar.is-visible {
+    opacity: 1;
+}
+
+/* 스크롤바 손잡이 */
+.overlay-scrollbar-thumb {
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-radius: 999px;
+    background: rgba(80, 166, 112, 0.9);
+    pointer-events: auto;
+    transition: background 0.15s ease;
+}
+
+/* 마우스를 올렸을 때 */
+.overlay-scrollbar-thumb:hover,
+.overlay-scrollbar-thumb.dragging {
+    background: #398b5b;
+}
+
+/* 세로 스크롤바 */
+.overlay-scrollbar.vertical {
+    width: 8px;
+}
+
+/* 가로 스크롤바는 항상 표시 */
+.overlay-scrollbar.horizontal {
+    opacity: 1 !important;
+    pointer-events: auto;
+}
+
+/* 가로 스크롤바 손잡이 */
+.overlay-scrollbar.horizontal .overlay-scrollbar-thumb {
+    opacity: 1;
 }
