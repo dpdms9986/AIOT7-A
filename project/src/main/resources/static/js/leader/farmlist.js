@@ -12,45 +12,131 @@ document.addEventListener("DOMContentLoaded", () => {
   const deleteBtn = $("#delete-farm-button");
   const assignLink = $("#assign-farm-link");
   const drawerStatus = $("#drawer-status");
+  const pilotAssignmentsContainer = $("#drawer-pilot-assignments");
   let lastTrigger = null;
 
-  const openDrawer = (btn) => {
-    const d = btn.dataset;   // th:data-* 로 심어둔 값들
-    lastTrigger = btn;
-
-    // 패널 내용 채우기
-    $("#drawer-address").textContent = d.address;
-    drawerStatus.textContent = d.status;
-    drawerStatus.className = `status-badge ${d.statusClass}`;   // 색 클래스 교체
-    $("#drawer-id").textContent = `LAND-${d.no.padStart(4, "0")}`;
-    $("#drawer-coordinates").textContent = d.lat && d.lng ? `${d.lat}, ${d.lng}` : "미등록";
-    $("#drawer-pilot").textContent = d.pilot;
-    $("#drawer-assigned-at").textContent = d.assignedAt;
-
-    // 삭제 폼의 숨은 칸에 번호 넣기 + 대기 상태가 아니면 버튼 비활성
-    deleteNoInput.value = d.no;
-    const deletable = d.deletable === "true";   // data- 값은 항상 글자 (대기 상태일 때만 true)
-    deleteBtn.disabled = !deletable;
-    deleteBtn.title = deletable ? "" : "대기 상태인 농지만 삭제할 수 있습니다.";
-    // 대기가 아니면 [삭제] [작업 배정] 영역 자체를 숨김
-    document.querySelector(".drawer-footer").style.display = deletable ? "" : "none";
-
-    // 작업 배정 링크 (주소는 타임리프가 만들어 둠)
-    assignLink.href = d.assignUrl;
-
-    // 패널 열기
-    drawer.hidden = false;
-    backdrop.hidden = false;
-    drawer.inert = false;
-    drawer.setAttribute("aria-hidden", "false");
-    document.body.classList.add("farm-drawer-open");
-
-    requestAnimationFrame(() => {
-      drawer.classList.add("is-open");
-      closeBtn.focus();
-      showMap(d);   // 패널이 열린 다음 지도 표시 (크기 계산 때문)
-    });
+  // HTML 출력 시 사용자 입력값 이스케이프
+  const escapeHtml = (value) => {
+    return String(value).replace(/[&<>"']/g, (char) => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#039;"
+    })[char]);
   };
+
+  const openDrawer = (btn) => {
+        const d = btn.dataset;
+        lastTrigger = btn;
+
+        // 기본 정보
+        $("#drawer-address").textContent = d.address || "-";
+
+        drawerStatus.textContent = d.status || "-";
+        drawerStatus.className = `status-badge ${d.statusClass || ""}`;
+
+        $("#drawer-id").textContent =
+            `LAND-${String(d.no || "").padStart(4, "0")}`;
+
+        $("#drawer-coordinates").textContent =
+            d.lat && d.lng ? `${d.lat}, ${d.lng}` : "미등록";
+
+        // 조종사별 작업 정보
+        // 조종사별 작업 정보
+        pilotAssignmentsContainer.innerHTML = "";
+
+        const assignmentData = document.getElementById(
+            `pilot-assignments-${d.no}`
+        );
+
+        const assignments = assignmentData
+            ? Array.from(assignmentData.children)
+            : [];
+
+        // 조종사 한 명의 정보 카드 생성
+        const createPilotCard = (pilotName, statusLabel, statusClass, assignedAt) => {
+            const card = document.createElement("div");
+            card.className = "pilot-assignment-card";
+
+            const info = document.createElement("dl");
+            info.className = "drawer-info";
+
+            const appendRow = (label, value, isStatus = false) => {
+                const dt = document.createElement("dt");
+                dt.textContent = label;
+
+                const dd = document.createElement("dd");
+
+                if (isStatus) {
+                    const badge = document.createElement("span");
+                    badge.className = `status-badge ${statusClass}`;
+                    badge.textContent = value || "-";
+                    dd.appendChild(badge);
+                } else {
+                    dd.textContent = value || "-";
+                }
+
+                info.append(dt, dd);
+            };
+
+            appendRow("배정 조종사", pilotName);
+            appendRow("작업상태", statusLabel, true);
+            appendRow("배정 일시", assignedAt);
+
+            card.appendChild(info);
+            pilotAssignmentsContainer.appendChild(card);
+        };
+
+        // 배정 정보가 있는 경우
+        if (assignments.length > 0) {
+            assignments.forEach((assignment) => {
+                const data = assignment.dataset;
+
+                createPilotCard(
+                    data.pilotName || "미배정",
+                    data.statusLabel || "-",
+                    data.statusClass || "",
+                    data.assignedAt || "-"
+                );
+            });
+        } else {
+            // 배정 정보가 없는 경우
+            createPilotCard("미배정", "미배정", "", "-");
+        }
+
+        // 삭제 폼
+        deleteNoInput.value = d.no;
+
+        const deletable = d.deletable === "true";
+
+        deleteBtn.disabled = !deletable;
+        deleteBtn.title = deletable
+            ? ""
+            : "대기 상태인 농지만 삭제할 수 있습니다.";
+
+        document.querySelector(".drawer-footer").style.display =
+            deletable ? "" : "none";
+
+        // 작업 배정 링크
+        assignLink.href = d.assignUrl || "#";
+
+        // 상세 패널 열기
+        drawer.hidden = false;
+        backdrop.hidden = false;
+        drawer.inert = false;
+        drawer.setAttribute("aria-hidden", "false");
+
+        document.body.classList.add("farm-drawer-open");
+
+        requestAnimationFrame(() => {
+            drawer.classList.add("is-open");
+            closeBtn.focus();
+
+            // 기존 지도 기능 유지
+            showMap(d);
+        });
+    };
 
   const closeDrawer = () => {
     drawer.classList.remove("is-open");

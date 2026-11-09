@@ -14526,3 +14526,80 @@ html {
 .overlay-scrollbar.horizontal .overlay-scrollbar-thumb {
     opacity: 1;
 }
+
+/* ===== 농지 상세 패널 - 조종사 정보 카드 ===== */
+
+#farm-detail-drawer .pilot-assignment-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+#farm-detail-drawer .pilot-assignment-card {
+    padding: 12px;
+    border: 1px solid var(--color-border, #dce4e9);
+    border-radius: 10px;
+    background: #fff;
+}
+
+/* ===== 상세 패널 상태 배지 색상 ===== */
+
+#farm-detail-drawer .status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 9px;
+    border-radius: 5px;
+    font-size: 12px;
+    line-height: 1.3;
+}
+
+/* 대기 - 초록색 */
+#farm-detail-drawer .status-badge.status-ready {
+    background: #e5f4e9;
+    color: #238451;
+}
+
+/* 배정됨 - 노란색 */
+#farm-detail-drawer .status-badge.status-assigned {
+    background: #fff3cf;
+    color: #926900;
+}
+
+/* 작업 중 - 파란색 */
+#farm-detail-drawer .status-badge.status-progress {
+    background: #e4efff;
+    color: #246ac0;
+}
+
+/* 완료 - 회색 */
+#farm-detail-drawer .status-badge.status-completed {
+    background: #edf0f1;
+    color: #68747b;
+}
+
+/* ===== 상세 패널 조종사 상태 배지 색상 ===== */
+
+/* 대기 */
+#farm-detail-drawer .status-badge.st-ready {
+    background: #e5f4e9;
+    color: #238451;
+}
+
+/* 배정됨 */
+#farm-detail-drawer .status-badge.st-assigned {
+    background: #fff3cf;
+    color: #926900;
+}
+
+/* 작업 중 */
+#farm-detail-drawer .status-badge.st-progress {
+    background: #e4efff;
+    color: #246ac0;
+}
+
+/* 완료 */
+#farm-detail-drawer .status-badge.st-completed {
+    background: #edf0f1;
+    color: #68747b;
+}

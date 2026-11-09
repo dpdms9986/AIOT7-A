@@ -829,54 +829,82 @@ if (req.getLandNos() != null && req.getLandNos().size() == 1) {
             return "\"" + s.replace("\"", "\"\"") + "\"";
     }
 
+    
     /**
-     * 농지 엔티티 목록을 LandDto로 변환하면서, 
-     * 현재 배정/작업 중인 최신 배정 정보(조종사명, 배정일시)를 함께 채워주는 헬퍼 메서드
+     * 농지 엔티티 목록을 LandDto로 변환하면서,
+     * 최신 배정 묶음에 포함된 조종사별 작업 정보를 함께 채워준다.
      */
-   private List<LandDto> convertToLandDtosWithAssignment(List<Lands> rawLands) {
+    private List<LandDto> convertToLandDtosWithAssignment(List<Lands> rawLands) {
 
-    List<WorkAssignments> activeAssignments = workAssignmentRepository.findAll().stream()
-            .filter(w -> w.getLand() != null)
-            .filter(w -> "ASSIGNED".equals(w.getStatus())
-                    || "IN_PROGRESS".equals(w.getStatus()))
-            .toList();
-
-    Map<Long, List<WorkAssignments>> assignmentMap = activeAssignments.stream()
-            .collect(Collectors.groupingBy(
-                    w -> w.getLand().getNo(),
-                    LinkedHashMap::new,
-                    Collectors.toList()
-            ));
-
-    return rawLands.stream().map(land -> {
-
-        LandDto dto = LandDto.from(land);
-
-        List<WorkAssignments> assignments =
-                assignmentMap.getOrDefault(land.getNo(), List.of());
-
-        List<String> pilotNames = assignments.stream()
-                .map(WorkAssignments::getPilot)
-                .filter(p -> p != null && p.getName() != null)
-                .map(Users::getName)
-                .distinct()
+        // 1. 농지별 작업 배정 내역 조회
+        List<WorkAssignments> allAssignments = workAssignmentRepository.findAll().stream()
+                .filter(w -> w.getLand() != null)
+                .filter(w -> "ASSIGNED".equals(w.getStatus())
+                        || "IN_PROGRESS".equals(w.getStatus())
+                        || "COMPLETED".equals(w.getStatus()))
                 .toList();
 
-        dto.setPilotNames(pilotNames);
+        Map<Long, List<WorkAssignments>> assignmentMap = allAssignments.stream()
+                .collect(Collectors.groupingBy(
+                        w -> w.getLand().getNo(),
+                        LinkedHashMap::new,
+                        Collectors.toList()
+                ));
 
-        dto.setPilotName(
-                pilotNames.isEmpty() ? null : String.join(", ", pilotNames)
-        );
+        return rawLands.stream().map(land -> {
 
-        assignments.stream()
-                .map(WorkAssignments::getCreatedAt)
-                .filter(date -> date != null)
-                .max(Comparator.naturalOrder())
-                .ifPresent(dto::setAssignedAt);
+            LandDto dto = LandDto.from(land);
 
-        return dto;
+            List<WorkAssignments> assignments =
+                    assignmentMap.getOrDefault(land.getNo(), List.of());
 
-    }).toList();
-}
+            // 2. 가장 최근 배정 묶음 번호 조회
+            Long latestBatchNo = assignments.stream()
+                    .filter(w -> w.getDispatchBatch() != null)
+                    .map(w -> w.getDispatchBatch().getNo())
+                    .filter(no -> no != null)
+                    .max(Long::compareTo)
+                    .orElse(null);
+
+            // 3. 최신 배정 묶음에 속한 작업만 추출
+            List<WorkAssignments> latestAssignments = assignments.stream()
+                    .filter(w -> w.getDispatchBatch() != null
+                            && latestBatchNo != null
+                            && latestBatchNo.equals(w.getDispatchBatch().getNo()))
+                    .toList();
+
+            // 4. 조종사별 작업 정보를 PilotTaskDto로 변환
+            List<PilotTaskDto> pilotTasks = latestAssignments.stream()
+                    .map(PilotTaskDto::from)
+                    .toList();
+
+            // 5. 조종사별 작업 정보 전달
+            dto.setPilotAssignments(pilotTasks);
+
+            List<String> pilotNames = pilotTasks.stream()
+                    .map(PilotTaskDto::getPilotName)
+                    .filter(name -> name != null && !name.isBlank())
+                    .distinct()
+                    .toList();
+
+            dto.setPilotNames(pilotNames);
+
+            // 기존 화면 호환성 유지
+            dto.setPilotName(
+                    pilotNames.isEmpty() ? null : String.join(", ", pilotNames)
+            );
+
+            // 최신 배정 일시 설정
+            latestAssignments.stream()
+                    .map(WorkAssignments::getCreatedAt)
+                    .filter(date -> date != null)
+                    .max(Comparator.naturalOrder())
+                    .ifPresent(dto::setAssignedAt);
+
+            return dto;
+
+        }).toList();
+    }
+
 
 }
