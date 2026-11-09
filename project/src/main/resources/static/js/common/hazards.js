@@ -1,3 +1,4 @@
+
 /* ===== 위험 구역 (hazards.js) =====
  * 표는 서버(타임리프)가 그림. 여기서는
  *  1) 행의 data- 값을 읽어 지도에 마커 찍기
@@ -37,6 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     rows.forEach((row) => {
       const d = row.dataset;
+
       const lat = parseFloat(d.lat);
       const lng = parseFloat(d.lng);
       if (Number.isNaN(lat) || Number.isNaN(lng)) return;
@@ -102,7 +104,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-      /* ---------- 2-0) 목록 검색 (제목·내용·작성자 / 위험도 / 상태) ---------- */
+  /* ---------- 2-0) 목록 검색 (제목·내용·작성자 / 위험도 / 상태) ---------- */
   const fKeyword = document.getElementById("hz-f-keyword");
   const fType = document.getElementById("hz-f-type");
   const fStatus = document.getElementById("hz-f-status");
@@ -204,9 +206,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* ---------- 2-1) 상세보기 팝업 (내용이 길어도 전부 보이게) ---------- */
   const viewModal = document.getElementById("hz-view-modal");
+  // 게시글 수정 버튼
+  const editBtn = document.getElementById("hz-edit-btn");
 
   function openView(row) {
     const d = row.dataset;
+
+    // 작성자 본인 또는 관리자에게만 수정 버튼 노출
+    const loginUserNo = editBtn?.dataset.loginUserNo;
+    const loginUserRole = editBtn?.dataset.loginUserRole;
+    const isAuthor = d.authorNo === loginUserNo;
+    const isAdmin = loginUserRole === "ADMIN";
+
+    if (editBtn) {
+      editBtn.hidden = !isAuthor && !isAdmin;
+    }
+
     $("hz-v-title").textContent = d.title || "-";
     $("hz-v-type").textContent = d.type || "-";
     $("hz-v-type").className = "hz-badge " + badgeClass(d.type);
@@ -217,17 +232,19 @@ document.addEventListener("DOMContentLoaded", () => {
     $("hz-v-date").textContent = d.date || "-";
     $("hz-v-coord").textContent = `${d.lat}, ${d.lng}`;
     $("hz-v-content").textContent = d.content || "";
+
     // 이미지 목록 연결
     currentImages = JSON.parse(row.dataset.images || "[]");
     currentImageIndex = 0;
 
     if (currentImages.length > 0) {
-    showHazardImage(0);
+      showHazardImage(0);
     } else {
-    viewImageGallery.hidden = true;
+      viewImageGallery.hidden = true;
     }
+
     viewModal.hidden = false;
-    }
+  }
 
   /* ---------- 상세보기 이미지 갤러리 ---------- */
   const viewImageGallery = $("hz-v-image-gallery");
@@ -241,33 +258,33 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function showHazardImage(index) {
     if (!currentImages.length) {
-        viewImageGallery.hidden = true;
-        return;
+      viewImageGallery.hidden = true;
+      return;
     }
 
-  currentImageIndex = index;
-  viewImage.src = currentImages[currentImageIndex];
-  imageCount.textContent =
+    currentImageIndex = index;
+    viewImage.src = currentImages[currentImageIndex];
+    imageCount.textContent =
       `${currentImageIndex + 1} / ${currentImages.length}`;
 
-  const hasMultipleImages = currentImages.length > 1;
-  prevImageBtn.hidden = !hasMultipleImages;
-  nextImageBtn.hidden = !hasMultipleImages;
-  imageCount.hidden = !hasMultipleImages;
-  viewImageGallery.hidden = false;
+    const hasMultipleImages = currentImages.length > 1;
+    prevImageBtn.hidden = !hasMultipleImages;
+    nextImageBtn.hidden = !hasMultipleImages;
+    imageCount.hidden = !hasMultipleImages;
+    viewImageGallery.hidden = false;
   }
 
   prevImageBtn?.addEventListener("click", () => {
     const index =
-        (currentImageIndex - 1 + currentImages.length) % currentImages.length;
+      (currentImageIndex - 1 + currentImages.length) % currentImages.length;
     showHazardImage(index);
   });
 
   nextImageBtn?.addEventListener("click", () => {
     const index =
-        (currentImageIndex + 1) % currentImages.length;
+      (currentImageIndex + 1) % currentImages.length;
     showHazardImage(index);
-   });
+  });
 
   const closeView = () => { if (viewModal) viewModal.hidden = true; };
 
@@ -278,36 +295,140 @@ document.addEventListener("DOMContentLoaded", () => {
       openView(row);
     });
   });
+
   viewModal?.querySelectorAll("[data-hz-view-close]").forEach((b) => b.addEventListener("click", closeView));
-    // closeOnBackdrop(viewModal, closeView); - 바깥 클릭 시 팝업 꺼짐
+  // closeOnBackdrop(viewModal, closeView); - 바깥 클릭 시 팝업 꺼짐
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && viewModal && !viewModal.hidden) closeView(); });
 
-  
-
-  
-  
   /* ---------- 3) 신고 팝업 ---------- */
   const modal = document.getElementById("hz-modal");
   const openBtn = document.getElementById("hz-open-btn");
   const imageInput = document.getElementById("hz-images");
   const imagePreview = document.getElementById("hz-image-preview");
 
+  // 기존 등록 이미지 관리
+  const existingImagePreview = document.getElementById("hz-existing-image-preview");
+  const deleteImageInputs = document.getElementById("hz-delete-image-inputs");
+
+  let existingHazardImages = [];
+  let deleteHazardImageNos = [];
+
+  // 신고 및 수정 폼
+  const hazardForm = document.getElementById("hz-form");
+  const modalTitle = document.getElementById("hz-modal-title");
+  const submitBtn = document.getElementById("hz-submit-btn");
+
+  // 현재 수정 중인 게시글 번호
+  let editingHazardNo = null;
+
   let selectedHazardFiles = [];
   let previewUrls = [];
 
-     function renderImagePreview() {
-     if (!imagePreview) return;
+  // 기존 등록 이미지 미리보기 및 삭제 선택
+  function renderExistingImagePreview() {
+      if (!existingImagePreview) return;
 
-  // 기존 미리보기 URL 정리
+      existingImagePreview.innerHTML = "";
+
+      if (existingHazardImages.length === 0) {
+          updateDeleteImageInputs();
+          return;
+      }
+
+      const title = document.createElement("p");
+      title.className = "hz-image-count";
+      title.textContent = "기존 등록 이미지";
+      existingImagePreview.appendChild(title);
+
+      existingHazardImages.forEach(image => {
+          const item = document.createElement("div");
+          item.className = "hz-preview-item";
+
+          const isDeleted = deleteHazardImageNos.includes(Number(image.no));
+
+          if (isDeleted) {
+              item.classList.add("is-delete");
+          }
+
+          const img = document.createElement("img");
+          img.src = image.filePath;
+          img.alt = "기존 위험 구역 이미지";
+
+          const name = document.createElement("span");
+          name.textContent = `이미지 #${image.no}`;
+
+          const deleteBtn = document.createElement("button");
+          deleteBtn.type = "button";
+          deleteBtn.className = "hz-preview-remove";
+          deleteBtn.textContent = isDeleted ? "↩" : "×";
+          deleteBtn.setAttribute(
+              "aria-label",
+              isDeleted ? "삭제 취소" : "이미지 삭제"
+          );
+
+          deleteBtn.addEventListener("click", () => {
+          const imageNo = Number(image.no);
+
+          if (deleteHazardImageNos.includes(imageNo)) {
+              // 삭제 취소 후 전체 이미지 개수 계산
+              const remainingCountAfterUndo =
+                  existingHazardImages.length -
+                  (deleteHazardImageNos.length - 1) +
+                  selectedHazardFiles.length;
+
+              // 삭제 취소 후 3개를 초과하면 취소하지 않음
+              if (remainingCountAfterUndo > 3) {
+                  alert("이미지는 최대 3개까지 업로드할 수 있습니다.");
+                  return;
+              }
+
+              deleteHazardImageNos =
+                  deleteHazardImageNos.filter(no => no !== imageNo);
+
+          } else {
+              // 기존 이미지 삭제 선택
+              deleteHazardImageNos.push(imageNo);
+          }
+
+          renderExistingImagePreview();
+      });
+
+          item.append(img, name, deleteBtn);
+          existingImagePreview.appendChild(item);
+      });
+
+      updateDeleteImageInputs();
+  }
+
+  // 선택한 기존 이미지 번호를 form에 전달
+  function updateDeleteImageInputs() {
+      if (!deleteImageInputs) return;
+
+      deleteImageInputs.innerHTML = "";
+
+      deleteHazardImageNos.forEach(imageNo => {
+          const input = document.createElement("input");
+          input.type = "hidden";
+          input.name = "deleteImageNos";
+          input.value = imageNo;
+
+          deleteImageInputs.appendChild(input);
+      });
+  }
+
+  function renderImagePreview() {
+    if (!imagePreview) return;
+
+    // 기존 미리보기 URL 정리
     previewUrls.forEach(url => URL.revokeObjectURL(url));
     previewUrls = [];
 
     imagePreview.innerHTML = "";
 
     if (selectedHazardFiles.length === 0) {
-        imagePreview.innerHTML =
-            '<span class="hz-image-empty">선택된 이미지가 없습니다.</span>';
-        return;
+      imagePreview.innerHTML =
+        '<span class="hz-image-empty">선택된 이미지가 없습니다.</span>';
+      return;
     }
 
     // 선택된 파일 개수 표시
@@ -317,67 +438,85 @@ document.addEventListener("DOMContentLoaded", () => {
     imagePreview.appendChild(count);
 
     selectedHazardFiles.forEach((file, index) => {
-        const item = document.createElement("div");
-        item.className = "hz-preview-item";
+      const item = document.createElement("div");
+      item.className = "hz-preview-item";
 
-        const img = document.createElement("img");
-        const url = URL.createObjectURL(file);
-        previewUrls.push(url);
+      const img = document.createElement("img");
+      const url = URL.createObjectURL(file);
+      previewUrls.push(url);
 
-        img.src = url;
-        img.alt = file.name;
+      img.src = url;
+      img.alt = file.name;
 
-        const name = document.createElement("span");
-        name.textContent = file.name;
+      const name = document.createElement("span");
+      name.textContent = file.name;
 
-        const removeBtn = document.createElement("button");
-        removeBtn.type = "button";
-        removeBtn.textContent = "×";
-        removeBtn.className = "hz-preview-remove";
-        removeBtn.setAttribute("aria-label", `${file.name} 삭제`);
+      const removeBtn = document.createElement("button");
+      removeBtn.type = "button";
+      removeBtn.textContent = "×";
+      removeBtn.className = "hz-preview-remove";
+      removeBtn.setAttribute("aria-label", `${file.name} 삭제`);
 
-        removeBtn.addEventListener("click", () => {
-            selectedHazardFiles.splice(index, 1);
-            updateImageInput();
-        });
+      removeBtn.addEventListener("click", () => {
+        selectedHazardFiles.splice(index, 1);
+        updateImageInput();
+      });
 
-        item.append(img, name, removeBtn);
-        imagePreview.appendChild(item);
-       });
-       }
+      item.append(img, name, removeBtn);
+      imagePreview.appendChild(item);
+    });
+  }
 
-       // 누적된 파일 목록을 실제 form input에 반영
-     function updateImageInput() {
+  // 누적된 파일 목록을 실제 form input에 반영
+  function updateImageInput() {
     const dataTransfer = new DataTransfer();
 
     selectedHazardFiles.forEach(file => {
-        dataTransfer.items.add(file);
+      dataTransfer.items.add(file);
     });
 
     imageInput.files = dataTransfer.files;
 
     renderImagePreview();
-   }
+  }
 
-    // 파일을 새로 선택할 때 기존 파일에 추가
-    imageInput?.addEventListener("change", () => {
+  // 파일을 새로 선택할 때 기존 파일에 추가
+  imageInput?.addEventListener("change", () => {
     const newFiles = Array.from(imageInput.files);
+    let exceeded = false;
 
     newFiles.forEach(file => {
-        const alreadyExists = selectedHazardFiles.some(
-            existing =>
-                existing.name === file.name &&
-                existing.size === file.size &&
-                existing.lastModified === file.lastModified
-        );
+      const alreadyExists = selectedHazardFiles.some(
+        existing =>
+          existing.name === file.name &&
+          existing.size === file.size &&
+          existing.lastModified === file.lastModified
+      );
 
-        if (!alreadyExists) {
-            selectedHazardFiles.push(file);
-        }
+      if (alreadyExists) {
+        return;
+      }
+
+      // 기존 이미지 중 삭제하지 않은 이미지 개수
+      const remainingExistingCount =
+        existingHazardImages.length - deleteHazardImageNos.length;
+
+      // 기존 이미지와 새 이미지 합산 최대 3개 제한
+      if (remainingExistingCount + selectedHazardFiles.length >= 3) {
+        exceeded = true;
+        return;
+      }
+
+      selectedHazardFiles.push(file);
     });
 
+    if (exceeded) {
+      alert("이미지는 최대 3개까지 업로드할 수 있습니다.");
+    }
+
     updateImageInput();
- }); // change 이벤트 종료
+  }); // change 이벤트 종료
+
   const latInput = document.getElementById("hz-lat");
   const lngInput = document.getElementById("hz-lng");
   let pickMap = null;
@@ -402,13 +541,122 @@ document.addEventListener("DOMContentLoaded", () => {
       setPick(start.lat, start.lng);
       pickMap.on("click", (e) => setPick(e.latlng.lat, e.latlng.lng));
     }
+
     // 숨겨져 있던 지도는 크기를 다시 계산해야 제대로 보임
     setTimeout(() => pickMap.invalidateSize(), 0);
     modal.querySelector("input[name='title']")?.focus();
   }
 
+  // 신규 신고 모드
+  function openCreateModal() {
+    editingHazardNo = null;
+
+    hazardForm.action = "/hazards";
+    modalTitle.textContent = "위험 구역 신고";
+    submitBtn.textContent = "신고하기";
+
+    // 입력값 초기화
+    hazardForm.reset();
+
+    const defaultType = hazardForm.querySelector(
+      "input[name='hazardType'][value='중위험']"
+    );
+
+    if (defaultType) defaultType.checked = true;
+
+    if (addrInput) addrInput.value = "";
+    if (addrMsg) {
+      addrMsg.textContent = "주소를 고르면 지도와 위도·경도가 자동으로 맞춰져요. 지도를 클릭해 미세 조정할 수 있어요.";
+    }
+
+    // 이미지 선택 목록 초기화
+    selectedHazardFiles = [];
+    existingHazardImages = [];
+    deleteHazardImageNos = [];
+    renderExistingImagePreview();
+    imageInput.value = "";
+    updateImageInput();
+
+    // 기본 위치 설정
+    if (pickMap) {
+      const start = map ? map.getCenter() : L.latLng(DEFAULT_POS);
+      pickMap.setView(start, 13);
+      setPick(start.lat, start.lng);
+    }
+
+    openModal();
+  }
+
+  // 기존 게시글 수정 모드
+  function openEditModal(row) {
+    const d = row.dataset;
+    // 기존 등록 이미지 불러오기
+    try {
+        existingHazardImages = JSON.parse(d.imageData || "[]");
+    } catch (error) {
+        console.error("기존 이미지 정보 파싱 실패:", error);
+        existingHazardImages = [];
+    }
+    
+    deleteHazardImageNos = [];
+    renderExistingImagePreview();
+
+    editingHazardNo = d.no;
+
+    // 수정 URL로 변경
+    hazardForm.action = `/hazards/${editingHazardNo}/update`;
+
+    modalTitle.textContent = "위험 구역 수정";
+    submitBtn.textContent = "수정 완료";
+
+    // 기존 게시글 정보 입력
+    hazardForm.querySelector("input[name='title']").value = d.title || "";
+    hazardForm.querySelector("textarea[name='content']").value = d.content || "";
+
+    // 기존 위험도 선택
+    const typeInput = hazardForm.querySelector(
+      `input[name='hazardType'][value="${d.type}"]`
+    );
+
+    if (typeInput) typeInput.checked = true;
+
+    // 기존 주소 및 좌표 입력
+    addrInput.value = d.address || "";
+    latInput.value = d.lat || DEFAULT_POS[0];
+    lngInput.value = d.lng || DEFAULT_POS[1];
+
+    // 기존 이미지 정보는 유지하고, 새 이미지 선택은 선택 사항
+    selectedHazardFiles = [];
+    imageInput.value = "";
+    updateImageInput();
+
+    // 수정할 게시글의 좌표로 지도 이동
+    openModal();
+
+    const lat = parseFloat(d.lat);
+    const lng = parseFloat(d.lng);
+
+    if (!Number.isNaN(lat) && !Number.isNaN(lng)) {
+      setPick(lat, lng);
+      pickMap.setView([lat, lng], 15);
+    }
+
+    // 상세보기 팝업 닫기
+    closeView();
+  }
+
+  // 상세보기에서 수정 버튼 클릭
+  editBtn?.addEventListener("click", () => {
+    const selectedRow = document.querySelector(".hz-row.selected");
+
+    if (!selectedRow) return;
+
+    openEditModal(selectedRow);
+  });
+
   function closeModal() {
     if (modal) modal.hidden = true;
+    editingHazardNo = null;
   }
 
   // 위도·경도를 직접 고치면 작은 지도 마커도 이동
@@ -422,12 +670,12 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  openBtn?.addEventListener("click", openModal);
+  openBtn?.addEventListener("click", openCreateModal);
   modal?.querySelectorAll("[data-hz-close]").forEach((b) => b.addEventListener("click", closeModal));
   // closeOnBackdrop(modal, closeModal);   // 바깥 클릭 시 팝업 꺼짐
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && modal && !modal.hidden) closeModal(); });
 
-    /* ---------- 4) 주소 검색 → 위도·경도 자동 입력 ---------- */
+  /* ---------- 4) 주소 검색 → 위도·경도 자동 입력 ---------- */
   const addrInput = document.getElementById("hz-addr");
   const addrBtn = document.getElementById("hz-addr-btn");
   const addrMsg = document.getElementById("hz-addr-msg");
