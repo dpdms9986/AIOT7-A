@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{UI/layouts/admin/admin_layout}">
+<head>
+  <meta charset="UTF-8">
+  <title>관리자 | 문의현황</title>
+</head>
+<body layout:fragment="content">
+
+<!--/*
+  TODO(백엔드) 이 페이지에서 받는 값 (AdminInquiryController#list)
+    inquiries (List<InquiryDto>) : no, typeLabel, title, content, authorName, statusLabel/statusClass, answered, answer, answeredAt, createdAt
+    pagination / status / category / keyword / totalCount / waitingCount / completedCount
+  답변 등록: POST /api/inquiries/admin/{no}/answer  body {answerContent}  (InquiryApi, 이미 있음)
+    - 성공 응답 { success: true }, 실패 응답 { message }
+    - 이미 답변 완료된 문의는 서버가 거절함
+  TODO(백엔드) 작성자 구분(단장/조종사), 연락처 표시가 필요하면 InquiryDto 에 필드 추가 필요
+  CSS: style.css 의 "관리자 공통 / 사용자 관리(um-*) / sp-status" 사용
+*/-->
+
+<article class="dash-card">
+  <div class="dash-card-head">
+    <h2>💬 문의현황</h2>
+    <span class="dash-more">단장·조종사가 고객센터에서 남긴 1:1 문의</span>
+  </div>
+
+  <!-- 요약 (아이콘 + 글씨, 클릭하면 해당 상태만 보기) -->
+  <div class="adm-stats">
+    <a class="adm-stat has-ico" th:classappend="${status == ''} ? 'on'"
+       th:href="@{/admin/inquiries(category=${category}, keyword=${keyword})}">
+      <span class="adm-stat-ico">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          <circle cx="8.5" cy="10" r="1" fill="currentColor" stroke="none"/>
+          <circle cx="12" cy="10" r="1" fill="currentColor" stroke="none"/>
+          <circle cx="15.5" cy="10" r="1" fill="currentColor" stroke="none"/>
+        </svg>
+      </span>
+      <span class="adm-stat-txt"><small>전체 문의</small><strong th:text="${totalCount}">0</strong></span>
+    </a>
+
+    <a class="adm-stat warn has-ico" th:classappend="${status == 'WAITING'} ? 'on'"
+       th:href="@{/admin/inquiries(status='WAITING', category=${category}, keyword=${keyword})}">
+      <span class="adm-stat-ico">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="9"/>
+          <path d="M12 7v5l3 2"/>
+        </svg>
+      </span>
+      <span class="adm-stat-txt"><small>답변 대기</small><strong th:text="${waitingCount}">0</strong></span>
+    </a>
+
+    <a class="adm-stat ok has-ico" th:classappend="${status == 'COMPLETED'} ? 'on'"
+       th:href="@{/admin/inquiries(status='COMPLETED', category=${category}, keyword=${keyword})}">
+      <span class="adm-stat-ico">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="9"/>
+          <path d="M8 12.5l3 3 5-6"/>
+        </svg>
+      </span>
+      <span class="adm-stat-txt"><small>답변 완료</small><strong th:text="${completedCount}">0</strong></span>
+    </a>
+  </div>
+
+  <!-- 검색: 유형 + 검색창 + 버튼 한 줄 -->
+  <form class="iq-search" method="get" th:action="@{/admin/inquiries}">
+    <input type="hidden" name="status" th:value="${status}">
+    <select class="um-select" name="category" onchange="this.form.submit()">
+      <option value="">문의 유형 전체</option>
+      <option value="account" th:selected="${category == 'account'}">계정 · 로그인</option>
+      <option value="field"   th:selected="${category == 'field'}">농지 · 작업 배정</option>
+      <option value="drone"   th:selected="${category == 'drone'}">드론 · 약제</option>
+      <option value="etc"     th:selected="${category == 'etc'}">기타</option>
+    </select>
+    <input type="text" class="um-input" name="keyword" th:value="${keyword}" placeholder="작성자 이름 또는 제목으로 검색">
+    <button type="submit" class="um-btn primary">검색</button>
+    <a class="iq-reset" th:if="${(keyword != null and keyword != '') or (category != null and category != '') or (status != null and status != '')}"
+       th:href="@{/admin/inquiries}">↺ 초기화</a>
+  </form>
+
+  <!-- 목록: 제목을 누르면 상세/답변 창이 열림 -->
+  <div class="asset-pilot-table-scroll">
+    <table class="asset-pilot-table um-table">
+      <thead>
+        <tr><th>번호</th><th>유형</th><th>제목</th><th>작성자</th><th>문의일</th><th>상태</th></tr>
+      </thead>
+      <tbody>
+        <tr th:each="q : ${inquiries}" class="iq-row"
+            th:attr="data-no=${q.no}, data-type=${q.typeLabel}, data-title=${q.title}, data-author=${q.authorName},
+                     data-date=${#temporals.format(q.createdAt, 'yyyy-MM-dd HH:mm')}, data-content=${q.content},
+                     data-answered=${q.answered}, data-answer=${q.answer},
+                     data-answered-at=${q.answeredAt != null ? #temporals.format(q.answeredAt, 'yyyy-MM-dd HH:mm') : ''},
+                     data-status-label=${q.statusLabel}, data-status-class=${q.statusClass}">
+          <td th:text="${q.no}">1</td>
+          <td th:text="${q.typeLabel}">계정 · 로그인</td>
+          <td style="text-align:left;"><button type="button" class="um-link iq-open" th:text="${q.title}">문의 제목</button></td>
+          <td th:text="${q.authorName}">홍길동</td>
+          <td th:text="${#temporals.format(q.createdAt, 'yyyy-MM-dd HH:mm')}">2026-11-03 10:00</td>
+          <td><span class="sp-status" th:classappend="${q.statusClass}" th:text="${q.statusLabel}">답변 대기</span></td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(inquiries)}">
+          <td colspan="6" class="um-empty">조회된 문의가 없습니다.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 페이지 번호 -->
+  <div class="um-pager">
+    <a th:href="@{/admin/inquiries(page=1, size=${pagination.size}, status=${status}, category=${category}, keyword=${keyword})}">«</a>
+    <a th:each="p : ${#numbers.sequence(pagination.start, pagination.end)}"
+       th:href="@{/admin/inquiries(page=${p}, size=${pagination.size}, status=${status}, category=${category}, keyword=${keyword})}"
+       th:classappend="${p == pagination.page} ? 'on'" th:text="${p}">1</a>
+    <a th:href="@{/admin/inquiries(page=${pagination.last}, size=${pagination.size}, status=${status}, category=${category}, keyword=${keyword})}">»</a>
+  </div>
+</article>
+
+<!-- 상세 / 답변 창 -->
+<div class="iq-modal" id="iqModal" hidden>
+  <div class="iq-panel" role="dialog" aria-modal="true">
+    <header class="iq-head">
+      <div><span class="sp-type" id="iqType"></span> <span class="sp-status" id="iqStatus"></span></div>
+      <button type="button" class="iq-close" id="iqClose" aria-label="닫기">✕</button>
+    </header>
+    <h3 id="iqTitle"></h3>
+    <p class="iq-meta" id="iqMeta"></p>
+    <div class="iq-body" id="iqContent"></div>
+
+    <!-- 답변 완료: 답변 내용 표시 -->
+    <section class="iq-answer" id="iqAnswerDone" hidden>
+      <p class="iq-answer-title">💬 관리자 답변 <small id="iqAnsweredAt"></small></p>
+      <div class="iq-body" id="iqAnswerText"></div>
+    </section>
+
+    <!-- 답변 대기: 답변 입력 -->
+    <section class="iq-answer" id="iqAnswerForm" hidden>
+      <p class="iq-answer-title">✍️ 답변 작성</p>
+      <textarea id="iqAnswer" rows="5" maxlength="2000" placeholder="답변 내용을 입력하세요."></textarea>
+      <div class="iq-actions">
+        <button type="button" class="um-btn" id="iqCancel">닫기</button>
+        <button type="button" class="um-btn primary" id="iqSubmit">답변 등록</button>
+      </div>
+    </section>
+
+    <input type="hidden" id="iqNo">
+  </div>
+</div>
+
+<script>
+  const $modal = $('#iqModal');
+
+  // 제목 클릭 → 상세 창 열기 (data-* 값은 .attr 로 읽어서 숫자/JSON 으로 바뀌지 않게 함)
+  // 줄 아무 곳이나 클릭 → 상세 창 열기 (data-* 값은 .attr 로 읽어서 숫자/JSON 으로 바뀌지 않게 함)
+  $(document).on('click', '.iq-row', function () {
+    // 글자를 드래그로 선택한 경우에는 열지 않음
+    if (window.getSelection().toString().length > 0) return;
+
+    const tr = $(this);
+    const get = k => tr.attr('data-' + k) || '';
+
+    $('#iqNo').val(get('no'));
+    $('#iqType').text(get('type'));
+    $('#iqStatus').text(get('status-label')).attr('class', 'sp-status ' + get('status-class'));
+    $('#iqTitle').text(get('title'));
+    $('#iqMeta').text('작성자 ' + get('author') + ' · 문의일 ' + get('date'));
+    $('#iqContent').text(get('content'));
+
+    if (get('answered') === 'true') {
+      $('#iqAnsweredAt').text(get('answered-at'));
+      $('#iqAnswerText').text(get('answer'));
+      $('#iqAnswerDone').prop('hidden', false);
+      $('#iqAnswerForm').prop('hidden', true);
+    } else {
+      $('#iqAnswer').val('');
+      $('#iqAnswerDone').prop('hidden', true);
+      $('#iqAnswerForm').prop('hidden', false);
+    }
+    $modal.prop('hidden', false);
+  });
+
+  // 닫기 (✕ / 닫기 버튼 / 바깥 클릭 / ESC)
+  function closeModal() { $modal.prop('hidden', true); }
+  $('#iqClose, #iqCancel').on('click', closeModal);
+  $modal.on('click', e => { if (e.target === $modal[0]) closeModal(); });
+  $(document).on('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+  // 답변 등록 (기존 API 사용). $ajax 는 실패해도 예외 없이 응답 본문을 돌려주므로 success 값으로 판단
+  $('#iqSubmit').on('click', async function () {
+    const no = $('#iqNo').val();
+    const answerContent = $('#iqAnswer').val().trim();
+    if (!answerContent) {
+      $alert('입력 확인', '답변 내용을 입력해주세요.', 'warning');
+      return;
+    }
+
+    const btn = $(this).prop('disabled', true).text('등록 중...');
+    const res = await $ajax({
+      url: '/api/inquiries/admin/' + no + '/answer',
+      method: 'POST',
+      data: { answerContent }
+    });
+
+    if (res && res.success === true) {
+      $alert('등록 완료', '답변이 등록되었습니다.', 'success').then(() => location.reload());
+    } else {
+      btn.prop('disabled', false).text('답변 등록');
+      $alert('등록 실패', (res && res.message) || '답변 등록에 실패했습니다.', 'error');
+    }
+  });
+</script>
+
+</body>
+</html>

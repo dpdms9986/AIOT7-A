@@ -22,6 +22,9 @@ public class CustomUser implements UserDetails {
         this.user = user;
     }
 
+    public Users getUser() {
+        return user;
+    }
     /** 
      * 🔐 권한 정보 메소드
      *     UserDetails 를 Customer 로 구현하여, 
@@ -46,7 +49,7 @@ public class CustomUser implements UserDetails {
     @Override
     public String getUsername() {
         // Spring Security의 식별자 메서드(getUsername)가 우리 엔티티의 userId(이메일)를 반환하도록 연결
-        return user.getUserid();
+        return user.getUserId();
     }
 
     @Override

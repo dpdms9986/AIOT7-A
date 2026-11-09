@@ -8,8 +8,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.aloha.mini.domain.Regions;
 
 public interface RegionRepository extends JpaRepository<Regions, Long> {
-    // 행정구역 키워드 검색 (예: "어남동" 포함 검색 - ADM_002)
-    List<Regions> findByRegionNameContaining(String keyword);
+    // 읍면동 이름으로 검색하되, 활성화된 지역만 반환
+    List<Regions> findByEupmyeondongContainingAndIsActiveTrue(String keyword);
 
-    Optional<Regions> findByRegionName(String regionName);
+    Optional<Regions> findByRegionCode(String regionCode);
 }

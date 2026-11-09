@@ -4,11 +4,18 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
 
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.NotBlank;
+
 // 고압선, 철탑 등 비행 위험 요소를 위치 좌표와 함께 공유하는 게시판
 
+@Builder 
 @Entity
 @Table(name = "hazard_reports")
-@Getter @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter 
+@Setter
+@AllArgsConstructor 
+@NoArgsConstructor
 public class HazardReports {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,9 +31,16 @@ public class HazardReports {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content; // 상세 위험 내용
 
-    @Column(nullable = false, length = 50)
-    private String hazardType; // 위험 유형 (예: 고압선, 통신철탑, 맹견, 비행금지구역)
+    // @Column(nullable = false, length = 50)
+    // private String hazardType; // 위험 유형 (예: 고압선, 통신철탑, 맹견, 비행금지구역)
 
+    @Column(nullable = false, length = 50)
+    @NotBlank(message = "위험도를 선택해 주세요.")
+    @Pattern(
+        regexp = "고위험|중위험|저위험",
+        message = "위험도는 고위험, 중위험, 저위험 중 하나만 선택할 수 있습니다."
+    )
+private String hazardType;
     @Column(nullable = false)
     private Double latitude; // 위험 지점 위도 (관제 지도 빨간 마커 표시용)
 
@@ -37,7 +51,7 @@ public class HazardReports {
     private String status = "ACTIVE"; // ACTIVE(주의 요망), RESOLVED(해소됨)
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "region_id")
+    @JoinColumn(name = "region_no")
     private Regions region; // 행정구역별 필터링용 매핑 - BRD_002, BRD_004
 
     @Column(name = "created_at", updatable = false)

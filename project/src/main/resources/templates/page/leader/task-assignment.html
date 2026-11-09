@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{UI/layouts/user/leader_layout}">
+<head>
+  <meta charset="UTF-8">
+  <title>작업 배정 | 스마트 농업 관제 시스템</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6.5.0/turf.min.js"></script>
+</head>
+<body layout:fragment="content">
+
+<main class="dash-main">
+
+  <div class="dash-title-row">
+    <div class="task-title">
+      <span class="task-title-icon">📋</span>
+      <div>
+        <h1>작업 배정</h1>
+        <p>지역을 검색해 미배정 농지를 선택하고, 조종사에게 나눠 배정합니다.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 처리 결과 메시지 (redirect 후 1회) -->
+  <p class="page-flash" th:if="${message}" th:text="${message}">성공 메시지</p>
+  <p class="page-flash is-error" th:if="${errorMessage}" th:text="${errorMessage}">실패 메시지</p>
+
+  <!-- ===== 탭: 주소로 이동 ===== -->
+  <div class="task-tabs">
+    <a class="task-tab" th:classappend="${tab == 'assign'} ? 'active'"
+       th:href="@{/leader/task-assignment(tab='assign')}">📋 작업 배정</a>
+    <a class="task-tab" th:classappend="${tab == 'status'} ? 'active'"
+       th:href="@{/leader/task-assignment(tab='status')}">📄 배정 현황</a>
+    <a class="task-tab" th:classappend="${tab == 'history'} ? 'active'"
+       th:href="@{/leader/task-assignment(tab='history')}">🕘 작업 이력</a>
+  </div>
+
+  <!-- =====================================================
+       [배정 탭]
+       ===================================================== -->
+  <section class="task-panel" th:if="${tab == 'assign'}">
+    <article class="dash-card">
+      <div class="dash-card-head task-map-head">
+        <h2>🌱 미배정 농지 목록 <span class="task-count" th:text="${readyTotal} + '건'">0건</span></h2>
+
+        <form class="task-search" th:action="@{/leader/task-assignment}" method="get">
+          <input type="hidden" name="tab" value="assign">
+          <input type="text" class="dash-input" name="region" th:value="${region}"
+            placeholder="🔍 주소 검색 (예: 전민동 15-2)">
+          <button type="submit" class="dash-btn-primary">검색</button>
+          <a class="dash-btn-outline" th:href="@{/leader/task-assignment}">전체</a>
+        </form>
+      </div>
+
+      <form id="assign-form" th:action="@{/leader/task-assignment}" method="post">
+
+        <div class="task-table-wrap">
+          <table class="task-table">
+            <thead>
+              <tr>
+                <th>선택<input type="checkbox" id="check-all" aria-label="전체 선택" style="display:none"></th>
+                <th>주소</th>
+                <th>면적(㎡)</th>
+                <th>상태</th>
+                <th>등록 일시</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="land : ${readyLands}">
+                <td>
+                  <input type="checkbox" class="land-check" name="landNos"
+                         th:value="${land.no}"
+                         th:data-area="${land.areaSize}"
+                         th:data-polygon="${land.polygonCoordinates}"
+                         th:data-lat="${land.latitude}"
+                         th:data-lng="${land.longitude}"
+                         th:data-address="${land.address}"
+                         th:checked="${land.no == landNo}"
+                         th:attr="aria-label=${land.address} + ' 선택'">
+                </td>
+                <td th:text="${land.address}">전민동 15-2</td>
+                <td th:text="${#numbers.formatDecimal(land.areaSize, 0, 'COMMA', 0, 'POINT')}">3,300</td>
+                <td><span class="pilot-status st-ready">READY</span></td>
+                <td th:text="${land.createdAt != null} ? ${#temporals.format(land.createdAt, 'yyyy-MM-dd HH:mm')} : '-'">2026-11-04 14:54</td>
+              </tr>
+              <tr th:if="${#lists.isEmpty(readyLands)}">
+                <td colspan="5" class="task-empty-cell">해당 지역에 미배정 농지가 없습니다.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 페이지 번호 (11건 이상, 즉 2페이지 이상일 때만 표시) -->
+        <div class="um-pager pager-std" th:if="${pagination.last > 1}">
+          <a th:href="@{/leader/task-assignment(tab='assign', region=${region}, page=1)}">«</a>
+          <a th:each="p : ${#numbers.sequence(pagination.start, pagination.end)}"
+             th:href="@{/leader/task-assignment(tab='assign', region=${region}, page=${p})}"
+             th:classappend="${p == pagination.page} ? 'on'"
+             th:text="${p}">1</a>
+          <a th:href="@{/leader/task-assignment(tab='assign', region=${region}, page=${pagination.last})}">»</a>
+        </div>
+
+        <div class="task-select-bar">
+          <p>선택한 농지 <strong id="sel-count">0</strong>필지 · 총 <strong id="sel-area">0</strong>㎡</p>
+          <button type="button" class="dash-btn-primary" id="open-assign" style="display:none">👥 분배 설정</button>
+        </div>
+
+         <!-- 구역 분할 배정 -->
+        <div class="field-split-wrap fs-section" id="fs-section">
+          <div class="fs-summary">
+            <div class="fs-summary-icon" aria-hidden="true">🗺️</div>
+            <div class="fs-summary-copy">
+              <strong>구역 분할 배정</strong>
+              <span id="fs-target">위 목록에서 농지를 고르거나, 지도에서 직접 영역을 그려 주세요.</span>
+            </div>
+            <div class="fs-metric">
+              <div><span>분할 개수</span><strong id="fs-sum-count">-</strong></div>
+              <div><span>원본 면적</span><strong id="fs-sum-area">-</strong></div>
+            </div>
+          </div>
+
+          <div class="fs-grid">
+            <section class="fs-panel" aria-labelledby="fs-set-title">
+              <h3 id="fs-set-title">1. 영역 선택 · 2. 분할</h3>
+
+              <button type="button" class="dash-btn-outline" id="fs-draw-btn" aria-pressed="false">✏️ 지도에서 직접 영역 그리기</button>
+              <p class="fs-hint" id="fs-draw-status">등록된 농지를 체크하거나, 지도를 눌러 꼭짓점을 찍어 영역을 잡을 수 있어요.</p>
+              <div id="fs-drawn-wrap" hidden>
+                <label class="fs-label" for="fs-drawn-address">직접 그린 영역 이름(주소)</label>
+                <input type="text" id="fs-drawn-address" name="drawnAddress" maxlength="200"
+                       placeholder="예) 전민동 15-2 옆 밭" style="width:100%">
+              </div>
+
+              <label class="fs-label" for="splitCount" style="display:block;margin-top:14px">분할할 조각 수</label>
+              <div class="fs-count">
+                <button type="button" id="fs-dec" aria-label="분할 개수 줄이기">−</button>
+                <input id="splitCount" type="number" min="2" max="12" value="2" inputmode="numeric">
+                <button type="button" id="fs-inc" aria-label="분할 개수 늘리기">+</button>
+                <span>조각</span>
+              </div>
+              <p class="fs-hint" id="fs-count-hint">조각 수는 조종사 수와 상관없이 정할 수 있어요. 한 조종사가 여러 구역을 맡아도 됩니다.</p>
+
+              <details style="margin-top:12px">
+                <summary class="fs-hint" style="cursor:pointer">좌표 직접 입력 · 예제</summary>
+                <textarea id="fs-coords" rows="4" style="width:100%;margin-top:6px"
+                          placeholder="[[위도, 경도], [위도, 경도], [위도, 경도]]"></textarea>
+                <div style="display:flex;gap:6px;margin-top:6px">
+                  <button type="button" class="dash-btn-outline task-mini-btn" id="fs-coords-apply">좌표 적용</button>
+                  <button type="button" class="dash-btn-outline task-mini-btn" id="fs-sample-btn">예제 불러오기</button>
+                </div>
+              </details>
+
+              <div class="fs-error" id="fs-error" role="alert" hidden></div>
+            </section>
+
+            <section class="fs-panel" aria-labelledby="fs-map-title">
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+                <h3 id="fs-map-title">분할 미리보기</h3>
+                <button type="button" class="dash-btn-outline task-mini-btn" id="fs-fit">전체 영역 보기</button>
+              </div>
+              <div class="fs-map-wrap">
+                <div id="fs-map" class="fs-map" aria-label="분할된 농지 지도"></div>
+                <div class="fs-map-label"><span id="fs-map-region">농지를 선택해 주세요</span></div>
+                <div class="fs-map-legend">
+                  <span><i class="legend-fill"></i> 분할 영역</span>
+                  <span><i class="legend-outline"></i> 모영역(A)</span>
+                </div>
+                <div class="fs-map-empty" id="fs-map-empty">위 목록에서 농지를 선택하거나<br>영역을 직접 그리면 여기에 표시됩니다.</div>
+              </div>
+            </section>
+          </div>
+
+          <div class="fs-results">
+            <div class="fs-results-head" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <h3>3. 구역별 담당 조종사 <span id="fs-result-count" class="count-pill">0</span></h3>
+              <span class="fs-hint" id="fs-copy-msg"></span>
+            </div>
+            <div id="resultCards" class="result-cards"></div>
+            <div id="fs-empty" class="fs-empty">영역을 정하고 조각 수를 고르면 구역별 카드가 여기에 나타납니다.</div>
+            <p class="fs-note" id="fs-fallback-note" hidden>이 농지는 외곽선이 등록되지 않아, 중심 좌표와 면적으로 만든 사각형을 기준으로 분할합니다.</p>
+            <div class="fs-note" id="fs-pilot-summary" style="white-space:pre-line"></div>
+            <p class="fs-note">분할은 경도 폭을 균등하게 나누는 방식이라 구역별 면적은 다를 수 있습니다. 숙련도가 높은 조종사에게 넓은 구역(또는 여러 구역)을 맡겨 보세요.</p>
+            <div class="fs-actions">
+              <input type="hidden" name="pieceAssignmentsJson" id="piece-assignments-json">
+              <input type="hidden" name="drawnPolygon">
+              <input type="hidden" name="drawnLat">
+              <input type="hidden" name="drawnLng">
+              <input type="hidden" name="drawnArea">
+              <button type="button" class="dash-btn-primary" id="fs-confirm">✔ 배정 확정</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="task-modal" id="assign-modal" hidden>
+          <div class="task-modal-box task-assign-box" role="dialog" aria-modal="true" aria-labelledby="assign-title">
+            <button type="button" class="task-modal-close" data-close aria-label="닫기">✖</button>
+            <h3 id="assign-title">공동 방제단 구성</h3>
+            <p class="task-assign-sum">선택 농지 <strong id="modal-count">0</strong>필지 · 총 <strong id="modal-area">0</strong>㎡</p>
+
+            <div class="task-box-head">
+              <h4>투입 조종사</h4>
+              <button type="button" class="dash-btn-outline task-mini-btn" id="even-btn">균등 분배</button>
+            </div>
+
+            <ul class="task-pilot-list">
+              <li class="task-pilot" th:each="p : ${pilots}"
+                  th:classappend="${p.status == 'working'} ? 'busy'">
+                <label>
+                  <input type="checkbox" class="task-pilot-check"
+                         th:value="${p.no}"
+                         th:disabled="${p.status == 'working'}">
+                  <span th:text="${p.name}">김민수</span>
+                  <small th:switch="${p.status}">
+                    <th:block th:case="'online'">대기</th:block>
+                    <th:block th:case="'working'">작업 중</th:block>
+                    <th:block th:case="*">오프라인</th:block>
+                  </small>
+                </label>
+                <span class="task-quota-box">
+                  <input type="number" class="task-quota-input" min="0" value="0" disabled
+                         th:name="|quotas[${p.no}]|"> 필지
+                </span>
+              </li>
+            </ul>
+            <p class="task-quota" id="quota-msg">조종사를 선택하면 자동으로 균등 분배됩니다.</p>
+
+            <div class="task-modal-actions">
+              <button type="button" class="dash-btn-outline" data-close>취소</button>
+              <button type="submit" class="dash-btn-primary">배정 확정</button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </article>
+  </section>
+
+  <!-- =====================================================
+       [현황 탭]
+       ===================================================== -->
+  <section class="task-panel" th:if="${tab == 'status'}">
+
+    <div class="task-pilot-summary">
+      <div class="task-pilot-card" th:each="p : ${pilots}">
+        <div>
+          <strong>
+            <span th:text="${p.name}">김민수</span>
+            <small th:text="${p.status == 'working'} ? '· 작업 중' : (${p.status == 'online'} ? '· 대기' : '· 오프라인')">· 대기</small>
+          </strong>
+          <small>담당 <b th:text="${countByPilot.get(p.name) ?: 0}">0</b>필지</small>
+        </div>
+      </div>
+    </div>
+
+    <article class="dash-card">
+      <div class="dash-card-head task-map-head">
+        <h2>📄 배정 현황 <span class="task-count" th:text="${assignedCount} + ' / ' + ${assignedTotal} + '건'">0건</span></h2>
+
+        <form class="task-search" th:action="@{/leader/task-assignment}" method="get">
+          <input type="hidden" name="tab" value="status">
+          <select class="task-select" name="status" aria-label="상태" onchange="this.form.submit()">
+            <option value="">전체 상태</option>
+            <option value="ASSIGNED"    th:selected="${status == 'ASSIGNED'}">배정됨 (대기)</option>
+            <option value="IN_PROGRESS" th:selected="${status == 'IN_PROGRESS'}">작업 중</option>
+          </select>
+          <select class="task-select" name="pilot" aria-label="담당 조종사" onchange="this.form.submit()">
+            <option value="">전체 조종사</option>
+            <option th:each="p : ${pilots}"
+                    th:value="${p.name}" th:text="${p.name}"
+                    th:selected="${p.name == pilot}">김민수</option>
+          </select>
+          <select class="task-select" name="sort" aria-label="정렬" onchange="this.form.submit()">
+            <option value="">배정일순 (최신)</option>
+            <option value="assignedAsc" th:selected="${sort == 'assignedAsc'}">배정일순 (오래된)</option>
+          </select>
+        </form>
+      </div>
+
+      <div class="task-table-wrap">
+        <table class="task-table plain">
+          <thead>
+            <tr>
+              <th>주소</th>
+              <th>면적(㎡)</th>
+              <th>담당 조종사</th>
+              <th>배정 일시</th>
+              <th>상태</th>
+              <th>관리</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="land : ${assigned}">
+              <td th:text="${land.address}">노은동 2-8</td>
+              <td th:text="${#numbers.formatDecimal(land.areaSize, 0, 'COMMA', 0, 'POINT')}">2,150</td>
+              <td th:text="${land.pilotName}">이서연</td>
+              <td th:text="${#temporals.format(land.assignedAt, 'yyyy-MM-dd HH:mm')}">2026-10-29 09:30</td>
+              <td>
+                <span class="pilot-status"
+                      th:classappend="${land.status == 'ASSIGNED'} ? 'st-assigned' : 'st-progress'"
+                      th:text="${land.statusLabel}">배정됨</span>
+              </td>
+              <td>
+                <form th:if="${land.cancellable}"
+                      th:action="@{/leader/task-assignment/cancel}" method="post"
+                      onsubmit="return confirm('이 농지의 배정을 취소할까요?');">
+                  <input type="hidden" name="landNo" th:value="${land.no}">
+                  <button type="submit" class="task-cancel-btn">배정 취소</button>
+                </form>
+                <span th:unless="${land.cancellable}">-</span>
+              </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(assigned)}">
+              <td colspan="6" class="task-empty-cell">조건에 맞는 배정 내역이 없습니다.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 페이지 번호 (1건 이상이면 항상 표시) -->
+        <div class="um-pager" th:if="${pagination.total > 0}">
+        <a th:href="@{/leader/task-assignment(tab='status', status=${status}, pilot=${pilot}, sort=${sort}, page=1)}">«</a>
+        <a th:each="p : ${#numbers.sequence(pagination.start, pagination.end)}"
+           th:href="@{/leader/task-assignment(tab='status', status=${status}, pilot=${pilot}, sort=${sort}, page=${p})}"
+           th:classappend="${p == pagination.page} ? 'on'"
+           th:text="${p}">1</a>
+        <a th:href="@{/leader/task-assignment(tab='status', status=${status}, pilot=${pilot}, sort=${sort}, page=${pagination.last})}">»</a>
+      </div>
+    </article>
+  </section>
+
+  <!-- =====================================================
+       [이력 탭]
+       ===================================================== -->
+  <section class="task-panel" th:if="${tab == 'history'}">
+    <article class="dash-card">
+      <div class="dash-card-head">
+        <h2>🕘 작업 이력 <span class="task-count" th:text="${historyTotal} + '건'">0건</span></h2>
+        <!-- 지금 검색 조건 그대로 CSV 받기 -->
+        <a class="dash-btn-outline"
+           th:href="@{/leader/task-assignment/history.csv(from=${from}, to=${to}, hRegion=${hRegion}, hPilot=${hPilot})}">⬇ CSV 다운로드</a>
+      </div>
+
+      <!-- 검색 (GET) -->
+      <form class="task-filter" th:action="@{/leader/task-assignment}" method="get">
+        <input type="hidden" name="tab" value="history">
+        <label class="task-field">
+          <span>시작일</span>
+          <input type="date" name="from" th:value="${from}">
+        </label>
+        <label class="task-field">
+          <span>종료일</span>
+          <input type="date" name="to" th:value="${to}">
+        </label>
+        <label class="task-field">
+          <span>담당 조종사</span>
+          <select name="hPilot">
+            <option value="">전체</option>
+            <option th:each="n : ${historyPilots}" th:value="${n}" th:text="${n}"
+                   th:selected="${n == hPilot}">김민수</option>
+          </select>
+        </label>
+        <div class="task-filter-btns">
+          <button type="submit" class="dash-btn-primary">검색</button>
+          <a class="dash-btn-outline" th:href="@{/leader/task-assignment(tab='history')}">초기화</a>
+        </div>
+      </form>
+
+      <p class="page-flash is-error" th:if="${dateError}">시작일이 종료일보다 늦을 수 없습니다.</p>
+
+      <p class="task-history-sum" th:unless="${#lists.isEmpty(history)}"
+         th:text="|총 ${historyTotal}건 · 면적 ${#numbers.formatDecimal(hArea, 0, 'COMMA', 0, 'POINT')}㎡|">
+        총 5건 · 면적 10,700㎡
+      </p>
+
+      <div class="task-table-wrap">
+        <table class="task-table plain">
+          <thead>
+            <tr>
+              <th>주소</th>
+              <th>면적(㎡)</th>
+              <th>담당 조종사</th>
+              <th>배정 일시</th>
+              <th>완료 일시</th>
+              <th>사용 약제</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="h : ${history}">
+              <td th:text="${h.address}">노은동 112</td>
+              <td th:text="${#numbers.formatDecimal(h.areaSize, 0, 'COMMA', 0, 'POINT')}">1,200</td>
+              <td th:text="${h.pilotName}">박지훈</td>
+              <td th:text="${#temporals.format(h.assignedAt, 'yyyy-MM-dd HH:mm')}">2026-10-28 14:00</td>
+              <td th:text="${#temporals.format(h.completedAt, 'yyyy-MM-dd HH:mm')}">2026-10-28 15:10</td>
+              <td th:text="${h.chemicalName}">살균제 A</td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(history)}">
+              <td colspan="6" class="task-empty-cell">조건에 맞는 작업 이력이 없습니다.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 페이지 번호 (1건 이상이면 항상 표시) -->
+      <div class="um-pager pager-std" th:if="${pagination.total > 0}">
+        <a th:href="@{/leader/task-assignment(tab='history', from=${from}, to=${to}, hPilot=${hPilot}, hRegion=${hRegion}, page=1)}">«</a>
+        <a th:each="p : ${#numbers.sequence(pagination.start, pagination.end)}"
+           th:href="@{/leader/task-assignment(tab='history', from=${from}, to=${to}, hPilot=${hPilot}, hRegion=${hRegion}, page=${p})}"
+           th:classappend="${p == pagination.page} ? 'on'"
+           th:text="${p}">1</a>
+        <a th:href="@{/leader/task-assignment(tab='history', from=${from}, to=${to}, hPilot=${hPilot}, hRegion=${hRegion}, page=${pagination.last})}">»</a>
+      </div>
+    </article>
+  </section>
+
+</main>
+
+<!-- 분할 기능 자바스크립트 추가 -->
+<script th:src="@{/js/common/field-split.js}"></script>
+<script th:src="@{/js/leader/task-assignment.js}"></script>
+<script th:src="@{/js/leader/task-split.js}"></script>
+</body>
+</html>

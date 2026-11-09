@@ -1,0 +1,51 @@
+<th:block th:fragment="page">
+    <!-- 페이지 번호 -->
+    <nav aria-label="Page navigation" class="d-flex justify-content-center" 
+        th:object="${pagination}">
+        <ul class="pagination">
+            <!-- [-10] -->
+            <li class="page-item" th:if="${ pagination.page - 10 >= pagination.first }">
+                <a class="page-link" th:href="@{ ${pageUri} + '&page=' + ${pagination.page - 10} }" aria-label="Minus Ten">
+                    <span aria-hidden="true">-10</span>
+                </a>
+            </li>
+            <!-- [첫] -->
+            <li class="page-item">
+                <a class="page-link" th:href="@{ ${pageUri} + '&page=' + *{first} }" aria-label="First">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            <!-- [이전] -->
+            <li class="page-item" th:if="${ pagination.page != pagination.first }">
+                <a class="page-link" th:href="@{ ${pageUri} + '&page=' + *{prev} }" aria-label="Previous">
+                    <span aria-hidden="true">&lsaquo;</span>
+                </a>
+            </li>
+            <!-- [번호] -->
+            <th:block th:each="page : *{ #numbers.sequence( start, end )}">
+                <li class="page-item" th:classappend="${ pagination.page == page } ? 'active' : '' ">
+                    <a class="page-link" th:href="@{ ${pageUri} + '&page=' + ${page} }" th:text="${page}">1</a>           
+                </li>
+            </th:block>
+            <!-- [다음] -->
+            <li class="page-item" th:if="${ pagination.page != pagination.last }">
+                <a class="page-link" th:href="@{ ${pageUri} + '&page=' + *{next} }" aria-label="Next">
+                    <span aria-hidden="true">&rsaquo;</span>
+                </a>
+            </li>
+            <!-- [마지막] -->
+            <li class="page-item">
+                <a class="page-link" th:href="@{ ${pageUri} + '&page=' + *{last} }" aria-label="Last">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+            <!-- [+10] -->
+            <li class="page-item" th:if="${ pagination.page + 10 <= pagination.last }">
+                <a class="page-link" th:href="@{ ${pageUri} + '&page=' + ${pagination.page + 10} }" aria-label="Plus Ten">
+                    <span aria-hidden="true">+10</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+</th:block>

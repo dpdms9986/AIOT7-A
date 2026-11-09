@@ -28,9 +28,6 @@ public class PilotProfiles {
     @Column(length = 20)
     private String phone; // 조종사 연락처 - USER_011
 
-    @Column(length = 50)
-    private String licenseNumber; // 조종 자격증 번호
-
     private Double currentLat; // 실시간 현재 위도 (5초 폴링용)
 
     private Double currentLng; // 실시간 현재 경도 (5초 폴링용)

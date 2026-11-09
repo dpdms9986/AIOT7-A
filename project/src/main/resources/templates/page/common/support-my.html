@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{UI/layouts/user/common_layout}">
+<head>
+  <meta charset="UTF-8">
+  <title>내 문의내역 | 스마트 농업 관제 시스템</title>
+</head>
+<body layout:fragment="content">
+
+<main class="dash-main sp-page">
+
+  <div class="dash-title-row">
+    <div>
+      <h1>💬 고객센터</h1>
+      <p>내가 남긴 문의와 답변을 확인합니다.</p>
+    </div>
+  </div>
+
+  <!-- 처리 결과 메시지 (redirect 후 1회) -->
+  <p class="page-flash" th:if="${message}" th:text="${message}">성공</p>
+  <p class="page-flash is-error" th:if="${errorMessage}" th:text="${errorMessage}">실패</p>
+
+  <article class="dash-card">
+    <div class="dash-card-head">
+      <h2>📋 내 문의내역 <span class="task-count" th:text="${myTotal} + '건'">0건</span></h2>
+      <a class="dash-btn-primary" th:href="@{/support}">뒤로가기</a>
+    </div>
+
+    <div class="sp-table-wrap">
+      <table class="sp-table">
+        <thead>
+          <tr>
+            <th>문의 유형</th>
+            <th>제목</th>
+            <th>문의일</th>
+            <th>상태</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="q : ${myInquiries}" class="sp-row"
+              th:data-href="@{/support/inquiries/{no}(no=${q.no})}">
+            <td th:text="${q.typeLabel}">계정 · 로그인</td>
+            <td class="sp-title-cell">
+              <a th:href="@{/support/inquiries/{no}(no=${q.no})}" th:text="${q.title}">문의 제목</a>
+            </td>
+            <td th:text="${#temporals.format(q.createdAt, 'yyyy-MM-dd HH:mm')}">2026-11-02 10:00</td>
+            <td><span class="sp-status" th:classappend="${q.statusClass}" th:text="${q.statusLabel}">답변 대기</span></td>
+          </tr>
+          <tr th:if="${#lists.isEmpty(myInquiries)}">
+            <td colspan="4" class="sp-empty-cell">아직 남긴 문의가 없습니다.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 페이지 번호 (2페이지 이상일 때만 표시) -->
+    <div class="um-pager pager-std" th:if="${pagination.total > 0}">
+      <a th:href="@{/support/my(page=1)}">«</a>
+      <a th:each="p : ${#numbers.sequence(pagination.start, pagination.end)}"
+         th:href="@{/support/my(page=${p})}"
+         th:classappend="${p == pagination.page} ? 'on'"
+         th:text="${p}">1</a>
+      <a th:href="@{/support/my(page=${pagination.last})}">»</a>
+    </div>
+  </article>
+</main>
+
+  <script>
+  // 행 아무 곳이나 클릭하면 상세로 이동 (제목 링크를 직접 누른 경우는 링크가 알아서 이동)
+  document.querySelectorAll('.sp-row').forEach(function (tr) {
+    tr.addEventListener('click', function (e) {
+      if (e.target.closest('a')) return;
+      location.href = tr.dataset.href;
+    });
+  });
+</script>
+</body>
+</html>

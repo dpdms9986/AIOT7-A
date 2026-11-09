@@ -1,0 +1,21 @@
+<th:block th:fragment="header">
+  <header class="adm-top">
+    <a class="adm-brand" th:href="@{/admin}">
+      <span class="adm-brand-logo">🌱</span>
+      <strong>스마트 농업 관제 시스템</strong>
+      <span class="adm-brand-sub">관리자 대시보드</span>
+    </a>
+        <div class="adm-top-right">
+      <span class="adm-user">
+        <span class="adm-avatar">👤</span>
+        <span th:text="${loginName}">관리자</span>
+      </span>
+
+      <form th:action="@{/logout}" method="post" class="adm-top-logout">
+        <button type="submit" title="로그아웃" aria-label="로그아웃">
+          <span class="material-icons-outlined">logout</span>
+        </button>
+      </form>
+    </div>
+  </header>
+</th:block>

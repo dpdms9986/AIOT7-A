@@ -1,0 +1,220 @@
+<th:block xmlns:th="http://www.thymeleaf.org" th:fragment="usersContent">
+<article class="dash-card">
+  <div class="dash-card-head">
+    <h2>👥 사용자 관리</h2>
+    <span class="dash-more">전체 <b th:text="${pagination != null ? pagination.total : 0}">0</b>명</span>
+  </div>
+
+  <!-- ① 검색 + 필터 박스 -->
+  <div class="um-filter">
+    <div class="um-filter-row">
+      <input type="text" class="um-input um-grow" id="searchInput" placeholder="이름, 아이디, 연락처로 검색..."
+             th:value="${queryParams != null ? queryParams.search : ''}">
+      <button type="button" class="um-btn primary" id="searchBtn">검색</button>
+    </div>
+
+    <div class="um-filter-row">
+      <div class="um-field">
+        <label for="roleFilter">사용자</label>
+        <select class="um-select" id="roleFilter">
+          <option value="">전체</option>
+          <option value="LEADER" th:selected="${queryParams != null and queryParams.params != null and queryParams.params['role'] == 'LEADER'}">방제단장</option>
+          <option value="PILOT" th:selected="${queryParams != null and queryParams.params != null and queryParams.params['role'] == 'PILOT'}">조종사</option>
+        </select>
+      </div>
+
+      <div class="um-field">
+        <label for="enabledFilter">상태</label>
+        <select class="um-select" id="enabledFilter">
+          <option value="">전체</option>
+          <option value="1" th:selected="${queryParams != null and queryParams.params != null and queryParams.params['enabled'] == '1'}">활성</option>
+          <option value="0" th:selected="${queryParams != null and queryParams.params != null and queryParams.params['enabled'] == '0'}">비활성</option>
+        </select>
+      </div>
+
+      <div class="um-field">
+        <label for="start">가입일</label>
+        <div class="um-period">
+          <button type="button" class="um-btn" onclick="setPeriod(7)">1주일</button>
+          <button type="button" class="um-btn" onclick="setPeriod(30)">1개월</button>
+          <input type="date" class="um-input w-date" id="start"
+                 th:value="${queryParams != null and queryParams.params != null ? queryParams.params['start'] : ''}">
+          <span class="um-tilde">~</span>
+          <input type="date" class="um-input w-date" id="end"
+                 th:value="${queryParams != null and queryParams.params != null ? queryParams.params['end'] : ''}">
+          <button type="button" class="um-btn" id="dateSearchBtn">기간 적용</button>
+        </div>
+      </div>
+
+      <a class="um-reset" th:href="@{/admin/pilots(tab='users')}">↺ 초기화</a>
+    </div>
+  </div>
+
+  <!-- ② 표 위 도구줄: 선택 삭제(왼쪽) / 개수 보기(오른쪽) -->
+  <div class="um-toolbar">
+    <div class="um-group">
+      <button type="button" class="um-btn danger" id="deleteSelectedBtn" disabled>선택 삭제</button>
+    </div>
+    <div class="um-group">
+      <select class="um-select" id="pageSize">
+        <option value="10"  th:selected="${pagination != null and pagination.size == 10}">10개씩</option>
+        <option value="20"  th:selected="${pagination != null and pagination.size == 20}">20개씩</option>
+        <option value="50"  th:selected="${pagination != null and pagination.size == 50}">50개씩</option>
+        <option value="100" th:selected="${pagination != null and pagination.size == 100}">100개씩</option>
+        <option th:value="${pagination != null and pagination.total > 0 ? pagination.total : 10}"
+                th:selected="${pagination != null and pagination.total > 100 and pagination.size == pagination.total}">전체보기</option>
+      </select>
+      <input type="number" class="um-input w-num" id="customPageSize" min="1" placeholder="개수"
+             th:max="${pagination != null ? pagination.total : null}">
+      <button type="button" class="um-btn" id="pageSizeInput">적용</button>
+    </div>
+  </div>
+
+  <div class="asset-pilot-table-scroll">
+    <table class="asset-pilot-table um-table" id="users-table">
+      <thead>
+        <tr>
+          <th style="width:50px;"><input type="checkbox" id="checkAll"></th>
+          <th>No</th><th>아이디</th><th>이름</th><th>연락처</th><th>구분</th><th>활성</th><th>등록일</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="u : ${pageInfo != null ? pageInfo.list : {}}">
+          <td><input type="checkbox" class="user-checkbox" th:attr="data-id=${u.id}"></td>
+          <td th:text="${u.no}">1</td>
+          <td th:text="${u.userName}">user@test.com</td>
+          <td th:text="${u.name}">홍길동</td>
+          <td th:text="${u.phone ?: '-'}">010-1234-5678</td>
+          <td th:text="${u.role == 'LEADER' ? '방제단장' : '조종사'}">조종사</td>
+          <td>
+            <span class="asset-pilot-badge" th:classappend="${u.enabled} ? 'normal' : 'low'"
+                  th:text="${u.enabled} ? '활성' : '비활성'">활성</span>
+          </td>
+          <td th:text="${u.createdAt != null} ? ${#temporals.format(u.createdAt, 'yyyy-MM-dd HH:mm:ss')} : '-'">2026-11-03 10:00:00</td>
+        </tr>
+        <tr th:if="${pageInfo == null or #lists.isEmpty(pageInfo.list)}">
+          <td colspan="8" class="um-empty">조회된 회원이 없습니다.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 페이지 번호 (클릭하면 현재 검색/필터를 유지한 채 이동) -->
+  <div class="um-pager" th:if="${pagination != null}">
+    <a href="#" data-page="1">«</a>
+    <a href="#" th:each="p : ${#numbers.sequence(pagination.start, pagination.end)}"
+       th:attr="data-page=${p}"
+       th:classappend="${p == pagination.page} ? 'on'"
+       th:text="${p}">1</a>
+    <a href="#" th:attr="data-page=${pagination.last}">»</a>
+  </div>
+</article>
+
+<script>
+  // 전체 선택 / 해제
+  $('#checkAll').on('change', function () {
+    $('.user-checkbox').prop('checked', $(this).is(':checked'));
+    updateDeleteButton();
+  });
+
+  // 개별 체크박스 변경
+  $(document).on('change', '.user-checkbox', function () {
+    const all = $('.user-checkbox');
+    const checked = $('.user-checkbox:checked');
+    $('#checkAll').prop('indeterminate', checked.length > 0 && checked.length < all.length)
+                  .prop('checked', all.length > 0 && checked.length === all.length);
+    updateDeleteButton();
+  });
+
+  function updateDeleteButton() {
+    const n = $('.user-checkbox:checked').length;
+    $('#deleteSelectedBtn').prop('disabled', n === 0).text(n > 0 ? '선택 삭제 (' + n + ')' : '선택 삭제');
+  }
+
+  // 검색 / 필터 이벤트
+  $('#enabledFilter, #roleFilter, #pageSize').on('change', () => applyFilters());
+  $('#searchInput').on('keypress', e => { if (e.which === 13) applyFilters(); });
+  $('#dateSearchBtn, #searchBtn').on('click', () => applyFilters());
+  $('#pageSizeInput').on('click', function () {
+    const size = $('#customPageSize').val();
+    if (size && size > 0) applyFilters({ size });
+  });
+
+  // 페이지 번호 클릭: 검색/필터 유지
+  $(document).on('click', '.um-pager a', function (e) {
+    e.preventDefault();
+    applyFilters({ page: $(this).data('page') });
+  });
+
+  // 목록 필터 적용 (서버로 GET 이동)
+  function applyFilters(extra = {}) {
+    const params = new URLSearchParams();
+    params.append('page', '1');
+    params.append('size', $('#pageSize').val());
+
+    const search = $('#searchInput').val();
+    const start = $('#start').val();
+    const end = $('#end').val();
+    const enabled = $('#enabledFilter').val(); // '' | '1' | '0'
+    const role = $('#roleFilter').val();
+
+    if (search) params.append('search', search);
+    if (start) params.append('params[start]', start);
+    if (end) params.append('params[end]', end);
+    if (enabled !== '') params.append('params[enabled]', enabled);
+    if (role !== '') params.append('params[role]', role);
+
+    Object.entries(extra).forEach(([k, v]) => {
+      if (v !== null && v !== undefined && String(v).trim() !== '') params.set(k, String(v).trim());
+    });
+
+    location.href = '/admin/pilots?tab=users&' + params.toString();
+  }
+
+  // 기간 버튼: 1주일 / 1개월
+  function setPeriod(days) {
+    const end = new Date();
+    const start = new Date();
+    start.setDate(end.getDate() - days);
+    const toYmd = d => new Date(d - d.getTimezoneOffset() * 60000).toISOString().substring(0, 10);
+    $('#start').val(toYmd(start));
+    $('#end').val(toYmd(end));
+    applyFilters();
+  }
+
+  // 선택 삭제
+  $('#deleteSelectedBtn').on('click', function () {
+    const ids = $('.user-checkbox:checked').map(function () { return $(this).data('id'); }).get();
+    if (ids.length === 0) return;
+
+    $confirmHTML('선택 삭제',
+        '선택한 ' + ids.length + '명의 회원을 삭제하시겠습니까?<br><br><strong>주의:</strong> 삭제된 데이터는 복구할 수 없습니다.',
+        'warning', '삭제', '취소')
+      .then(function (result) {
+        if (!result.isConfirmed) return;
+        deleteUsers(ids);
+      });
+  });
+
+  function deleteUsers(ids) {
+    let ok = 0, fail = 0;
+    $('#deleteSelectedBtn').prop('disabled', true).text('삭제 중...');
+
+    // TODO(백엔드) DELETE /api/users/user/{id} 가 만들어져야 동작함 (id = Users.id UUID)
+    const jobs = ids.map(id =>
+      $ajax({ url: '/api/users/user/' + id, type: 'DELETE' }).then(() => { ok++; }).catch(() => { fail++; })
+    );
+
+    Promise.all(jobs).then(() => {
+      if (fail === 0) {
+        $alert('삭제 완료', ok + '명의 회원이 삭제되었습니다.', 'success').then(() => location.reload());
+      } else if (ok === 0) {
+        $alert('삭제 실패', '회원 삭제에 실패했습니다.', 'error');
+        updateDeleteButton();
+      } else {
+        $alert('부분 삭제', ok + '명 삭제 성공, ' + fail + '명 실패했습니다.', 'warning').then(() => location.reload());
+      }
+    });
+  }
+</script>
+</th:block>

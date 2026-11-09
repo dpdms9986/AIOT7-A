@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{UI/layouts/user/main_layout}"
+      >
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>스마트 농업 관제 시스템</title>
+</head>
+<body layout:fragment="content">
+
+  <section class="home-hero" id="intro">
+      <div class="home-hero-text">
+        <h1>더 스마트한 농업을 위한<br><span>실시간 관제 시스템</span></h1>
+        <p>농업 현장의 데이터를 실시간으로 확인하고<br>효율적인 관리를 지원합니다.</p>
+        <ul class="home-points">
+          <li><span class="home-point-icon"><span class="material-icons-outlined">visibility</span></span><div><strong>실시간 모니터링</strong>
+            <small>멀리서도 농지 상태를 한눈에 확인</small></div></li>
+          <li><span class="home-point-icon"><span class="material-icons-outlined">verified_user</span></span><div><strong>안전한 관리</strong>
+            <small>현장의 위험을 사진으로 바로 공유</small></div></li>
+          <li><span class="home-point-icon"><span class="material-icons-outlined">trending_up</span></span><div><strong>데이터 기반 분석</strong>
+            <small>필요한 기간만 골라 보고 파일로 저장</small></div></li>
+        </ul>
+      </div>
+      <div class="home-hero-map">
+          <!-- 상단 농장 상태 카드 -->
+          <!-- <div class="home-status-card">
+            <span aria-hidden="true">✿</span>
+            <div>
+              <small>농장 전체 상태</small>
+              <strong>정상 (READY)</strong>
+            </div>
+          </div> -->
+        
+          <!-- 지도 배경 이미지 영역 -->
+          <div class="home-map-board">
+            <img th:src="@{/images/map2.png}" alt="농장 및 드론 방제 상태 지도" class="home-map-img">
+          </div>
+        </div>
+    </section>
+
+    <section class="home-bottom">
+      <div class="home-features" id="features">
+        <article class="home-feature-card"><div class="home-feature-icon"><span class="material-icons-outlined">location_on</span></div><h3>농지 지도 관제</h3>
+          <p>알록달록 핀 하나로<br>배정, 진행, 완료까지<br>지도에서 바로 확인하세요</p><span aria-hidden="true"></span></article>
+        <article class="home-feature-card"><div class="home-feature-icon"><span class="material-icons-outlined">assignment_ind</span></div><h3>작업 배정</h3>
+          <p>복잡한 배정은 이제 그만,<br>클릭 몇 번이면 끝나요</p><span aria-hidden="true"></span></article>
+        <article class="home-feature-card"><div class="home-feature-icon"><span class="material-icons-outlined">inventory</span></div><h3>드론·약제 관리</h3>
+          <p>깜빡하기 쉬운 정비 일정과<br>약제 재고까지<br>한곳에서 한 번에 확인하세요</p><span aria-hidden="true"></span></article>
+        <article class="home-feature-card"><div class="home-feature-icon"><span class="material-icons-outlined">bar_chart</span></div><h3>작업 이력·통계</h3>
+          <p>작업 기록은 자동으로 쌓이니<br>필요할 때 기간별로 조회하고<br>파일로 간편하게 저장하세요</p><span aria-hidden="true"></span></article>
+        <article class="home-feature-card"><div class="home-feature-icon"><span class="material-icons-outlined">sync</span></div><h3>실시간 협업</h3>
+          <p>드론은 지금 어디에,<br>작업은 어디까지 왔는지<br>실시간으로 함께 확인하세요</p><span aria-hidden="true"></span></article>
+      </div>
+    </section>
+
+
+     <!-- 로그인 직후 권한별 이동 (서버 수정 없이 화면에서 처리) -->
+    <th:block sec:authorize="hasRole('ADMIN')">
+      <span id="role-home" data-url="/admin/dashboard" hidden></span>
+    </th:block>
+    <th:block sec:authorize="!hasRole('ADMIN') and hasRole('LEADER')">
+      <span id="role-home" data-url="/leader/dashboard" hidden sec:authentication="principal.user.name"></span>
+    </th:block>
+    <th:block sec:authorize="!hasRole('ADMIN') and !hasRole('LEADER') and hasRole('PILOT')">
+      <span id="role-home" data-url="/pilot/dashboard" hidden sec:authentication="principal.user.name"></span>
+    </th:block>
+
+    <script>
+      (function () {
+        try {
+          const t = Number(sessionStorage.getItem('justLoggedIn') || 0);
+          sessionStorage.removeItem('justLoggedIn');          // 한 번만 동작
+          const el = document.getElementById('role-home');
+          // 로그인 후 10초 이내에 메인이 열린 경우에만 이동
+          if (el && t && Date.now() - t < 10000) {
+            // 관리자 화면에는 팝업이 없으니 단장·조종사일 때만 메시지 전달
+            if (!el.dataset.url.startsWith('/admin')) {
+              const name = (el.textContent || '').trim();
+              sessionStorage.setItem('loginPopup', (name ? name + '님, ' : '') + '로그인되었습니다.');
+            }
+            location.replace(el.dataset.url);
+          }
+        } catch (e) {}
+      })();
+    </script>
+  
+  <!-- 팝업 -->
+  <th:block th:replace="~{UI/fragments/user/popup::popup}"></th:block>
+
+</body>
+</html>

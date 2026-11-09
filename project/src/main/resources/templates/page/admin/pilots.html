@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{UI/layouts/admin/admin_layout}">
+<head>
+  <meta charset="UTF-8">
+  <title>관리자 | 사용자 관리</title>
+</head>
+<body layout:fragment="content">
+
+<!-- 사용자 / 파일럿 관리 통합 탭 -->
+<nav class="adm-tabs" aria-label="관리 메뉴">
+  <a th:href="@{/admin/pilots(tab='users')}"
+     th:classappend="${tab == 'users'} ? ' active'">사용자 관리</a>
+  <a th:href="@{/admin/pilots(tab='pilots')}"
+     th:classappend="${tab == 'pilots'} ? ' active'">파일럿 관리</a>
+</nav>
+
+<th:block th:if="${tab == 'users'}">
+  <th:block th:replace="~{page/admin/users/list :: usersContent}"></th:block>
+</th:block>
+
+<th:block th:if="${tab == 'pilots'}">
+
+<!--/*
+  TODO(백엔드) 이 페이지에서 받는 값 (AdminPilotController#list)
+    pilots (List<AdminPilotDto>) : no, name, userName, phone, teamName, statusLabel/statusClass,
+                                   assignedCount, inProgressCount, completedCount, lastWorkAt, createdAt
+    pagination / teams(List<Teams>) / search / teamNo / status / totalCount / workingCount / disabledCount
+  TODO(백엔드) 아직 없는 기능 (API 만들어지면 표 맨 끝에 "관리" 칸 추가)
+    - 계정 정지 / 정지 해제 (Users.enabled 변경)
+    - 조종사 삭제, 방제단 변경
+    - 조종사 상세 (배정된 작업 목록 등)
+  현재 필터/집계는 컨트롤러가 findAll() 로 메모리에서 처리 중 → 레포지토리 쿼리로 교체 예정
+*/-->
+
+<article class="dash-card">
+  <div class="dash-card-head">
+    <h2>✈️ 조종사 관리</h2>
+    <span class="dash-more">방제 작업에 참여하는 조종사 목록</span>
+  </div>
+
+  <!-- 요약 -->
+  <div class="adm-stats">
+    <div class="adm-stat"><small>전체 조종사</small><strong th:text="${totalCount}">0</strong></div>
+    <div class="adm-stat ok"><small>작업 중</small><strong th:text="${workingCount}">0</strong></div>
+    <div class="adm-stat warn"><small>비활성</small><strong th:text="${disabledCount}">0</strong></div>
+  </div>
+
+  <!-- 검색 / 필터 -->
+  <form class="um-row" method="get" th:action="@{/admin/pilots(tab='pilots')}">
+    <div class="um-group">
+      <input type="text" class="um-input w-search" name="search" th:value="${search}" placeholder="이름, 아이디, 연락처로 검색">
+      <select class="um-select" name="teamNo" onchange="this.form.submit()">
+        <option value="">방제단 전체</option>
+        <option th:each="t : ${teams}" th:value="${t.no}" th:text="${t.teamName}"
+                th:selected="${t.no + '' == teamNo}">방제단</option>
+      </select>
+      <select class="um-select" name="status" onchange="this.form.submit()">
+        <option value="">상태 전체</option>
+        <option value="WORKING"  th:selected="${status == 'WORKING'}">작업 중</option>
+        <option value="READY"    th:selected="${status == 'READY'}">대기</option>
+        <option value="DISABLED" th:selected="${status == 'DISABLED'}">비활성</option>
+      </select>
+      <button type="submit" class="um-btn primary">검색</button>
+    </div>
+  </form>
+
+  <!-- 목록 -->
+  <div class="asset-pilot-table-scroll">
+    <table class="asset-pilot-table um-table">
+      <thead>
+        <tr>
+          <th>No</th><th>이름</th><th>아이디</th><th>연락처</th><th>방제단</th>
+          <th>상태</th><th>대기</th><th>작업 중</th><th>완료</th><th>최근 작업</th><th>가입일</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="p : ${pilots}">
+          <td th:text="${p.no}">1</td>
+          <td th:text="${p.name}">김인수</td>
+          <td th:text="${p.userName}">pilot@test.com</td>
+          <td th:text="${p.phone}">010-1234-5678</td>
+          <td th:text="${p.teamName}">대전 방제단</td>
+          <td><span class="asset-pilot-badge" th:classappend="${p.statusClass}" th:text="${p.statusLabel}">대기</span></td>
+          <td th:text="${p.assignedCount}">0</td>
+          <td th:text="${p.inProgressCount}">0</td>
+          <td th:text="${p.completedCount}">0</td>
+          <td th:text="${p.lastWorkAt != null} ? ${#temporals.format(p.lastWorkAt, 'MM-dd HH:mm')} : '-'">11-03 10:00</td>
+          <td th:text="${p.createdAt != null} ? ${#temporals.format(p.createdAt, 'yyyy-MM-dd')} : '-'">2026-11-01</td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(pilots)}">
+          <td colspan="11" class="um-empty">조회된 조종사가 없습니다.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 페이지 번호 -->
+  <div class="um-pager">
+    <a th:href="@{/admin/pilots(tab='pilots', page=1, size=${pagination.size}, search=${search}, teamNo=${teamNo}, status=${status})}">«</a>
+    <a th:each="p : ${#numbers.sequence(pagination.start, pagination.end)}"
+       th:href="@{/admin/pilots(tab='pilots', page=${p}, size=${pagination.size}, search=${search}, teamNo=${teamNo}, status=${status})}"
+       th:classappend="${p == pagination.page} ? 'on'" th:text="${p}">1</a>
+    <a th:href="@{/admin/pilots(tab='pilots', page=${pagination.last}, size=${pagination.size}, search=${search}, teamNo=${teamNo}, status=${status})}">»</a>
+  </div>
+</article>
+</th:block>
+
+</body>
+</html>

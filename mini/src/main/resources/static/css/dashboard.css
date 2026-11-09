@@ -281,3 +281,240 @@
   .dash-map-tools { flex-wrap: wrap; }
   .dash-input { width: 100%; }
 }
+
+/* =====================================================
+   9. 지도 위 조작 바 (조종사·단장 공통)
+===================================================== */
+.gps-control-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  background: #f8f9fa;
+  font-size: 13px;
+}
+.gps-control-bar input {
+  padding: 4px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 13px;
+}
+.gps-btn {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 6px;
+  background: #2f80ed;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.gps-btn.btn-real { background: #238451; }
+.gps-btn.btn-stop { background: #6c757d; }
+.gps-status-text {
+  width: 100%;
+  margin-top: 4px;
+  color: #2f80ed;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* =====================================================
+   10. 단장 대시보드 (leader-)
+===================================================== */
+
+/* ----- 왼쪽 지도 / 오른쪽 카드 2개 ----- */
+.leader-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 400px;
+  gap: var(--card-gap);
+  align-items: start;
+}
+.leader-side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--card-gap);
+  min-width: 0;
+}
+
+/* ----- 요약 카드 아이콘 색 ----- */
+.dash-stat-icon.ready     { background: var(--color-primary-light); }
+.dash-stat-icon.assigned  { background: #fff4d6; }
+.dash-stat-icon.progress  { background: #e6f0fd; }
+.dash-stat-icon.completed { background: #eef1f4; }
+
+/* ----- 지도 ----- */
+#leader-map {
+  width: 100%;
+  min-height: 560px;
+  border-radius: 10px;
+  z-index: 1;
+}
+.ws-status {
+  color: var(--color-text-sub);
+  font-size: 13px;
+}
+.drone-icon {
+  font-size: 22px;
+  line-height: 1;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.4));
+}
+
+/* ----- 오른쪽 카드 (머리 아래 구분선 있는 카드) ----- */
+.side-card { padding: 0; overflow: hidden; }
+.side-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--color-border);
+}
+.side-card-head h2 { margin: 0; font-size: 16px; font-weight: 800; }
+.count-label {
+  color: var(--color-primary);
+  font-size: 13px;
+  font-weight: 700;
+}
+.side-body { padding: 14px; }
+.panel-caption {
+  margin: 0 0 10px;
+  color: var(--color-text-sub);
+  font-size: 12px;
+}
+
+/* ----- 카드 안 목록 ----- */
+.side-list {
+  display: grid;
+  gap: 8px;
+  max-height: 320px;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+.side-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: #ffffff;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.side-item:hover { border-color: var(--color-primary); }
+.side-item.selected {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+.item-main { min-width: 0; }
+.item-main strong { display: block; color: var(--color-text); font-size: 14px; }
+.item-main small { color: var(--color-text-sub); font-size: 12px; }
+
+.side-empty {
+  padding: 16px 0;
+  color: var(--color-text-sub);
+  font-size: 13px;
+  text-align: center;
+}
+
+/* 미배정 표시 */
+.status-pill {
+  flex-shrink: 0;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* 조종사 상태 (● 대기 / ● 작업 중 / ● 오프라인) */
+.pilot-state {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-text-sub);
+  font-size: 12px;
+}
+.pilot-state i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #a0a7ae;
+}
+.pilot-state.ready i { background: var(--color-primary); }
+.pilot-state.busy  { color: #2f80ed; }
+.pilot-state.busy i { background: #2f80ed; }
+
+/* ----- 배정 패널 (미배정 농지 카드 안) ----- */
+.assign-panel {
+  margin-top: 12px;
+  padding: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-bg);
+  font-size: 13px;
+}
+.assign-panel h3 { margin: 0 0 12px; font-size: 15px; font-weight: 800; }
+.assign-panel dl {
+  display: grid;
+  grid-template-columns: 70px 1fr;
+  gap: 6px 8px;
+  margin: 0 0 14px;
+}
+.assign-panel dt { color: var(--color-text-sub); }
+.assign-panel dd { margin: 0; }
+.assign-status { font-weight: 700; }
+
+.assign-form { display: grid; gap: 10px; }
+.assign-form label {
+  display: grid;
+  gap: 4px;
+  color: var(--color-text-sub);
+  font-size: 12px;
+  font-weight: 700;
+}
+.assign-form select,
+.assign-form input {
+  width: 100%;
+  height: var(--input-height);
+  padding: 0 12px;
+  border: 1px solid #dce3eb;
+  border-radius: 8px;
+  outline: none;
+  background: #ffffff;
+  font-family: inherit;
+  font-size: 13px;
+}
+.assign-form select:focus,
+.assign-form input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(35, 132, 81, 0.1);
+}
+.assign-actions { display: flex; gap: 6px; margin-top: 4px; }
+.assign-actions .dash-btn-primary,
+.assign-actions .dash-btn-outline { flex: 1; }
+.assign-actions .btn-danger {
+  border-color: var(--color-high);
+  color: var(--color-high);
+}
+.assign-actions .btn-danger:hover { background: #fdeaea; }
+.assign-actions button:disabled { opacity: 0.5; cursor: not-allowed; }
+.assign-note {
+  margin: 0;
+  color: var(--color-text-sub);
+  text-align: center;
+}
+
+/* ----- 화면이 좁을 때 ----- */
+@media (max-width: 1280px) {
+  .leader-layout { grid-template-columns: 1fr; }
+}

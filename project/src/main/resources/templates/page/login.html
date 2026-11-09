@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{UI/layouts/user/login_layout}"
+      >
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>스마트 농업 관제 시스템</title>
+</head>
+<body layout:fragment="content">
+
+  <main class="login-page">
+    <section class="login-card">
+      <!-- 메인화면으로 이동 -->
+      <a th:href="@{/}" class="login-back">◀ 메인화면</a>
+
+      <header class="login-brand">
+        <div class="login-brand-logo">A</div>
+        <h1>농업 드론 관제 시스템</h1>
+        <p>계정에 로그인하여 관제 서비스를 이용하세요.</p>
+      </header>
+
+      <!-- 안내 메시지 (회원가입 완료는 팝업으로 표시 → toast.html) -->
+      <div th:if="${param.logout != null}" class="page-flash is-info">
+        정상적으로 로그아웃되었습니다.
+      </div>
+
+      <form class="login-form" id="login-form" th:action="@{/login}" method="post">
+        <div class="login-field">
+          <label for="username">이메일</label>
+          <input id="username" name="username" th:value="${username}" type="email" placeholder="이메일을 입력하세요" required autofocus>
+        </div>
+
+        <div class="login-field">
+          <label for="password">비밀번호</label>
+          <input id="password" name="password" type="password" placeholder="비밀번호를 입력하세요" required>
+        </div>
+
+        <div class="login-options">
+          <label class="login-remember">
+            <input type="checkbox" id="remember-id" name="remember-id">
+            아이디 비밀번호 기억하기
+          </label>
+
+          <label class="login-remember">
+          <input type="checkbox" id="remember-me" name="remember-me" value="true">
+            자동 로그인
+          </label>
+
+          <a th:href="@{/find-account}" class="login-link">계정 찾기</a>
+        </div>
+
+        <button type="submit" class="login-submit">로그인</button>
+      </form>
+
+      <div class="login-signup-link">
+        계정이 없으신가요? <a th:href="@{/signup}">회원가입</a>
+      </div>
+    </section>
+    </section>
+  </main>
+
+  <!-- 공통 팝업(showPopup) 불러오기 → 회원가입 완료 팝업 -->
+  <th:block th:replace="~{UI/fragments/user/toast :: toast}"></th:block>
+
+  <script> 
+    // param.error가 존재하면 에러 메시지를 표시
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('error')) {
+      try { sessionStorage.removeItem('justLoggedIn'); } catch (e) {}
+      const errorMessage = urlParams.get('error');
+      $alert('로그인 실패', errorMessage || '로그인에 실패했습니다. 다시 시도해주세요.', 'error');
+    }
+
+    // 아이디 값이 있으면 비밀번호 필드에 포커스
+    if (document.getElementById('username').value.trim() !== '') {
+      document.getElementById('password').focus();
+    }
+
+    // 로그인 버튼을 누른 시각 저장 (메인에서 "방금 로그인했는지" 확인용)
+    document.getElementById('login-form').addEventListener('submit', function () {
+      try { sessionStorage.setItem('justLoggedIn', String(Date.now())); } catch (e) {}
+    });
+  </script>
+  
+</body>
+</html>

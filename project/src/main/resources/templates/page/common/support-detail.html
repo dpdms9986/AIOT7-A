@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{UI/layouts/user/common_layout}">
+<head>
+  <meta charset="UTF-8">
+  <title>내 문의 | 스마트 농업 관제 시스템</title>
+</head>
+<body layout:fragment="content">
+
+<main class="dash-main sp-page">
+
+  <div class="dash-title-row">
+    <div>
+      <h1>💬 고객센터</h1>
+      <p>내가 남긴 문의와 답변을 확인합니다.</p>
+    </div>
+  </div>
+
+  <!-- ===== 내 문의 ===== -->
+  <article class="dash-card sp-detail" th:object="${inquiry}">
+    <header class="sp-detail-head">
+      <div class="sp-detail-badges">
+        <span class="sp-type" th:text="*{typeLabel}">계정 · 로그인</span>
+        <span class="sp-status" th:classappend="*{statusClass}" th:text="*{statusLabel}">답변 대기</span>
+      </div>
+      <h2 th:text="*{title}">문의 제목</h2>
+      <p class="sp-detail-meta" th:text="'문의일 ' + *{#temporals.format(createdAt, 'yyyy-MM-dd HH:mm')}">문의일 2026-11-02 10:00</p>
+    </header>
+
+    <!-- 줄바꿈 그대로 보여 주기 (white-space: pre-line) -->
+    <div class="sp-detail-body" th:text="*{content}">문의 내용</div>
+
+    <!-- ===== 관리자 답변 ===== -->
+    <section class="sp-answer" th:if="*{answered}">
+      <p class="sp-answer-title">💬 관리자 답변
+        <small th:text="*{#temporals.format(answeredAt, 'yyyy-MM-dd HH:mm')}">2026-11-02 11:00</small>
+      </p>
+      <div class="sp-answer-body" th:text="*{answer}">답변 내용</div>
+    </section>
+    <section class="sp-answer is-waiting" th:unless="*{answered}">
+      <p class="sp-answer-title">⏳ 답변을 준비하고 있어요</p>
+      <p class="sp-answer-body">관리자가 확인 후 답변을 남기면 이곳에 표시됩니다.</p>
+    </section>
+
+    <div class="sp-detail-actions">
+      <a class="dash-btn-outline" th:href="@{/support/my}">목록으로</a>
+    </div>
+  </article>
+</main>
+
+</body>
+</html>

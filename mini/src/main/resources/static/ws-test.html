@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>드론 실시간 지도 관제</title>
+    
+    <!-- 1. 제이쿼리(jQuery) 라이브러리 추가 ($ 문법 사용을 위해 필수!) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    
+    <!-- 2. 웹소켓(SockJS, STOMP) 라이브러리 -->
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    
+    <!-- 3. 실시간 지도(Leaflet.js) 디자인 및 스크립트 (API 키 없이 바로 작동) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <style>
+        body { font-family: sans-serif; padding: 20px; max-width: 900px; margin: 0 auto; }
+        .box { border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; border-radius: 8px; background: #fafafa; }
+        button { padding: 8px 12px; cursor: pointer; margin-top: 5px; background: #007bff; color: white; border: none; border-radius: 4px; }
+        button:hover { background: #0056b3; }
+        /* 지도가 표시될 영역의 크기를 반드시 지정해야 합니다 */
+        #map { width: 100%; height: 450px; border-radius: 8px; border: 2px solid #333; margin-bottom: 15px; }
+        #log { background: #222; color: #00ff00; padding: 10px; height: 120px; overflow-y: scroll; font-family: monospace; font-size: 13px; border-radius: 6px; }
+    </style>
+</head>
+<body>
+
+    <h2>🚁 드론 실시간 위치 관제 시스템</h2>
+
+    <div class="box">
+        <strong>1. 단장 & 조종사 공통 (채널 접속)</strong><br><br>
+        <label>방제단 번호(teamNo): </label>
+        <input type="number" id="teamNoInput" value="1" style="width: 50px;">
+        <button onclick="connect()">채널 연결(구독)하기</button>
+        <span id="status" style="color: gray; margin-left: 10px;">현재 상태: 연결 안 됨</span>
+    </div>
+
+    <div class="box">
+        <strong>2. 조종사 조작 패널 (위치 전송)</strong><br><br>
+        <label>조종사 이름: </label>
+        <input type="text" id="pilotName" value="김파일럿" style="width: 100px;">
+       <!-- 자동 전송 시작 및 중지 버튼 -->
+        <button onclick="startFakeAuto()">✈️ 가짜 위치 자동 비행 시작 (2초 간격)</button>
+        <button class="btn-gps" onclick="startRealGpsAuto()">📱 실제 GPS 실시간 추적 시작</button>
+        <button class="btn-stop" onclick="stopAuto()">⏹️ 전송 중지</button>
+        <p id="autoStatus" style="color: blue; font-size: 14px; margin-top: 8px;"></p>
+    </div>
+
+    <!-- 🗺️ 실제 지도가 그려질 도화지 -->
+    <div id="map"></div>
+
+    <!-- 통신 로그 창 -->
+    <div id="log"></div>
+
+    <script>
+        let stompClient = null;
+        let currentLat = 36.3504; // 초기 위치: 대전 시청 위도
+        let currentLng = 127.3845; // 초기 위치: 대전 시청 경도
+
+        // 자동 전송 타이머와 GPS 추적기를 담아둘 변수 (나중에 멈출 때 사용)
+        let fakeInterval = null;
+        let gpsWatchId = null;
+
+        const map = L.map('map').setView([currentLat, currentLng], 16);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        // 조종사 여러 명의 마커를 각각 관리하기 위한 보관함 (이름표: 마커객체)
+        const markers = {};
+
+        // --- [1. 웹소켓 연결 및 구독 (끊어지면 3초 뒤 자동 재연결 기능 추가!)] ---
+        function connect() {
+            const teamNo = $('#teamNoInput').val(); // document.getElementById 대신 깔끔해진 문법!
+            const socket = new SockJS('/ws-drone');
+            stompClient = Stomp.over(socket);
+
+           // 콘솔창이 너무 지저분해지지 않게 디버그 로그 끄기
+            stompClient.debug = null; 
+
+            stompClient.connect({}, function (frame) {
+                $('#status').text(`✅ ${teamNo}번 방제단 관제 연결 완료!`).css('color', 'green');
+                showLog(`[시스템] ${teamNo}번 채널 구독을 시작합니다.`);
+
+                stompClient.subscribe('/sub/team/' + teamNo, function (message) {
+                    const data = JSON.parse(message.body);
+                    updateMarker(data.pilotName, data.latitude, data.longitude);
+                    showLog(`📥 [수신] ${data.pilotName} -> 위도: ${Number(data.latitude).toFixed(5)}, 경도: ${Number(data.longitude).toFixed(5)}`);
+                });
+            }, function (error) {
+                // 연결이 끊어졌을 때 자동으로 3초 뒤에 다시 connect()를 시도합니다!
+                $('#status').text(`🔄 연결이 끊어졌습니다. 3초 후 재연결합니다...`).css('color', 'orange');
+                setTimeout(connect, 3000);
+            });
+        }
+
+        // --- [핵심: 지도 위 마커 생성 및 이동 함수] ---
+        function updateMarker(pilotName, lat, lng) {
+            // 이미 지도에 해당 조종사의 마커가 있다면 -> 위치만 스르륵 이동!
+            if (markers[pilotName]) {
+                markers[pilotName].setLatLng([lat, lng]);
+            } 
+            // 처음 위치를 보낸 조종사라면 -> 지도에 새 마커를 꽂고 이름표를 달아줌!
+            else {
+                const newMarker = L.marker([lat, lng]).addTo(map);
+                newMarker.bindPopup(`<b>🚁 ${pilotName}</b>`).openPopup();
+                markers[pilotName] = newMarker; // 보관함에 저장
+            }
+            
+            // 마커가 움직일 때 지도 화면 중심도 자연스럽게 따라가도록 설정
+            map.panTo([lat, lng]);
+        }
+
+           // --- [추가된 기능 1: 2초마다 가짜 위치를 알아서 쏘는 함수] ---
+        function startFakeAuto() {
+            if (!stompClient) return alert("먼저 채널 연결하기를 눌러주세요!");
+            stopAuto(); // 기존에 돌고 있던 자동 전송이 있으면 먼저 끔
+
+            $('#autoStatus').text("✈️ 가짜 위치 자동 비행 중... (2초마다 전송)");
+
+            // setInterval: 2000밀리초(2초)마다 중괄호 안의 코드를 반복 실행합니다.
+            fakeInterval = setInterval(function() {
+                currentLat += 0.0002;
+                currentLng += 0.0002;
+
+                const payload = {
+                    teamNo: $('#teamNoInput').val(),
+                    pilotName: $('#pilotName').val(),
+                    latitude: currentLat,
+                    longitude: currentLng
+                };
+                stompClient.send("/pub/location", {}, JSON.stringify(payload));
+            }, 2000);
+        }
+
+       // --- [추가된 기능 2: 스마트폰을 들고 움직일 때마다 실제 GPS를 자동 전송] ---
+        function startRealGpsAuto() {
+            if (!stompClient) return alert("먼저 채널 연결하기를 눌러주세요!");
+            if (!navigator.geolocation) return alert("GPS를 지원하지 않는 환경입니다.");
+            stopAuto();
+
+            $('#autoStatus').text("📱 실제 GPS 실시간 추적 중...");
+
+            // watchPosition: 기기의 위치가 바뀔 때마다 자동으로 감지해서 실행됩니다.
+            gpsWatchId = navigator.geolocation.watchPosition(function(position) {
+                const payload = {
+                    teamNo: $('#teamNoInput').val(),
+                    pilotName: $('#pilotName').val(),
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude
+                };
+                stompClient.send("/pub/location", {}, JSON.stringify(payload));
+            }, function(error) {
+                alert("GPS 신호를 가져오지 못했습니다. 위치 권한을 확인해주세요.");
+            }, {
+                enableHighAccuracy: true // 높은 정확도 모드 (스마트폰 GPS 센서 적극 활용)
+            });
+        }
+
+        function sendGpsData(position) {
+            // accuracy는 오차 반경(미터)을 의미합니다. 
+            // 오차가 30m 이상으로 너무 크게 튀는 부정확한 신호는 무시합니다. (실내 시연 시 숫자를 조절하세요)
+            if (position.coords.accuracy > 30) {
+                showLog(`⚠️ [무시됨] 위치 신호가 불안정하여 튀는 좌표를 걸러냈습니다. (오차: ${Math.round(position.coords.accuracy)}m)`);
+                return;
+            }
+
+            $('#autoStatus').text(`📱 실제 GPS 전송 중! (오차범위: 약 ${Math.round(position.coords.accuracy)}m)`).css('color', 'green');
+            
+            const payload = {
+                teamNo: Number($('#teamNoInput').val()),
+                pilotName: $('#pilotName').val(),
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude
+            };
+            stompClient.send("/pub/location", {}, JSON.stringify(payload));
+        }
+
+        // --- [추가된 기능 3: 자동 전송 멈추기] ---
+        function stopAuto() {
+            if (fakeInterval) {
+                clearInterval(fakeInterval);
+                fakeInterval = null;
+            }
+            if (gpsWatchId !== null) {
+                navigator.geolocation.clearWatch(gpsWatchId);
+                gpsWatchId = null;
+            }
+            $('#autoStatus').text("⏹️ 전송이 중지되었습니다.");
+        }
+
+        // 로그 출력 함수 (제이쿼리 적용)
+        function showLog(text) {
+            $('#log').prepend(`<div>${text}</div>`);
+        }
+    </script>
+</body>
+</html>
