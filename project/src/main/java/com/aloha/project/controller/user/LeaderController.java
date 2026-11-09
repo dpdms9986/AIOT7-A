@@ -830,76 +830,89 @@ if (req.getLandNos() != null && req.getLandNos().size() == 1) {
             return "\"" + s.replace("\"", "\"\"") + "\"";
     }
 
+    
     /**
-     * 농지 엔티티 목록을 LandDto로 변환하면서, 
-     * 현재 배정/작업 중인 최신 배정 정보(조종사명, 배정일시)를 함께 채워주는 헬퍼 메서드
+     * 농지 엔티티 목록을 LandDto로 변환하면서,
+     * 최신 배정 묶음에 포함된 조종사별 작업 정보를 함께 채워준다.
      */
-   private List<LandDto> convertToLandDtosWithAssignment(List<Lands> rawLands) {
+    private List<LandDto> convertToLandDtosWithAssignment(List<Lands> rawLands) {
 
-    // 전체 배정 작업 조회
-    List<WorkAssignments> allAssignments = workAssignmentRepository.findAll().stream()
-            .filter(w -> w.getLand() != null)
-            .toList();
-
-    // 현재 활성 상태인 작업
-    List<WorkAssignments> activeAssignments = allAssignments.stream()
-            .filter(w -> "ASSIGNED".equals(w.getStatus())
-                    || "IN_PROGRESS".equals(w.getStatus()))
-            .toList();
-
-    // 농지 번호별 활성 작업 전체 그룹화 (공동분할 지원)
-    Map<Long, List<WorkAssignments>> assignmentMap = activeAssignments.stream()
-            .collect(Collectors.groupingBy(
-                    w -> w.getLand().getNo(),
-                    LinkedHashMap::new,
-                    Collectors.toList()
-            ));
-
-    // 농지 번호별 최신 완료 일시
-    Map<Long, LocalDateTime> completedAtMap = allAssignments.stream()
-            .filter(w -> "COMPLETED".equals(w.getStatus()))
-            .filter(w -> w.getCompletedAt() != null)
-            .collect(Collectors.toMap(
-                    w -> w.getLand().getNo(),
-                    WorkAssignments::getCompletedAt,
-                    (oldDate, newDate) ->
-                            oldDate.isAfter(newDate) ? oldDate : newDate,
-                    LinkedHashMap::new
-            ));
-
-    return rawLands.stream().map(land -> {
-        LandDto dto = LandDto.from(land);
-
-        List<WorkAssignments> assignments =
-                assignmentMap.getOrDefault(land.getNo(), List.of());
-
-        
-        // 공동분할 조종사 이름 전체 추출
-        List<String> pilotNames = assignments.stream()
-                .map(WorkAssignments::getPilot)
-                .filter(p -> p != null && p.getName() != null)
-                .map(Users::getName)
-                .distinct()
+        // 1. 농지별 작업 배정 내역 조회
+        List<WorkAssignments> allAssignments = workAssignmentRepository.findAll().stream()
+                .filter(w -> w.getLand() != null)
+                .filter(w -> "ASSIGNED".equals(w.getStatus())
+                        || "IN_PROGRESS".equals(w.getStatus())
+                        || "COMPLETED".equals(w.getStatus()))
                 .toList();
 
-        dto.setPilotNames(pilotNames);
-        dto.setPilotName(
-                pilotNames.isEmpty() ? null : String.join(", ", pilotNames)
-        );
+        Map<Long, List<WorkAssignments>> assignmentMap = allAssignments.stream()
+                .collect(Collectors.groupingBy(
+                        w -> w.getLand().getNo(),
+                        LinkedHashMap::new,
+                        Collectors.toList()
+                ));
 
-        // 가장 최근 배정 일시
-        assignments.stream()
-                .map(WorkAssignments::getCreatedAt)
-                .filter(Objects::nonNull)
-                .max(Comparator.naturalOrder())
-                .ifPresent(dto::setAssignedAt);
+        return rawLands.stream().map(land -> {
 
-        // 완료 일시
-        dto.setCompletedAt(completedAtMap.get(land.getNo()));
+            LandDto dto = LandDto.from(land);
 
-        return dto;
+            List<WorkAssignments> assignments =
+                    assignmentMap.getOrDefault(land.getNo(), List.of());
 
-    }).toList();
-}
+            // 2. 가장 최근 배정 묶음 번호 조회
+            Long latestBatchNo = assignments.stream()
+                    .filter(w -> w.getDispatchBatch() != null)
+                    .map(w -> w.getDispatchBatch().getNo())
+                    .filter(no -> no != null)
+                    .max(Long::compareTo)
+                    .orElse(null);
 
+            // 3. 최신 배정 묶음에 속한 작업만 추출
+            List<WorkAssignments> latestAssignments = assignments.stream()
+                    .filter(w -> w.getDispatchBatch() != null
+                            && latestBatchNo != null
+                            && latestBatchNo.equals(w.getDispatchBatch().getNo()))
+                    .toList();
+
+            // 4. 조종사별 작업 정보를 PilotTaskDto로 변환
+            List<PilotTaskDto> pilotTasks = latestAssignments.stream()
+                    .map(PilotTaskDto::from)
+                    .toList();
+
+            // 5. 조종사별 작업 정보 전달
+            dto.setPilotAssignments(pilotTasks);
+
+            List<String> pilotNames = pilotTasks.stream()
+                    .map(PilotTaskDto::getPilotName)
+                    .filter(name -> name != null && !name.isBlank())
+                    .distinct()
+                    .toList();
+
+            dto.setPilotNames(pilotNames);
+
+            // 기존 화면 호환성 유지
+            dto.setPilotName(
+                    pilotNames.isEmpty() ? null : String.join(", ", pilotNames)
+            );
+
+            // 최신 배정 일시 설정
+            latestAssignments.stream()
+                    .map(WorkAssignments::getCreatedAt)
+                    .filter(Objects::nonNull)
+                    .max(Comparator.naturalOrder())
+                    .ifPresent(dto::setAssignedAt);
+
+            // 완료 일시
+            assignments.stream()
+                    .filter(w -> "COMPLETED".equals(w.getStatus()))
+                    .map(WorkAssignments::getCompletedAt)
+                    .filter(Objects::nonNull)
+                    .max(Comparator.naturalOrder())
+                    .ifPresent(dto::setCompletedAt);
+
+            return dto;
+
+        }).toList();
+
+        }
 }
