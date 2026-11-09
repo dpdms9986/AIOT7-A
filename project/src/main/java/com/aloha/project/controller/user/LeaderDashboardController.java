@@ -138,56 +138,6 @@ public class LeaderDashboardController {
     }
 
     /**
-     * 대시보드에서 바로 배정 (실제 DB 저장)
-     */
-    @PostMapping("/assign")
-    public String assign(
-            @RequestParam("landNo") Long landNo,
-            @RequestParam("pilotNo") Long pilotNo,
-            @RequestParam("workDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate workDate,
-            @AuthenticationPrincipal CustomUser customUser,
-            RedirectAttributes redirectAttributes) {
-
-        log.info("대시보드 배정 요청: landNo={}, pilotNo={}, workDate={}", landNo, pilotNo, workDate);
-
-        if (customUser == null) return "redirect:/login";
-
-        Users leader = userRepository.findById(customUser.getUser().getNo()).orElse(null);
-        Lands land = landRepository.findById(landNo).orElse(null);
-        Users pilot = userRepository.findById(pilotNo).orElse(null);
-
-        if (leader != null && land != null && pilot != null && leader.getTeam() != null) {
-            // 상위 배정 묶음(DispatchBatches) 생성
-            DispatchBatches batch = DispatchBatches.builder()
-                    .team(leader.getTeam())
-                    .leader(leader)
-                    .batchTitle(workDate + " 관제 배정")
-                    .totalArea(land.getAreaSize())
-                    .assignedPilotCount(1)
-                    .build();
-            dispatchBatchRepository.save(batch);
-
-            // 개별 작업 배정(WorkAssignments) 생성
-            WorkAssignments assignment = WorkAssignments.builder()
-                    .dispatchBatch(batch)
-                    .land(land)
-                    .pilot(pilot)
-                    .status("ASSIGNED")
-                    .build();
-            workAssignmentRepository.save(assignment);
-
-            // 농지 상태 변경
-            land.updateStatus("ASSIGNED");
-            landRepository.save(land);
-
-            redirectAttributes.addFlashAttribute("message", landNo + "번 농지가 " + pilot.getName() + " 조종사에게 배정되었습니다.");
-        }
-
-        redirectAttributes.addAttribute("landNo", landNo);
-        return "redirect:/leader/dashboard";
-    }
-
-    /**
      * 대시보드에서 배정 취소 (실제 DB 취소)
      */
     @PostMapping("/unassign")
