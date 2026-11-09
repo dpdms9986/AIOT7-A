@@ -110,12 +110,16 @@ public class LeaderDashboardController {
         model.addAttribute("assignedCount",  countStatus(lands, "ASSIGNED"));
         model.addAttribute("progressCount",  countStatus(lands, "IN_PROGRESS"));
         model.addAttribute("completedCount", countStatus(lands, "COMPLETED"));
+        
+        // 2) 오른쪽 작업 중인 농지 목록
+        List<LandDto> inProgressLands = lands.stream() .filter(l -> "IN_PROGRESS".equals(l.getStatus())).toList();
+        model.addAttribute("inProgressLands", inProgressLands);
 
-        // 2) 오른쪽 미배정 농지 목록
+        // 3) 오른쪽 미배정 농지 목록
         List<LandDto> readyLands = lands.stream().filter(l -> "READY".equals(l.getStatus())).toList();
         model.addAttribute("readyLands", readyLands);
 
-        // 3) 조종사별: 맡은 작업 수(배정+진행 중), 지금 작업 중인 농지 주소
+        // 4) 조종사별: 맡은 작업 수(배정+진행 중), 지금 작업 중인 농지 주소
         Map<String, Long> activeCount = lands.stream()
                 .filter(l -> ("ASSIGNED".equals(l.getStatus()) || "IN_PROGRESS".equals(l.getStatus())) && l.getPilotName() != null)
                 .collect(Collectors.groupingBy(LandDto::getPilotName, LinkedHashMap::new, Collectors.counting()));
@@ -127,10 +131,10 @@ public class LeaderDashboardController {
         model.addAttribute("activeCount", activeCount);
         model.addAttribute("workingAt", workingAt);
 
-        // 4) 지도에 찍을 점 전부 (JS 변수로 넘김)
+        // 5) 지도에 찍을 점 전부 (JS 변수로 넘김)
         model.addAttribute("farmPoints", lands.stream().map(FarmPointDto::from).toList());
 
-        // 5) 처음 선택할 농지, 오늘 날짜
+        // 6) 처음 선택할 농지, 오늘 날짜
         model.addAttribute("selectedLandNo", landNo);
         model.addAttribute("today", LocalDate.now());
 

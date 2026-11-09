@@ -120,6 +120,62 @@
     <!-- ===== 오른쪽 ===== -->
     <aside class="leader-side">
 
+
+    <!-- 작업 중인 농지 -->
+    <section class="dash-card side-card">
+    <div class="side-card-head">
+        <h2>🚁 작업 중인 농지</h2>
+        <span class="count-label"
+              th:text="${#lists.size(inProgressLands)} + '개'">0개</span>
+    </div>
+
+    <div class="side-body">
+        <p class="panel-caption">
+            현재 조종사가 방제 작업을 진행 중인 농지입니다.
+        </p>
+
+        <ul class="leader-working-list" id="leader-working-list">
+
+            <li class="side-item leader-working-item"
+                tabindex="0"
+                th:each="l : ${inProgressLands}"
+                th:data-no="${l.no}">
+
+                <span class="leader-working-dot"></span>
+
+                <span class="leader-working-body">
+                    <strong th:text="${l.address}">
+                        전민동 15-2
+                    </strong>
+
+                    <small>
+                        <span th:text="${#numbers.formatDecimal(l.areaSize, 0, 'COMMA', 0, 'POINT')} + '㎡'">
+                            3,300㎡
+                        </span>
+                        <span th:if="${l.pilotName != null}"
+                              th:text="' · ' + ${l.pilotName}">
+                            · 조종사
+                        </span>
+                    </small>
+                </span>
+
+                <span class="leader-working-status">
+                    진행 중
+                </span>
+
+            </li>
+
+            <li class="side-empty"
+                th:if="${#lists.isEmpty(inProgressLands)}">
+                현재 진행 중인 농지가 없습니다.
+            </li>
+
+        </ul>
+        <!-- 작업 중 농지 상세 패널 표시 위치 -->
+        <div id="working-assign-panel-slot"></div>
+    </div>
+    </section>
+
       <!-- 미배정 농지 -->
       <section class="dash-card side-card">
         <div class="side-card-head">
@@ -128,17 +184,32 @@
         </div>
         <div class="side-body">
           <p class="panel-caption">농지를 누르면 지도에서 위치를 보여주고 배정할 수 있어요</p>
-          <ul class="side-list" id="unassigned-farm-list">
-            <li class="side-item" tabindex="0" th:each="l : ${readyLands}" th:data-no="${l.no}">
-              <div class="item-main">
-                <strong th:text="${l.address}">전민동 15-2</strong>
-                <small th:text="${#numbers.formatDecimal(l.areaSize, 0, 'COMMA', 0, 'POINT')} + '㎡'">3,300㎡</small>
-              </div>
-            </li>
+          <ul class="leader-unassigned-list" id="unassigned-farm-list">
+          
+            <li class="side-item pilot-task leader-unassigned-item" tabindex="0" th:each="l : ${readyLands}" th:data-no="${l.no}">
+
+                 <span class="leader-unassigned-dot"></span>
+
+             <span class="leader-unassigned-body">
+              <strong th:text="${l.address}">
+                전민동 15-2
+            </strong>
+            <small th:text="${#numbers.formatDecimal(
+                l.areaSize, 0, 'COMMA', 0, 'POINT'
+            )} + '㎡'">
+                3,300㎡
+            </small>
+        </span>
+        
+            <span class="pilot-status st-ready">
+            미배정
+            </span>
+          </li>
             <li class="side-empty" th:if="${#lists.isEmpty(readyLands)}">미배정 농지가 없습니다.</li>
           </ul>
 
           <!-- 선택한 농지 정보 + 배정 폼 (내용은 JS가 채움, 전송은 POST) -->
+          <div id="unassigned-assign-panel-slot">
           <div class="assign-panel" id="assign-panel" hidden>
             <h3 id="ap-title">🌱 농지</h3>
             <dl>
@@ -158,6 +229,7 @@
               </a>
             </div>
 
+
             <!-- 배정 취소 (ASSIGNED 일 때) -->
             <form id="ap-cancel-form" th:action="@{/leader/dashboard/unassign}" method="post"
                   onsubmit="return confirm('이 농지의 배정을 취소할까요?');">
@@ -167,6 +239,7 @@
 
             <!-- 진행 중 / 완료 안내 -->
             <p class="assign-note" id="ap-note" hidden></p>
+          </div>
           </div>
         </div>
       </section>
