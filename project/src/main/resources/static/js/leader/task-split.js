@@ -218,20 +218,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const drawer = FieldSplit.createDrawer(map, {
     onStatus: (message, state) => { drawStatus.textContent = message; drawStatus.dataset.state = state || ""; },
 
-    // 선택한 농지 밖을 누르면 빨간 안내 문구를 띄우고 점을 찍지 않음
-    canPlace: (lat, lng) => {
-      const land = currentDrawLand();
-      if (!land) return true;
-
-      if (isPointInLand(lat, lng, land)) {
-        clearError();
-        return true;
-      }
-
-      showError("농지 구역이 아닙니다. 선택한 농지 안쪽을 눌러 주세요.");
-      clearTimeout(outsideTimer);
-      outsideTimer = setTimeout(clearError, 3000);   // 3초 뒤 자동으로 사라짐
-      return false;
+    // 기존 농지 경계와 관계없이 지도 어디든 꼭짓점 배치 허용
+    canPlace: () => {
+    clearError();
+    return true;
     },
   });
 
@@ -305,6 +295,7 @@ document.addEventListener("DOMContentLoaded", () => {
       color: "#304f43", weight: 2, dashArray: "6 6",
       fillColor: "#54a77b", fillOpacity: 0.08, interactive: false,
     }).addTo(map);
+
     map.fitBounds(L.latLngBounds(coords), { padding: [30, 30], maxZoom: 18 });
     mapEmpty.hidden = true;
     fallbackNote.hidden = true;
@@ -318,7 +309,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (drawer.isActive()) {
       // 👈 점을 1개도 찍지 않고 버튼을 다시 누르면 취소(원복) 처리!
-      const currentPoints = drawer.getPoints ? drawer.getPoints() : [];
+      const currentPoints = drawer.getCoordinates();
+      
       if (currentPoints.length === 0) {
         cancelDrawing();
         return;
@@ -330,11 +322,12 @@ document.addEventListener("DOMContentLoaded", () => {
         resetDrawUi();
         drawer.clear();
         useDrawn(result.coordinates, !!land);
-        if (land && !isInsideLand(result.coordinates, land)) {
-          showError("그린 영역 일부가 선택한 농지 밖이에요. 필요하면 다시 그려 주세요.");
-        }
-      }
-      return;
+      } else {
+  resetDrawUi();
+}
+
+return; // 완료 처리 후 새 그리기 시작 코드로 넘어가지 않도록 종료
+
     }
 
     // 새로 그리기 시작
@@ -489,9 +482,22 @@ document.addEventListener("DOMContentLoaded", () => {
       }).addTo(map);
     }
 
-    map.fitBounds(L.latLngBounds(coords), { padding: [30, 30], maxZoom: 18, animate: true });
+    const bounds = L.latLngBounds(coords);
+
+     // 기존 농지 경계도 지도 범위에 포함
+    if (drawnInLand && targetCheckbox && targetCheckbox.checked) {
+    bounds.extend(L.latLngBounds(landCoords(targetCheckbox)));
+    }
+
+    map.fitBounds(bounds, {
+    padding: [30, 30],
+    maxZoom: 18,
+    animate: true
+    });
+
     window.setTimeout(() => map.invalidateSize(), 100);
-  };
+
+    };
 
   const highlightPiece = (index) => {
     cardsBox.querySelectorAll(".result-card").forEach((c) =>
@@ -695,12 +701,37 @@ document.addEventListener("DOMContentLoaded", () => {
         const body = new URLSearchParams();
         if (csrf) body.append(csrf.name, csrf.value);
         body.append("landNos", landNo);
+
+        // 기존 농지에서 새 영역을 그린 경우에만 외곽선 정보 전송
+        if (d.drawn && d.drawnInLand) {
+        const center = L.latLngBounds(d.drawn).getCenter();
+
+        body.append("drawnPolygon", JSON.stringify(d.drawn));
+        body.append("drawnLat", center.lat.toFixed(6));
+        body.append("drawnLng", center.lng.toFixed(6));
+        body.append(
+        "drawnArea",
+        String(Math.max(1, Math.round(areaOfCoords(d.drawn))))
+         );
+        }
+
+        console.log("[배정 전송 검증]", {
+        landNo,
+        pieceCount: d.pieces.length,
+        assignmentCount: d.assignment.length,
+        assignments: d.pieces.map((piece, i) => ({
+        sliceIndex: piece.properties.sliceIndex,
+        pilotNo: d.assignment[i],
+        areaSize: Math.round(turf.area(piece))
+         }))
+        });
+
         body.append("pieceAssignmentsJson", JSON.stringify(d.pieces.map((piece, i) => ({
-          sliceIndex: piece.properties.sliceIndex,
-          pilotNo: Number(d.assignment[i]),
-          areaSize: Math.round(turf.area(piece)),
-          geometry: piece.geometry,
-        }))));
+        sliceIndex: piece.properties.sliceIndex,
+        pilotNo: Number(d.assignment[i]),
+        areaSize: Math.round(turf.area(piece)),
+        geometry: piece.geometry,
+         }))));
         const res = await fetch(form.getAttribute("action"), {
           method: "POST", body, credentials: "same-origin",
         });

@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 
 import com.aloha.project.domain.lands.Lands;
 
+import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -22,6 +24,7 @@ import lombok.Setter;
 public class LandDto {
 
     private Long no;                  // 농지 번호 (lands.no)
+    private List<String> pilotNames; // 배정된 전체 조종사 이름
     private String city;              // 시/도
     private String region;            // 시/군/구
     private String dong;              // 읍/면/동
