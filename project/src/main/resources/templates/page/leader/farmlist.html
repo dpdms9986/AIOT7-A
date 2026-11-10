@@ -21,9 +21,6 @@
       </div>
       <p class="page-description">등록된 농지의 현황을 확인하고 관리합니다.</p>
 
-      <!-- 처리 결과 메시지 (등록/삭제 후 redirect 되면 1회 표시) -->
-      <p class="page-flash" th:if="${message}" th:text="${message}">메시지</p>
-
       <!-- ===== 검색 (GET) ===== -->
       <form class="filter-card" id="farm-filter-form" th:action="@{/leader/farmlist}" method="get">
         <div class="filter-group search-group">
