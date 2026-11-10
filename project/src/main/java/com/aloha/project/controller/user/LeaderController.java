@@ -778,19 +778,75 @@ if (req.getLandNos() != null && req.getLandNos().size() == 1) {
 
     @PostMapping("/farmlist/delete")
     public String deleteLand(@RequestParam("landNo") Long landNo,
-                             RedirectAttributes redirectAttributes) {
+                             @AuthenticationPrincipal CustomUser customUser,
+                              RedirectAttributes redirectAttributes) {
+       
         log.info("농지 삭제: landNo={}", landNo);
 
-        Lands land = landRepository.findById(landNo).orElse(null);
-        if (land != null && "READY".equals(land.getStatus())) {
-            landRepository.delete(land);
-            redirectAttributes.addFlashAttribute("message", landNo + "번 농지가 삭제되었습니다.");
-        } else {
-            redirectAttributes.addFlashAttribute("message", "배정 중이거나 작업 중인 농지는 삭제할 수 없습니다.");
+        // 1. 로그인 확인
+         if (customUser == null) {
+         return "redirect:/login";
+         }
+
+        // 2. 로그인한 단장의 소속 팀 확인
+         Users leader = userRepository.findById(customUser.getUser().getNo())
+            .orElse(null);
+
+        Teams myTeam = (leader != null) ? leader.getTeam() : null;
+
+        if (myTeam == null) {
+        redirectAttributes.addFlashAttribute(
+                "message", "소속 방제단 정보를 확인할 수 없습니다.");
+        return "redirect:/leader/farmlist";
         }
 
+        // 3. 농지 존재 여부 확인
+        Lands land = landRepository.findById(landNo).orElse(null);
+
+        if (land == null) {
+        redirectAttributes.addFlashAttribute(
+                "message", "삭제할 농지를 찾을 수 없습니다.");
         return "redirect:/leader/farmlist";
-    }
+      }
+
+      // 4. 농지 소속 팀 확인
+         if (land.getTeam() == null
+            || !Objects.equals(land.getTeam().getNo(), myTeam.getNo())) {
+
+     
+             redirectAttributes.addFlashAttribute(
+                "message", "해당 농지를 삭제할 권한이 없습니다.");
+        return "redirect:/leader/farmlist";
+        }
+
+        // 5. READY 상태 확인
+        if (! "READY".equals(land.getStatus())) {
+               redirectAttributes.addFlashAttribute("message", "배정 중이거나 작업 중인 농지는 삭제할 수 없습니다.");
+        return "redirect:/leader/farmlist";
+        }
+
+        // 6. 남아 있는 작업 배정 이력 확인
+        List<WorkAssignments> assignments =
+            workAssignmentRepository.findByLand(land);
+
+        if (!assignments.isEmpty()) {
+        redirectAttributes.addFlashAttribute(
+                "message", "작업 배정 이력이 남아 있는 농지는 삭제할 수 없습니다.");
+        return "redirect:/leader/farmlist";
+        }
+
+
+        // 7. 모든 검증 통과 시 농지 삭제
+         landRepository.delete(land);
+
+         log.info("농지 삭제 완료: landNo={}, team={}",
+            landNo, myTeam.getTeamName());
+
+         redirectAttributes.addFlashAttribute(
+            "message", landNo + "번 농지가 삭제되었습니다.");
+
+         return "redirect:/leader/farmlist";
+         }
 
     @GetMapping("/history")
     public String getHistory() {
