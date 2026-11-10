@@ -16,7 +16,7 @@
 <main class="dash-main">
   <div class="dash-title-row">
     <div>
-      <h1>🗺 관제 대시보드</h1>
+      <h1><img th:src="@{/img/dash-control.png}" alt="" class="dash-title-img"> 관제 대시보드</h1>
       <p>농지 작업을 조종사에게 배정하고 실시간 위치를 확인하세요.</p>
     </div>
   </div>
@@ -27,7 +27,7 @@
   <!-- ===== 요약 카드 (서버가 숫자 넣음) ===== -->
   <section class="dash-stats">
     <div class="dash-card dash-stat">
-      <span class="dash-stat-icon ready">🌱</span>
+      <span class="dash-stat-icon ready"><img th:src="@{/img/dash-ready.png}" alt="" class="dash-stat-img"></span>
       <div class="dash-stat-body">
         <small>미배정</small>
         <strong><th:block th:text="${readyCount}">0</th:block><span>건</span></strong>
@@ -35,7 +35,7 @@
       </div>
     </div>
     <div class="dash-card dash-stat">
-      <span class="dash-stat-icon assigned">⏳</span>
+      <span class="dash-stat-icon assigned"><img th:src="@{/img/dash-assigned.png}" alt="" class="dash-stat-img"></span>
       <div class="dash-stat-body">
         <small>배정</small>
         <strong><th:block th:text="${assignedCount}">0</th:block><span>건</span></strong>
@@ -43,7 +43,7 @@
       </div>
     </div>
     <div class="dash-card dash-stat">
-      <span class="dash-stat-icon progress">🚁</span>
+      <span class="dash-stat-icon progress"><img th:src="@{/img/dash-progress.png}" alt="" class="dash-stat-img"></span>
       <div class="dash-stat-body">
         <small>진행 중</small>
         <strong><th:block th:text="${progressCount}">0</th:block><span>건</span></strong>
@@ -51,7 +51,7 @@
       </div>
     </div>
     <div class="dash-card dash-stat">
-      <span class="dash-stat-icon completed">✅</span>
+      <span class="dash-stat-icon completed"><img th:src="@{/img/dash-done.png}" alt="" class="dash-stat-img"></span>
       <div class="dash-stat-body">
         <small>완료</small>
         <strong><th:block th:text="${completedCount}">0</th:block><span>건</span></strong>
@@ -124,7 +124,7 @@
     <!-- 작업 중인 농지 -->
     <section class="dash-card side-card">
     <div class="side-card-head">
-        <h2>🚁 작업 중인 농지</h2>
+        <h2><img th:src="@{/img/dash-progress.png}" alt="" class="dash-h-img"> 작업 중인 농지</h2>
         <span class="count-label"
               th:text="${#lists.size(inProgressLands)} + '개'">0개</span>
     </div>
@@ -179,7 +179,7 @@
       <!-- 미배정 농지 -->
       <section class="dash-card side-card">
         <div class="side-card-head">
-          <h2>📋 미배정 농지</h2>
+          <h2><img th:src="@{/img/farm-icon.png}" alt="" class="dash-h-img"> 미배정 농지</h2>
           <span class="count-label" th:text="${#lists.size(readyLands)} + '개'">0개</span>
         </div>
         <div class="side-body">
@@ -247,7 +247,7 @@
       <!-- 소속 조종사 -->
       <section class="dash-card side-card">
         <div class="side-card-head">
-          <h2>👨‍🌾 소속 조종사</h2>
+          <h2><img th:src="@{/img/team-icon.png}" alt="" class="dash-h-img"> 소속 조종사</h2>
           <span class="count-label" id="pilot-count" th:text="${#lists.size(pilots)} + '명'">0명</span>
         </div>
         <div class="side-body">
