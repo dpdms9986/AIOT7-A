@@ -88,14 +88,14 @@ document.addEventListener("DOMContentLoaded", () => {
       createPilotCard("미배정", "미배정", "", "-");
     }
 
-    // 삭제 폼의 숨은 칸에 번호 넣기 + 대기 상태가 아니면 버튼 비활성
+    // 삭제 폼의 숨은 칸에 번호 넣기 + 대기 또는 완료 상태만 삭제 가능
     deleteNoInput.value = d.no;
 
     const deletable = d.deletable === "true";
     deleteBtn.disabled = !deletable;
     deleteBtn.title = deletable
       ? ""
-      : "대기 상태인 농지만 삭제할 수 있습니다.";
+      : "대기 또는 완료 상태인 농지만 삭제할 수 있습니다.";
 
     // 대기가 아니면 [삭제] [작업 배정] 영역 자체를 숨김
     document.querySelector(".drawer-footer").style.display =
@@ -103,6 +103,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 작업 배정 링크 (주소는 타임리프가 만들어 둠)
     assignLink.href = d.assignUrl || "#";
+
+    // 작업 배정 버튼은 대기(READY) 상태에서만 표시
+    const assignable = d.statusCode === "READY";
+    assignLink.style.display = assignable ? "" : "none";
+
+   // 작업 배정 버튼이 숨겨지면 삭제 버튼을 오른쪽으로 정렬
+   document.querySelector(".drawer-footer")
+  .classList.toggle("is-delete-only", !assignable);
 
     // 패널 열기
     drawer.hidden = false;

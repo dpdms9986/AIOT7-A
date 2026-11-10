@@ -20,6 +20,9 @@ public interface LandRepository extends JpaRepository<Lands, Long> {
     //⭐ [필수] 우리 방제단(팀) 소속 농지 목록 조회 (팀 격리용)
     List<Lands> findByTeam(Teams team);
 
+    // 삭제되지 않은 우리 방제단 소속 농지 조회
+    List<Lands> findByTeamAndDeletedFalse(Teams team);
+
     // LandRepository.java
     // 우리 팀에 해당 주소로 아직 완료(COMPLETED)되지 않은 농지가 있는지 검사
     boolean existsByTeamAndAddressAndStatusNot(Teams team, String address, String status);
