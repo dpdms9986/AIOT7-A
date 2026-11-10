@@ -16,7 +16,9 @@
       <a th:href="@{/}" class="login-back">◀ 메인화면</a>
 
       <header class="login-brand">
-        <div class="login-brand-logo">A</div>
+        <div class="login-brand-logo">
+          <img th:src="@{/images/header-logo.png}" alt="스마트 농업 드론 방제 시스템">
+        </div>
         <h1>농업 드론 관제 시스템</h1>
         <p>계정에 로그인하여 관제 서비스를 이용하세요.</p>
       </header>
@@ -47,8 +49,6 @@
           <input type="checkbox" id="remember-me" name="remember-me" value="true">
             자동 로그인
           </label>
-
-          <a th:href="@{/find-account}" class="login-link">계정 찾기</a>
         </div>
 
         <button type="submit" class="login-submit">로그인</button>
@@ -57,7 +57,10 @@
       <div class="login-signup-link">
         계정이 없으신가요? <a th:href="@{/signup}">회원가입</a>
       </div>
-    </section>
+
+      <div class="login-forgot-link">
+        <a th:href="@{/find-account}">계정을 잊으셨나요?</a>
+      </div>
     </section>
   </main>
 
