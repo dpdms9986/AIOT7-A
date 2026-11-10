@@ -40,7 +40,7 @@
         <div class="login-options">
           <label class="login-remember">
             <input type="checkbox" id="remember-id" name="remember-id">
-            아이디 비밀번호 기억하기
+            아이디 기억하기
           </label>
 
           <label class="login-remember">
@@ -64,7 +64,26 @@
   <!-- 공통 팝업(showPopup) 불러오기 → 회원가입 완료 팝업 -->
   <th:block th:replace="~{UI/fragments/user/toast :: toast}"></th:block>
 
-  <script> 
+    <script> 
+    // 페이지 로드 시 localStorage에서 기억된 아이디(이메일) 불러오기
+    document.addEventListener("DOMContentLoaded", function () {
+      const usernameInput = document.getElementById('username');
+      const rememberIdCheckbox = document.getElementById('remember-id');
+
+      const savedUsername = localStorage.getItem('savedUsername');
+      const rememberIdChecked = localStorage.getItem('rememberIdChecked');
+
+      // 저장된 데이터가 있고 체크 상태가 true였다면 화면에 세팅
+      if (rememberIdChecked === 'true' && savedUsername) {
+        usernameInput.value = savedUsername;
+        rememberIdCheckbox.checked = true;
+        
+        // 아이디 값이 채워졌으므로 비밀번호 필드에 자동 포커스
+        const passwordInput = document.getElementById('password');
+        if (passwordInput) passwordInput.focus();
+      }
+    });
+
     // param.error가 존재하면 에러 메시지를 표시
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('error')) {
@@ -73,16 +92,31 @@
       $alert('로그인 실패', errorMessage || '로그인에 실패했습니다. 다시 시도해주세요.', 'error');
     }
 
-    // 아이디 값이 있으면 비밀번호 필드에 포커스
+    // 아이디 값이 있으면 비밀번호 필드에 포커스 (기존 로직 유지 보완)
     if (document.getElementById('username').value.trim() !== '') {
       document.getElementById('password').focus();
     }
 
-    // 로그인 버튼을 누른 시각 저장 (메인에서 "방금 로그인했는지" 확인용)
+    // 로그인 버튼을 누를 때 (폼 서브밋) '아이디 기억하기' 상태 저장
     document.getElementById('login-form').addEventListener('submit', function () {
-      try { sessionStorage.setItem('justLoggedIn', String(Date.now())); } catch (e) {}
+      try { 
+        sessionStorage.setItem('justLoggedIn', String(Date.now())); 
+      } catch (e) {}
+
+      // 아이디 기억하기 체크박스 상태 확인 후 저장 또는 삭제
+      const usernameInput = document.getElementById('username');
+      const rememberIdCheckbox = document.getElementById('remember-id');
+
+      if (rememberIdCheckbox.checked) {
+        localStorage.setItem('savedUsername', usernameInput.value);
+        localStorage.setItem('rememberIdChecked', 'true');
+      } else {
+        localStorage.removeItem('savedUsername');
+        localStorage.removeItem('rememberIdChecked');
+      }
     });
   </script>
+
   
 </body>
 </html>
