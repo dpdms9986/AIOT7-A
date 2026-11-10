@@ -25,7 +25,7 @@
   <!-- ===== 요약 카드 4개 ===== -->
   <section class="dash-stats">
     <div class="dash-card dash-stat">
-      <span class="dash-stat-icon completed">📋</span>
+      <span class="dash-stat-icon completed"><img th:src="@{/img/hz-total.png}" alt="" class="dash-stat-img"></span>
       <div class="dash-stat-body">
         <small>전체 신고</small>
         <strong><th:block th:text="${totalCount}">0</th:block><span>건</span></strong>
@@ -49,7 +49,7 @@
       </div>
     </div>
     <div class="dash-card dash-stat">
-      <span class="dash-stat-icon ready">✅</span>
+      <span class="dash-stat-icon ready"><img th:src="@{/img/dash-done.png}" alt="" class="dash-stat-img"></span>
       <div class="dash-stat-body">
         <small>해소 완료</small>
         <strong><th:block th:text="${resolvedCount}">0</th:block><span>건</span></strong>

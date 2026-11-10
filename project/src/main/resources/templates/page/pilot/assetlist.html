@@ -33,7 +33,7 @@
   <!-- 요약 -->
   <section class="asset-pilot-summary" aria-label="내 자산 요약">
     <article class="asset-pilot-stat">
-      <div class="asset-pilot-stat-icon drone"><img th:src="@{/img/header-logo.png}" alt="" class="asset-icon-img"></div>
+      <div class="asset-pilot-stat-icon drone"><img th:src="@{/img/stat-drone.png}" alt="" class="asset-stat-img"></div>
       <div>
         <span>내 드론 기체</span>
         <strong th:text="${droneCount} + '대'">0대</strong>
@@ -41,7 +41,7 @@
       </div>
     </article>
     <article class="asset-pilot-stat">
-      <div class="asset-pilot-stat-icon chemical">🧪</div>
+      <div class="asset-pilot-stat-icon chemical"><img th:src="@{/img/stat-chemical.png}" alt="" class="asset-stat-img"></div>
       <div>
         <span>담당 약제 품목</span>
         <strong th:text="${chemicalCount} + '종'">0종</strong>
@@ -49,7 +49,7 @@
       </div>
     </article>
     <article class="asset-pilot-stat">
-      <div class="asset-pilot-stat-icon maintenance">🔧</div>
+      <div class="asset-pilot-stat-icon maintenance"><img th:src="@{/img/stat-maintenance.png}" alt="" class="asset-stat-img"></div>
       <div>
         <span>정비 필요</span>
         <strong th:text="${maintenanceCount} + '건'">0건</strong>
@@ -116,7 +116,12 @@
         </thead>
         <tbody>
           <tr th:each="a : ${assets}">
-            <td th:text="${a.typeLabel}">🚁 드론</td>
+            <td>
+              <span class="asset-type-cell">
+                <img th:src="@{${a.drone} ? '/img/stat-drone.png' : '/img/stat-chemical.png'}" alt="" class="asset-type-img">
+                <span th:text="${a.drone} ? '드론' : '약제'">드론</span>
+              </span>
+            </td>
             <td>
               <strong th:text="${a.name}">DJI Agras T40</strong>
               <small th:if="${!a.drone and a.subtitle != null and !#strings.isEmpty(a.subtitle)}"
