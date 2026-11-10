@@ -688,9 +688,16 @@
 /* ----- 왼쪽 지도 / 오른쪽 카드 2개 ----- */
 .leader-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 400px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: var(--card-gap);
-  align-items: start;
+  align-items: stretch;
+}
+.leader-layout > .dash-card { grid-column: span 3; }
+.leader-layout > .leader-side { grid-column: span 1; }
+
+.leader-layout > .dash-card {
+  display: flex;
+  flex-direction: column;
 }
 .leader-side {
   display: flex;
@@ -709,6 +716,7 @@
 #leader-map {
   width: 100%;
   min-height: 560px;
+  flex: 1;
   border-radius: 10px;
   z-index: 1;
 }
@@ -1106,6 +1114,8 @@
 /* ----- 화면이 좁을 때 ----- */
 @media (max-width: 1280px) {
   .leader-layout { grid-template-columns: 1fr; }
+  .leader-layout > .dash-card,
+  .leader-layout > .leader-side { grid-column: auto; }
 }
 
 /* ===== assetlist.css ===== */
@@ -10319,7 +10329,11 @@ body.farm-drawer-open {
   display: grid;
   grid-template-columns: 1fr 380px;
   gap: var(--card-gap);
-  align-items: start;
+  align-items: stretch;
+}
+.pilot-layout > .dash-card {
+  display: flex;
+  flex-direction: column;
 }
 
 /* ----- 상태 색 (핀, 점, 태그가 같이 씀) ----- */
@@ -10332,6 +10346,7 @@ body.farm-drawer-open {
 .pilot-map {
   position: relative;
   height: 560px;
+  flex: 1;
   overflow: hidden;
   border-radius: 10px;
   background:
@@ -11251,14 +11266,20 @@ span.pilot-pin { cursor: default; opacity: 0.75; }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 52px;
-  height: 52px;
+  width: 72px;
+  height: 72px;
   margin-bottom: 14px;
-  border-radius: 14px;
-  color: #ffffff;
-  background: #238451;
-  font-size: 24px;
-  font-weight: 800;
+  padding: 0px;
+  border-radius: 16px;
+  background: #1f5637;
+  box-sizing: border-box;
+}
+.login-brand-logo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: brightness(1.4) saturate(1.2);
 }
 .login-brand h1 { margin: 0; color: #203246; font-size: 23px; font-weight: 800; }
 .login-brand p { margin: 9px 0 0; color: #7d8a99; font-size: 13px; }
@@ -11287,7 +11308,7 @@ span.pilot-pin { cursor: default; opacity: 0.75; }
 .login-options {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 12px;
   margin-top: -3px;
 }
@@ -11339,6 +11360,21 @@ span.pilot-pin { cursor: default; opacity: 0.75; }
   text-decoration: none;
 }
 .login-signup-link a:hover { text-decoration: underline; }
+
+.login-forgot-link {
+  margin-top: 10px;
+  font-size: 12px;
+  text-align: center;
+}
+.login-forgot-link a {
+  color: #7d8a99;
+  text-decoration: none;
+}
+.login-forgot-link a:hover {
+  color: #238451;
+  text-decoration: underline;
+}
+
 /* 로그인 카드 좌측 상단 → 메인화면 이동 링크 */
 .login-back {
   position: absolute;
@@ -12451,10 +12487,11 @@ main.asset-page-main .asset-pilot-tab {
 /* 왼쪽 목록 + 오른쪽 지도 */
 .hz-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
-  gap: var(--card-gap, 16px);
-  align-items: start;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--card-gap, 18px);
+  align-items: stretch;
 }
+.hz-layout > .dash-card { grid-column: span 2; }
 
 /* 목록 표 */
 .hz-table-wrap { overflow-x: auto; }
@@ -12602,6 +12639,7 @@ main.asset-page-main .asset-pilot-tab {
 /* 화면이 좁을 때 */
 @media (max-width: 1100px) {
   .hz-layout { grid-template-columns: 1fr; }
+  .hz-layout > .dash-card { grid-column: auto; }
   .hz-map { height: 320px; }
 }
 
@@ -12666,6 +12704,7 @@ main.asset-page-main .asset-pilot-tab {
 /* 화면이 좁을 때: 목록 위, 지도 아래 */
 @media (max-width: 1280px) {
   .hz-layout { grid-template-columns: 1fr; }
+  .hz-layout > .dash-card { grid-column: auto; }
 }
 
 
@@ -12690,7 +12729,7 @@ main.asset-page-main .asset-pilot-tab {
     display: grid; 
     grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); 
     gap: var(--card-gap, 16px); 
-    align-items: start; 
+    align-items: stretch; 
 }
 .sp-search { width: 100%; margin-bottom: 8px; }
 .sp-faq details { 
@@ -12784,15 +12823,17 @@ main.asset-page-main .asset-pilot-tab {
 
 
 /* ===== 고객센터: 오른쪽 내 문의내역 버튼 (2026-11-02) ===== */
-.sp-side { display: flex; flex-direction: column; gap: 10px; }
+.sp-side { display: flex; flex-direction: column; gap: var(--card-gap, 16px); }
 .sp-my-btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  align-self: flex-end;
-  padding: 8px 14px;
+  height: 42px;
+  padding: 0 18px;
+  white-space: nowrap;
   border: 1px solid var(--color-border, #dfe5e1);
-  border-radius: 999px;
+  border-radius: 8px;
   background: #ffffff;
   color: var(--color-text, #1f2a24);
   font-size: 13px;
@@ -12800,6 +12841,44 @@ main.asset-page-main .asset-pilot-tab {
   text-decoration: none;
 }
 .sp-my-btn:hover { border-color: var(--color-primary, #238451); color: var(--color-primary, #238451); }
+.sp-flow-note .sp-my-btn { height: 34px; padding: 0 14px; }
+
+/* ===== 고객센터: 문의 진행 안내 카드 (2026-11-10) ===== */
+.sp-flow-card { flex: 1; display: flex; flex-direction: column; }
+.sp-steps {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin: auto 0;
+  padding: 20px 0;
+  list-style: none;
+}
+.sp-step {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+.sp-step-icon { color: var(--color-primary, #238451); font-size: 20px; line-height: 1; }
+.sp-step strong { font-size: 15px; font-weight: 800; color: var(--color-text, #1f2a24); }
+.sp-step small { color: var(--color-text-sub, #6b7570); font-size: 12px; }
+.sp-step-arrow { align-self: center; color: var(--color-text-sub, #6b7570); font-size: 14px; }
+.sp-flow-note {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--color-border, #dfe5e1);
+  color: var(--color-text-sub, #6b7570);
+  font-size: 13px;
+}
+
+
+/* 링크(a)로 만든 버튼: 글자 세로 가운데 정렬 */
 
 
 /* 링크(a)로 만든 버튼: 글자 세로 가운데 정렬 */
@@ -13124,8 +13203,9 @@ a.mp-stat-link:hover { border-color: var(--color-primary, #238451); transform: t
 /* =====================================================
    관리자 대시보드 (page/admin/dashboard.html)
    ===================================================== */
-.adm-dash { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.7fr) minmax(0, 1fr); gap: 16px; align-items: start; }
-.adm-col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.adm-dash { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.7fr) minmax(0, 1fr); gap: var(--card-gap, 18px); align-items: stretch; }
+.adm-col { display: flex; flex-direction: column; gap: var(--card-gap, 18px); min-width: 0; }
+.adm-col > .dash-card:last-child { flex: 1; }
 @media (max-width: 1100px) { .adm-dash { grid-template-columns: 1fr; } }
 
 /* 큰 숫자 + 작은 설명 */
@@ -13735,7 +13815,13 @@ select:not([multiple]):not([size]) {
 ===================================================== */
 
 /* 본문: 최대 1500px, 가운데 정렬 */
+body:has(.dash-header) {
+    display: flex;
+    flex-direction: column;
+}
+
 body:has(.dash-header) > main {
+    flex: 1 0 auto;
     width: 100%;
     max-width: 1680px;
     margin-left: auto;
@@ -13743,6 +13829,9 @@ body:has(.dash-header) > main {
     box-sizing: border-box;
 }
 
+body:has(.dash-header) > .pub-footer {
+    margin-top: auto;
+}
 
 /* 헤더: 흰 배경/아래 선은 화면 끝까지 유지, 안쪽 내용만 본문 폭에 맞춤 */
 @media (min-width: 1681px) {
