@@ -54,6 +54,10 @@ public class Lands {
     @Column(columnDefinition = "TEXT")
     private String polygonCoordinates;
 
+    @Builder.Default
+    @Column(name = "is_deleted", nullable = false)
+    private boolean deleted = false;
+
     // Lands.java 및 WorkAssignments.java 내부에 각각 추가
     public void updateStatus(String status) {
     this.status = status;

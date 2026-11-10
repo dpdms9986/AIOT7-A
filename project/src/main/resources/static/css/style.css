@@ -13585,6 +13585,31 @@ select:not([multiple]):not([size]) {
     font-weight: 600;      /* 현재 페이지도 굵기를 같게, 색과 테두리로만 구분 */
 }
 
+/* 작업 배정 버튼이 숨겨진 경우 삭제 버튼 오른쪽 정렬 */
+
+.drawer-footer.is-delete-only {
+    justify-content: stretch;
+}
+
+.drawer-footer.is-delete-only form {
+    width: 100%;
+}
+
+.drawer-footer.is-delete-only .drawer-delete {
+    width: 100%;
+}
+
+/* 작업 배정 버튼이 숨겨진 경우 삭제 폼 전체 너비 사용 */
+#farm-detail-drawer .drawer-footer.is-delete-only form {
+    flex: 1 1 100%;
+    width: 100%;
+    min-width: 0;
+}
+
+#farm-detail-drawer .drawer-footer.is-delete-only .drawer-delete {
+    width: 100%;
+    flex: 1;
+}
 
 /* ===== 페이지 번호 공통 (작업 배정 / 조종사 작업 이력 / 위험 구역 / 내 문의) ===== */
 .um-pager.pager-std {
