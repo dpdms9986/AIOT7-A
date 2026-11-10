@@ -15229,3 +15229,23 @@ html {
     height: 100%;
     object-fit: contain;
 }
+
+
+/* ===== 분할 미리보기 헤더: 제목/버튼과 지도 사이 간격 ===== */
+.field-split-wrap .fs-map-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;   /* 지도와의 간격 */
+}
+
+.field-split-wrap .fs-map-head h3 {
+    margin: 0;             /* 기존 h3 아래 여백 제거 (헤더가 대신 간격을 줌) */
+}
+
+
+/* ===== 분할 미리보기: 주소 라벨이 줌(+/-) 버튼을 가리지 않게 오른쪽으로 이동 ===== */
+.field-split-wrap .fs-map-label {
+    left: 56px;   /* 줌 버튼 너비(약 34px) + 여백 */
+}
