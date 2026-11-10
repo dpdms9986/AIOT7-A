@@ -669,7 +669,7 @@ if (req.getLandNos() != null && req.getLandNos().size() == 1) {
         }
 
         redirectAttributes.addFlashAttribute("message", 
-                "작업이" + targetPilot.getName() + "조종사에게 안전하게 인계되었습니다." );
+                "작업이 " + targetPilot.getName() + " 조종사에게 안전하게 인계되었습니다.");
         return "redirect:/leader/team-management";
     }
 

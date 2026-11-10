@@ -113,6 +113,22 @@ function updateMarker(pilotName, lat, lng) {
 function startFakeAuto() {
   if (!stompClient || !stompClient.connected) return alert("먼저 채널 연결을 확인해주세요!");
   stopAuto();
+
+  const selectedTask = document.querySelector(".pilot-task.selected");
+
+  if (!selectedTask) return alert("먼저 비행할 농지를 선택해주세요!");
+
+  const lat = Number(selectedTask.dataset.lat);
+  const lng = Number(selectedTask.dataset.lng);
+
+  if (!Number.isFinite(lat) || !Number.isFinite(lng) ||
+    (lat === 0 && lng === 0)) {
+  return alert("선택한 농지의 위치 정보가 올바르지 않습니다.");
+}
+
+  currentLat = lat;
+  currentLng = lng;
+
   $("#autoStatus").text("✈️ 가짜 위치 자동 비행 중... (2초마다 전송)").css("color", "#2f80ed");
 
   fakeInterval = setInterval(() => {

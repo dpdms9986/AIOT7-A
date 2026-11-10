@@ -10329,12 +10329,10 @@ body.farm-drawer-open {
   display: grid;
   grid-template-columns: 1fr 380px;
   gap: var(--card-gap);
-  align-items: stretch;
+  align-items: start;
 }
-.pilot-layout > .dash-card {
-  display: flex;
-  flex-direction: column;
-}
+
+
 
 /* ----- 상태 색 (핀, 점, 태그가 같이 씀) ----- */
 .st-ready     { --st: var(--color-ready);       --st-bg: #e8f3ec; --st-text: #238451; }
@@ -10346,7 +10344,6 @@ body.farm-drawer-open {
 .pilot-map {
   position: relative;
   height: 560px;
-  flex: 1;
   overflow: hidden;
   border-radius: 10px;
   background:
@@ -10354,6 +10351,7 @@ body.farm-drawer-open {
     linear-gradient(rgba(255, 255, 255, 0.45) 1px, transparent 1px) 0 0 / 80px 80px,
     linear-gradient(135deg, #e4ede6, #cbdfd1);
 }
+
 
 /* 물방울 모양 핀 */
 .pilot-pin {
