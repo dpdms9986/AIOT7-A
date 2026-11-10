@@ -23,16 +23,6 @@
     </div>
   </div>
 
-<!-- 성공 메시지는 기존 디자인 팝업으로 표시 -->
-<script th:if="${message}" th:inline="javascript">
-    document.addEventListener("DOMContentLoaded", function () {
-        const successMessage = /*[[${message}]]*/ "";
-
-        if (typeof window.showPopup === "function") {
-            window.showPopup(successMessage, "success");
-        }
-    });
-</script>
 
 <!-- 실패 메시지는 기존처럼 화면에 표시 -->
 <p class="page-flash is-error"
