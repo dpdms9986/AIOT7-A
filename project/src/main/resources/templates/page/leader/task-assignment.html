@@ -23,9 +23,11 @@
     </div>
   </div>
 
-  <!-- 처리 결과 메시지 (redirect 후 1회) -->
-  <p class="page-flash" th:if="${message}" th:text="${message}">성공 메시지</p>
-  <p class="page-flash is-error" th:if="${errorMessage}" th:text="${errorMessage}">실패 메시지</p>
+
+<!-- 실패 메시지는 기존처럼 화면에 표시 -->
+<p class="page-flash is-error"
+   th:if="${errorMessage}"
+   th:text="${errorMessage}"></p>
 
   <!-- ===== 탭: 주소로 이동 ===== -->
   <div class="task-tabs">
