@@ -14127,12 +14127,23 @@ body:has(.dash-header) > .pub-footer {
 
 /* (B) 제목 옆(위쪽) 큰 아이콘만 */
 .page-heading-icon .asset-icon-img {
-    width: 120%;
-    height: 110%;
-    left: 10%;      /* 키운 만큼(-12.5%) 좌우 중앙 정렬 */
-    top: -13.5%;    /* 위쪽으로 살짝 이동 (마이너스 값을 키울수록 위로 감) */
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    object-fit: contain;   /* 비율 유지 */
+    border-radius: 0;      /* 모서리 둥글게 제거 */
 }
 
+/* 드론·약제 관리 제목 아이콘: 초록 배경 박스 제거, 아이콘만 표시 */
+.asset-page-heading .page-heading-icon,
+.asset-team-page .page-heading-icon {
+    background: transparent;
+    border-radius: 0;
+    flex: 0 0 48px;   /* 아이콘 크기 (키우려면 숫자 ↑) */
+    width: 48px;
+    height: 48px;
+}
 
 /* 드론 · 약제 페이지 좌우 여백을 헤더와 동일하게 (다른 페이지의 .dash-main은 그대로) */
 @media (min-width: 1101px) {
@@ -14143,12 +14154,12 @@ body:has(.dash-header) > .pub-footer {
     }
 }
 
-/* 드론 · 약제 표: 5칸 모두 같은 폭, 전부 가운데 정렬 */
-.asset-team-page .asset-pilot-table {
-    min-width: 760px;
-    table-layout: fixed;
+/* 드론 · 약제 제목 줄과 탭 사이 간격: 위험 구역 페이지와 동일하게 */
+.asset-page-heading,
+.asset-team-page .page-heading {
+    margin-bottom: 0;
+    padding: 0;
 }
-
 .asset-team-page .asset-pilot-table th,
 .asset-team-page .asset-pilot-table td {
     width: 20%;
@@ -15080,4 +15091,80 @@ html {
 #farm-detail-drawer .status-badge.st-completed {
     background: #edf0f1;
     color: #68747b;
+}
+
+
+/* 고객센터 제목 아이콘 (💬 이모지 → 이미지) */
+.sp-page .dash-title-row h1 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sp-title-icon {
+    display: block;
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+}
+
+
+/* 위험 구역 제목 아이콘 (⚠️ 이모지 → 이미지) */
+.hz-page .dash-title-row h1 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.hz-title-icon {
+    display: block;
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+}
+
+/* 작업 배정(단장) 제목 아이콘: 배경 없이 이미지만 */
+.task-title-img {
+    display: block;
+    flex-shrink: 0;
+    width: 52px;
+    height: 52px;
+    object-fit: contain;
+}
+
+/* 작업 관리(조종사) 제목 아이콘 */
+.title-with-icon {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.title-icon-img {
+    display: block;
+    width: 44px;
+    height: 44px;
+    object-fit: contain;
+}
+
+
+.title-with-icon {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.title-icon-img {
+    display: block;
+    width: 44px;
+    height: 44px;
+    object-fit: contain;
+}
+
+
+.task-title-img {
+    display: block;
+    flex-shrink: 0;
+    width: 52px;
+    height: 52px;
+    object-fit: contain;
 }
