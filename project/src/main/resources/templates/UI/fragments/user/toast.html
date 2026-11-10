@@ -35,7 +35,15 @@
         btn.addEventListener("click", close);
         backdrop.addEventListener("click", (e) => { if (e.target === backdrop) close(); });   // 바깥 클릭
         document.addEventListener("keydown", onKey);
-        btn.focus();                                         // Enter 로 바로 닫히게
+          btn.focus();                                         // Enter 로 바로 닫히게
+      };
+
+      // ----- 기본 alert() 도 같은 팝업으로 (기존 alert("...") 코드는 안 고쳐도 됨) -----
+      // 닫힐 때까지 기다리고 싶으면 await alert("...") 또는 alert("...").then(...) 사용
+      window.alert = (message) => {
+        const text = String(message ?? "");
+        const type = /완료|성공|복사|보냈/.test(text) ? "ok" : "warn";   // 초록 체크 / 주황 느낌표
+        return new Promise((resolve) => window.showPopup(text, type, resolve));
       };
 
       // ----- 서버가 보낸 1회용 메시지 자동 표시 -----
