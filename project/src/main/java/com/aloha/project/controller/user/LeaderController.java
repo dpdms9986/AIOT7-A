@@ -952,6 +952,13 @@ if (req.getLandNos() != null && req.getLandNos().size() == 1) {
                 List<WorkAssignments> assignments =
                         assignmentMap.getOrDefault(land.getNo(), List.of());
 
+                // 조종사별 작업 상태 및 정보 전달
+                dto.setPilotAssignments(
+                        assignments.stream()
+                                .map(PilotTaskDto::from)
+                                .toList()
+                );
+
                 // 공동분할 조종사 이름 전체 추출
                 List<String> pilotNames = assignments.stream()
                         .map(WorkAssignments::getPilot)

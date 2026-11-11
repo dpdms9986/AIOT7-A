@@ -200,6 +200,8 @@ public class WorkAssignmentServiceImpl implements WorkAssignmentService {
         resumeWorkAssignment(assignmentNo, pilotNo, "INTERRUPTED");
     }
 
+    
+        
     // 기존 작업 재개 공통 처리
     private void resumeWorkAssignment(
             Long assignmentNo, Long pilotNo, String expectedStatus) {
@@ -219,17 +221,40 @@ public class WorkAssignmentServiceImpl implements WorkAssignmentService {
                     "본인에게 배정된 작업이 아닙니다.");
         }
 
-        // 3. 지정된 상태의 작업인지 확인
+        // 3. 기존 중단 작업 자체가 다른 조종사에게 재배정되었는지 확인
+        if ("INTERRUPTED".equals(expectedStatus)
+                && assignment.getLand() != null
+                && assignment.getDispatchBatch() != null) {
+
+            Long batchNo = assignment.getDispatchBatch().getNo();
+
+            boolean reassigned = workAssignmentRepository
+                    .findByLand(assignment.getLand())
+                    .stream()
+                    .anyMatch(other ->
+                            !Objects.equals(other.getNo(), assignment.getNo())
+                            && other.getDispatchBatch() != null
+                            && Objects.equals(other.getDispatchBatch().getNo(), batchNo)
+                            && other.getPilot() != null
+                            && !Objects.equals(other.getPilot().getNo(), pilotNo));
+
+            if (reassigned) {
+                throw new IllegalStateException(
+                        "이미 다른 조종사에게 재배정된 작업입니다.");
+            }
+        }
+
+        // 4. 지정된 상태의 작업인지 확인
         if (!expectedStatus.equals(assignment.getStatus())) {
             throw new IllegalStateException(
                     "현재 상태에서는 작업을 재개할 수 없습니다.");
         }
 
-        // 4. 기존 작업 상태를 진행 중으로 변경
+        // 5. 기존 작업 상태를 진행 중으로 변경
         // startedAt, flightPath, 마지막 GPS 좌표는 변경하지 않음
         assignment.updateStatus("IN_PROGRESS");
 
-        // 5. 전체 작업 상태를 기준으로 농지 상태 변경
+        // 6. 전체 작업 상태를 기준으로 농지 상태 변경
         updateLandStatus(assignment);
 
         log.info("기존 작업 재개 완료: 작업 번호={}, 조종사 번호={}",

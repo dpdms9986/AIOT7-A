@@ -79,6 +79,7 @@ public class DroneGpsController {
             return;
         }
 
+        
         // 4. 조종사의 진행 중인 작업 조회
         WorkAssignments assignment = workAssignmentRepository
                 .findFirstByPilot_NoAndStatusOrderByStartedAtDesc(
@@ -86,27 +87,28 @@ public class DroneGpsController {
                 )
                 .orElse(null);
 
-        // 5. 진행 중인 작업이 있다면 마지막 위치와 이동 경로 저장
-        if (assignment != null) {
-
-            // 마지막 GPS 위치 저장
-            assignment.setLastLatitude(latitude);
-            assignment.setLastLongitude(longitude);
-            assignment.setLastLocationAt(LocalDateTime.now());
-
-            // GPS 이동 경로 누적 저장
-            appendFlightPath(assignment, latitude, longitude);
-
-            workAssignmentRepository.save(assignment);
-
-            log.info(
-                    "[GPS 저장 완료] 작업 번호={}, 조종사={}, 좌표=({}, {})",
-                    assignment.getNo(),
-                    pilot.getName(),
-                    latitude,
-                    longitude
-            );
+        // 진행 중인 작업이 없다면 GPS 저장 및 중계 중단
+        if (assignment == null) {
+            return;
         }
+
+        // 5. 마지막 위치와 이동 경로 저장
+        assignment.setLastLatitude(latitude);
+        assignment.setLastLongitude(longitude);
+        assignment.setLastLocationAt(LocalDateTime.now());
+
+        // GPS 이동 경로 누적 저장
+        appendFlightPath(assignment, latitude, longitude);
+
+        workAssignmentRepository.save(assignment);
+
+        log.info(
+                "[GPS 저장 완료] 작업 번호={}, 조종사={}, 좌표=({}, {})",
+                assignment.getNo(),
+                pilot.getName(),
+                latitude,
+                longitude
+        );
 
         // 6. 단장 화면으로 전송할 데이터 설정
         String safeTeamChannel = pilot.getTeam().getInviteCode();
@@ -127,6 +129,7 @@ public class DroneGpsController {
                 "/sub/team/" + safeTeamChannel,
                 message
         );
+
     }
 
     /**

@@ -25,14 +25,14 @@ public class PilotTaskDto {
     private String address;            // 농지 주소
     private String region;             // 행정구역 예) 유성구 전민동  (단장 화면용)
     private Double areaSize;           // 면적 ㎡
-    private String status;             // ASSIGNED / IN_PROGRESS / COMPLETED
+    private String status;             // ASSIGNED / IN_PROGRESS / PAUSED / INTERRUPTED / STOPPED / COMPLETED
     private String pilotName;          // 담당 조종사               (단장 화면용)
     private LocalDateTime assignedAt;  // 배정 일시
 
 
-    // 다격형 변수 
+    // 다격형 변수
     private String polygonCoordinates;
-    // 배정 이전 시 사용될 비행궤적 JSON 문자열 
+    // 배정 이전 시 사용될 비행궤적 JSON 문자열
     private String flightPath;
 
     // 마지막 GPS 위치 정보
@@ -56,6 +56,9 @@ public class PilotTaskDto {
         return switch (status) {
             case "ASSIGNED"    -> "대기";
             case "IN_PROGRESS" -> "진행 중";
+            case "PAUSED"      -> "일시정지";
+            case "INTERRUPTED" -> "중단됨";
+            case "STOPPED"     -> "인계됨";
             case "COMPLETED"   -> "완료";
             default            -> status;
         };

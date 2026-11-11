@@ -1,3 +1,4 @@
+
 package com.aloha.project.security.handler;
 
 import java.io.IOException;
@@ -12,6 +13,7 @@ import org.springframework.web.servlet.FlashMap;
 import org.springframework.web.servlet.support.SessionFlashMapManager;
 
 import com.aloha.project.domain.users.CustomUser;
+import com.aloha.project.repository.tasks.WorkAssignmentRepository;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -24,7 +26,13 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 public class LoginSuccessHandler extends SavedRequestAwareAuthenticationSuccessHandler {
 
+    private final WorkAssignmentRepository workAssignmentRepository;
+
     private RequestCache requestCache = new HttpSessionRequestCache();
+
+    public LoginSuccessHandler(WorkAssignmentRepository workAssignmentRepository) {
+        this.workAssignmentRepository = workAssignmentRepository;
+    }
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
@@ -34,8 +42,23 @@ public class LoginSuccessHandler extends SavedRequestAwareAuthenticationSuccessH
       CustomUser customUser = (CustomUser) authentication.getPrincipal();
       HttpSession session = request.getSession();
       session.setAttribute("user", customUser.getUser());
+
       FlashMap flashMap = new FlashMap();
       flashMap.put("loginMessage", customUser.getUser().getName() + "님, 로그인되었습니다.");
+
+      // 조종사 로그인 시 강제 중단 작업 존재 여부 확인
+      if ("PILOT".equals(customUser.getUser().getRole())) {
+          boolean hasInterruptedWork = workAssignmentRepository
+                  .findByPilot_No(customUser.getUser().getNo())
+                  .stream()
+                  .anyMatch(assignment -> "INTERRUPTED".equals(assignment.getStatus()));
+
+          if (hasInterruptedWork) {
+              flashMap.put("hasInterruptedWork", true);
+              log.info("[중단 작업 확인] 조종사 번호={}", customUser.getUser().getNo());
+          }
+      }
+
       new SessionFlashMapManager().saveOutputFlashMap(flashMap, request, response);
 
       // 아이디 저장
@@ -74,12 +97,10 @@ public class LoginSuccessHandler extends SavedRequestAwareAuthenticationSuccessH
           return;
       }
 
-    
-
       // 기본 페이지로 이동
       log.info("기본 페이지로 이동");
       String targetUrl = "/";
       response.sendRedirect(targetUrl);
     }
-  
+
 }

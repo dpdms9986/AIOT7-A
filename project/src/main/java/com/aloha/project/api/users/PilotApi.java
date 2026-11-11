@@ -78,9 +78,9 @@ public class PilotApi {
                 .stream()
                 .filter(assignment -> "INTERRUPTED".equals(assignment.getStatus())
                         || isReassigned(assignment))
-                .map(assignment -> "INTERRUPTED".equals(assignment.getStatus())
-                        ? InterruptedWorkResponse.from(assignment)
-                        : InterruptedWorkResponse.reassignedFrom(assignment))
+                .map(assignment -> isReassigned(assignment)
+                        ? InterruptedWorkResponse.reassignedFrom(assignment)
+                        : InterruptedWorkResponse.from(assignment))
                 .toList();
 
         return ResponseEntity.ok(list);
@@ -225,10 +225,11 @@ public class PilotApi {
         }
     }
 
-    // STOPPED 작업이 같은 배정 묶음/농지로 다른 조종사에게 재배정되었는지 확인
+    // INTERRUPTED 또는 STOPPED 작업이 같은 배정 묶음/농지로 다른 조종사에게 재배정되었는지 확인
     private boolean isReassigned(WorkAssignments assignment) {
 
-        if (!"STOPPED".equals(assignment.getStatus())
+        if (!("INTERRUPTED".equals(assignment.getStatus())
+                || "STOPPED".equals(assignment.getStatus()))
                 || assignment.getPilot() == null
                 || assignment.getLand() == null
                 || assignment.getDispatchBatch() == null) {

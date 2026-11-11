@@ -1,5 +1,7 @@
+
 package com.aloha.project.service.impl.tasks;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -38,10 +40,15 @@ public class WorkAssignmentInterruptionServiceImpl {
                         "IN_PROGRESS".equals(assignment.getStatus()))
                 .toList();
 
-        interruptedAssignments.forEach(assignment ->
-                assignment.updateStatus("INTERRUPTED"));
-
+        // 중단 처리 시각 기록
         if (!interruptedAssignments.isEmpty()) {
+            LocalDateTime interruptedAt = LocalDateTime.now();
+
+            interruptedAssignments.forEach(assignment -> {
+                assignment.updateStatus("INTERRUPTED");
+                assignment.setInterruptedAt(interruptedAt);
+            });
+
             workAssignmentRepository.saveAll(interruptedAssignments);
         }
 

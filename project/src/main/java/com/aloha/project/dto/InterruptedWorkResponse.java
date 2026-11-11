@@ -1,3 +1,4 @@
+
 package com.aloha.project.dto;
 
 import java.time.LocalDateTime;
@@ -23,6 +24,7 @@ public class InterruptedWorkResponse {
     private Double lastLatitude;
     private Double lastLongitude;
     private LocalDateTime lastLocationAt;
+    private LocalDateTime interruptedAt;
     private String flightPath;
     private String message;
     private boolean canResume;
@@ -36,6 +38,7 @@ public class InterruptedWorkResponse {
                 .lastLatitude(assignment.getLastLatitude())
                 .lastLongitude(assignment.getLastLongitude())
                 .lastLocationAt(assignment.getLastLocationAt())
+                .interruptedAt(assignment.getInterruptedAt())
                 .flightPath(assignment.getFlightPath())
                 .message("작업이 강제로 중단되었습니다. 이어서 작업하시겠습니까?")
                 .canResume(true)
@@ -51,6 +54,7 @@ public class InterruptedWorkResponse {
                 .lastLatitude(assignment.getLastLatitude())
                 .lastLongitude(assignment.getLastLongitude())
                 .lastLocationAt(assignment.getLastLocationAt())
+                .interruptedAt(assignment.getInterruptedAt())
                 .flightPath(assignment.getFlightPath())
                 .message("중단된 작업이 다른 조종사에게 배정되었습니다. 새로운 작업을 선택해 시작해주세요")
                 .canResume(false)

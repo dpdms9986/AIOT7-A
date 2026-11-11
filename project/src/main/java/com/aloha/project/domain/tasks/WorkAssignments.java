@@ -62,6 +62,9 @@ public class WorkAssignments {
     @Column(name = "last_location_at")
     private LocalDateTime lastLocationAt; // 마지막 GPS 수신 일시
 
+    @Column(name = "interrupted_at")
+    private LocalDateTime interruptedAt; // 작업 중단 일시
+
     private LocalDateTime startedAt; // 작업 시작 일시
 
     private LocalDateTime completedAt; // 작업 완료 일시
