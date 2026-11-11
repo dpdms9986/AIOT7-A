@@ -178,6 +178,7 @@ document.addEventListener("DOMContentLoaded", () => {
     btn.addEventListener("click", () => openDrawer(btn));
   });
 
+
   closeBtn.addEventListener("click", closeDrawer);
   backdrop.addEventListener("click", closeDrawer);
 
