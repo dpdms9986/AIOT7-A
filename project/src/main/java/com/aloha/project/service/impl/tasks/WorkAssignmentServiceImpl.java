@@ -1,3 +1,4 @@
+
 package com.aloha.project.service.impl.tasks;
 
 import java.time.LocalDateTime;
@@ -45,7 +46,8 @@ public class WorkAssignmentServiceImpl implements WorkAssignmentService {
                         new IllegalArgumentException("존재하지 않는 작업 배정입니다."));
 
         // 2. 본인에게 배정된 작업인지 확인
-        if (!assignment.getPilot().getNo().equals(pilotNo)) {
+        if (assignment.getPilot() == null
+                || !Objects.equals(assignment.getPilot().getNo(), pilotNo)) {
             throw new IllegalArgumentException(
                     "본인에게 배정된 작업이 아닙니다.");
         }
@@ -63,7 +65,16 @@ public class WorkAssignmentServiceImpl implements WorkAssignmentService {
             assignment.setStartedAt(LocalDateTime.now());
         }
 
-        // 4. 작업 완료
+        // 4. 작업 일시정지
+        else if ("PAUSED".equals(status)) {
+
+            if (!"IN_PROGRESS".equals(currentStatus)) {
+                throw new IllegalStateException(
+                        "진행 중인 작업만 일시정지할 수 있습니다.");
+            }
+        }
+
+        // 5. 작업 완료
         else if ("COMPLETED".equals(status)) {
 
             if (!"IN_PROGRESS".equals(currentStatus)) {
@@ -74,25 +85,17 @@ public class WorkAssignmentServiceImpl implements WorkAssignmentService {
             assignment.setCompletedAt(LocalDateTime.now());
         }
 
-        // 5. 허용되지 않은 상태 변경
+        // 6. 허용되지 않은 상태 변경
         else {
             throw new IllegalArgumentException(
                     "허용되지 않은 작업 상태입니다.");
         }
 
-        // 6. 작업 배정 상태 변경
+        // 7. 작업 배정 상태 변경
         assignment.updateStatus(status);
 
-        // 7. 농지에 배정된 전체 작업 상태를 기준으로 농지 상태 변경
-        List<WorkAssignments> landAssignments =
-                workAssignmentRepository.findByLand(assignment.getLand());
-
-        boolean allCompleted = !landAssignments.isEmpty()
-                && landAssignments.stream()
-                        .allMatch(work -> "COMPLETED".equals(work.getStatus()));
-
-        assignment.getLand().updateStatus(
-                allCompleted ? "COMPLETED" : "IN_PROGRESS");
+        // 8. 전체 작업 상태를 기준으로 농지 상태 변경
+        updateLandStatus(assignment);
 
         log.info("작업 상태 변경 완료: 작업 번호={}, 상태={}",
                 assignmentNo, status);
@@ -112,7 +115,8 @@ public class WorkAssignmentServiceImpl implements WorkAssignmentService {
                         new IllegalArgumentException("존재하지 않는 작업 배정입니다."));
 
         // 2. 본인에게 배정된 작업인지 확인
-        if (!assignment.getPilot().getNo().equals(pilotNo)) {
+        if (assignment.getPilot() == null
+                || !Objects.equals(assignment.getPilot().getNo(), pilotNo)) {
             throw new IllegalArgumentException(
                     "본인에게 배정된 작업이 아닙니다.");
         }
@@ -160,16 +164,16 @@ public class WorkAssignmentServiceImpl implements WorkAssignmentService {
                     "해당 방제단에서 사용할 수 없는 약제입니다.");
         }
 
-        // 6. 드론 사용 가능 상태 확인
+        // 7. 드론 사용 가능 상태 확인
         if (!"AVAILABLE".equals(drone.getStatus())) {
             throw new IllegalStateException(
                     "현재 사용할 수 없는 드론입니다.");
         }
 
-        // 7. 기존 작업 시작 로직 실행
+        // 8. 기존 작업 시작 로직 실행
         updateAssignmentStatus(assignmentNo, "IN_PROGRESS", pilotNo);
 
-        // 8. 선택한 드론과 약제 저장
+        // 9. 선택한 드론과 약제 저장
         WorkAssignmentResources resources = WorkAssignmentResources.builder()
                 .workAssignment(assignment)
                 .drone(drone)
@@ -181,4 +185,88 @@ public class WorkAssignmentServiceImpl implements WorkAssignmentService {
         log.info("작업 자원 저장 완료: 작업 번호={}, 드론 번호={}, 약제 번호={}",
                 assignmentNo, droneNo, chemicalNo);
     }
+
+    // 일시정지된 작업 재개
+    @Override
+    public void resumeAssignment(Long assignmentNo, Long pilotNo) {
+
+        resumeWorkAssignment(assignmentNo, pilotNo, "PAUSED");
+    }
+
+    // 강제중단된 작업 재개
+    @Override
+    public void resumeInterruptedAssignment(Long assignmentNo, Long pilotNo) {
+
+        resumeWorkAssignment(assignmentNo, pilotNo, "INTERRUPTED");
+    }
+
+    // 기존 작업 재개 공통 처리
+    private void resumeWorkAssignment(
+            Long assignmentNo, Long pilotNo, String expectedStatus) {
+
+        log.info("작업 재개 요청: 작업 번호={}, 조종사 번호={}, 현재 상태={}",
+                assignmentNo, pilotNo, expectedStatus);
+
+        // 1. 작업 배정 조회
+        WorkAssignments assignment = workAssignmentRepository.findById(assignmentNo)
+                .orElseThrow(() ->
+                        new IllegalArgumentException("존재하지 않는 작업 배정입니다."));
+
+        // 2. 본인에게 배정된 작업인지 확인
+        if (assignment.getPilot() == null
+                || !Objects.equals(assignment.getPilot().getNo(), pilotNo)) {
+            throw new IllegalArgumentException(
+                    "본인에게 배정된 작업이 아닙니다.");
+        }
+
+        // 3. 지정된 상태의 작업인지 확인
+        if (!expectedStatus.equals(assignment.getStatus())) {
+            throw new IllegalStateException(
+                    "현재 상태에서는 작업을 재개할 수 없습니다.");
+        }
+
+        // 4. 기존 작업 상태를 진행 중으로 변경
+        // startedAt, flightPath, 마지막 GPS 좌표는 변경하지 않음
+        assignment.updateStatus("IN_PROGRESS");
+
+        // 5. 전체 작업 상태를 기준으로 농지 상태 변경
+        updateLandStatus(assignment);
+
+        log.info("기존 작업 재개 완료: 작업 번호={}, 조종사 번호={}",
+                assignmentNo, pilotNo);
+    }
+
+        // 농지에 배정된 전체 작업 상태를 기준으로 농지 상태 변경
+        private void updateLandStatus(WorkAssignments assignment) {
+
+                List<WorkAssignments> landAssignments =
+                        workAssignmentRepository.findByLand(assignment.getLand());
+
+                // 재배정으로 종료된 이전 작업은 농지 상태 계산에서 제외
+                List<WorkAssignments> activeAssignments = landAssignments.stream()
+                        .filter(work -> !"STOPPED".equals(work.getStatus()))
+                        .toList();
+
+                // 상태를 판단할 작업이 없으면 기존 농지 상태 유지
+                if (activeAssignments.isEmpty()) {
+                        return;
+                }
+
+                // 하나라도 진행 중인 작업이 있다면 농지는 작업 중
+                boolean hasInProgress = activeAssignments.stream()
+                        .anyMatch(work -> "IN_PROGRESS".equals(work.getStatus()));
+
+                // 모든 유효 작업이 완료되었는지 확인
+                boolean allCompleted = activeAssignments.stream()
+                        .allMatch(work -> "COMPLETED".equals(work.getStatus()));
+
+                if (hasInProgress) {
+                        assignment.getLand().updateStatus("IN_PROGRESS");
+                } else if (allCompleted) {
+                        assignment.getLand().updateStatus("COMPLETED");
+                } else {
+                        // ASSIGNED, PAUSED, INTERRUPTED 작업이 남아 있는 경우
+                        assignment.getLand().updateStatus("ASSIGNED");
+                }
+        }
 }

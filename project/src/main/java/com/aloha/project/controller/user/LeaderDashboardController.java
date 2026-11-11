@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.aloha.project.domain.lands.Lands;
-import com.aloha.project.domain.tasks.DispatchBatches;
 import com.aloha.project.domain.tasks.WorkAssignments;
 import com.aloha.project.domain.users.CustomUser;
 import com.aloha.project.domain.users.Teams;
@@ -27,9 +25,9 @@ import com.aloha.project.dto.FarmPointDto;
 import com.aloha.project.dto.LandDto;
 import com.aloha.project.dto.TeamMemberDto;
 import com.aloha.project.repository.lands.LandRepository;
-import com.aloha.project.repository.tasks.DispatchBatchRepository;
 import com.aloha.project.repository.tasks.WorkAssignmentRepository;
 import com.aloha.project.repository.users.UserRepository;
+import com.aloha.project.dto.PilotTaskDto;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,7 +41,6 @@ public class LeaderDashboardController {
     private final UserRepository userRepository;
     private final LandRepository landRepository;
     private final WorkAssignmentRepository workAssignmentRepository;
-    private final DispatchBatchRepository dispatchBatchRepository;
 
     @Transactional(readOnly = true)
     @GetMapping
@@ -65,42 +62,82 @@ public class LeaderDashboardController {
 }
 		List<Lands> rawLands = (myTeam != null) ? landRepository.findByTeam(myTeam) : List.of();
 
+        // 전체 작업 배정 조회
+        List<WorkAssignments> allAssignments = workAssignmentRepository.findAll();
+
+        // 조종사별 작업 목록 그룹화
+        Map<Long, List<WorkAssignments>> worksByPilot = allAssignments.stream()
+                .filter(w -> w.getPilot() != null)
+                .collect(Collectors.groupingBy(w -> w.getPilot().getNo()));
+
         // 활성 배정 작업 조회 및 맵핑
-        List<WorkAssignments> activeAssignments = workAssignmentRepository.findAll().stream()
+        List<WorkAssignments> activeAssignments = allAssignments.stream()
             .filter(w -> w.getLand() != null)
-            .filter(w -> "ASSIGNED".equals(w.getStatus()) || "IN_PROGRESS".equals(w.getStatus()))
+            .filter(w -> "ASSIGNED".equals(w.getStatus())
+                    || "IN_PROGRESS".equals(w.getStatus())
+                    || "PAUSED".equals(w.getStatus())
+                    || "INTERRUPTED".equals(w.getStatus()))
             .toList();
 
-        Map<Long, WorkAssignments> assignmentMap = activeAssignments.stream()
-            .collect(Collectors.toMap(w -> w.getLand().getNo(), w -> w, (a, b) -> b, LinkedHashMap::new));;
+        // 농지별 조종사 작업 목록 그룹화
+        Map<Long, List<WorkAssignments>> assignmentsByLand = activeAssignments.stream()
+            .collect(Collectors.groupingBy(
+                    w -> w.getLand().getNo(),
+                    LinkedHashMap::new,
+                    Collectors.toList()
+            ));
 
-				// pilotName, assignedAt 채운 lands 목록 생성
-				List<LandDto> lands = rawLands.stream().map(land -> {
-						LandDto dto = LandDto.from(land);
-						WorkAssignments wa = assignmentMap.get(land.getNo());
-						if (wa != null && wa.getPilot() != null) {
-								dto.setPilotName(wa.getPilot().getName());
-								dto.setAssignedAt(wa.getCreatedAt());
-						}
-						return dto;
-				}).toList();
+        // 기존 농지별 대표 배정 정보 유지
+        Map<Long, WorkAssignments> assignmentMap = activeAssignments.stream()
+            .collect(Collectors.toMap(
+                    w -> w.getLand().getNo(),
+                    w -> w,
+                    (a, b) -> b,
+                    LinkedHashMap::new
+            ));
+
+        // pilotName, assignedAt 및 조종사별 작업 정보를 채운 lands 목록 생성
+        List<LandDto> lands = rawLands.stream().map(land -> {
+            LandDto dto = LandDto.from(land);
+
+            WorkAssignments wa = assignmentMap.get(land.getNo());
+
+            if (wa != null && wa.getPilot() != null) {
+                dto.setPilotName(wa.getPilot().getName());
+                dto.setAssignedAt(wa.getCreatedAt());
+            }
+
+            // 해당 농지에 배정된 조종사별 작업 정보 설정
+            List<PilotTaskDto> pilotAssignments = assignmentsByLand
+                    .getOrDefault(land.getNo(), List.of())
+                    .stream()
+                    .map(PilotTaskDto::from)
+                    .toList();
+
+            dto.setPilotAssignments(pilotAssignments);
+
+            return dto;
+        }).toList();
 
         List<TeamMemberDto> pilots = (myTeam != null)
         ? userRepository.findByTeam(myTeam).stream()
                 .filter(u -> "PILOT".equals(u.getRole()))
-                .map(TeamMemberDto::from)
+                .map(u -> TeamMemberDto.from(
+                        u,
+                        worksByPilot.getOrDefault(u.getNo(), List.of())
+                ))
                 .toList()
         : List.of();
 
-				// 3. 화면 헤더에 초대코드 표기가 필요하다면 모델에 전달
-				if (myTeam != null) {
-				    model.addAttribute("inviteCode", myTeam.getInviteCode());
+        // 3. 화면 헤더에 초대코드 표기가 필요하다면 모델에 전달
+        if (myTeam != null) {
+                model.addAttribute("inviteCode", myTeam.getInviteCode());
 				
-                    // 방제단 자동 관제 연결용
-                    model.addAttribute("myTeamChannel", myTeam.getInviteCode());
-                    model.addAttribute("myTeamName", myTeam.getTeamName());
+                // 방제단 자동 관제 연결용
+                model.addAttribute("myTeamChannel", myTeam.getInviteCode());
+                model.addAttribute("myTeamName", myTeam.getTeamName());
 
-                    }
+        }
         // ========================================================
         // 👇 작성한 자동 계산 및 Model 바인딩 (100% 보존!)
         // ========================================================
@@ -127,9 +164,20 @@ public class LeaderDashboardController {
                 .filter(l -> "IN_PROGRESS".equals(l.getStatus()) && l.getPilotName() != null)
                 .collect(Collectors.toMap(LandDto::getPilotName, LandDto::getAddress, (a, b) -> a, LinkedHashMap::new));
 
+        // 일시정지된 조종사별 현재 작업 농지 주소
+        Map<String, String> pausedAt = pilots.stream()
+                .filter(p -> "paused".equals(p.getStatus()))
+                .collect(Collectors.toMap(
+                        TeamMemberDto::getName,
+                        TeamMemberDto::getCurrentTask,
+                        (a, b) -> a,
+                        LinkedHashMap::new
+                ));
+
         model.addAttribute("pilots", pilots);
         model.addAttribute("activeCount", activeCount);
         model.addAttribute("workingAt", workingAt);
+        model.addAttribute("pausedAt", pausedAt);
 
         // 5) 지도에 찍을 점 전부 (JS 변수로 넘김)
         model.addAttribute("farmPoints", lands.stream().map(FarmPointDto::from).toList());

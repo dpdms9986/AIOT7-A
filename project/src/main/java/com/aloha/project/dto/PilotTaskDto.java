@@ -35,6 +35,11 @@ public class PilotTaskDto {
     // 배정 이전 시 사용될 비행궤적 JSON 문자열 
     private String flightPath;
 
+    // 마지막 GPS 위치 정보
+    private Double lastLatitude;
+    private Double lastLongitude;
+    private LocalDateTime lastLocationAt;
+
     // 작업 시작 때 채워짐
     private String droneName;          // 사용 드론
     private String chemicalName;       // 사용 약제
@@ -92,6 +97,9 @@ public class PilotTaskDto {
                 .pilotName(pilot)
                 .polygonCoordinates(polygon)
                 .flightPath(assignment.getFlightPath())
+                .lastLatitude(assignment.getLastLatitude())
+                .lastLongitude(assignment.getLastLongitude())
+                .lastLocationAt(assignment.getLastLocationAt())
                 .assignedAt(assignment.getCreatedAt())
                 .startedAt(assignment.getStartedAt())
                 .completedAt(assignment.getCompletedAt() != null ? assignment.getCompletedAt() : assignment.getCreatedAt())

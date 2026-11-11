@@ -13,5 +13,10 @@ public interface WorkAssignmentService {
         Long chemicalNo
     );
     
+    // 일시정지된 작업 재개
+    void resumeAssignment(Long assignmentNo, Long pilotNo);
+    
+    // 강제중단된 작업 재개
+    void resumeInterruptedAssignment(Long assignmentNo, Long pilotNo);
 
 }
