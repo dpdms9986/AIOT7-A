@@ -73,6 +73,7 @@ public class PilotTaskDto {
             case "COMPLETED"   -> "st-completed";
             case "PAUSED"      -> "st-assigned";
             case "INTERRUPTED" -> "st-interrupted";
+            case "STOPPED"     -> "st-stopped";
             default            -> "";
         };
     }

@@ -127,7 +127,10 @@ public class LeaderController {
 
         /* ----- [현황 탭] 배정됨 + 작업 중 ----- */
         List<LandDto> allAssigned = allLands.stream()
-                .filter(l -> "ASSIGNED".equals(l.getStatus()) || "IN_PROGRESS".equals(l.getStatus()))
+                .filter(l -> "ASSIGNED".equals(l.getStatus())
+                          || "IN_PROGRESS".equals(l.getStatus())
+                          || "INTERRUPTED".equals(l.getStatus())
+                          || "REASSIGNED".equals(l.getStatus()))
                 .toList();
                 Comparator<LandDto> assignedCmp = "assignedAsc".equals(sort)
                 ? Comparator.comparing(LandDto::getAssignedAt, Comparator.nullsLast(Comparator.naturalOrder()))
@@ -633,71 +636,92 @@ if (req.getLandNos() != null && req.getLandNos().size() == 1) {
     }
 
         
-        @Transactional
-        @PostMapping("/team-management/{no}/reassign")
-        public String reassign(@PathVariable("no") Long no,
-                        @RequestParam("targetNo") Long targetNo,
-                        @RequestParam(value = "assignmentNo", required = false) Long assignmentNo,
-                        @AuthenticationPrincipal CustomUser customUser,
-                        RedirectAttributes redirectAttributes) {
+
+    @Transactional
+    @PostMapping("/team-management/{no}/reassign")
+    public String reassign(@PathVariable("no") Long no,
+                           @RequestParam("targetNo") Long targetNo,
+                           @RequestParam(value = "assignmentNo", required = false) Long assignmentNo,
+                           @RequestParam(value = "back", defaultValue = "farmlist") String back,
+                           @AuthenticationPrincipal CustomUser customUser,
+                           RedirectAttributes redirectAttributes) {
+
+        // 돌아갈 화면 지정
+        final String backUrl = "task-assignment".equals(back)
+                ? "redirect:/leader/task-assignment?tab=status"
+                : "redirect:/leader/farmlist";
 
         log.info("개별 작업 재배정: 작업 번호={}, 이전 조종사={} → 신규 조종사={}",
                 assignmentNo, no, targetNo);
 
         if (customUser == null || customUser.getUser() == null) {
-                return "redirect:/login";
+            return "redirect:/login";
         }
 
         if (assignmentNo == null) {
-                redirectAttributes.addFlashAttribute("errorMessage", "재배정할 작업을 선택해주세요.");
-                return "redirect:/leader/farmlist";
+            redirectAttributes.addFlashAttribute("errorMessage", "재배정할 작업을 선택해주세요.");
+            return backUrl;
         }
 
+        // 로그인한 단장 조회 및 권한 확인
         Users leader = userRepository.findById(customUser.getUser().getNo()).orElse(null);
         Teams leaderTeam = leader != null ? leader.getTeam() : null;
 
         if (leader == null || !"LEADER".equals(leader.getRole()) || leaderTeam == null) {
-                redirectAttributes.addFlashAttribute("errorMessage", "재배정 권한이 없습니다.");
-                return "redirect:/leader/farmlist";
+            redirectAttributes.addFlashAttribute("errorMessage", "재배정 권한이 없습니다.");
+            return backUrl;
         }
 
+        // 새로 배정받을 조종사 조회
         Users targetPilot = userRepository.findById(targetNo).orElse(null);
+
         if (targetPilot == null || !"PILOT".equals(targetPilot.getRole())) {
-                redirectAttributes.addFlashAttribute("errorMessage", "인계받을 조종사를 찾을 수 없습니다.");
-                return "redirect:/leader/farmlist";
+            redirectAttributes.addFlashAttribute("errorMessage", "인계받을 조종사를 찾을 수 없습니다.");
+            return backUrl;
         }
 
+        // 같은 방제단 소속 조종사인지 확인
         if (targetPilot.getTeam() == null
                 || !Objects.equals(targetPilot.getTeam().getNo(), leaderTeam.getNo())) {
-                redirectAttributes.addFlashAttribute("errorMessage", "같은 방제단 소속 조종사에게만 재배정할 수 있습니다.");
-                return "redirect:/leader/farmlist";
+            redirectAttributes.addFlashAttribute("errorMessage", "같은 방제단 소속 조종사에게만 재배정할 수 있습니다.");
+            return backUrl;
         }
 
+        if (Objects.equals(no, targetNo)) {
+            redirectAttributes.addFlashAttribute("errorMessage", "기존 조종사와 다른 조종사를 선택해주세요.");
+            return backUrl;
+        }
+
+        // 선택한 작업 한 건 조회
         WorkAssignments oldTask = workAssignmentRepository.findById(assignmentNo).orElse(null);
+
         if (oldTask == null
                 || oldTask.getPilot() == null
                 || !Objects.equals(oldTask.getPilot().getNo(), no)) {
-                redirectAttributes.addFlashAttribute("errorMessage", "선택한 작업을 찾을 수 없습니다.");
-                return "redirect:/leader/farmlist";
+            redirectAttributes.addFlashAttribute("errorMessage", "선택한 작업을 찾을 수 없습니다.");
+            return backUrl;
         }
 
+        // 기존 조종사 및 농지가 단장의 방제단 소속인지 확인
         if (oldTask.getPilot().getTeam() == null
                 || !Objects.equals(oldTask.getPilot().getTeam().getNo(), leaderTeam.getNo())
                 || oldTask.getLand() == null
                 || oldTask.getLand().getTeam() == null
                 || !Objects.equals(oldTask.getLand().getTeam().getNo(), leaderTeam.getNo())) {
-                redirectAttributes.addFlashAttribute("errorMessage", "다른 방제단의 농지는 재배정할 수 없습니다.");
-                return "redirect:/leader/farmlist";
+            redirectAttributes.addFlashAttribute("errorMessage", "다른 방제단의 농지는 재배정할 수 없습니다.");
+            return backUrl;
         }
 
+        // 재배정 알림 판별을 위해 배정 묶음 확인
+        if (oldTask.getDispatchBatch() == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "작업 배정 정보를 확인할 수 없습니다.");
+            return backUrl;
+        }
+
+        // 중단된 작업만 재배정 허용
         if (!"INTERRUPTED".equals(oldTask.getStatus())) {
-                redirectAttributes.addFlashAttribute("errorMessage", "중단된 작업만 재배정할 수 있습니다.");
-                return "redirect:/leader/farmlist";
-        }
-
-        if (Objects.equals(no, targetNo)) {
-                redirectAttributes.addFlashAttribute("errorMessage", "기존 조종사와 다른 조종사를 선택해주세요.");
-                return "redirect:/leader/farmlist";
+            redirectAttributes.addFlashAttribute("errorMessage", "중단된 작업만 재배정할 수 있습니다.");
+            return backUrl;
         }
 
         // 기존 작업 이력은 보존하고 선택한 작업 한 건만 인계 처리
@@ -730,22 +754,23 @@ if (req.getLandNos() != null && req.getLandNos().size() == 1) {
 
         boolean hasInProgress = activeAssignments.stream()
                 .anyMatch(work -> "IN_PROGRESS".equals(work.getStatus()));
+
         boolean allCompleted = activeAssignments.stream()
                 .allMatch(work -> "COMPLETED".equals(work.getStatus()));
 
         if (hasInProgress) {
-                oldTask.getLand().updateStatus("IN_PROGRESS");
+            oldTask.getLand().updateStatus("IN_PROGRESS");
         } else if (allCompleted) {
-                oldTask.getLand().updateStatus("COMPLETED");
+            oldTask.getLand().updateStatus("COMPLETED");
         } else {
-                oldTask.getLand().updateStatus("ASSIGNED");
+            oldTask.getLand().updateStatus("ASSIGNED");
         }
 
         redirectAttributes.addFlashAttribute("message",
                 "선택한 작업이 " + targetPilot.getName() + " 조종사에게 안전하게 인계되었습니다.");
 
-        return "redirect:/leader/farmlist";
-        }
+        return backUrl;
+    }
 
 
     /* =========================================================
@@ -1005,6 +1030,12 @@ if (req.getLandNos() != null && req.getLandNos().size() == 1) {
                         Collectors.toList()
                 ));
 
+        // 농지 번호별 인계(STOPPED) 작업 목록
+        Map<Long, List<WorkAssignments>> stoppedMap = allAssignments.stream()
+                .filter(w -> "STOPPED".equals(w.getStatus()))
+                .filter(w -> w.getPilot() != null && w.getDispatchBatch() != null)
+                .collect(Collectors.groupingBy(w -> w.getLand().getNo()));
+
         // 농지 번호별 최신 완료 일시
         Map<Long, LocalDateTime> completedAtMap = allAssignments.stream()
                 .filter(w -> "COMPLETED".equals(w.getStatus()))
@@ -1043,6 +1074,42 @@ if (req.getLandNos() != null && req.getLandNos().size() == 1) {
         dto.setPilotName(
                 pilotNames.isEmpty() ? null : String.join(", ", pilotNames)
         );
+
+        // 진행 중인 작업이 없고 중단된 작업이 있으면 농지 상태를 중단됨으로 표시
+        boolean hasInProgress = assignments.stream()
+                .anyMatch(w -> "IN_PROGRESS".equals(w.getStatus()));
+        boolean hasInterrupted = assignments.stream()
+                .anyMatch(w -> "INTERRUPTED".equals(w.getStatus()));
+        if (hasInterrupted && !hasInProgress) {
+            dto.setStatus("INTERRUPTED");
+
+            assignments.stream()
+                    .filter(w -> "INTERRUPTED".equals(w.getStatus()) && w.getPilot() != null)
+                    .map(w -> w.getPilot().getNo())
+                    .findFirst()
+                    .ifPresent(dto::setInterruptedPilotNo);
+        }
+
+        // 같은 배정 묶음의 다른 조종사에게 인계된 이력이 있으면 재배정 표시
+        WorkAssignments handedOver = stoppedMap.getOrDefault(land.getNo(), List.of()).stream()
+                .filter(s -> assignments.stream().anyMatch(a ->
+                        a.getDispatchBatch() != null
+                        && Objects.equals(a.getDispatchBatch().getNo(), s.getDispatchBatch().getNo())
+                        && a.getPilot() != null
+                        && !Objects.equals(a.getPilot().getNo(), s.getPilot().getNo())))
+                .max(Comparator.comparing(WorkAssignments::getCreatedAt,
+                        Comparator.nullsFirst(Comparator.naturalOrder())))
+                .orElse(null);
+
+        if (handedOver != null) {
+            dto.setReassigned(true);
+            dto.setPrevPilotName(handedOver.getPilot().getName());
+
+            // 인계 후 새 조종사가 아직 시작하지 않았으면 재배정 상태로 표시
+            if (!hasInProgress && !hasInterrupted) {
+                dto.setStatus("REASSIGNED");
+            }
+        }
 
         // 가장 최근 배정 일시
         assignments.stream()

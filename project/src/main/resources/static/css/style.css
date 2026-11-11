@@ -8373,6 +8373,18 @@ body:has(#farm-list) .home-logo span {
 #farm-list .status-badge.status-assigned  { background: #fff3cf; color: #926900; }
 #farm-list .status-badge.status-progress  { background: #e4efff; color: #246ac0; }
 #farm-list .status-badge.status-completed { background: #edf0f1; color: #68747b; }
+#farm-list .status-badge.status-interrupted { background: #fde8ec; color: #c81e3a; }
+#farm-list .status-badge.status-reassigned { background: #e0f5f2; color: #0f766e; }
+#farm-detail-drawer .status-badge.status-interrupted { background: #fde8ec; color: #c81e3a; }
+#farm-detail-drawer .status-badge.status-reassigned { background: #e0f5f2; color: #0f766e; }
+.status-cell { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.status-cell-row { display: flex; align-items: center; justify-content: center; gap: 6px; }
+.reassign-open-btn { box-sizing: border-box; margin: 0; padding: 4px 8px; border: 1px solid #e11d48; border-radius: 5px; background: #fff; color: #e11d48; font-size: 12px; font-weight: 700; line-height: 1.3; cursor: pointer; white-space: nowrap; }
+.reassign-open-btn:hover { background: #fde8ec; }
+.assign-reassign-form { display: flex; align-items: center; gap: 6px; }
+.task-table th.col-manage { text-indent: 60px; }
+.assign-reassign-form select { height: 30px; padding: 0 8px; border: 1px solid #d5dbd8; border-radius: 6px; background: #fff; font-size: 12px; }
+.reassign-tag { display: block; margin-top: 4px; color: #68747b; font-size: 11px; font-weight: 500; white-space: nowrap; }
 
 
 /* ===== 농지 상세 오른쪽 사이드 패널 ===== */
@@ -14469,6 +14481,8 @@ html {
 /* ===== 중단됨(INTERRUPTED) 상태 - 빨강 ===== */
 .dash-legend .lg-interrupted { background: #e11d48; }
 .st-interrupted { --st: #e11d48; --st-bg: #fde8ec; --st-text: #c81e3a; }
+.st-stopped { --st: #0d9488; --st-bg: #e0f5f2; --st-text: #0f766e; }
+.st-reassigned { --st: #0d9488; --st-bg: #e0f5f2; --st-text: #0f766e; }
 #farm-detail-drawer .status-badge.st-interrupted { background: #fde8ec; color: #c81e3a; }
 
 /* 일시정지 버튼 (중지 버튼 왼쪽) */

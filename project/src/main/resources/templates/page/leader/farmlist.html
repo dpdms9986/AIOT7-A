@@ -73,9 +73,16 @@
                 <td th:text="${land.address}">전민동 15-2</td>
                 <td th:text="${#numbers.formatDecimal(land.areaSize, 0, 'COMMA', 0, 'POINT')}">3,300</td>
                 <td>
-                  <span class="status-badge"
-                  th:classappend="${land.statusClass}"
-                  th:text="${land.statusLabel}">대기</span>
+                  <div class="status-cell">
+                    <div class="status-cell-row">
+                      <span class="status-badge"
+                            th:classappend="${land.statusClass}"
+                            th:text="${land.statusLabel}">대기</span>
+                    </div>
+                    <span class="reassign-tag"
+                          th:if="${land.reassigned}"
+                          th:text="'이전: ' + ${land.prevPilotName}">이전: 조종사</span>
+                  </div>
                 </td>
                 <td th:text="${land.createdAt != null} ? ${#temporals.format(land.createdAt, 'yyyy-MM-dd HH:mm')} : '-'">2026-11-04 14:54</td>
                 
