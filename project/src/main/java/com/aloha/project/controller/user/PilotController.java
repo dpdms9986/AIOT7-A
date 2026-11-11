@@ -462,6 +462,7 @@ public class PilotController {
                 .pilotName(assignment.getPilot() == null
                         ? null : assignment.getPilot().getName())
                 .assignedAt(assignment.getCreatedAt())
+                .interruptedAt(assignment.getInterruptedAt())
                 .startedAt(assignment.getStartedAt())
                 .completedAt(assignment.getCompletedAt())
                 .droneName(resources == null

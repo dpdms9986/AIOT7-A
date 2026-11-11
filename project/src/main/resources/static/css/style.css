@@ -9740,6 +9740,17 @@ span.pilot-pin { cursor: default; opacity: 0.75; }
   font-weight: 700;
   white-space: nowrap;
 }
+/* 작업 이력 표: 담당 조종사 옆 "재배정됨" 작은 배지 */
+.history-reassigned-badge {
+  padding: 1px 6px;
+  margin-left: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  vertical-align: middle;
+  position: relative;
+  top: -3px;
+}
+
 .pilot-empty { margin: 0; padding: 20px 0; color: var(--color-text-sub); font-size: 13px; text-align: center; }
 
 /* ----- 작업 상세 ----- */

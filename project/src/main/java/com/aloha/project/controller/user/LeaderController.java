@@ -972,6 +972,35 @@ if (req.getLandNos() != null && req.getLandNos().size() == 1) {
     /* =========================================================
        작업 이력 검색 (실제 DB WorkAssignments 조회)
        ========================================================= */
+    /**
+     * 이 작업을 거쳐 온 조종사 이름들
+     * 재배정이 없으면 [완료한 조종사] 한 명, 재배정이 있으면 [이전 조종사, ..., 완료한 조종사] 순서
+     * (재배정된 이전 작업은 같은 농지 + 같은 배정 묶음 + 같은 가중치의 STOPPED 작업)
+     */
+    private List<String> pilotChain(WorkAssignments w) {
+        List<String> names = new ArrayList<>();
+
+        if (w.getLand() != null && w.getDispatchBatch() != null && w.getNo() != null) {
+            workAssignmentRepository.findByLand(w.getLand()).stream()
+                    .filter(o -> "STOPPED".equals(o.getStatus()))
+                    .filter(o -> o.getNo() != null && o.getNo() < w.getNo())
+                    .filter(o -> o.getDispatchBatch() != null
+                            && Objects.equals(o.getDispatchBatch().getNo(), w.getDispatchBatch().getNo()))
+                    .filter(o -> Objects.equals(o.getWeightRatio(), w.getWeightRatio()))
+                    .filter(o -> o.getPilot() != null && o.getPilot().getName() != null)
+                    .sorted(Comparator.comparing(WorkAssignments::getNo))
+                    .map(o -> o.getPilot().getName())
+                    .forEach(n -> {
+                        if (names.isEmpty() || !names.get(names.size() - 1).equals(n)) names.add(n);
+                    });
+        }
+
+        String last = (w.getPilot() != null && w.getPilot().getName() != null) ? w.getPilot().getName() : "-";
+        if (names.isEmpty() || !names.get(names.size() - 1).equals(last)) names.add(last);
+
+        return names;
+    }
+
     private List<PilotTaskDto> filterHistory(LocalDate from, LocalDate to, String pilot) {
         // DB에서 완료(COMPLETED)된 작업만 가져와 PilotTaskDto로 매핑
         List<WorkAssignments> completed = workAssignmentRepository.findAll().stream()
@@ -984,15 +1013,17 @@ if (req.getLandNos() != null && req.getLandNos().size() == 1) {
                     .address(w.getLand() != null ? w.getLand().getAddress() : "-")
                     .areaSize(w.getLand() != null ? w.getLand().getAreaSize() : 0.0)
                     .status(w.getStatus())
-                    .pilotName(w.getPilot() != null ? w.getPilot().getName() : "-")
+                    .pilotName(String.join(" → ", pilotChain(w)))
                     .assignedAt(w.getCreatedAt())
+                    .interruptedAt(w.getInterruptedAt())
                     .completedAt(w.getCompletedAt() != null ? w.getCompletedAt() : w.getCreatedAt())
                     .chemicalName("기본 살충제")
                     .build();
         }).toList();
 
         return dtos.stream()
-                .filter(h -> pilot.isEmpty() || pilot.equals(h.getPilotName()))
+                .filter(h -> pilot.isEmpty()
+                        || java.util.Arrays.asList(h.getPilotName().split(" → ")).contains(pilot))
                 .sorted(Comparator.comparing(PilotTaskDto::getNo, Comparator.nullsLast(Comparator.reverseOrder())))
                 .toList();
     }

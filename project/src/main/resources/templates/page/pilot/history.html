@@ -109,6 +109,12 @@
             <dt>드론</dt>      <dd th:text="*{droneName}">DJI T40-01</dd>
             <dt>약제</dt>      <dd th:text="*{chemicalName}">살균제 A</dd>
             <dt>시작 일시</dt> <dd th:text="*{#temporals.format(startedAt, 'yyyy-MM-dd HH:mm')}">2026-10-29 09:10</dd>
+
+            <!-- 중단된 적이 있을 때만 표시 -->
+            <th:block th:if="*{interruptedAt != null}">
+              <dt>중단 일시</dt>
+              <dd th:text="*{#temporals.format(interruptedAt, 'yyyy-MM-dd HH:mm')}">2026-10-29 10:20</dd>
+            </th:block>
           </th:block>
 
           <!-- 중단됨 작업만: 시작 일시 / 중단 일시 / 중단 위치 -->
@@ -116,7 +122,7 @@
             <dt>시작 일시</dt>
             <dd th:text="*{startedAt != null ? #temporals.format(startedAt, 'yyyy-MM-dd HH:mm') : '-'}">2026-10-29 09:10</dd>
             <dt>중단 일시</dt>
-            <dd th:text="*{lastLocationAt != null ? #temporals.format(lastLocationAt, 'yyyy-MM-dd HH:mm') : '-'}">2026-10-29 10:20</dd>
+            <dd th:text="*{interruptedAt != null ? #temporals.format(interruptedAt, 'yyyy-MM-dd HH:mm') : '-'}">2026-10-29 10:20</dd>
             <dt>중단 위치</dt>
             <dd th:text="*{lastLatitude != null and lastLongitude != null ? #numbers.formatDecimal(lastLatitude, 1, 6) + ', ' + #numbers.formatDecimal(lastLongitude, 1, 6) : '위치 정보 없음'}">36.350400, 127.384500</dd>
           </th:block>

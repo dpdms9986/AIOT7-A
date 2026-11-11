@@ -29,6 +29,7 @@ public class PilotTaskDto {
     private String pilotName;          // 담당 조종사               (단장 화면용)
     private Long pilotNo;              // 담당 조종사 회원 번호
     private LocalDateTime assignedAt;  // 배정 일시
+    private LocalDateTime interruptedAt; // 작업 중단 일시 (중단된 적 없으면 null)
 
 
     // 다격형 변수
@@ -109,6 +110,7 @@ public class PilotTaskDto {
                 .lastLongitude(assignment.getLastLongitude())
                 .lastLocationAt(assignment.getLastLocationAt())
                 .assignedAt(assignment.getCreatedAt())
+                .interruptedAt(assignment.getInterruptedAt())
                 .startedAt(assignment.getStartedAt())
                 .completedAt(assignment.getCompletedAt() != null ? assignment.getCompletedAt() : assignment.getCreatedAt())
                 .droneName("-")               // 기본값 (추후 기체 배정 연동)

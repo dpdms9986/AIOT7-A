@@ -407,6 +407,7 @@
               <th>면적(㎡)</th>
               <th>담당 조종사</th>
               <th>배정 일시</th>
+              <th>중단 일시</th>
               <th>완료 일시</th>
               <th>사용 약제</th>
             </tr>
@@ -415,13 +416,19 @@
             <tr th:each="h : ${history}">
               <td th:text="${h.address}">노은동 112</td>
               <td th:text="${#numbers.formatDecimal(h.areaSize, 0, 'COMMA', 0, 'POINT')}">1,200</td>
-              <td th:text="${h.pilotName}">박지훈</td>
+              <td th:with="names=${h.pilotName.split(' → ')}">
+                <span th:text="${names[names.length - 1]}">박지훈</span>
+                                <span class="pilot-status st-reassigned history-reassigned-badge" th:if="${names.length > 1}">재배정</span>
+                <span class="reassign-tag" th:if="${names.length > 1}"
+                      th:text="'이전: ' + ${names[names.length - 2]}">이전: 조종사</span>
+              </td>
               <td th:text="${#temporals.format(h.assignedAt, 'yyyy-MM-dd HH:mm')}">2026-10-28 14:00</td>
+              <td th:text="${h.interruptedAt != null ? #temporals.format(h.interruptedAt, 'yyyy-MM-dd HH:mm') : '-'}">-</td>
               <td th:text="${#temporals.format(h.completedAt, 'yyyy-MM-dd HH:mm')}">2026-10-28 15:10</td>
               <td th:text="${h.chemicalName}">살균제 A</td>
             </tr>
             <tr th:if="${#lists.isEmpty(history)}">
-              <td colspan="6" class="task-empty-cell">조건에 맞는 작업 이력이 없습니다.</td>
+              <td colspan="7" class="task-empty-cell">조건에 맞는 작업 이력이 없습니다.</td>
             </tr>
           </tbody>
         </table>
