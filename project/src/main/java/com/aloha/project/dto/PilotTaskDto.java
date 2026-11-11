@@ -27,6 +27,7 @@ public class PilotTaskDto {
     private Double areaSize;           // 면적 ㎡
     private String status;             // ASSIGNED / IN_PROGRESS / PAUSED / INTERRUPTED / STOPPED / COMPLETED
     private String pilotName;          // 담당 조종사               (단장 화면용)
+    private Long pilotNo;              // 담당 조종사 회원 번호
     private LocalDateTime assignedAt;  // 배정 일시
 
 
@@ -60,8 +61,6 @@ public class PilotTaskDto {
             case "INTERRUPTED" -> "중단됨";
             case "STOPPED"     -> "인계됨";
             case "COMPLETED"   -> "완료";
-            case "PAUSED"      -> "일시정지";
-            case "INTERRUPTED" -> "중단됨";
             default            -> status;
         };
     }
@@ -102,6 +101,7 @@ public class PilotTaskDto {
                 .areaSize(area)
                 .status(assignment.getStatus())
                 .pilotName(pilot)
+                .pilotNo(assignment.getPilot() != null ? assignment.getPilot().getNo() : null)
                 .polygonCoordinates(polygon)
                 .flightPath(assignment.getFlightPath())
                 .lastLatitude(assignment.getLastLatitude())

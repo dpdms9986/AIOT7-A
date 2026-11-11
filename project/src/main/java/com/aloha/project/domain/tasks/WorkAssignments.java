@@ -65,6 +65,9 @@ public class WorkAssignments {
     @Column(name = "interrupted_at")
     private LocalDateTime interruptedAt; // 작업 중단 일시
 
+    @Column(name = "reassignment_notice_read_at")
+    private LocalDateTime reassignmentNoticeReadAt; // 재배정 알림 확인 일시
+
     private LocalDateTime startedAt; // 작업 시작 일시
 
     private LocalDateTime completedAt; // 작업 완료 일시

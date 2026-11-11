@@ -1,6 +1,7 @@
 
 package com.aloha.project.api.users;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -60,57 +61,107 @@ public class PilotApi {
         return ResponseEntity.ok(list);
     }
 
-    // 1-1. 로그인 조종사의 강제 중단 작업 조회
-    @Transactional(readOnly = true)
-    @GetMapping("/assignments/interrupted")
-    public ResponseEntity<?> getInterruptedAssignments(
-            @AuthenticationPrincipal CustomUser customUser) {
+        // 1-1. 로그인 조종사의 강제 중단 작업 조회
+        @Transactional(readOnly = true)
+        @GetMapping("/assignments/interrupted")
+        public ResponseEntity<?> getInterruptedAssignments(
+                @AuthenticationPrincipal CustomUser customUser) {
 
         Users loginPilot = getLoginPilot(customUser);
 
         if (loginPilot == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("조종사 로그인이 필요합니다.");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("조종사 로그인이 필요합니다.");
         }
 
-        List<InterruptedWorkResponse> list = workAssignmentRepository
-                .findByPilot_No(loginPilot.getNo())
-                .stream()
-                .filter(assignment -> "INTERRUPTED".equals(assignment.getStatus())
-                        || isReassigned(assignment))
-                .map(assignment -> isReassigned(assignment)
-                        ? InterruptedWorkResponse.reassignedFrom(assignment)
-                        : InterruptedWorkResponse.from(assignment))
+        List<WorkAssignments> assignments = workAssignmentRepository
+                .findByPilot_No(loginPilot.getNo());
+
+        // 재배정 안내가 있으면 일반 중단 작업보다 먼저 표시
+        List<WorkAssignments> reassignedAssignments = assignments.stream()
+                .filter(this::isReassigned)
+                .filter(assignment -> assignment.getReassignmentNoticeReadAt() == null)
                 .toList();
 
-        return ResponseEntity.ok(list);
-    }
+        List<WorkAssignments> notificationAssignments = reassignedAssignments.isEmpty()
+                ? assignments.stream()
+                        .filter(assignment -> "INTERRUPTED".equals(assignment.getStatus()))
+                        .filter(assignment -> !isReassigned(assignment))
+                        .toList()
+                : reassignedAssignments;
 
-    // 1-2. 강제 중단 작업 재개
-    @PostMapping("/assignments/{assignmentNo}/resume")
-    public ResponseEntity<?> resumeInterruptedAssignment(
-            @PathVariable("assignmentNo") Long assignmentNo,
-            @AuthenticationPrincipal CustomUser customUser) {
+        List<InterruptedWorkResponse> list = notificationAssignments.stream()
+                .map(assignment -> isReassigned(assignment)
+                    ? InterruptedWorkResponse.reassignedFrom(assignment)
+                    : InterruptedWorkResponse.from(assignment))
+            .toList();
+
+        return ResponseEntity.ok(list);
+        }
+
+        // 1-2. 다른 조종사에게 재배정된 작업 알림 확인 처리
+        @Transactional
+        @PatchMapping("/assignments/{assignmentNo}/reassignment-notice/read")
+        public ResponseEntity<?> readReassignmentNotice(
+                @PathVariable("assignmentNo") Long assignmentNo,
+                @AuthenticationPrincipal CustomUser customUser) {
 
         Users loginPilot = getLoginPilot(customUser);
 
         if (loginPilot == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("조종사 로그인이 필요합니다.");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("조종사 로그인이 필요합니다.");
         }
 
-        try {
-            workAssignmentService.resumeInterruptedAssignment(
-                    assignmentNo, loginPilot.getNo());
+        WorkAssignments assignment = workAssignmentRepository.findById(assignmentNo)
+                .orElse(null);
 
-            return ResponseEntity.ok(
-                    Map.of("message", "중단된 작업을 이어서 진행합니다."));
-
-        } catch (IllegalArgumentException | IllegalStateException e) {
-            return ResponseEntity.badRequest()
-                    .body(Map.of("message", e.getMessage()));
+        if (assignment == null
+                || assignment.getPilot() == null
+                || !loginPilot.getNo().equals(assignment.getPilot().getNo())) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("message", "해당 작업을 찾을 수 없습니다."));
         }
-    }
+
+        if (!isReassigned(assignment)) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("message", "재배정 알림 대상 작업이 아닙니다."));
+        }
+
+        if (assignment.getReassignmentNoticeReadAt() == null) {
+                assignment.setReassignmentNoticeReadAt(LocalDateTime.now());
+                workAssignmentRepository.save(assignment);
+        }
+
+        return ResponseEntity.ok(
+                Map.of("message", "재배정 알림을 확인했습니다."));
+        }
+
+        // 1-3. 강제 중단 작업 재개
+        @PostMapping("/assignments/{assignmentNo}/resume")
+        public ResponseEntity<?> resumeInterruptedAssignment(
+                @PathVariable("assignmentNo") Long assignmentNo,
+                @AuthenticationPrincipal CustomUser customUser) {
+
+                Users loginPilot = getLoginPilot(customUser);
+
+                if (loginPilot == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("조종사 로그인이 필요합니다.");
+                }
+
+                try {
+                workAssignmentService.resumeInterruptedAssignment(
+                        assignmentNo, loginPilot.getNo());
+
+                return ResponseEntity.ok(
+                        Map.of("message", "중단된 작업을 이어서 진행합니다."));
+
+                } catch (IllegalArgumentException | IllegalStateException e) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("message", e.getMessage()));
+                }
+        }
 
     // 2. 작업 시작
     @PostMapping("/work/start")

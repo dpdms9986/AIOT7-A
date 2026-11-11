@@ -57,12 +57,16 @@ public class WorkAssignmentServiceImpl implements WorkAssignmentService {
         // 3. 작업 시작
         if ("IN_PROGRESS".equals(status)) {
 
-            if (!"ASSIGNED".equals(currentStatus)) {
+        if (!"ASSIGNED".equals(currentStatus)
+                && !"INTERRUPTED".equals(currentStatus)) {
                 throw new IllegalStateException(
-                        "배정된 작업만 시작할 수 있습니다.");
-            }
+                        "배정되었거나 중단된 작업만 시작할 수 있습니다.");
+        }
 
-            assignment.setStartedAt(LocalDateTime.now());
+        // 기존 작업 재시작 시 최초 시작 일시는 유지
+        if (assignment.getStartedAt() == null) {
+                assignment.setStartedAt(LocalDateTime.now());
+        }
         }
 
         // 4. 작업 일시정지
@@ -174,11 +178,15 @@ public class WorkAssignmentServiceImpl implements WorkAssignmentService {
         updateAssignmentStatus(assignmentNo, "IN_PROGRESS", pilotNo);
 
         // 9. 선택한 드론과 약제 저장
-        WorkAssignmentResources resources = WorkAssignmentResources.builder()
-                .workAssignment(assignment)
-                .drone(drone)
-                .chemical(chemical)
-                .build();
+        // 기존 작업을 다시 시작하는 경우 자원 연결 행이 이미 있을 수 있으므로 조회 후 갱신
+        WorkAssignmentResources resources = workAssignmentResourceRepository
+                .findByWorkAssignment_No(assignmentNo)
+                .orElseGet(() -> WorkAssignmentResources.builder()
+                        .workAssignment(assignment)
+                        .build());
+
+        resources.setDrone(drone);
+        resources.setChemical(chemical);
 
         workAssignmentResourceRepository.save(resources);
 

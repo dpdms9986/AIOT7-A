@@ -633,65 +633,119 @@ if (req.getLandNos() != null && req.getLandNos().size() == 1) {
     }
 
         
-    @Transactional
-    @PostMapping("/team-management/{no}/reassign")
-    public String reassign(@PathVariable("no") Long no,
-                           @RequestParam("targetNo") Long targetNo,
-                           RedirectAttributes redirectAttributes) {
+        @Transactional
+        @PostMapping("/team-management/{no}/reassign")
+        public String reassign(@PathVariable("no") Long no,
+                        @RequestParam("targetNo") Long targetNo,
+                        @RequestParam(value = "assignmentNo", required = false) Long assignmentNo,
+                        @AuthenticationPrincipal CustomUser customUser,
+                        RedirectAttributes redirectAttributes) {
 
-        log.info("작업 인수인계(재배정): 이전 조종사={} → 신규조종사={}", no, targetNo);
+        log.info("개별 작업 재배정: 작업 번호={}, 이전 조종사={} → 신규 조종사={}",
+                assignmentNo, no, targetNo);
+
+        if (customUser == null || customUser.getUser() == null) {
+                return "redirect:/login";
+        }
+
+        if (assignmentNo == null) {
+                redirectAttributes.addFlashAttribute("errorMessage", "재배정할 작업을 선택해주세요.");
+                return "redirect:/leader/farmlist";
+        }
+
+        Users leader = userRepository.findById(customUser.getUser().getNo()).orElse(null);
+        Teams leaderTeam = leader != null ? leader.getTeam() : null;
+
+        if (leader == null || !"LEADER".equals(leader.getRole()) || leaderTeam == null) {
+                redirectAttributes.addFlashAttribute("errorMessage", "재배정 권한이 없습니다.");
+                return "redirect:/leader/farmlist";
+        }
 
         Users targetPilot = userRepository.findById(targetNo).orElse(null);
-
-        if (targetPilot == null) {
-            redirectAttributes.addFlashAttribute("errorMessage", "인계받을 조종사를 찾을 수 없습니다.");
-            return "redirect:/leader/farmlist";
+        if (targetPilot == null || !"PILOT".equals(targetPilot.getRole())) {
+                redirectAttributes.addFlashAttribute("errorMessage", "인계받을 조종사를 찾을 수 없습니다.");
+                return "redirect:/leader/farmlist";
         }
 
-        // 1. 이전 조종사의 미완료 작업 조회
-        List<WorkAssignments> tasks = workAssignmentRepository.findAll().stream()
-                .filter(w -> w.getPilot() != null && no.equals(w.getPilot().getNo()))
-                .filter(w -> "IN_PROGRESS".equals(w.getStatus())
-                        || "ASSIGNED".equals(w.getStatus())
-                        || "PAUSED".equals(w.getStatus())
-                        || "INTERRUPTED".equals(w.getStatus()))
+        if (targetPilot.getTeam() == null
+                || !Objects.equals(targetPilot.getTeam().getNo(), leaderTeam.getNo())) {
+                redirectAttributes.addFlashAttribute("errorMessage", "같은 방제단 소속 조종사에게만 재배정할 수 있습니다.");
+                return "redirect:/leader/farmlist";
+        }
+
+        WorkAssignments oldTask = workAssignmentRepository.findById(assignmentNo).orElse(null);
+        if (oldTask == null
+                || oldTask.getPilot() == null
+                || !Objects.equals(oldTask.getPilot().getNo(), no)) {
+                redirectAttributes.addFlashAttribute("errorMessage", "선택한 작업을 찾을 수 없습니다.");
+                return "redirect:/leader/farmlist";
+        }
+
+        if (oldTask.getPilot().getTeam() == null
+                || !Objects.equals(oldTask.getPilot().getTeam().getNo(), leaderTeam.getNo())
+                || oldTask.getLand() == null
+                || oldTask.getLand().getTeam() == null
+                || !Objects.equals(oldTask.getLand().getTeam().getNo(), leaderTeam.getNo())) {
+                redirectAttributes.addFlashAttribute("errorMessage", "다른 방제단의 농지는 재배정할 수 없습니다.");
+                return "redirect:/leader/farmlist";
+        }
+
+        if (!"INTERRUPTED".equals(oldTask.getStatus())) {
+                redirectAttributes.addFlashAttribute("errorMessage", "중단된 작업만 재배정할 수 있습니다.");
+                return "redirect:/leader/farmlist";
+        }
+
+        if (Objects.equals(no, targetNo)) {
+                redirectAttributes.addFlashAttribute("errorMessage", "기존 조종사와 다른 조종사를 선택해주세요.");
+                return "redirect:/leader/farmlist";
+        }
+
+        // 기존 작업 이력은 보존하고 선택한 작업 한 건만 인계 처리
+        oldTask.setStatus("STOPPED");
+        oldTask.setCompletedAt(LocalDateTime.now());
+        oldTask.setReassignmentNoticeReadAt(null);
+        workAssignmentRepository.save(oldTask);
+
+        // 새 조종사에게 동일 농지의 새 작업 한 건만 배정
+        WorkAssignments newTask = WorkAssignments.builder()
+                .dispatchBatch(oldTask.getDispatchBatch())
+                .land(oldTask.getLand())
+                .pilot(targetPilot)
+                .weightRatio(oldTask.getWeightRatio())
+                .status("ASSIGNED")
+                .flightPath(oldTask.getFlightPath())
+                .lastLatitude(oldTask.getLastLatitude())
+                .lastLongitude(oldTask.getLastLongitude())
+                .lastLocationAt(oldTask.getLastLocationAt())
+                .build();
+
+        workAssignmentRepository.save(newTask);
+
+        // 해당 농지의 남은 작업 상태를 기준으로 농지 상태 갱신
+        List<WorkAssignments> activeAssignments = workAssignmentRepository
+                .findByLand(oldTask.getLand())
+                .stream()
+                .filter(work -> !"STOPPED".equals(work.getStatus()))
                 .toList();
 
-        if (tasks.isEmpty()) {
-            redirectAttributes.addFlashAttribute("errorMessage", "재배정할 작업이 없습니다.");
-            return "redirect:/leader/farmlist";
-        }
+        boolean hasInProgress = activeAssignments.stream()
+                .anyMatch(work -> "IN_PROGRESS".equals(work.getStatus()));
+        boolean allCompleted = activeAssignments.stream()
+                .allMatch(work -> "COMPLETED".equals(work.getStatus()));
 
-        for (WorkAssignments oldTask : tasks) {
-
-            // 2. 일반 작업 / 비정상 중단 작업 모두 인계 처리(STOPPED)
-            //    (마지막 위치·궤적 기록은 그대로 남음)
-            //    → 이전 조종사가 다시 로그인하면 "다른 조종사에게 배정되었습니다" 안내가 뜸
-            oldTask.setStatus("STOPPED");
-            oldTask.setCompletedAt(LocalDateTime.now());
-            workAssignmentRepository.save(oldTask);
-
-            // 3. 새 조종사에게 새로운 작업 배정
-            WorkAssignments newTask = WorkAssignments.builder()
-                    .dispatchBatch(oldTask.getDispatchBatch())
-                    .land(oldTask.getLand())
-                    .pilot(targetPilot)
-                    .weightRatio(oldTask.getWeightRatio())
-                    .status("ASSIGNED")
-                    .flightPath(oldTask.getFlightPath())
-                    .lastLatitude(oldTask.getLastLatitude())
-                    .lastLongitude(oldTask.getLastLongitude())
-                    .lastLocationAt(oldTask.getLastLocationAt())
-                    .build();
-
-            workAssignmentRepository.save(newTask);
+        if (hasInProgress) {
+                oldTask.getLand().updateStatus("IN_PROGRESS");
+        } else if (allCompleted) {
+                oldTask.getLand().updateStatus("COMPLETED");
+        } else {
+                oldTask.getLand().updateStatus("ASSIGNED");
         }
 
         redirectAttributes.addFlashAttribute("message",
-                "작업이 " + targetPilot.getName() + " 조종사에게 안전하게 인계되었습니다.");
+                "선택한 작업이 " + targetPilot.getName() + " 조종사에게 안전하게 인계되었습니다.");
 
         return "redirect:/leader/farmlist";
-    }
+        }
 
 
     /* =========================================================
