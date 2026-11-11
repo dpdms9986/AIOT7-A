@@ -15,7 +15,7 @@
 
   <div class="dash-title-row">
     <div class="task-title">
-      <span class="task-title-icon">📋</span>
+      <img th:src="@{/img/task-assign-icon.png}" alt="" class="task-title-img">
       <div>
         <h1>작업 배정</h1>
         <p>지역을 검색해 미배정 농지를 선택하고, 조종사에게 나눠 배정합니다.</p>
@@ -23,9 +23,11 @@
     </div>
   </div>
 
-  <!-- 처리 결과 메시지 (redirect 후 1회) -->
-  <p class="page-flash" th:if="${message}" th:text="${message}">성공 메시지</p>
-  <p class="page-flash is-error" th:if="${errorMessage}" th:text="${errorMessage}">실패 메시지</p>
+
+<!-- 실패 메시지는 기존처럼 화면에 표시 -->
+<p class="page-flash is-error"
+   th:if="${errorMessage}"
+   th:text="${errorMessage}"></p>
 
   <!-- ===== 탭: 주소로 이동 ===== -->
   <div class="task-tabs">
@@ -43,7 +45,7 @@
   <section class="task-panel" th:if="${tab == 'assign'}">
     <article class="dash-card">
       <div class="dash-card-head task-map-head">
-        <h2>🌱 미배정 농지 목록 <span class="task-count" th:text="${readyTotal} + '건'">0건</span></h2>
+        <h2><img th:src="@{/img/farm-icon.png}" alt="" class="dash-h-img"> 미배정 농지 목록 <span class="task-count" th:text="${readyTotal} + '건'">0건</span></h2>
 
         <form class="task-search" th:action="@{/leader/task-assignment}" method="get">
           <input type="hidden" name="tab" value="assign">
@@ -110,7 +112,7 @@
          <!-- 구역 분할 배정 -->
         <div class="field-split-wrap fs-section" id="fs-section">
           <div class="fs-summary">
-            <div class="fs-summary-icon" aria-hidden="true">🗺️</div>
+            <div class="fs-summary-icon" aria-hidden="true"><img th:src="@{/img/fs-split.png}" alt="" class="fs-summary-img"></div>
             <div class="fs-summary-copy">
               <strong>구역 분할 배정</strong>
               <span id="fs-target">위 목록에서 농지를 고르거나, 지도에서 직접 영역을 그려 주세요.</span>
@@ -162,7 +164,7 @@
             </section>
 
             <section class="fs-panel" aria-labelledby="fs-map-title">
-              <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+              <div class="fs-map-head">
                 <h3 id="fs-map-title">분할 미리보기</h3>
                 <button type="button" class="dash-btn-outline task-mini-btn" id="fs-fit">전체 영역 보기</button>
               </div>

@@ -5,22 +5,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>계정 찾기 - 스마트 농업 관제 시스템</title>
+  <title>계정을 잊으셨나요? - 스마트 농업 관제 시스템</title>
 </head>
 <body layout:fragment="content">
 
   <main class="login-page">
     <section class="login-card">
       <header class="login-brand">
-        <div class="login-brand-logo">A</div>
-        <h1>계정 찾기</h1>
+        <div class="login-brand-logo">
+          <img th:src="@{/images/header-logo.png}" alt="스마트 농업 드론 방제 시스템">
+        </div>
+        <h1>계정을 잊으셨나요?</h1>
         <p>가입 시 등록한 정보를 입력해 주세요.</p>
       </header>
 
-      <!-- 탭: 컨트롤러가 내려주는 activeTab 으로 초기 탭 결정 (없으면 아이디 찾기) -->
+      <!-- 탭: 컨트롤러가 내려주는 activeTab 으로 초기 탭 결정 (없으면 이메일 찾기) -->
       <div class="findaccount-tabs" role="tablist">
         <button type="button" role="tab" data-tab="id"
-                th:classappend="${activeTab != 'password'} ? 'active'">아이디 찾기</button>
+                th:classappend="${activeTab != 'password'} ? 'active'">이메일 찾기</button>
         <button type="button" role="tab" data-tab="password"
                 th:classappend="${activeTab == 'password'} ? 'active'">비밀번호 찾기</button>
       </div>
@@ -42,10 +44,10 @@
           <input id="phoneForId" name="phone" type="tel" placeholder="010-1234-5678" maxlength="13">
         </div>
 
-        <button type="submit" class="login-submit">아이디 찾기</button>
+        <button type="submit" class="login-submit">이메일 찾기</button>
 
         <div th:if="${searchSuccess}" class="findaccount-result">
-          회원님의 아이디는 <strong th:text="${foundUsername}"></strong> 입니다.
+          가입하신 이메일은 <strong th:text="${foundUsername}"></strong> 입니다.
         </div>
       </form>
 

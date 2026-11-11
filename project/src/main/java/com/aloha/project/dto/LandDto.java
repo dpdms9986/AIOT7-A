@@ -111,7 +111,7 @@ public class LandDto {
     }
 
     public boolean isDeletable() {
-        return "READY".equals(status);
+        return "READY".equals(status) || "COMPLETED".equals(status);
     }
 
     public boolean isCancellable() {

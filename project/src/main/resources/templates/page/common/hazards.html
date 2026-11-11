@@ -16,7 +16,7 @@
   <!-- ===== 제목 + 신고 버튼 ===== -->
   <div class="dash-title-row">
     <div>
-      <h1>⚠️ 위험 구역</h1>
+      <h1><img th:src="@{/img/hazard-icon.png}" alt="" class="hz-title-icon">위험 구역</h1>
       <p>고압선, 철탑 등 비행 위험 요소를 지도에 공유하고, 해소되면 완료 처리합니다.</p>
     </div>
     <button type="button" class="dash-btn-primary" id="hz-open-btn">+ 위험 구역 신고</button>
@@ -25,7 +25,7 @@
   <!-- ===== 요약 카드 4개 ===== -->
   <section class="dash-stats">
     <div class="dash-card dash-stat">
-      <span class="dash-stat-icon completed">📋</span>
+      <span class="dash-stat-icon completed"><img th:src="@{/img/hz-total.png}" alt="" class="dash-stat-img"></span>
       <div class="dash-stat-body">
         <small>전체 신고</small>
         <strong><th:block th:text="${totalCount}">0</th:block><span>건</span></strong>
@@ -49,7 +49,7 @@
       </div>
     </div>
     <div class="dash-card dash-stat">
-      <span class="dash-stat-icon ready">✅</span>
+      <span class="dash-stat-icon ready"><img th:src="@{/img/dash-done.png}" alt="" class="dash-stat-img"></span>
       <div class="dash-stat-body">
         <small>해소 완료</small>
         <strong><th:block th:text="${resolvedCount}">0</th:block><span>건</span></strong>

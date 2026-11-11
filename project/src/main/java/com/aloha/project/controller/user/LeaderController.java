@@ -632,57 +632,68 @@ if (req.getLandNos() != null && req.getLandNos().size() == 1) {
         return "page/leader/team-management";
     }
 
-        @Transactional
-        @PostMapping("/team-management/{no}/reassign")
-        public String reassign(@PathVariable("no") Long no,
-                                @RequestParam("targetNo") Long targetNo,
-                                RedirectAttributes redirectAttributes) {
-                log.info("작업 인수인계(재배정): 이전 조종사={} → 신규조종사={}", no, targetNo);
+        
+    @Transactional
+    @PostMapping("/team-management/{no}/reassign")
+    public String reassign(@PathVariable("no") Long no,
+                           @RequestParam("targetNo") Long targetNo,
+                           RedirectAttributes redirectAttributes) {
 
-                Users targetPilot = userRepository.findById(targetNo).orElse(null);
-                if (targetPilot == null) {
-                redirectAttributes.addFlashAttribute("errormessage", "인계받을 조종사를 찾을 수 없습니다.");
-                return "redirect:/leader/team-management";
-                }
+        log.info("작업 인수인계(재배정): 이전 조종사={} → 신규조종사={}", no, targetNo);
 
-                
-                // 1. 이전 조종사(no)의 미완료 작업 조회
-                // (IN_PROGRESS, ASSIGNED, PAUSED, INTERRUPTED)
-                List<WorkAssignments> tasks = workAssignmentRepository.findAll().stream()
-                        .filter(w -> w.getPilot() != null && no.equals(w.getPilot().getNo()))
-                        .filter(w -> "IN_PROGRESS".equals(w.getStatus())
-                                || "ASSIGNED".equals(w.getStatus())
-                                || "PAUSED".equals(w.getStatus())
-                                || "INTERRUPTED".equals(w.getStatus()))
-                        .toList();
+        Users targetPilot = userRepository.findById(targetNo).orElse(null);
 
+        if (targetPilot == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "인계받을 조종사를 찾을 수 없습니다.");
+            return "redirect:/leader/team-management";
+        }
 
-                for (WorkAssignments oldTask : tasks) {
-                // 2. 파일럿 1의 기존 작업은 '중단/인계(STOPPED)' 처리하고 중단 시간 기록
+        // 1. 이전 조종사의 미완료 작업 조회
+        List<WorkAssignments> tasks = workAssignmentRepository.findAll().stream()
+                .filter(w -> w.getPilot() != null && no.equals(w.getPilot().getNo()))
+                .filter(w -> "IN_PROGRESS".equals(w.getStatus())
+                        || "ASSIGNED".equals(w.getStatus())
+                        || "PAUSED".equals(w.getStatus())
+                        || "INTERRUPTED".equals(w.getStatus()))
+                .toList();
+
+        if (tasks.isEmpty()) {
+            redirectAttributes.addFlashAttribute("errorMessage", "재배정할 작업이 없습니다.");
+            return "redirect:/leader/team-management";
+        }
+
+        for (WorkAssignments oldTask : tasks) {
+
+            // 2. 비정상 중단 작업은 기존 기록을 유지
+            // 일반 작업은 인계 처리(STOPPED)
+            if (!"INTERRUPTED".equals(oldTask.getStatus())) {
                 oldTask.setStatus("STOPPED");
                 oldTask.setCompletedAt(LocalDateTime.now());
                 workAssignmentRepository.save(oldTask);
+            }
 
-                // 3. 파일럿 2를 위한 '새로운 배정 건' 생성 (대기 상태로 출발)
-                WorkAssignments newTask = WorkAssignments.builder()
-                        .dispatchBatch(oldTask.getDispatchBatch())
-                        .land(oldTask.getLand())
-                        .pilot(targetPilot)        // 새 조종사
-                        .weightRatio(oldTask.getWeightRatio())
-                        .status("ASSIGNED")
-                        .flightPath(oldTask.getFlightPath())
-                        .lastLatitude(oldTask.getLastLatitude())
-                        .lastLongitude(oldTask.getLastLongitude())
-                        .lastLocationAt(oldTask.getLastLocationAt())
-                        .build();
+            // 3. 새 조종사에게 새로운 작업 배정
+            WorkAssignments newTask = WorkAssignments.builder()
+                    .dispatchBatch(oldTask.getDispatchBatch())
+                    .land(oldTask.getLand())
+                    .pilot(targetPilot)
+                    .weightRatio(oldTask.getWeightRatio())
+                    .status("ASSIGNED")
+                    .flightPath(oldTask.getFlightPath())
+                    .lastLatitude(oldTask.getLastLatitude())
+                    .lastLongitude(oldTask.getLastLongitude())
+                    .lastLocationAt(oldTask.getLastLocationAt())
+                    .build();
 
-                workAssignmentRepository.save(newTask);
-                }
-
-                redirectAttributes.addFlashAttribute("message",
-                        "작업이" + targetPilot.getName() + "조종사에게 안전하게 인계되었습니다.");
-                return "redirect:/leader/team-management";
+            workAssignmentRepository.save(newTask);
         }
+
+        redirectAttributes.addFlashAttribute("message",
+                "작업이 " + targetPilot.getName() + " 조종사에게 안전하게 인계되었습니다.");
+
+        return "redirect:/leader/team-management";
+    }
+
 
     /* =========================================================
        농지 관리
@@ -705,8 +716,8 @@ if (req.getLandNos() != null && req.getLandNos().size() == 1) {
         Teams myTeam = (leader != null) ? leader.getTeam() : null;
 
         List<Lands> rawLands = (myTeam != null)
-                ? landRepository.findByTeam(myTeam)
-                : List.of();
+                      ? landRepository.findByTeamAndDeletedFalse(myTeam)
+                      : List.of();
 
         // 헬퍼 메서드로 조종사명, 배정일시 채우기
         List<LandDto> allLands = convertToLandDtosWithAssignment(rawLands);
@@ -788,20 +799,74 @@ if (req.getLandNos() != null && req.getLandNos().size() == 1) {
     }
 
     @PostMapping("/farmlist/delete")
-    public String deleteLand(@RequestParam("landNo") Long landNo,
-                             RedirectAttributes redirectAttributes) {
-        log.info("농지 삭제: landNo={}", landNo);
+    @Transactional
+    public String deleteLand(
+        @RequestParam("landNo") Long landNo,
+        @AuthenticationPrincipal CustomUser customUser,
+        RedirectAttributes redirectAttributes) {
 
-        Lands land = landRepository.findById(landNo).orElse(null);
-        if (land != null && "READY".equals(land.getStatus())) {
-            landRepository.delete(land);
-            redirectAttributes.addFlashAttribute("message", landNo + "번 농지가 삭제되었습니다.");
-        } else {
-            redirectAttributes.addFlashAttribute("message", "배정 중이거나 작업 중인 농지는 삭제할 수 없습니다.");
-        }
+    log.info("농지 삭제 요청: landNo={}", landNo);
 
+    // 1. 로그인 확인
+    if (customUser == null) {
+        return "redirect:/login";
+    }
+
+    // 2. 로그인한 단장의 소속 팀 확인
+    Users leader = userRepository.findById(customUser.getUser().getNo())
+            .orElse(null);
+
+    Teams myTeam = (leader != null) ? leader.getTeam() : null;
+
+    if (myTeam == null) {
+        redirectAttributes.addFlashAttribute(
+                "message", "소속된 방제단 정보를 찾을 수 없습니다.");
         return "redirect:/leader/farmlist";
     }
+
+    // 3. 농지 조회 및 팀 소속 검증
+    Lands land = landRepository.findById(landNo).orElse(null);
+
+    if (land == null || !Objects.equals(land.getTeam(), myTeam)) {
+        redirectAttributes.addFlashAttribute(
+                "message", "삭제할 농지를 찾을 수 없습니다.");
+        return "redirect:/leader/farmlist";
+    }
+
+    // 4. 이미 삭제된 농지인지 확인
+    if (land.isDeleted()) {
+        redirectAttributes.addFlashAttribute(
+                "message", "이미 삭제된 농지입니다.");
+        return "redirect:/leader/farmlist";
+    }
+
+    // 5. 상태별 삭제 처리
+    if ("READY".equals(land.getStatus())) {
+
+        // 대기 농지: 기존처럼 물리 삭제
+        landRepository.delete(land);
+
+        redirectAttributes.addFlashAttribute(
+                "message", landNo + "번 농지가 삭제되었습니다.");
+
+    } else if ("COMPLETED".equals(land.getStatus())) {
+
+        // 완료 농지: 논리 삭제로 작업 이력 보존
+        land.setDeleted(true);
+        landRepository.save(land);
+
+        redirectAttributes.addFlashAttribute(
+                "message", landNo + "번 완료 농지가 삭제되었습니다.");
+
+    } else {
+
+        // 배정 중이거나 작업 중인 농지는 삭제 불가
+        redirectAttributes.addFlashAttribute(
+                "message", "대기 또는 완료 상태의 농지만 삭제할 수 있습니다.");
+    }
+
+    return "redirect:/leader/farmlist";
+}
 
     @GetMapping("/history")
     public String getHistory() {
@@ -841,91 +906,79 @@ if (req.getLandNos() != null && req.getLandNos().size() == 1) {
             return "\"" + s.replace("\"", "\"\"") + "\"";
     }
 
-    
     /**
-     * 농지 엔티티 목록을 LandDto로 변환하면서,
-     * 최신 배정 묶음에 포함된 조종사별 작업 정보를 함께 채워준다.
+     * 농지 엔티티 목록을 LandDto로 변환하면서, 
+     * 현재 배정/작업 중인 최신 배정 정보(조종사명, 배정일시)를 함께 채워주는 헬퍼 메서드
      */
-    private List<LandDto> convertToLandDtosWithAssignment(List<Lands> rawLands) {
+   
+        private List<LandDto> convertToLandDtosWithAssignment(List<Lands> rawLands) {
 
         // 1. 농지별 작업 배정 내역 조회
         List<WorkAssignments> allAssignments = workAssignmentRepository.findAll().stream()
-        .filter(w -> w.getLand() != null)
-        .filter(w -> "ASSIGNED".equals(w.getStatus())
-                || "IN_PROGRESS".equals(w.getStatus())
-                || "PAUSED".equals(w.getStatus())
-                || "INTERRUPTED".equals(w.getStatus())
-                || "COMPLETED".equals(w.getStatus()))
-        .toList();
+                .filter(w -> w.getLand() != null)
+                .toList();
 
-        Map<Long, List<WorkAssignments>> assignmentMap = allAssignments.stream()
+        // 현재 표시할 작업 상태 (공동분할 및 작업 중단 상태 포함)
+        List<WorkAssignments> activeAssignments = allAssignments.stream()
+                .filter(w -> "ASSIGNED".equals(w.getStatus())
+                        || "IN_PROGRESS".equals(w.getStatus())
+                        || "PAUSED".equals(w.getStatus())
+                        || "INTERRUPTED".equals(w.getStatus()))
+                .toList();
+
+        // 농지 번호별 작업 전체 그룹화 (공동분할 지원)
+        Map<Long, List<WorkAssignments>> assignmentMap = activeAssignments.stream()
                 .collect(Collectors.groupingBy(
                         w -> w.getLand().getNo(),
                         LinkedHashMap::new,
                         Collectors.toList()
                 ));
 
+        // 농지 번호별 최신 완료 일시
+        Map<Long, LocalDateTime> completedAtMap = allAssignments.stream()
+                .filter(w -> "COMPLETED".equals(w.getStatus()))
+                .filter(w -> w.getCompletedAt() != null)
+                .collect(Collectors.toMap(
+                        w -> w.getLand().getNo(),
+                        WorkAssignments::getCompletedAt,
+                        (oldDate, newDate) ->
+                                oldDate.isAfter(newDate) ? oldDate : newDate,
+                        LinkedHashMap::new
+                ));
+
         return rawLands.stream().map(land -> {
+                LandDto dto = LandDto.from(land);
 
-            LandDto dto = LandDto.from(land);
+                List<WorkAssignments> assignments =
+                        assignmentMap.getOrDefault(land.getNo(), List.of());
 
-            List<WorkAssignments> assignments =
-                    assignmentMap.getOrDefault(land.getNo(), List.of());
+                // 공동분할 조종사 이름 전체 추출
+                List<String> pilotNames = assignments.stream()
+                        .map(WorkAssignments::getPilot)
+                        .filter(p -> p != null && p.getName() != null)
+                        .map(Users::getName)
+                        .distinct()
+                        .toList();
 
-            // 2. 가장 최근 배정 묶음 번호 조회
-            Long latestBatchNo = assignments.stream()
-                    .filter(w -> w.getDispatchBatch() != null)
-                    .map(w -> w.getDispatchBatch().getNo())
-                    .filter(no -> no != null)
-                    .max(Long::compareTo)
-                    .orElse(null);
 
-            // 3. 최신 배정 묶음에 속한 작업만 추출
-            List<WorkAssignments> latestAssignments = assignments.stream()
-                    .filter(w -> w.getDispatchBatch() != null
-                            && latestBatchNo != null
-                            && latestBatchNo.equals(w.getDispatchBatch().getNo()))
-                    .toList();
+        dto.setPilotNames(pilotNames);
+        dto.setPilotName(
+                pilotNames.isEmpty() ? null : String.join(", ", pilotNames)
+        );
 
-            // 4. 조종사별 작업 정보를 PilotTaskDto로 변환
-            List<PilotTaskDto> pilotTasks = latestAssignments.stream()
-                    .map(PilotTaskDto::from)
-                    .toList();
+        // 가장 최근 배정 일시
+        assignments.stream()
+                .map(WorkAssignments::getCreatedAt)
+                .filter(Objects::nonNull)
+                .max(Comparator.naturalOrder())
+                .ifPresent(dto::setAssignedAt);
 
-            // 5. 조종사별 작업 정보 전달
-            dto.setPilotAssignments(pilotTasks);
+        // 완료 일시
+        dto.setCompletedAt(completedAtMap.get(land.getNo()));
 
-            List<String> pilotNames = pilotTasks.stream()
-                    .map(PilotTaskDto::getPilotName)
-                    .filter(name -> name != null && !name.isBlank())
-                    .distinct()
-                    .toList();
+        return dto;
 
-            dto.setPilotNames(pilotNames);
+    }).toList();
+}
 
-            // 기존 화면 호환성 유지
-            dto.setPilotName(
-                    pilotNames.isEmpty() ? null : String.join(", ", pilotNames)
-            );
-
-            // 최신 배정 일시 설정
-            latestAssignments.stream()
-                    .map(WorkAssignments::getCreatedAt)
-                    .filter(Objects::nonNull)
-                    .max(Comparator.naturalOrder())
-                    .ifPresent(dto::setAssignedAt);
-
-            // 완료 일시
-            assignments.stream()
-                    .filter(w -> "COMPLETED".equals(w.getStatus()))
-                    .map(WorkAssignments::getCompletedAt)
-                    .filter(Objects::nonNull)
-                    .max(Comparator.naturalOrder())
-                    .ifPresent(dto::setCompletedAt);
-
-            return dto;
-
-        }).toList();
-
-        }
 }

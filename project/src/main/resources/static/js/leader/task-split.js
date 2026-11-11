@@ -656,8 +656,7 @@ return; // 완료 처리 후 새 그리기 시작 코드로 넘어가지 않도�
         return;
       }
       if (!drawnAddress.value.trim()) {
-        alert("직접 그린 영역의 이름(주소)을 입력해 주세요.");
-        drawnAddress.focus();
+        alert("직접 그린 영역의 이름(주소)을 입력해 주세요.").then(() => drawnAddress.focus());
         return;
       }
       const center = L.latLngBounds(drawn).getCenter();
@@ -738,9 +737,9 @@ return; // 완료 처리 후 새 그리기 시작 코드로 넘어가지 않도�
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         done += 1;
       }
-      alert(`${done}개 농지 배정 요청을 보냈습니다.`);
+      await alert(`${done}개 농지 배정 요청을 보냈습니다.`);
     } catch (err) {
-      alert(`${done}개 배정 후 오류가 발생했습니다. 목록을 새로 불러옵니다.\n(${err.message})`);
+      await alert(`${done}개 배정 후 오류가 발생했습니다. 목록을 새로 불러옵니다.\n(${err.message})`);
     }
     window.location.href = form.getAttribute("action") || "/leader/task-assignment";
   });

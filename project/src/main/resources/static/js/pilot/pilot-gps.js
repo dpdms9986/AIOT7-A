@@ -17,21 +17,6 @@ const markers = {};
 
 
 
-// 로그인 정보로 조종사명 채우기
-function applyUser(user) {
-  if (user?.userName) {
-    $("#pilotName").val(user.userName);
-  }
-}
-
-if (window.currentUser) {
-  applyUser(window.currentUser);
-} else {
-  document.addEventListener("user-ready", (e) => {
-    applyUser(e.detail);
-  }, { once: true });
-}
-
 // 페이지 진입 시 방제단 고유 채널 자동 연결
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", connect, { once: true });
@@ -113,6 +98,22 @@ function updateMarker(pilotName, lat, lng) {
 function startFakeAuto() {
   if (!stompClient || !stompClient.connected) return alert("먼저 채널 연결을 확인해주세요!");
   stopAuto();
+
+  const selectedTask = document.querySelector(".pilot-task.selected");
+
+  if (!selectedTask) return alert("먼저 비행할 농지를 선택해주세요!");
+
+  const lat = Number(selectedTask.dataset.lat);
+  const lng = Number(selectedTask.dataset.lng);
+
+  if (!Number.isFinite(lat) || !Number.isFinite(lng) ||
+    (lat === 0 && lng === 0)) {
+  return alert("선택한 농지의 위치 정보가 올바르지 않습니다.");
+}
+
+  currentLat = lat;
+  currentLng = lng;
+
   $("#autoStatus").text("✈️ 가짜 위치 자동 비행 중... (2초마다 전송)").css("color", "#2f80ed");
 
   fakeInterval = setInterval(() => {
@@ -149,7 +150,6 @@ function sendLocation(latitude, longitude) {
   }
 
   stompClient.send("/pub/location", {}, JSON.stringify({
-    pilotName: $("#pilotName").val(),
     latitude,
     longitude,
   }));
