@@ -1,4 +1,3 @@
-
 package com.aloha.project.service.impl.tasks;
 
 import java.time.LocalDateTime;
@@ -57,16 +56,17 @@ public class WorkAssignmentServiceImpl implements WorkAssignmentService {
         // 3. 작업 시작
         if ("IN_PROGRESS".equals(status)) {
 
-        if (!"ASSIGNED".equals(currentStatus)
-                && !"INTERRUPTED".equals(currentStatus)) {
+            // 강제 중단 작업은 resumeInterruptedAssignment()으로만 재개
+            // 기존 경로와 마지막 GPS 좌표를 보존하기 위한 처리
+            if (!"ASSIGNED".equals(currentStatus)) {
                 throw new IllegalStateException(
-                        "배정되었거나 중단된 작업만 시작할 수 있습니다.");
-        }
+                        "새로 배정된 작업만 시작할 수 있습니다. 중단된 작업은 이어서 재개해 주세요.");
+            }
 
-        // 기존 작업 재시작 시 최초 시작 일시는 유지
-        if (assignment.getStartedAt() == null) {
+            // 최초 시작 일시 기록
+            if (assignment.getStartedAt() == null) {
                 assignment.setStartedAt(LocalDateTime.now());
-        }
+            }
         }
 
         // 4. 작업 일시정지
@@ -123,6 +123,12 @@ public class WorkAssignmentServiceImpl implements WorkAssignmentService {
                 || !Objects.equals(assignment.getPilot().getNo(), pilotNo)) {
             throw new IllegalArgumentException(
                     "본인에게 배정된 작업이 아닙니다.");
+        }
+
+        // 강제 중단 작업을 일반 시작으로 덮어쓰지 못하도록 사전 차단
+        if (!"ASSIGNED".equals(assignment.getStatus())) {
+            throw new IllegalStateException(
+                    "새로 배정된 작업만 시작할 수 있습니다. 중단 또는 일시정지된 작업은 재개 기능을 이용해 주세요.");
         }
 
         // 3. 선택한 드론 조회
@@ -208,13 +214,11 @@ public class WorkAssignmentServiceImpl implements WorkAssignmentService {
         resumeWorkAssignment(assignmentNo, pilotNo, "INTERRUPTED");
     }
 
-    
-        
     // 기존 작업 재개 공통 처리
     private void resumeWorkAssignment(
             Long assignmentNo, Long pilotNo, String expectedStatus) {
 
-        log.info("작업 재개 요청: 작업 번호={}, 조종사 번호={}, 현재 상태={}",
+        log.info("작업 재개 요청: 작업 번호={}, 조종사 번호={}, 재개 대상 상태={}",
                 assignmentNo, pilotNo, expectedStatus);
 
         // 1. 작업 배정 조회
@@ -229,10 +233,10 @@ public class WorkAssignmentServiceImpl implements WorkAssignmentService {
                     "본인에게 배정된 작업이 아닙니다.");
         }
 
-        // 3. 지정된 상태의 작업인지 확인
-        if (!expectedStatus.equals(assignment.getStatus())) {
-        throw new IllegalStateException(
-                "현재 상태에서는 작업을 재개할 수 없습니다.");
+        // 3. 재배정되어 STOPPED 상태가 된 작업은 이전 조종사가 재개할 수 없음
+        if ("STOPPED".equals(assignment.getStatus())) {
+            throw new IllegalStateException(
+                    "중단된 작업이 다른 조종사에게 재배정되었습니다. 새로운 작업을 선택해 주세요.");
         }
 
         // 4. 지정된 상태의 작업인지 확인
@@ -242,47 +246,51 @@ public class WorkAssignmentServiceImpl implements WorkAssignmentService {
         }
 
         // 5. 기존 작업 상태를 진행 중으로 변경
-        // startedAt, flightPath, 마지막 GPS 좌표는 변경하지 않음
+        // startedAt, flightPath, 마지막 GPS 좌표 및 interruptedAt은 보존
         assignment.updateStatus("IN_PROGRESS");
 
         // 6. 전체 작업 상태를 기준으로 농지 상태 변경
         updateLandStatus(assignment);
 
-        log.info("기존 작업 재개 완료: 작업 번호={}, 조종사 번호={}",
-                assignmentNo, pilotNo);
+        log.info("기존 작업 재개 완료: 작업 번호={}, 조종사 번호={}, 이전 상태={}",
+                assignmentNo, pilotNo, expectedStatus);
     }
 
-        // 농지에 배정된 전체 작업 상태를 기준으로 농지 상태 변경
-        private void updateLandStatus(WorkAssignments assignment) {
+    // 농지에 배정된 전체 작업 상태를 기준으로 농지 상태 변경
+    private void updateLandStatus(WorkAssignments assignment) {
 
-                List<WorkAssignments> landAssignments =
-                        workAssignmentRepository.findByLand(assignment.getLand());
-
-                // 재배정으로 종료된 이전 작업은 농지 상태 계산에서 제외
-                List<WorkAssignments> activeAssignments = landAssignments.stream()
-                        .filter(work -> !"STOPPED".equals(work.getStatus()))
-                        .toList();
-
-                // 상태를 판단할 작업이 없으면 기존 농지 상태 유지
-                if (activeAssignments.isEmpty()) {
-                        return;
-                }
-
-                // 하나라도 진행 중인 작업이 있다면 농지는 작업 중
-                boolean hasInProgress = activeAssignments.stream()
-                        .anyMatch(work -> "IN_PROGRESS".equals(work.getStatus()));
-
-                // 모든 유효 작업이 완료되었는지 확인
-                boolean allCompleted = activeAssignments.stream()
-                        .allMatch(work -> "COMPLETED".equals(work.getStatus()));
-
-                if (hasInProgress) {
-                        assignment.getLand().updateStatus("IN_PROGRESS");
-                } else if (allCompleted) {
-                        assignment.getLand().updateStatus("COMPLETED");
-                } else {
-                        // ASSIGNED, PAUSED, INTERRUPTED 작업이 남아 있는 경우
-                        assignment.getLand().updateStatus("ASSIGNED");
-                }
+        if (assignment.getLand() == null) {
+            return;
         }
+
+        List<WorkAssignments> landAssignments =
+                workAssignmentRepository.findByLand(assignment.getLand());
+
+        // 재배정으로 종료된 이전 작업은 농지 상태 계산에서 제외
+        List<WorkAssignments> activeAssignments = landAssignments.stream()
+                .filter(work -> !"STOPPED".equals(work.getStatus()))
+                .toList();
+
+        // 상태를 판단할 작업이 없으면 기존 농지 상태 유지
+        if (activeAssignments.isEmpty()) {
+            return;
+        }
+
+        // 하나라도 진행 중인 작업이 있다면 농지는 작업 중
+        boolean hasInProgress = activeAssignments.stream()
+                .anyMatch(work -> "IN_PROGRESS".equals(work.getStatus()));
+
+        // 모든 유효 작업이 완료되었는지 확인
+        boolean allCompleted = activeAssignments.stream()
+                .allMatch(work -> "COMPLETED".equals(work.getStatus()));
+
+        if (hasInProgress) {
+            assignment.getLand().updateStatus("IN_PROGRESS");
+        } else if (allCompleted) {
+            assignment.getLand().updateStatus("COMPLETED");
+        } else {
+            // ASSIGNED, PAUSED, INTERRUPTED 작업이 남아 있는 경우
+            assignment.getLand().updateStatus("ASSIGNED");
+        }
+    }
 }

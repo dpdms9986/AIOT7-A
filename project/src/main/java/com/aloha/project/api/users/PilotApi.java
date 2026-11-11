@@ -1,7 +1,7 @@
-
 package com.aloha.project.api.users;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -61,18 +61,17 @@ public class PilotApi {
         return ResponseEntity.ok(list);
     }
 
-        
-        // 1-1. 로그인 조종사의 강제 중단 작업 조회
-        @Transactional(readOnly = true)
-        @GetMapping("/assignments/interrupted")
-        public ResponseEntity<?> getInterruptedAssignments(
-                @AuthenticationPrincipal CustomUser customUser) {
+    // 1-1. 로그인 조종사의 강제 중단 작업 및 재배정 알림 조회
+    @Transactional(readOnly = true)
+    @GetMapping("/assignments/interrupted")
+    public ResponseEntity<?> getInterruptedAssignments(
+            @AuthenticationPrincipal CustomUser customUser) {
 
         Users loginPilot = getLoginPilot(customUser);
 
         if (loginPilot == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body("조종사 로그인이 필요합니다.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("조종사 로그인이 필요합니다.");
         }
 
         List<WorkAssignments> assignments = workAssignmentRepository
@@ -82,15 +81,22 @@ public class PilotApi {
         List<WorkAssignments> reassignedAssignments = assignments.stream()
                 .filter(this::isReassigned)
                 .filter(assignment -> assignment.getReassignmentNoticeReadAt() == null)
+                .sorted(Comparator.comparing(
+                        WorkAssignments::getInterruptedAt,
+                        Comparator.nullsLast(Comparator.reverseOrder())))
                 .toList();
 
+        // 미확인 재배정 알림이 없을 때만 본인의 강제 중단 작업을 안내
         List<WorkAssignments> notificationAssignments = reassignedAssignments.isEmpty()
                 ? assignments.stream()
                         .filter(assignment -> "INTERRUPTED".equals(assignment.getStatus()))
+                        .sorted(Comparator.comparing(
+                                WorkAssignments::getInterruptedAt,
+                                Comparator.nullsLast(Comparator.reverseOrder())))
                         .toList()
                 : reassignedAssignments;
 
-        // 작업 상태에 따라 알림 응답 생성
+        // 작업 상태에 따라 기존 응답 DTO 생성
         List<InterruptedWorkResponse> list = notificationAssignments.stream()
                 .map(assignment -> "INTERRUPTED".equals(assignment.getStatus())
                         ? InterruptedWorkResponse.from(assignment)
@@ -98,21 +104,20 @@ public class PilotApi {
                 .toList();
 
         return ResponseEntity.ok(list);
-        }
+    }
 
-
-        // 1-2. 다른 조종사에게 재배정된 작업 알림 확인 처리
-        @Transactional
-        @PatchMapping("/assignments/{assignmentNo}/reassignment-notice/read")
-        public ResponseEntity<?> readReassignmentNotice(
-                @PathVariable("assignmentNo") Long assignmentNo,
-                @AuthenticationPrincipal CustomUser customUser) {
+    // 1-2. 다른 조종사에게 재배정된 작업 알림 확인 처리
+    @Transactional
+    @PatchMapping("/assignments/{assignmentNo}/reassignment-notice/read")
+    public ResponseEntity<?> readReassignmentNotice(
+            @PathVariable("assignmentNo") Long assignmentNo,
+            @AuthenticationPrincipal CustomUser customUser) {
 
         Users loginPilot = getLoginPilot(customUser);
 
         if (loginPilot == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body("조종사 로그인이 필요합니다.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("조종사 로그인이 필요합니다.");
         }
 
         WorkAssignments assignment = workAssignmentRepository.findById(assignmentNo)
@@ -121,49 +126,52 @@ public class PilotApi {
         if (assignment == null
                 || assignment.getPilot() == null
                 || !loginPilot.getNo().equals(assignment.getPilot().getNo())) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(Map.of("message", "해당 작업을 찾을 수 없습니다."));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", "해당 작업을 찾을 수 없습니다."));
         }
 
         if (!isReassigned(assignment)) {
-                return ResponseEntity.badRequest()
-                        .body(Map.of("message", "재배정 알림 대상 작업이 아닙니다."));
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", "재배정 알림 대상 작업이 아닙니다."));
         }
 
         if (assignment.getReassignmentNoticeReadAt() == null) {
-                assignment.setReassignmentNoticeReadAt(LocalDateTime.now());
-                workAssignmentRepository.save(assignment);
+            assignment.setReassignmentNoticeReadAt(LocalDateTime.now());
+            workAssignmentRepository.save(assignment);
         }
 
         return ResponseEntity.ok(
                 Map.of("message", "재배정 알림을 확인했습니다."));
+    }
+
+    // 1-3. 강제 중단 작업 재개
+    @PostMapping("/assignments/{assignmentNo}/resume")
+    public ResponseEntity<?> resumeInterruptedAssignment(
+            @PathVariable("assignmentNo") Long assignmentNo,
+            @AuthenticationPrincipal CustomUser customUser) {
+
+        Users loginPilot = getLoginPilot(customUser);
+
+        if (loginPilot == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("조종사 로그인이 필요합니다.");
         }
 
-        // 1-3. 강제 중단 작업 재개
-        @PostMapping("/assignments/{assignmentNo}/resume")
-        public ResponseEntity<?> resumeInterruptedAssignment(
-                @PathVariable("assignmentNo") Long assignmentNo,
-                @AuthenticationPrincipal CustomUser customUser) {
+        try {
+            workAssignmentService.resumeInterruptedAssignment(
+                    assignmentNo, loginPilot.getNo());
 
-                Users loginPilot = getLoginPilot(customUser);
+            return ResponseEntity.ok(
+                    Map.of("message", "중단된 작업을 이어서 진행합니다."));
 
-                if (loginPilot == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body("조종사 로그인이 필요합니다.");
-                }
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            log.warn("강제 중단 작업 재개 실패: 작업 번호={}, 조종사 번호={}, 사유={}",
+                    assignmentNo, loginPilot.getNo(), e.getMessage());
 
-                try {
-                workAssignmentService.resumeInterruptedAssignment(
-                        assignmentNo, loginPilot.getNo());
-
-                return ResponseEntity.ok(
-                        Map.of("message", "중단된 작업을 이어서 진행합니다."));
-
-                } catch (IllegalArgumentException | IllegalStateException e) {
-                return ResponseEntity.badRequest()
-                        .body(Map.of("message", e.getMessage()));
-                }
+            return ResponseEntity.badRequest()
+                    .body(Map.of("message", e.getMessage()));
         }
+    }
 
     // 2. 작업 시작
     @PostMapping("/work/start")
@@ -215,15 +223,14 @@ public class PilotApi {
                     .body("조종사 로그인이 필요합니다.");
         }
 
-        if (dto == null || dto.getStatus() == null) {
+        if (dto == null || dto.getStatus() == null || dto.getStatus().isBlank()) {
             return ResponseEntity.badRequest()
                     .body(Map.of("message", "변경할 작업 상태가 필요합니다."));
         }
 
-        String status = dto.getStatus();
+        String status = dto.getStatus().trim();
 
         try {
-
             // 작업 재개 요청
             if ("IN_PROGRESS".equals(status)) {
 
@@ -238,14 +245,20 @@ public class PilotApi {
 
                 // 일시정지된 작업만 이 API에서 재개
                 if ("PAUSED".equals(assignment.getStatus())) {
-
                     workAssignmentService.resumeAssignment(
-                            assignmentNo,
-                            loginPilot.getNo()
-                    );
+                            assignmentNo, loginPilot.getNo());
 
                     return ResponseEntity.ok(
                             Map.of("message", "일시정지된 작업을 재개합니다."));
+                }
+
+                // 강제 중단 작업은 전용 재개 API로만 재개
+                if ("INTERRUPTED".equals(assignment.getStatus())) {
+                    return ResponseEntity.badRequest()
+                            .body(Map.of(
+                                    "message",
+                                    "강제 중단된 작업은 중단 작업 재개 기능을 이용해 주세요."
+                            ));
                 }
 
                 // ASSIGNED 작업은 드론과 약제를 선택한 후 시작해야 함
@@ -278,15 +291,15 @@ public class PilotApi {
         }
     }
 
-        
-        // STOPPED 작업이 같은 배정 묶음/농지로 다른 조종사에게 재배정되었는지 확인
-        private boolean isReassigned(WorkAssignments assignment) {
+    // STOPPED 작업이 같은 배정 묶음/농지로 다른 조종사에게 재배정되었는지 확인
+    private boolean isReassigned(WorkAssignments assignment) {
 
-        if (!"STOPPED".equals(assignment.getStatus())
+        if (assignment == null
+                || !"STOPPED".equals(assignment.getStatus())
                 || assignment.getPilot() == null
                 || assignment.getLand() == null
                 || assignment.getDispatchBatch() == null) {
-                return false;
+            return false;
         }
 
         Long previousPilotNo = assignment.getPilot().getNo();
@@ -294,13 +307,13 @@ public class PilotApi {
 
         return workAssignmentRepository.findByLand(assignment.getLand())
                 .stream()
-                .anyMatch(other -> !other.getNo().equals(assignment.getNo())
+                .anyMatch(other -> other != null
+                        && !other.getNo().equals(assignment.getNo())
                         && other.getDispatchBatch() != null
                         && batchNo.equals(other.getDispatchBatch().getNo())
                         && other.getPilot() != null
                         && !previousPilotNo.equals(other.getPilot().getNo()));
-        }
-
+    }
 
     // 로그인한 조종사 확인
     private Users getLoginPilot(CustomUser customUser) {
