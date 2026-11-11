@@ -39,8 +39,7 @@ public class LoginSuccessHandler extends SavedRequestAwareAuthenticationSuccessH
     // 다른 조종사에게 재배정된 이전 작업인지 확인
     private boolean isReassigned(WorkAssignments assignment) {
 
-        if (!("STOPPED".equals(assignment.getStatus())
-                || "INTERRUPTED".equals(assignment.getStatus()))
+        if (!"STOPPED".equals(assignment.getStatus())
                 || assignment.getLand() == null
                 || assignment.getDispatchBatch() == null
                 || assignment.getPilot() == null) {

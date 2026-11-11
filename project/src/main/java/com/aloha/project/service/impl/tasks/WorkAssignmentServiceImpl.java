@@ -229,27 +229,10 @@ public class WorkAssignmentServiceImpl implements WorkAssignmentService {
                     "본인에게 배정된 작업이 아닙니다.");
         }
 
-        // 3. 기존 중단 작업 자체가 다른 조종사에게 재배정되었는지 확인
-        if ("INTERRUPTED".equals(expectedStatus)
-                && assignment.getLand() != null
-                && assignment.getDispatchBatch() != null) {
-
-            Long batchNo = assignment.getDispatchBatch().getNo();
-
-            boolean reassigned = workAssignmentRepository
-                    .findByLand(assignment.getLand())
-                    .stream()
-                    .anyMatch(other ->
-                            !Objects.equals(other.getNo(), assignment.getNo())
-                            && other.getDispatchBatch() != null
-                            && Objects.equals(other.getDispatchBatch().getNo(), batchNo)
-                            && other.getPilot() != null
-                            && !Objects.equals(other.getPilot().getNo(), pilotNo));
-
-            if (reassigned) {
-                throw new IllegalStateException(
-                        "이미 다른 조종사에게 재배정된 작업입니다.");
-            }
+        // 3. 지정된 상태의 작업인지 확인
+        if (!expectedStatus.equals(assignment.getStatus())) {
+        throw new IllegalStateException(
+                "현재 상태에서는 작업을 재개할 수 없습니다.");
         }
 
         // 4. 지정된 상태의 작업인지 확인
