@@ -8373,6 +8373,18 @@ body:has(#farm-list) .home-logo span {
 #farm-list .status-badge.status-assigned  { background: #fff3cf; color: #926900; }
 #farm-list .status-badge.status-progress  { background: #e4efff; color: #246ac0; }
 #farm-list .status-badge.status-completed { background: #edf0f1; color: #68747b; }
+#farm-list .status-badge.status-interrupted { background: #fde8ec; color: #c81e3a; }
+#farm-list .status-badge.status-reassigned { background: #e0f5f2; color: #0f766e; }
+#farm-detail-drawer .status-badge.status-interrupted { background: #fde8ec; color: #c81e3a; }
+#farm-detail-drawer .status-badge.status-reassigned { background: #e0f5f2; color: #0f766e; }
+.status-cell { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.status-cell-row { display: flex; align-items: center; justify-content: center; gap: 6px; }
+.reassign-open-btn { box-sizing: border-box; margin: 0; padding: 4px 8px; border: 1px solid #e11d48; border-radius: 5px; background: #fff; color: #e11d48; font-size: 12px; font-weight: 700; line-height: 1.3; cursor: pointer; white-space: nowrap; }
+.reassign-open-btn:hover { background: #fde8ec; }
+.assign-reassign-form { display: flex; align-items: center; gap: 6px; }
+.task-table th.col-manage { text-indent: 60px; }
+.assign-reassign-form select { height: 30px; padding: 0 8px; border: 1px solid #d5dbd8; border-radius: 6px; background: #fff; font-size: 12px; }
+.reassign-tag { display: block; margin-top: 4px; color: #68747b; font-size: 11px; font-weight: 500; white-space: nowrap; }
 
 
 /* ===== 농지 상세 오른쪽 사이드 패널 ===== */
@@ -9728,6 +9740,17 @@ span.pilot-pin { cursor: default; opacity: 0.75; }
   font-weight: 700;
   white-space: nowrap;
 }
+/* 작업 이력 표: 담당 조종사 옆 "재배정됨" 작은 배지 */
+.history-reassigned-badge {
+  padding: 1px 6px;
+  margin-left: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  vertical-align: middle;
+  position: relative;
+  top: -3px;
+}
+
 .pilot-empty { margin: 0; padding: 20px 0; color: var(--color-text-sub); font-size: 13px; text-align: center; }
 
 /* ----- 작업 상세 ----- */
@@ -14464,3 +14487,24 @@ html {
 .popup-bg-black   { background: #000; }
 .popup-swiper-box { width: 100%; aspect-ratio: 3/4; background: #000; }
 .popup-img-full   { width: 100%; height: 100%; object-fit: cover; }
+
+
+/* ===== 중단됨(INTERRUPTED) 상태 - 빨강 ===== */
+.dash-legend .lg-interrupted { background: #e11d48; }
+.st-interrupted { --st: #e11d48; --st-bg: #fde8ec; --st-text: #c81e3a; }
+.st-stopped { --st: #0d9488; --st-bg: #e0f5f2; --st-text: #0f766e; }
+.st-reassigned { --st: #0d9488; --st-bg: #e0f5f2; --st-text: #0f766e; }
+#farm-detail-drawer .status-badge.st-interrupted { background: #fde8ec; color: #c81e3a; }
+
+/* 일시정지 버튼 (중지 버튼 왼쪽) */
+.gps-btn.btn-pause { background: #f2994a; }
+.gps-control-bar .gps-btn.btn-pause:hover { background: #d9822f; }
+
+/* 선택 팝업 (예 / 아니오) */
+.login-popup-msg { white-space: pre-line; }
+.login-popup .login-popup-sub { margin: -8px 0 18px; color: #64727b; font-size: 13px; font-weight: 500; line-height: 1.6; white-space: pre-line; }
+
+/* 농지 상세 패널: 중단됨 조종사 카드 밑 재배정 폼 */
+#farm-detail-drawer .interrupt-reassign { margin-top: 12px; padding-top: 12px; border-top: 1px dashed #dce4e9; }
+#farm-detail-drawer .interrupt-reassign .team-reassign-form { width: 100%; }
+#farm-detail-drawer .interrupt-reassign .team-reassign-form select { flex: 1; min-width: 0; }

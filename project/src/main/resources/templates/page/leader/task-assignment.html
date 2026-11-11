@@ -24,10 +24,7 @@
   </div>
 
 
-<!-- 실패 메시지는 기존처럼 화면에 표시 -->
-<p class="page-flash is-error"
-   th:if="${errorMessage}"
-   th:text="${errorMessage}"></p>
+<!-- 실패 메시지는 레이아웃의 팝업(toast.html)이 띄우므로 여기서는 표시하지 않음 -->
 
   <!-- ===== 탭: 주소로 이동 ===== -->
   <div class="task-tabs">
@@ -271,6 +268,8 @@
             <option value="">전체 상태</option>
             <option value="ASSIGNED"    th:selected="${status == 'ASSIGNED'}">배정됨 (대기)</option>
             <option value="IN_PROGRESS" th:selected="${status == 'IN_PROGRESS'}">작업 중</option>
+            <option value="INTERRUPTED" th:selected="${status == 'INTERRUPTED'}">중단됨</option>
+            <option value="REASSIGNED"  th:selected="${status == 'REASSIGNED'}">재배정</option>
           </select>
           <select class="task-select" name="pilot" aria-label="담당 조종사" onchange="this.form.submit()">
             <option value="">전체 조종사</option>
@@ -294,7 +293,7 @@
               <th>담당 조종사</th>
               <th>배정 일시</th>
               <th>상태</th>
-              <th>관리</th>
+              <th class="col-manage">관리</th>
             </tr>
           </thead>
           <tbody>
@@ -305,17 +304,36 @@
               <td th:text="${#temporals.format(land.assignedAt, 'yyyy-MM-dd HH:mm')}">2026-10-29 09:30</td>
               <td>
                 <span class="pilot-status"
-                      th:classappend="${land.status == 'ASSIGNED'} ? 'st-assigned' : 'st-progress'"
+                      th:classappend="${land.stClass}"
                       th:text="${land.statusLabel}">배정됨</span>
+                <span class="reassign-tag" th:if="${land.reassigned}"
+                      th:text="'이전: ' + ${land.prevPilotName}">이전: 조종사</span>
               </td>
-              <td>
+              <td class="col-manage">
                 <form th:if="${land.cancellable}"
                       th:action="@{/leader/task-assignment/cancel}" method="post"
                       onsubmit="return confirm('이 농지의 배정을 취소할까요?');">
                   <input type="hidden" name="landNo" th:value="${land.no}">
                   <button type="submit" class="task-cancel-btn">배정 취소</button>
                 </form>
-                <span th:unless="${land.cancellable}">-</span>
+                <form th:if="${land.status == 'INTERRUPTED' and land.interruptedPilotNo != null}"
+                      th:with="stopped=${land.pilotAssignments.?[status == 'INTERRUPTED']}"
+                      th:action="@{/leader/team-management/{no}/reassign(no=${land.interruptedPilotNo})}"
+                      method="post" class="assign-reassign-form"
+                      onsubmit="return confirm('이 농지의 중단된 작업을 선택한 조종사에게 재배정할까요?');">
+                  <input type="hidden" name="back" value="task-assignment">
+                  <input type="hidden" name="assignmentNo"
+                         th:value="${!#lists.isEmpty(stopped) ? stopped[0].no : ''}">
+                  <select name="targetNo" required>
+                    <option value="">대상 선택</option>
+                    <option th:each="p : ${pilots}"
+                            th:if="${p.no != land.interruptedPilotNo}"
+                            th:value="${p.no}"
+                            th:text="${p.name}">이서연</option>
+                  </select>
+                  <button type="submit" class="reassign-open-btn">재배정</button>
+                </form>
+                <span th:unless="${land.cancellable or land.status == 'INTERRUPTED'}">-</span>
               </td>
             </tr>
             <tr th:if="${#lists.isEmpty(assigned)}">
@@ -389,6 +407,7 @@
               <th>면적(㎡)</th>
               <th>담당 조종사</th>
               <th>배정 일시</th>
+              <th>중단 일시</th>
               <th>완료 일시</th>
               <th>사용 약제</th>
             </tr>
@@ -397,13 +416,19 @@
             <tr th:each="h : ${history}">
               <td th:text="${h.address}">노은동 112</td>
               <td th:text="${#numbers.formatDecimal(h.areaSize, 0, 'COMMA', 0, 'POINT')}">1,200</td>
-              <td th:text="${h.pilotName}">박지훈</td>
+              <td th:with="names=${h.pilotName.split(' → ')}">
+                <span th:text="${names[names.length - 1]}">박지훈</span>
+                                <span class="pilot-status st-reassigned history-reassigned-badge" th:if="${names.length > 1}">재배정</span>
+                <span class="reassign-tag" th:if="${names.length > 1}"
+                      th:text="'이전: ' + ${names[names.length - 2]}">이전: 조종사</span>
+              </td>
               <td th:text="${#temporals.format(h.assignedAt, 'yyyy-MM-dd HH:mm')}">2026-10-28 14:00</td>
+              <td th:text="${h.interruptedAt != null ? #temporals.format(h.interruptedAt, 'yyyy-MM-dd HH:mm') : '-'}">-</td>
               <td th:text="${#temporals.format(h.completedAt, 'yyyy-MM-dd HH:mm')}">2026-10-28 15:10</td>
               <td th:text="${h.chemicalName}">살균제 A</td>
             </tr>
             <tr th:if="${#lists.isEmpty(history)}">
-              <td colspan="6" class="task-empty-cell">조건에 맞는 작업 이력이 없습니다.</td>
+              <td colspan="7" class="task-empty-cell">조건에 맞는 작업 이력이 없습니다.</td>
             </tr>
           </tbody>
         </table>

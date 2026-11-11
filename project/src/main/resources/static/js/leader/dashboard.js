@@ -10,7 +10,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const $ = (sel) => document.querySelector(sel);
   const farms = typeof FARMS !== "undefined" ? FARMS : [];
   const findFarm = (no) => farms.find((f) => f.no === Number(no));
-  const setStatus = (text, color) => { const el = $("#autoStatus"); el.textContent = text; el.style.color = color; };
+
+  // 중단됨(INTERRUPTED) 조종사 작업이 하나라도 있는 농지인지 → 빨간 점
+  const isInterrupted = (f) =>
+    Array.isArray(f.pilotAssignments) &&
+    f.pilotAssignments.some((a) => a.status === "INTERRUPTED");
+  const farmColor = (f) => (isInterrupted(f) ? "#e11d48" : f.color);
+  const farmLabel = (f) => (isInterrupted(f) ? "중단됨" : f.statusLabel);
+  const setStatus = (text, color) => { const el = $("#autoStatus"); 
+    el.textContent = text; el.style.color = color; };
 
   /* ===== 1. 지도 ===== */
   const map = L.map(mapEl).setView([36.3504, 127.3845], 14);
@@ -43,10 +51,10 @@ document.addEventListener("DOMContentLoaded", () => {
       if (f.lat == null || f.lng == null) return;
       const sel = f.no === selectedNo;
       const m = L.circleMarker([f.lat, f.lng], {
-        radius: sel ? 12 : 8, fillColor: f.color,
+        radius: sel ? 12 : 8, fillColor: farmColor(f),
         color: sel ? "#000" : "#fff", weight: sel ? 3 : 2, fillOpacity: 0.9,
       }).addTo(map);
-      const lines = [`🌱 ${f.address}`, `면적: ${Number(f.area || 0).toLocaleString()}㎡`, `상태: ${f.statusLabel}`];
+      const lines = [`🌱 ${f.address}`, `면적: ${Number(f.area || 0).toLocaleString()}㎡`, `상태: ${farmLabel(f)}`];
       if (f.pilotName) lines.push(`조종사: ${f.pilotName}`);
       m.bindPopup(popupOf(lines));
       m.on("click", () => selectFarm(f.no, false));
@@ -81,8 +89,8 @@ document.addEventListener("DOMContentLoaded", () => {
     panel.hidden = false;
     if ($("#ap-title")) $("#ap-title").textContent = `🌱 ${f.address}`;
     if ($("#ap-status")) {
-      $("#ap-status").textContent = `● ${f.statusLabel}`;
-      $("#ap-status").style.color = f.color;
+      $("#ap-status").textContent = `● ${farmLabel(f)}`;
+      $("#ap-status").style.color = farmColor(f);
     }
     if ($("#ap-area")) $("#ap-area").textContent = `${Number(f.area || 0).toLocaleString()}㎡`;
     if ($("#ap-date")) $("#ap-date").textContent = f.assignedAt || "-";
@@ -107,7 +115,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (note) {
       note.hidden = canAssign;
-      if (f.status === "IN_PROGRESS") note.textContent = `🚁 ${f.pilotName} 조종사가 작업 중입니다.`;
+      if (f.status === "IN_PROGRESS") note.textContent = isInterrupted(f)
+        ? "⚠️ 작업이 중단된 조종사가 있습니다. [농지 관리]에서 재배정할 수 있어요."
+        : `🚁 ${f.pilotName} 조종사가 작업 중입니다.`;
       if (f.status === "COMPLETED") note.textContent = "완료된 작업입니다.";
     }
 

@@ -92,7 +92,63 @@
           btn.focus();                                         // Enter 로 바로 닫히게
       };
 
-      // ----- 기본 alert() 도 같은 팝업으로 (기존 alert("...") 코드는 안 고쳐도 됨) -----
+      // ----- 예 / 아니오 선택 팝업 (Promise<boolean> 반환) -----
+      // opts.persistent = true : 바깥 클릭 / ESC 로 닫히지 않고, 반드시 버튼을 눌러야 닫힘
+      window.showAskPopup = (message, opts = {}) => {
+        const { yesText = "예", noText = "아니오", detail = "", persistent = false } = opts;
+
+        return new Promise((resolve) => {
+          document.getElementById("login-popup")?.remove();
+
+          const backdrop = document.createElement("div");
+          backdrop.className = "login-popup-backdrop";
+          backdrop.id = "login-popup";
+          backdrop.innerHTML = `
+            <div class="login-popup" role="alertdialog" aria-modal="true">
+              <div class="login-popup-icon warn">!</div>
+              <p class="login-popup-msg"></p>
+              <p class="login-popup-sub" hidden></p>
+              <div class="login-popup-actions">
+                <button type="button" class="login-popup-btn" data-yes></button>
+                <button type="button" class="login-popup-cancel" data-no></button>
+              </div>
+            </div>`;
+
+          // 글자는 textContent 로 (안전)
+          backdrop.querySelector(".login-popup-msg").textContent = message;
+          if (detail) {
+            const sub = backdrop.querySelector(".login-popup-sub");
+            sub.textContent = detail;
+            sub.hidden = false;
+          }
+          const yesBtn = backdrop.querySelector("[data-yes]");
+          const noBtn = backdrop.querySelector("[data-no]");
+          yesBtn.textContent = yesText;
+          noBtn.textContent = noText;
+          document.body.appendChild(backdrop);
+
+          const onKey = (e) => {
+            if (e.key !== "Escape") return;
+            e.preventDefault();
+            if (!persistent) done(false);          // persistent 면 ESC 무시
+          };
+          const done = (answer) => {
+            backdrop.remove();
+            document.removeEventListener("keydown", onKey, true);
+            resolve(answer);
+          };
+
+          yesBtn.addEventListener("click", () => done(true));
+          noBtn.addEventListener("click", () => done(false));
+          if (!persistent) {
+            backdrop.addEventListener("click", (e) => { if (e.target === backdrop) done(false); });
+          }
+          document.addEventListener("keydown", onKey, true);
+          yesBtn.focus();
+        });
+      };
+
+      // ----- 기본 alert() 도 같은 팝업으로 (기존 alert("...") 코드는 안 고쳐도 됨)
       // 닫힐 때까지 기다리고 싶으면 await alert("...") 또는 alert("...").then(...) 사용
       window.alert = (message) => {
         const text = String(message ?? "");
@@ -112,6 +168,57 @@
       // 위험 구역 메시지 추가
       const successMessage = /*[[${successMessage}]]*/ null;
       const errorMessage = /*[[${errorMessage}]]*/ null;
+
+      // ----- [조종사] 로그인 직후: 중단된 작업 확인 -----
+      const isPilot = (/*[[${roleLabel}]]*/ null) === "조종사";
+
+      // 중단/재배정 작업이 있으면 팝업을 띄우고 true, 없으면 false
+      const checkInterruptedWork = async () => {
+        try {
+          const res = await fetch("/api/pilot/assignments/interrupted", {
+            headers: { "Accept": "application/json" },
+          });
+          if (!res.ok) return false;
+
+          const list = await res.json();
+          if (!Array.isArray(list) || list.length === 0) return false;
+
+          // 이어서 할 수 있는 중단 작업을 우선 안내
+          const item = list.find((w) => w.canResume) || list[0];
+
+          if (item.canResume) {
+            const hasPos = item.lastLatitude != null && item.lastLongitude != null;
+            const pos = hasPos
+              ? `마지막 위치: 위도 ${Number(item.lastLatitude).toFixed(6)}, 경도 ${Number(item.lastLongitude).toFixed(6)}`
+              : "마지막 위치 정보가 없습니다.";
+
+            const yes = await showAskPopup(item.message, {
+              detail: item.address ? `${item.address}\n${pos}` : pos,
+              yesText: "예",
+              noText: "아니오",
+              persistent: true,                      // 바깥 클릭 / ESC 로 닫히지 않음
+            });
+
+            // 예 → 작업 관리 페이지로 이동 / 아니오 → 팝업만 닫힘
+            if (yes) location.href = "/pilot/history?no=" + item.assignmentNo;
+          } else {
+            // 다른 조종사에게 재배정된 작업 안내
+            // [확인]을 눌러 팝업이 닫힐 때 "확인했음"을 서버에 저장 → 다음 로그인부터 안 뜸
+            showPopup(item.message, "warn", () => {
+              const token  = document.querySelector('meta[name="_csrf"]')?.content;
+              const header = document.querySelector('meta[name="_csrf_header"]')?.content;
+
+              fetch(`/api/pilot/assignments/${item.assignmentNo}/reassignment-notice/read`, {
+                method: "PATCH",
+                headers: token && header ? { [header]: token } : {},
+              }).catch(() => {});   // 실패해도 화면엔 영향 없음 (다음 로그인에 다시 뜰 뿐)
+            });
+          }
+          return true;
+        } catch (e) {
+          return false;
+        }
+      };
 
       document.addEventListener("DOMContentLoaded", () => {
       if (loginMessage) {
@@ -139,7 +246,13 @@
            const pending = sessionStorage.getItem("loginPopup");
             if (pending) {
             sessionStorage.removeItem("loginPopup");
-            showPopup(pending);
+
+            // 조종사는 중단된 작업이 있으면 로그인 팝업 대신 중단 안내 팝업
+            if (isPilot) {
+              checkInterruptedWork().then((shown) => { if (!shown) showPopup(pending); });
+            } else {
+              showPopup(pending);
+            }
       }
       } catch (e) {}
       }

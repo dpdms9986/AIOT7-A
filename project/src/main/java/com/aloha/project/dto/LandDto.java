@@ -42,6 +42,11 @@ public class LandDto {
     private String flightPath;
     private String polygonCoordinates; // 다각형 좌표 그리기
 
+    // 재배정 표시용 (단장 화면)
+    private boolean reassigned;        // 다른 조종사에게 인계된 농지인지
+    private String prevPilotName;      // 이전 조종사 이름
+    private Long interruptedPilotNo;   // 중단된 조종사 번호 (재배정 폼용)
+
     public static LandDto from(Lands land) {
         if (land == null) return null;
 
@@ -67,6 +72,9 @@ public class LandDto {
             case "ASSIGNED"    -> "배정됨";
             case "IN_PROGRESS" -> "작업 중";
             case "COMPLETED"   -> "완료";
+            case "PAUSED"      -> "일시정지";
+            case "INTERRUPTED" -> "중단됨";
+            case "REASSIGNED"  -> "재배정";
             default            -> status;
         };
     }
@@ -79,6 +87,8 @@ public class LandDto {
             case "ASSIGNED"    -> "status-assigned";
             case "IN_PROGRESS" -> "status-progress";
             case "COMPLETED"   -> "status-completed";
+            case "INTERRUPTED" -> "status-interrupted";
+            case "REASSIGNED"  -> "status-reassigned";
             default            -> "";
         };
     }
@@ -91,6 +101,9 @@ public class LandDto {
             case "ASSIGNED"    -> "st-assigned";
             case "IN_PROGRESS" -> "st-progress";
             case "COMPLETED"   -> "st-completed";
+            case "PAUSED"      -> "st-assigned";
+            case "INTERRUPTED" -> "st-interrupted";
+            case "REASSIGNED"  -> "st-reassigned";
             default            -> "";
         };
     }
@@ -102,6 +115,9 @@ public class LandDto {
             case "READY"       -> "#238451";
             case "ASSIGNED"    -> "#f2b705";
             case "IN_PROGRESS" -> "#2f80ed";
+            case "PAUSED"      -> "#f2b705";
+            case "INTERRUPTED" -> "#e11d48";
+            case "REASSIGNED"  -> "#0d9488";
             default            -> "#8a8f8c";
         };
     }
