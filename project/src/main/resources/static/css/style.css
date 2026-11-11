@@ -12259,6 +12259,34 @@ a.task-tab {
   filter: brightness(0.95);
 }
 
+/* ===== 2버튼 확인 팝업 ===== */
+.login-popup-actions {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+.login-popup-actions .login-popup-btn,
+.login-popup-cancel {
+  flex: 1;
+  width: 50%;
+  height: 44px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.login-popup-cancel {
+  border: 0;
+  background: #e8eef7;
+  color: #203246;
+}
+
+.login-popup-cancel:hover {
+  filter: brightness(0.96);
+}
+
 
 /* ===== 조종사 대시보드 (2026-10-29) ===== */
 .st-completed {
