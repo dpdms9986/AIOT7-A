@@ -30,7 +30,8 @@ async function loadMyActiveTrack(channelKey) {
     if (!res.ok) return;
     const activeTracks = await res.json();
 
-    const myName = $("#pilotName").val()?.trim();
+    const myName = $("#myPilotName").val()?.trim();
+    if (!myName) return;
     const myCoords = activeTracks[myName];
 
     // 내 이름으로 서버에 누적된 좌표가 있으면 지도와 메모리에 복원
@@ -155,6 +156,7 @@ function startFakeAuto() {
   const selectedTask = document.querySelector(".pilot-task.selected");
   if (!selectedTask) return alert("먼저 비행할 농지를 선택해주세요!");
 
+  const taskNo = selectedTask.dataset.no;
   const lat = Number(selectedTask.dataset.lat);
   const lng = Number(selectedTask.dataset.lng);
 
@@ -162,11 +164,25 @@ function startFakeAuto() {
   return alert("선택한 농지의 위치 정보가 올바르지 않습니다.");
 }
 
-  // 비행 시작 시 이전 실시간 비행선 초기화
-  resetMyFlightTrack();
+  // 주의 사항, 이전 궤적이 있고, 같은 농지라면 이어 비행 여부 확인
+  const hasHistory = window.myFlightTrackCoords && window.myFlightTrackCoords.length > 0;
+  let resume = false;
   
-  currentLat = lat;
-  currentLng = lng;
+  if (hasHistory) {
+    resume = confirm("이전 비행 기록이 있습니다. \n마지막 중단 위치에서 이어서 비행하시겠습니까?")
+  }
+  
+  if (resume) {
+    // 1) 이이서 비행 : 마지막 좌표를 현재 출발지로 설정 (선은 지우지 않음!)
+    const last = window.myFlightTrackCoords[window.myFlightTrackCoords.length - 1];
+    currentLat = last[0];
+    currentLng = last[1];
+  } else {
+    // 2) 새로 시작: 기존 선 지우고 농지 원점으로 리셋
+    resetMyFlightTrack();
+    currentLat = lat;
+    currentLng = lng;
+  }
 
   // 지도를 해당 농지로 즉시 줌인 이동! (이게 있어야 선이 눈에 보임)
   if (typeof map !== "undefined") {
@@ -191,26 +207,44 @@ function startFakeAuto() {
   }, 2000);
 }
 
-// 실제 GPS (오차 30m 초과 신호 무시)
+// 실제 GPS (거리 검증 가드 추가)
 function startRealGpsAuto() {
   if (!stompClient || !stompClient.connected) return alert("먼저 채널 연결을 확인해주세요!");
   if (!navigator.geolocation) return alert("GPS를 지원하지 않는 환경입니다.");
-  stopAuto();
+  stopAuto(false);
 
   const selectedTask = document.querySelector(".pilot-task.selected");
   if (!selectedTask) return alert ("먼저 비행할 농지를 선택해주세요!");     
 
-  // 비행 시작 시 이전 실시간 비행선 초기화 
-  resetMyFlightTrack();
-
-  $("#autoStatus").text("📱 실제 GPS 실시간 추적 시작...").css("color", "#238451");
+  $("#autoStatus").text("📱 실제 GPS 신호 확인 중...").css("color", "#238451");
 
   gpsWatchId = navigator.geolocation.watchPosition(
     (position) => {
+      const curLat = position.coords.latitude;
+      const curLng = position.coords.longitude;
       const acc = Math.round(position.coords.accuracy);
-      if (acc > 30) return console.warn(`[무시됨] 위치 신호 불안정 (오차: ${acc}m)`);
+
+      if (acc > 20) return console.warn(`[무시됨] 위치 신호 불안정 (오차: ${acc}m)`);
+
+      // [💛] 이전 중단점이 있다면 실제 거리 (10m) 검증!
+      if (window.myFlightTrackCoords && window.myFlightTrackCoords.length > 0) {
+        const last = window.myFlightTrackCoords[window.myFlightTrackCoords.length - 1];
+        const lastPoint = L.latLng(last[0], last[1]);
+        const curPoint = L.latLng(curLat, curLng);
+        const distance = map.distance(lastPoint, curPoint);
+
+        // 10m 이상 떨어져 있으면 비행을 차단하고 경고
+        if (distance > 10) {
+          stopAuto(false);
+          return alert(`⚠ 현재 위치가 이전 작업 중단점과 약 ${Math.round(distance)}m 떨어져 있습니다.`)
+        } 
+      } else { 
+        // 첫 비행이라면 초기화
+        resetMyFlightTrack();
+      }
+
       $("#autoStatus").text(`📱 실제 GPS 전송 중! (오차범위: 약 ${acc}m)`).css("color", "#238451");
-      sendLocation(position.coords.latitude, position.coords.longitude);
+      sendLocation(curLat, curLng);
     },
     () => alert("GPS 신호를 가져오지 못했습니다. 위치 권한을 확인해주세요."),
     { enableHighAccuracy: true }
