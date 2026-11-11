@@ -161,3 +161,50 @@ function stopAuto() {
   if (gpsWatchId !== null) { navigator.geolocation.clearWatch(gpsWatchId); gpsWatchId = null; }
   $("#autoStatus").text("⏹️ 위치 전송이 중지되었습니다.").css("color", "#6c757d");
 }
+
+
+// 6. 중지 (확인 팝업 → 위치 전송 중지)
+async function confirmStop() {
+  const ok = await showAskPopup("정말 중지하시겠습니까?\n위치 전송이 중지됩니다.", {
+    yesText: "중지",
+    noText: "취소",
+  });
+  if (ok) stopAuto();
+}
+
+// 7. 일시정지 (확인 팝업 → 위치 전송 중지 + 진행 중 작업을 PAUSED 로 변경)
+async function pauseWork() {
+  const ok = await showAskPopup("정말 일시정지하시겠습니까?", {
+    yesText: "일시정지",
+    noText: "취소",
+  });
+  if (!ok) return;
+
+  stopAuto();   // 위치 전송 중지
+  $("#autoStatus").text("⏸️ 작업이 일시정지되었습니다.").css("color", "#f2994a");
+
+  // 선택한 농지(land no)의 진행 중 작업(assignment no) 찾기
+  const selected = document.querySelector(".pilot-task.selected");
+  if (!selected) return;
+
+  try {
+    const res = await fetch("/api/pilot/assignments");
+    if (!res.ok) return;
+
+    const list = await res.json();
+    const target = list.find(
+      (a) => String(a.landNo) === selected.dataset.no && a.status === "IN_PROGRESS"
+    );
+    if (!target) return;   // 진행 중인 작업이 아니면 위치 전송만 멈춤
+
+    await $ajax({
+      url: `/api/pilot/assignments/${target.assignmentNo}/status`,
+      method: "PATCH",
+      data: { status: "PAUSED" },
+      success: () => showPopup("작업이 일시정지되었습니다.", "ok", () => location.reload()),
+      error: (r) => showPopup((r && r.message) || "일시정지에 실패했습니다.", "warn"),
+    });
+  } catch (e) {
+    console.error("일시정지 처리 오류:", e);
+  }
+}

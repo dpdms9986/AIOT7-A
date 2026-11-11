@@ -57,6 +57,8 @@ public class PilotTaskDto {
             case "ASSIGNED"    -> "대기";
             case "IN_PROGRESS" -> "진행 중";
             case "COMPLETED"   -> "완료";
+            case "PAUSED"      -> "일시정지";
+            case "INTERRUPTED" -> "중단됨";
             default            -> status;
         };
     }
@@ -67,6 +69,8 @@ public class PilotTaskDto {
             case "ASSIGNED"    -> "st-assigned";
             case "IN_PROGRESS" -> "st-progress";
             case "COMPLETED"   -> "st-completed";
+            case "PAUSED"      -> "st-assigned";
+            case "INTERRUPTED" -> "st-interrupted";
             default            -> "";
         };
     }

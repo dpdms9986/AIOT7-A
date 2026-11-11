@@ -469,6 +469,9 @@ public class PilotController {
                 .chemicalName(resources == null
                         ? null : resources.getChemical().getChemicalName())
                 .flightPath(assignment.getFlightPath())
+                .lastLatitude(assignment.getLastLatitude())
+                .lastLongitude(assignment.getLastLongitude())
+                .lastLocationAt(assignment.getLastLocationAt())
                 .build();
         }
 

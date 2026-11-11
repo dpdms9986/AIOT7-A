@@ -67,6 +67,8 @@ public class LandDto {
             case "ASSIGNED"    -> "배정됨";
             case "IN_PROGRESS" -> "작업 중";
             case "COMPLETED"   -> "완료";
+            case "PAUSED"      -> "일시정지";
+            case "INTERRUPTED" -> "중단됨";
             default            -> status;
         };
     }
@@ -91,6 +93,8 @@ public class LandDto {
             case "ASSIGNED"    -> "st-assigned";
             case "IN_PROGRESS" -> "st-progress";
             case "COMPLETED"   -> "st-completed";
+            case "PAUSED"      -> "st-assigned";
+            case "INTERRUPTED" -> "st-interrupted";
             default            -> "";
         };
     }
@@ -102,6 +106,8 @@ public class LandDto {
             case "READY"       -> "#238451";
             case "ASSIGNED"    -> "#f2b705";
             case "IN_PROGRESS" -> "#2f80ed";
+            case "PAUSED"      -> "#f2b705";
+            case "INTERRUPTED" -> "#e11d48";
             default            -> "#8a8f8c";
         };
     }

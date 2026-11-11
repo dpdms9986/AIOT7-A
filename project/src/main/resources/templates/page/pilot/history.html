@@ -104,11 +104,21 @@
           <dt>상태</dt>
           <dd><span class="pilot-status" th:classappend="*{stClass}" th:text="*{statusLabel}">진행 중</span></dd>
 
-          <!-- 시작한 작업(진행 중, 완료)만 -->
-          <th:block th:if="*{status != 'ASSIGNED'}">
+          <!-- 시작한 작업(진행 중, 완료)만 (중단됨은 아래 별도 블록) -->
+          <th:block th:if="*{status != 'ASSIGNED' and status != 'INTERRUPTED'}">
             <dt>드론</dt>      <dd th:text="*{droneName}">DJI T40-01</dd>
             <dt>약제</dt>      <dd th:text="*{chemicalName}">살균제 A</dd>
             <dt>시작 일시</dt> <dd th:text="*{#temporals.format(startedAt, 'yyyy-MM-dd HH:mm')}">2026-10-29 09:10</dd>
+          </th:block>
+
+          <!-- 중단됨 작업만: 시작 일시 / 중단 일시 / 중단 위치 -->
+          <th:block th:if="*{status == 'INTERRUPTED'}">
+            <dt>시작 일시</dt>
+            <dd th:text="*{startedAt != null ? #temporals.format(startedAt, 'yyyy-MM-dd HH:mm') : '-'}">2026-10-29 09:10</dd>
+            <dt>중단 일시</dt>
+            <dd th:text="*{lastLocationAt != null ? #temporals.format(lastLocationAt, 'yyyy-MM-dd HH:mm') : '-'}">2026-10-29 10:20</dd>
+            <dt>중단 위치</dt>
+            <dd th:text="*{lastLatitude != null and lastLongitude != null ? #numbers.formatDecimal(lastLatitude, 1, 6) + ', ' + #numbers.formatDecimal(lastLongitude, 1, 6) : '위치 정보 없음'}">36.350400, 127.384500</dd>
           </th:block>
 
           <!-- 완료한 작업만 -->
@@ -118,7 +128,7 @@
         </dl>
 
         <!-- [대기] → 작업 시작 폼 (드론, 약제만 선택) -->
-        <form th:if="*{status == 'ASSIGNED'}"
+        <form th:if="*{status == 'ASSIGNED' or status == 'INTERRUPTED'}"
               th:action="@{/pilot/history/{no}/start(no=*{no})}" method="post">
           <div class="pilot-form">
             <p class="pilot-form-title">드론 및 약제 선택</p>

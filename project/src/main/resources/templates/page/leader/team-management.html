@@ -156,21 +156,6 @@
                         th:data-skill="${member.skill}"
                         th:data-task="${member.currentTask}"
                         th:data-completed="${member.completed} + '건'">상세보기</button>
-
-                <!-- 재배정: 오프라인이 아닌 조종사만 -->
-                <form th:if="${member.status != 'offline'}"
-                      th:action="@{/leader/team-management/{no}/reassign(no=${member.no})}"
-                      method="post" class="team-reassign-form"
-                      onsubmit="return confirm('미완료 농지를 재배정하시겠습니까?');">
-                  <select name="targetNo" required>
-                    <option value="">대상 선택</option>
-                    <option th:each="target : ${onlineMembers}"
-                            th:unless="${target.no == member.no}"
-                            th:value="${target.no}"
-                            th:text="${target.name}">이서연</option>
-                  </select>
-                  <button type="submit" class="team-row-btn reassign">재배정</button>
-                </form>
               </div>
             </td>
           </tr>

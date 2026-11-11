@@ -645,7 +645,7 @@ if (req.getLandNos() != null && req.getLandNos().size() == 1) {
 
         if (targetPilot == null) {
             redirectAttributes.addFlashAttribute("errorMessage", "인계받을 조종사를 찾을 수 없습니다.");
-            return "redirect:/leader/team-management";
+            return "redirect:/leader/farmlist";
         }
 
         // 1. 이전 조종사의 미완료 작업 조회
@@ -659,18 +659,17 @@ if (req.getLandNos() != null && req.getLandNos().size() == 1) {
 
         if (tasks.isEmpty()) {
             redirectAttributes.addFlashAttribute("errorMessage", "재배정할 작업이 없습니다.");
-            return "redirect:/leader/team-management";
+            return "redirect:/leader/farmlist";
         }
 
         for (WorkAssignments oldTask : tasks) {
 
-            // 2. 비정상 중단 작업은 기존 기록을 유지
-            // 일반 작업은 인계 처리(STOPPED)
-            if (!"INTERRUPTED".equals(oldTask.getStatus())) {
-                oldTask.setStatus("STOPPED");
-                oldTask.setCompletedAt(LocalDateTime.now());
-                workAssignmentRepository.save(oldTask);
-            }
+            // 2. 일반 작업 / 비정상 중단 작업 모두 인계 처리(STOPPED)
+            //    (마지막 위치·궤적 기록은 그대로 남음)
+            //    → 이전 조종사가 다시 로그인하면 "다른 조종사에게 배정되었습니다" 안내가 뜸
+            oldTask.setStatus("STOPPED");
+            oldTask.setCompletedAt(LocalDateTime.now());
+            workAssignmentRepository.save(oldTask);
 
             // 3. 새 조종사에게 새로운 작업 배정
             WorkAssignments newTask = WorkAssignments.builder()
@@ -691,7 +690,7 @@ if (req.getLandNos() != null && req.getLandNos().size() == 1) {
         redirectAttributes.addFlashAttribute("message",
                 "작업이 " + targetPilot.getName() + " 조종사에게 안전하게 인계되었습니다.");
 
-        return "redirect:/leader/team-management";
+        return "redirect:/leader/farmlist";
     }
 
 
@@ -745,7 +744,25 @@ if (req.getLandNos() != null && req.getLandNos().size() == 1) {
         int toIdx   = (int) Math.min(fromIdx + pageSize, lands.size());
         List<LandDto> pagedLands = lands.subList(fromIdx, toIdx);
 
-        model.addAttribute("lands", pagedLands);        // 현재 페이지 목록만
+        // 재배정 폼용: 대기 중인 조종사 목록 + 조종사 이름 → 번호
+        Map<Long, List<WorkAssignments>> worksByPilot = workAssignmentRepository.findAll().stream()
+                .filter(w -> w.getPilot() != null)
+                .collect(Collectors.groupingBy(w -> w.getPilot().getNo()));
+
+        List<TeamMemberDto> teamPilots = (myTeam != null)
+                ? userRepository.findByTeam(myTeam).stream()
+                        .filter(u -> "PILOT".equals(u.getRole()))
+                        .map(u -> TeamMemberDto.from(u, worksByPilot.getOrDefault(u.getNo(), List.of())))
+                        .toList()
+                : List.of();
+
+        model.addAttribute("onlineMembers", teamPilots.stream()
+                .filter(m -> "online".equals(m.getStatus()))
+                .toList());
+        model.addAttribute("pilotNoByName", teamPilots.stream()
+                .collect(Collectors.toMap(TeamMemberDto::getName, TeamMemberDto::getNo, (a, b) -> a)));
+
+        model.addAttribute("lands", pagedLands);                // 현재 페이지 목록만
         model.addAttribute("pagination", pagination);
         model.addAttribute("pageSize", pageSize);
         model.addAttribute("keyword", keyword);
