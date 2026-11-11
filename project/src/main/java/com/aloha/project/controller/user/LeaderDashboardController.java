@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.aloha.project.domain.lands.Lands;
-import com.aloha.project.domain.tasks.DispatchBatches;
 import com.aloha.project.domain.tasks.WorkAssignments;
 import com.aloha.project.domain.users.CustomUser;
 import com.aloha.project.domain.users.Teams;
@@ -27,7 +25,6 @@ import com.aloha.project.dto.FarmPointDto;
 import com.aloha.project.dto.LandDto;
 import com.aloha.project.dto.TeamMemberDto;
 import com.aloha.project.repository.lands.LandRepository;
-import com.aloha.project.repository.tasks.DispatchBatchRepository;
 import com.aloha.project.repository.tasks.WorkAssignmentRepository;
 import com.aloha.project.repository.users.UserRepository;
 
@@ -43,7 +40,6 @@ public class LeaderDashboardController {
     private final UserRepository userRepository;
     private final LandRepository landRepository;
     private final WorkAssignmentRepository workAssignmentRepository;
-    private final DispatchBatchRepository dispatchBatchRepository;
 
     @Transactional(readOnly = true)
     @GetMapping
