@@ -24,10 +24,7 @@
   </div>
 
 
-<!-- 실패 메시지는 기존처럼 화면에 표시 -->
-<p class="page-flash is-error"
-   th:if="${errorMessage}"
-   th:text="${errorMessage}"></p>
+<!-- 실패 메시지는 레이아웃의 팝업(toast.html)이 띄우므로 여기서는 표시하지 않음 -->
 
   <!-- ===== 탭: 주소로 이동 ===== -->
   <div class="task-tabs">
@@ -320,10 +317,13 @@
                   <button type="submit" class="task-cancel-btn">배정 취소</button>
                 </form>
                 <form th:if="${land.status == 'INTERRUPTED' and land.interruptedPilotNo != null}"
+                      th:with="stopped=${land.pilotAssignments.?[status == 'INTERRUPTED']}"
                       th:action="@{/leader/team-management/{no}/reassign(no=${land.interruptedPilotNo})}"
                       method="post" class="assign-reassign-form"
-                      onsubmit="return confirm('중단된 조종사의 미완료 작업 전체를 선택한 조종사에게 재배정할까요?');">
+                      onsubmit="return confirm('이 농지의 중단된 작업을 선택한 조종사에게 재배정할까요?');">
                   <input type="hidden" name="back" value="task-assignment">
+                  <input type="hidden" name="assignmentNo"
+                         th:value="${!#lists.isEmpty(stopped) ? stopped[0].no : ''}">
                   <select name="targetNo" required>
                     <option value="">대상 선택</option>
                     <option th:each="p : ${pilots}"

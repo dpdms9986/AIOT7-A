@@ -111,7 +111,8 @@
                         th:data-status-label="${assignment.statusLabel}"
                         th:data-status-class="${assignment.stClass}"
                         th:data-status-code="${assignment.status}"
-                        th:data-pilot-no="${pilotNoByName.get(assignment.pilotName)}"
+                        th:data-pilot-no="${assignment.pilotNo}"
+                        th:data-assignment-no="${assignment.no}"
                         th:data-assigned-at="${assignment.assignedAt != null ? #temporals.format(assignment.assignedAt, 'yyyy-MM-dd HH:mm') : '-'}">
                     </div>
 
@@ -237,7 +238,8 @@
   <div class="interrupt-reassign team-row-actions">
     <form th:action="@{/leader/team-management/0/reassign}"
           method="post" class="team-reassign-form"
-          onsubmit="return confirm('이 조종사의 미완료 작업을 선택한 조종사에게 재배정하시겠습니까?');">
+          onsubmit="return confirm('이 중단된 작업을 선택한 조종사에게 재배정하시겠습니까?');">
+      <input type="hidden" name="assignmentNo" value="">
       <select name="targetNo" required>
         <option value="">대상 선택</option>
         <option th:each="target : ${onlineMembers}"

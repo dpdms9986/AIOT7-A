@@ -29,11 +29,14 @@ document.addEventListener("DOMContentLoaded", () => {
   // 중단됨 조종사 카드 밑에 [대상 선택 + 재배정] 폼 붙이기
   const reassignTemplate = document.getElementById("reassign-form-template");
 
-  const appendReassignForm = (card, pilotNo) => {
+  const appendReassignForm = (card, pilotNo, assignmentNo) => {
     if (!reassignTemplate || !card) return;
 
     const wrap = reassignTemplate.content.cloneNode(true);
     const form = wrap.querySelector("form");
+
+    // 재배정할 작업 번호 (이게 없으면 "재배정할 작업을 선택해주세요." 에러가 뜸)
+    form.querySelector('input[name="assignmentNo"]').value = assignmentNo;
 
     // 주소 .../team-management/0/reassign 의 0 을 중단된 조종사 번호로 교체
     form.setAttribute("action", form.getAttribute("action").replace("/0/", `/${pilotNo}/`));
@@ -78,7 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
       : [];
 
     // 조종사 한 명의 정보 카드 생성
-    const createPilotCard = (pilotName, statusLabel, statusClass, assignedAt, statusCode, pilotNo) => {
+    const createPilotCard = (pilotName, statusLabel, statusClass, assignedAt, statusCode, pilotNo, assignmentNo) => {
       pilotAssignmentsContainer.insertAdjacentHTML("beforeend", `
         <div class="pilot-assignment-card">
           <dl class="drawer-info">
@@ -99,8 +102,8 @@ document.addEventListener("DOMContentLoaded", () => {
       `);
 
       // 중단됨(INTERRUPTED) 상태인 조종사 카드 밑에만 재배정 폼 표시
-      if (statusCode === "INTERRUPTED" && pilotNo) {
-        appendReassignForm(pilotAssignmentsContainer.lastElementChild, pilotNo);
+      if (statusCode === "INTERRUPTED" && pilotNo && assignmentNo) {
+        appendReassignForm(pilotAssignmentsContainer.lastElementChild, pilotNo, assignmentNo);
       }
     };
 
@@ -115,7 +118,8 @@ document.addEventListener("DOMContentLoaded", () => {
           data.statusClass || "",
           data.assignedAt || "-",
           data.statusCode || "",
-          data.pilotNo || ""
+          data.pilotNo || "",
+          data.assignmentNo || ""
         );
       });
     } else {
