@@ -125,13 +125,27 @@ function connect() {
 
 // 2. 지도 위 조종사 마커
 function updateMarker(pilotName, lat, lng) {
+  console.log(
+    `[위치 수신] ${pilotName}`,
+    lat,
+    lng,
+    new Date().toLocaleTimeString()
+  );
+
   if (markers[pilotName]) {
     markers[pilotName].setLatLng([lat, lng]);
   } else {
     markers[pilotName] = L.marker([lat, lng]).addTo(map)
-      .bindPopup(`<b>🚁 ${pilotName}</b>`).openPopup();
+      .bindPopup(`<b>🚁 ${pilotName}</b>`);
   }
-  map.panTo([lat, lng]);
+   // 로그인한 본인의 위치만 지도 중심에 반영
+  const myPilotName = document.getElementById("myPilotName")?.value;
+
+  if (pilotName === myPilotName) {
+    console.log(`[내 위치 지도 이동] ${pilotName}`);
+    map.panTo([lat, lng]);
+  }
+    
 }
 
 // 3. 2초 간격 가상 비행
