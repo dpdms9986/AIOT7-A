@@ -274,8 +274,8 @@ function startRealGpsAuto() {
     window.myFlightTrackCoords.push([latitude, longitude]);
 
     // 3. 단장 대시보드로 실시간 웹소켓 발행
-    stompClient.send("/pub/location", {}, JSON.stringify({
-      pilotName: $("#pilotName").val(),
+     stompClient.send("/pub/location", {}, JSON.stringify({
+      pilotName: $("#myPilotName").val(),
       latitude,
       longitude,
     }));
