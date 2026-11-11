@@ -61,6 +61,7 @@ public class PilotApi {
         return ResponseEntity.ok(list);
     }
 
+        
         // 1-1. 로그인 조종사의 강제 중단 작업 조회
         @Transactional(readOnly = true)
         @GetMapping("/assignments/interrupted")
@@ -86,18 +87,19 @@ public class PilotApi {
         List<WorkAssignments> notificationAssignments = reassignedAssignments.isEmpty()
                 ? assignments.stream()
                         .filter(assignment -> "INTERRUPTED".equals(assignment.getStatus()))
-                        .filter(assignment -> !isReassigned(assignment))
                         .toList()
                 : reassignedAssignments;
 
+        // 작업 상태에 따라 알림 응답 생성
         List<InterruptedWorkResponse> list = notificationAssignments.stream()
-                .map(assignment -> isReassigned(assignment)
-                    ? InterruptedWorkResponse.reassignedFrom(assignment)
-                    : InterruptedWorkResponse.from(assignment))
-            .toList();
+                .map(assignment -> "INTERRUPTED".equals(assignment.getStatus())
+                        ? InterruptedWorkResponse.from(assignment)
+                        : InterruptedWorkResponse.reassignedFrom(assignment))
+                .toList();
 
         return ResponseEntity.ok(list);
         }
+
 
         // 1-2. 다른 조종사에게 재배정된 작업 알림 확인 처리
         @Transactional
@@ -276,15 +278,15 @@ public class PilotApi {
         }
     }
 
-    // INTERRUPTED 또는 STOPPED 작업이 같은 배정 묶음/농지로 다른 조종사에게 재배정되었는지 확인
-    private boolean isReassigned(WorkAssignments assignment) {
+        
+        // STOPPED 작업이 같은 배정 묶음/농지로 다른 조종사에게 재배정되었는지 확인
+        private boolean isReassigned(WorkAssignments assignment) {
 
-        if (!("INTERRUPTED".equals(assignment.getStatus())
-                || "STOPPED".equals(assignment.getStatus()))
+        if (!"STOPPED".equals(assignment.getStatus())
                 || assignment.getPilot() == null
                 || assignment.getLand() == null
                 || assignment.getDispatchBatch() == null) {
-            return false;
+                return false;
         }
 
         Long previousPilotNo = assignment.getPilot().getNo();
@@ -297,7 +299,8 @@ public class PilotApi {
                         && batchNo.equals(other.getDispatchBatch().getNo())
                         && other.getPilot() != null
                         && !previousPilotNo.equals(other.getPilot().getNo()));
-    }
+        }
+
 
     // 로그인한 조종사 확인
     private Users getLoginPilot(CustomUser customUser) {
