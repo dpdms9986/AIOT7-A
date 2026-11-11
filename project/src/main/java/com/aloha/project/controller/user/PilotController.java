@@ -82,7 +82,10 @@ public class PilotController {
          model.addAttribute("myTeamChannel", null);
          model.addAttribute("myTeamName", null);
         }
-
+        
+        // 로그인한 조종사 본인 이름 전달
+        model.addAttribute("myPilotName", pilot.getName());
+        
         // 현재 로그인한 조종사에게 배정된 작업
         List<LandDto> myTasks = workAssignmentRepository.findByPilot_No(pilot.getNo())
                 .stream()

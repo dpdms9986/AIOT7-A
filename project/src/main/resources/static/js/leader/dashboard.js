@@ -339,6 +339,36 @@ document.addEventListener("DOMContentLoaded", () => {
     refreshPilotStates();
   };
 
+  // [추가] 새로고침 시 서버 메모리에 보관된 이전 실시간 궤적들을 지도에 복원하는 함수
+  const loadActiveTracks = async (channelKey) => {
+    try {
+      const res = await fetch(`/api/drone/active-tracks?teamCode=${channelKey}`);
+      if (!res.ok) return;
+      const activeTracks = await res.json();
+
+      Object.entries(activeTracks).forEach(([name, coords]) => {
+        if (!coords || coords.length === 0) return;
+
+        if (!pilotTracks[name]) {
+          const pilotColor = getPilotColor(name);
+          pilotTracks[name] = L.polyline(coords, {
+            color: pilotColor,
+            weight: 4,
+            opacity: 0.9
+          }).addTo(map);
+        } else {
+          pilotTracks[name].setLatLngs(coords);
+        }
+
+        const lastCoord = coords[coords.length - 1];
+        updatePilotMarker(name, lastCoord[0], lastCoord[1]);
+        console.log(`🔄 [${name} 이전 궤적 복원 성공]:`, coords.length, "개 점 복원됨");
+      });
+    } catch (err) {
+      console.error("이전 비행 궤적 복원 실패:", err);
+    }
+  };
+
   const connect = () => {
     if (typeof SockJS === "undefined" || typeof Stomp === "undefined") return;
     
@@ -358,6 +388,8 @@ document.addEventListener("DOMContentLoaded", () => {
   
     stompClient.connect({}, () => {
       $("#status .status-text").textContent = "방제단 관제 연결됨";
+      loadActiveTracks(channelKey);
+      
        $("#status").style.color = "#238451";
 
       stompClient.subscribe("/sub/team/" + channelKey, (message) => {
