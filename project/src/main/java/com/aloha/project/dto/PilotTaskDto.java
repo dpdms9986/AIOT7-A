@@ -58,9 +58,8 @@ public class PilotTaskDto {
         return switch (status) {
             case "ASSIGNED"    -> "대기";
             case "IN_PROGRESS" -> "진행 중";
-            case "PAUSED"      -> "일시정지";
-            case "INTERRUPTED" -> "중단됨";
-            case "STOPPED"     -> "인계됨";
+            case "INTERRUPTED" -> "일시정지";
+            case "STOPPED"     -> "인계 완료";
             case "COMPLETED"   -> "완료";
             default            -> status;
         };
@@ -72,7 +71,6 @@ public class PilotTaskDto {
             case "ASSIGNED"    -> "st-assigned";
             case "IN_PROGRESS" -> "st-progress";
             case "COMPLETED"   -> "st-completed";
-            case "PAUSED"      -> "st-assigned";
             case "INTERRUPTED" -> "st-interrupted";
             case "STOPPED"     -> "st-stopped";
             default            -> "";
