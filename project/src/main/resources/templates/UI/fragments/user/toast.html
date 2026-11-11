@@ -32,6 +32,60 @@
           if (onClose) onClose();                            // 닫은 뒤 할 일 (예: 입력칸으로 커서 이동)
         };
 
+        // 작업 완료·취소 확인용 팝업
+        window.showConfirmPopup = (form, message) => {
+        document.getElementById("login-popup")?.remove();
+
+        const backdrop = document.createElement("div");
+        backdrop.className = "login-popup-backdrop";
+        backdrop.id = "login-popup";
+
+        backdrop.innerHTML = `
+        <div class="login-popup" role="dialog" aria-modal="true">
+        <div class="login-popup-icon">?</div>
+        <p></p>
+        <div class="login-popup-actions">
+        <button type="button" class="login-popup-btn">확인</button>
+        <button type="button" class="login-popup-cancel">취소</button>
+      </div>
+    </div>
+  `;
+
+        backdrop.querySelector("p").textContent = message;
+        document.body.appendChild(backdrop);
+
+        const confirmBtn = backdrop.querySelector(".login-popup-btn");
+        const cancelBtn = backdrop.querySelector(".login-popup-cancel");
+
+        const close = () => {
+        backdrop.remove();
+        document.removeEventListener("keydown", onKey);
+      };
+
+  const onKey = (e) => {
+    if (e.key === "Escape") {
+      e.preventDefault();
+      close();
+    }
+  };
+
+  confirmBtn.addEventListener("click", () => {
+    close();
+    form.submit();
+  });
+
+  cancelBtn.addEventListener("click", close);
+
+  backdrop.addEventListener("click", (e) => {
+    if (e.target === backdrop) close();
+  });
+
+  document.addEventListener("keydown", onKey);
+  confirmBtn.focus();
+
+  return false;
+};
+
         btn.addEventListener("click", close);
         backdrop.addEventListener("click", (e) => { if (e.target === backdrop) close(); });   // 바깥 클릭
         document.addEventListener("keydown", onKey);
