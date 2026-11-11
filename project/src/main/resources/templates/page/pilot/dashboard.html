@@ -32,62 +32,59 @@
                 <div class="dash-card-head">
                     <h2>🗺 내 작업 지도</h2>
                     <span id="status" class="ws-status">
-                    <i data-lucide="radio-tower"></i>
-                    <span class="status-text">현재 상태: 연결 대기 중</span>
+                        <i data-lucide="radio-tower"></i>
+                        <span class="status-text">현재 상태: 연결 대기 중</span>
                     </span>
                 </div>
 
                 <!-- 실시간 GPS 전송 조작 패널 -->
-                
                 <div class="gps-control-bar">
 
-                <!-- 로그인한 조종사의 팀 채널 키 -->
-                <input type="hidden" id="teamChannelKey"
-                 th:value="${myTeamChannel}">
+                    <!-- 로그인한 조종사의 팀 채널 키 -->
+                    <input type="hidden" id="teamChannelKey"
+                           th:value="${myTeamChannel}">
 
-                 <!-- 로그인한 조종사 본인 식별 -->
-                 <input type="hidden" id="myPilotName"
-                 th:value="${myPilotName}">
+                    <!-- 로그인한 조종사 본인 식별 -->
+                    <input type="hidden" id="myPilotName"
+                           th:value="${myPilotName}">
 
-                <!-- 소속 방제단 표시 -->
-                 <div class="team-info-badge">
-                  <i data-lucide="drone"></i>
-                 <strong th:text="${myTeamName != null ? myTeamName : '방제단 미배속'}">
-                  방제단 명칭
-                 </strong>
-                 </div>
+                    <!-- 소속 방제단 표시 -->
+                    <div class="team-info-badge">
+                        <i data-lucide="drone"></i>
+                        <strong th:text="${myTeamName != null ? myTeamName : '방제단 미배속'}">
+                            방제단 명칭
+                        </strong>
+                    </div>
 
-                 <span class="control-divider"></span>
+                    <span class="control-divider"></span>
 
-                 <!-- 기존 GPS 조작 기능 유지 -->
-                <button type="button" class="gps-btn"
-                        onclick="startFakeAuto()">
+                    <!-- 기존 GPS 조작 기능 유지 -->
+                    <button type="button" class="gps-btn"
+                            onclick="startFakeAuto()">
                         <i data-lucide="plane"></i>
                         가상 비행
-                        </button>
+                    </button>
 
-               <button type="button" class="gps-btn btn-real"
-                       onclick="startRealGpsAuto()">
-                       <i data-lucide="map-pin"></i>
-                      실제 GPS 시작
-                       </button>
+                    <button type="button" class="gps-btn btn-real"
+                            onclick="startRealGpsAuto()">
+                        <i data-lucide="map-pin"></i>
+                        실제 GPS 시작
+                    </button>
 
-               
-                <button type="button" class="gps-btn btn-pause"
-                        onclick="pauseWork()">
-                       <i data-lucide="pause"></i>
-                      일시정지
-                      </button>
+                    <button type="button" class="gps-btn btn-pause"
+                            onclick="pauseWork()">
+                        <i data-lucide="pause"></i>
+                        일시정지
+                    </button>
 
-               <button type="button" class="gps-btn btn-stop"
-                        onclick="confirmStop()">
-                       <i data-lucide="square"></i>
-                      중지
-                      </button>
+                    <button type="button" class="gps-btn btn-stop"
+                            onclick="confirmStop()">
+                        <i data-lucide="square"></i>
+                        중지
+                    </button>
 
-                <div id="autoStatus" class="gps-status-text"></div>
-               </div>
-
+                    <div id="autoStatus" class="gps-status-text"></div>
+                </div>
 
                 <div class="pilot-map" id="pilot-map"></div>
 
@@ -106,15 +103,17 @@
                     <h2>📋 내 작업 목록</h2>
                 </div>
 
+                <!-- 전체 탭 제거 -->
                 <div class="pilot-tabs" id="pilot-tabs">
-                    <button type="button" class="active" data-filter="all">전체</button>
-                    <button type="button" data-filter="active">진행 중</button>
+                    <button type="button" class="active" data-filter="active">진행 중</button>
                     <button type="button" data-filter="done">완료</button>
                 </div>
 
-                <!-- [추가] 내 작업 목록: 서버가 전부 그리고, 탭 필터는 JS가 보였다/숨겼다 -->
-                <ul class="pilot-task-list" id="pilot-task-list" th:data-selected="${selectedNo}">
+                <!-- 서버가 전체 작업을 렌더링하고 JS가 탭별로 필터링 -->
+                <ul class="pilot-task-list" id="pilot-task-list"
+                    th:data-selected="${selectedNo}">
                     <li th:each="t : ${myTasks}"
+                        th:data-status="${t.status}"
                         th:data-group="${t.status == 'COMPLETED'} ? 'done' : 'active'">
                         <button type="button" class="pilot-task"
                                 th:classappend="${t.no == selectedNo} ? 'selected'"
@@ -125,23 +124,31 @@
                                 th:data-lat="${t.latitude}"
                                 th:data-lng="${t.longitude}"
                                 th:data-color="${t.stColor}"
-                                th:data-polygon="${t.polygonCoordinates}" 
+                                th:data-polygon="${t.polygonCoordinates}"
                                 th:data-flight-path="${t.flightPath}">
                             <span class="pilot-dot" th:classappend="${t.stClass}"></span>
                             <span class="pilot-task-body">
                                 <strong th:text="${t.address}">전민동 31-7</strong>
-                                <small th:text="${#numbers.formatDecimal(t.areaSize, 0, 'COMMA', 0, 'POINT')} + '㎡ · ' + ${#temporals.format(t.assignedAt, 'MM-dd HH:mm')}">4,800㎡ · 10-29 08:00</small>
+                                <small th:text="${#numbers.formatDecimal(t.areaSize, 0, 'COMMA', 0, 'POINT')} + '㎡ · ' + ${#temporals.format(t.assignedAt, 'MM-dd HH:mm')}">
+                                    4,800㎡ · 10-29 08:00
+                                </small>
                             </span>
-                            <span class="pilot-status" th:classappend="${t.stClass}" th:text="${t.statusLabel}">작업 중</span>
+                            <span class="pilot-status"
+                                  th:classappend="${t.stClass}"
+                                  th:text="${t.statusLabel}">작업 중</span>
                         </button>
                     </li>
                 </ul>
-                <p class="pilot-empty" id="pilot-task-empty" th:hidden="${not #lists.isEmpty(myTasks)}">해당하는 작업이 없습니다.</p>
+
+                <p class="pilot-empty" id="pilot-task-empty"
+                   th:hidden="${not #lists.isEmpty(myTasks)}">
+                    해당하는 작업이 없습니다.
+                </p>
             </article>
         </section>
     </main>
 
-    <!-- [추가] 지도에만 표시할 주변 미배정 농지 → JS 배열로 넘김 -->
+    <!-- 지도에만 표시할 주변 미배정 농지 → JS 배열로 넘김 -->
     <script th:inline="javascript">
         const OTHER_FARMS = /*[[${otherFarms}]]*/ [];
     </script>
@@ -152,12 +159,12 @@
     <script th:src="@{/js/pilot/pilot-tasks.js}"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script>
-    if (window.lucide) {
-        lucide.createIcons();
-    } else {
-        console.error("Lucide 라이브러리를 불러오지 못했습니다.");
-    }
-     </script>
+        if (window.lucide) {
+            lucide.createIcons();
+        } else {
+            console.error("Lucide 라이브러리를 불러오지 못했습니다.");
+        }
+    </script>
 </th:block>
 </body>
 </html>
