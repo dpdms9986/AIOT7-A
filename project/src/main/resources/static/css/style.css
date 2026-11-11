@@ -134,8 +134,6 @@
     .gnb-user span:not(.dash-avatar) { display: none; }
 }
 
-
-
 /* =====================================================
    11. 공통 헤더 (GNB) - 소속 방제단, 초대 코드, 사용자, 로그아웃
 ===================================================== */
@@ -184,8 +182,6 @@
   color: var(--color-text);
   font-size: var(--font-body);
 }
-
-
 
 /* ----- 사이드바 + 본문 배치 ----- */
 .dash-layout { display: flex; min-height: calc(100vh - var(--header-height)); }
@@ -527,8 +523,6 @@
   font-weight: 500;
 }
 
-
-
 /* ========================================
    GPS Control Bar - Leader / Pilot
    ======================================== */
@@ -677,9 +671,6 @@
         padding: 2px 3px 0;
     }
 }
-
-
-
 
 /* =====================================================
    10. 단장 대시보드 (leader-)
@@ -1503,16 +1494,6 @@
     box-shadow: none;
 }
 
-.asset-page-heading .page-heading-icon {
-    display: grid;
-    flex: 0 0 40px;
-    width: 40px;
-    height: 40px;
-    place-items: center;
-    border-radius: 8px;
-    background: #e5f4eb;
-    font-size: 24px;
-}
 
 .asset-page-heading h1 {
     margin: 0 0 7px;
@@ -1522,12 +1503,6 @@
     letter-spacing: -0.5px;
 }
 
-.asset-page-heading p {
-    margin: 0;
-    color: #718093;
-    font-size: 13px;
-    line-height: 1.6;
-}
 
 /* 등록 버튼을 오른쪽으로 */
 .asset-pilot-register-button {
@@ -1557,278 +1532,16 @@
     background: #fff;
 }
 
-.asset-pilot-tab {
-    position: relative;
-    padding: 15px 18px;
-    border: 0;
-    background: transparent;
-    color: #526174;
-    font: inherit;
-    font-size: 13px;
-    font-weight: 650;
-    cursor: pointer;
-}
-
-.asset-pilot-tab.active {
-    color: #12814d;
-}
-
-.asset-pilot-tab.active::after {
-    position: absolute;
-    right: 12px;
-    bottom: -1px;
-    left: 12px;
-    height: 3px;
-    border-radius: 3px 3px 0 0;
-    background: #13834f;
-    content: "";
-}
-
 /* 4. 요약 카드 */
-.asset-pilot-summary {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 14px;
-    margin-bottom: 16px;
-}
-
-.asset-pilot-stat {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    min-width: 0;
-    padding: 16px;
-    border: 1px solid #e4eaee;
-    border-radius: 11px;
-    background: #fff;
-}
-
-.asset-pilot-stat-icon {
-    display: grid;
-    flex: 0 0 54px;
-    width: 54px;
-    height: 54px;
-    place-items: center;
-    border-radius: 10px;
-    font-size: 26px;
-}
-
-.asset-pilot-stat-icon.drone {
-    background: #e7f5ec;
-}
-
-.asset-pilot-stat-icon.chemical {
-    background: #eaf2ff;
-}
-
-.asset-pilot-stat-icon.maintenance {
-    background: #fff3e4;
-}
-
-.asset-pilot-stat span,
-.asset-pilot-stat strong,
-.asset-pilot-stat small {
-    display: block;
-}
-
-.asset-pilot-stat span {
-    color: #47576a;
-    font-size: 12px;
-    font-weight: 650;
-}
-
-.asset-pilot-stat strong {
-    margin-top: 4px;
-    color: #16804b;
-    font-size: 24px;
-}
-
-.asset-pilot-stat small {
-    margin-top: 4px;
-    color: #8390a0;
-    font-size: 11px;
-}
 
 /* 5. 목록 및 상세 카드 */
-.asset-pilot-list-card,
-.asset-pilot-detail-card {
-    min-width: 0;
-    margin-bottom: 16px;
-    padding: 18px;
-    border: 1px solid #e4eaee;
-    border-radius: 11px;
-    background: #fff;
-}
-
-.asset-pilot-list-heading,
-.asset-pilot-detail-heading {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 16px;
-}
-
-.asset-pilot-list-heading h2,
-.asset-pilot-detail-heading h2 {
-    margin: 0;
-    color: #203246;
-    font-size: 17px;
-    font-weight: 750;
-}
-
-.asset-pilot-list-heading p {
-    margin: 5px 0 0;
-    color: #7b8897;
-    font-size: 12px;
-}
-
-.asset-pilot-list-heading > span {
-    color: #7b8897;
-    font-size: 12px;
-    white-space: nowrap;
-}
-
-.asset-pilot-list-heading > span strong {
-    color: #16804b;
-}
 
 /* 6. 검색 필터 */
-.asset-pilot-filters {
-    display: grid;
-    grid-template-columns: 150px minmax(180px, 1fr) 145px auto auto;
-    align-items: end;
-    gap: 10px;
-    margin-bottom: 16px;
-}
-
-.asset-pilot-filters label {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    color: #47576a;
-    font-size: 12px;
-    font-weight: 650;
-}
-
-.asset-pilot-filters input,
-.asset-pilot-filters select {
-    box-sizing: border-box;
-    width: 100%;
-    height: 40px;
-    padding: 0 11px;
-    border: 1px solid #dce4ea;
-    border-radius: 6px;
-    background: #fff;
-    color: #344456;
-    font: inherit;
-    font-size: 12px;
-}
-
-.asset-pilot-search-button,
-.asset-pilot-reset-button {
-    height: 40px;
-    padding: 0 17px;
-    border: 1px solid #d7e0e7;
-    border-radius: 6px;
-    font: inherit;
-    font-size: 12px;
-    font-weight: 700;
-    cursor: pointer;
-}
-
-.asset-pilot-search-button {
-    border-color: #13834f;
-    background: #13834f;
-    color: #fff;
-}
-
-.asset-pilot-search-button:hover {
-    background: #08663b;
-}
-
-.asset-pilot-reset-button {
-    background: #fff;
-    color: #344456;
-}
 
 /* 7. 자산 테이블 */
-.asset-pilot-table-scroll {
-    width: 100%;
-    overflow-x: auto;
-}
-
-.asset-pilot-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    color: #344456;
-    font-size: 12px;
-}
-
-.asset-pilot-table th,
-.asset-pilot-table td {
-    padding: 12px 10px;
-    border-right: 1px solid #e9eef2;
-    border-bottom: 1px solid #e9eef2;
-    text-align: left;
-    vertical-align: middle;
-}
-
-.asset-pilot-table th {
-    border-top: 1px solid #e1e7ec;
-    background: #f3f6f8;
-    color: #405064;
-    font-weight: 750;
-    white-space: nowrap;
-}
-
-.asset-pilot-table th:first-child,
-.asset-pilot-table td:first-child {
-    border-left: 1px solid #e9eef2;
-}
-
-.asset-pilot-table td strong,
-.asset-pilot-table td small {
-    display: block;
-}
-
-.asset-pilot-table td strong {
-    color: #27394c;
-    font-size: 12px;
-}
-
-.asset-pilot-table td small {
-    margin-top: 4px;
-    color: #8491a0;
-    font-size: 11px;
-}
-
-.asset-pilot-table tbody tr:hover,
-.asset-pilot-table tbody tr.selected {
-    background: #f1faf5;
-}
-
-.asset-pilot-table tbody tr[hidden] {
-    display: none !important;
-}
 
 /* 8. 상태 표시 */
-.asset-pilot-badge {
-    display: inline-flex;
-    justify-content: center;
-    min-width: 50px;
-    padding: 5px 9px;
-    border-radius: 5px;
-    font-size: 11px;
-    font-weight: 750;
-    white-space: nowrap;
-}
 
-.asset-pilot-badge.normal {
-    background: #dcf3e5;
-    color: #087443;
-}
 
 .asset-pilot-badge.maintenance {
     background: #fff0df;
@@ -1846,74 +1559,8 @@
 }
 
 /* 9. 상세보기 버튼 */
-.asset-pilot-detail-button {
-    min-height: 32px;
-    padding: 0 12px;
-    border: 1px solid #d6dfe6;
-    border-radius: 6px;
-    background: #fff;
-    color: #34465a;
-    font: inherit;
-    font-size: 12px;
-    font-weight: 650;
-    cursor: pointer;
-}
-
-.asset-pilot-detail-button:hover {
-    border-color: #16804b;
-    color: #16804b;
-    background: #f2faf5;
-}
-
-.asset-pilot-empty {
-    padding: 22px;
-    color: #8491a0;
-    text-align: center;
-    font-size: 13px;
-}
 
 /* 10. 상세 정보 */
-.asset-pilot-detail-heading {
-    padding-bottom: 13px;
-    border-bottom: 1px solid #e8edf1;
-}
-
-.asset-pilot-detail-heading span {
-    color: #718093;
-    font-size: 12px;
-}
-
-#pilot-asset-detail > p {
-    margin: 0;
-    padding: 14px 0;
-    color: #8491a0;
-    text-align: center;
-    font-size: 13px;
-}
-
-.asset-pilot-detail-grid {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 12px;
-}
-
-.asset-pilot-detail-item {
-    padding: 12px;
-    border-right: 1px solid #e8edf1;
-}
-
-.asset-pilot-detail-item span {
-    display: block;
-    margin-bottom: 7px;
-    color: #718093;
-    font-size: 11px;
-}
-
-.asset-pilot-detail-item strong {
-    color: #26384a;
-    font-size: 13px;
-    overflow-wrap: anywhere;
-}
 
 /* 11. 자산 등록 버튼 */
 .asset-pilot-register-button {
@@ -2136,61 +1783,6 @@
 }
 
 /* 13. 반응형 */
-@media (max-width: 1100px) {
-    .asset-pilot-filters {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .asset-pilot-summary {
-        grid-template-columns: 1fr;
-    }
-
-    .asset-pilot-detail-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-}
-
-@media (max-width: 650px) {
-    .asset-page-main {
-        padding: 12px;
-    }
-
-    .asset-page-heading {
-        flex-wrap: wrap;
-        padding: 14px;
-    }
-
-    .asset-page-heading h1 {
-        font-size: 20px;
-    }
-
-    .asset-role-chip {
-        margin-left: 0;
-    }
-
-    .asset-pilot-tabs {
-        overflow-x: auto;
-    }
-
-    .asset-pilot-tab {
-        flex: 0 0 auto;
-        padding: 13px 12px;
-    }
-
-    .asset-pilot-list-card,
-    .asset-pilot-detail-card {
-        padding: 12px;
-    }
-
-    .asset-pilot-filters {
-        grid-template-columns: 1fr;
-    }
-
-    .asset-pilot-detail-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
 @media (max-width: 480px) {
     .asset-register-modal-content {
         padding: 20px;
@@ -2818,9 +2410,6 @@ button.asset-role-chip:focus-visible {
     background: #f1faf5;
 }
 
-.asset-pilot-table tbody tr[hidden] {
-    display: none !important;
-}
 
 .asset-pilot-badge {
     display: inline-flex;
@@ -3725,8 +3314,6 @@ button.asset-role-chip:focus-visible {
     content: none !important;
 }
 
-
-
 /* 파일럿 자산관리 테이블 전용: 4칸 같은 폭, 전부 가운데 정렬 */
 .pilot-asset-page .asset-pilot-table {
     width: 100%;
@@ -4122,10 +3709,6 @@ body:has(#hazard-tbody) .page-heading p {
     font-size: 12px;
 }
 
-.hazard-toolbar-title strong,
-.hazard-table-card .table-heading strong {
-    color: var(--color-primary);
-}
 
 body:has(#hazard-tbody) #write-hazard {
     display: inline-flex;
@@ -4147,25 +3730,6 @@ body:has(#hazard-tbody) #write-hazard:hover {
 }
 
 /* 검색 필터 카드 */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /* 위험 목록 표 카드 */
 .hazard-table-card {
@@ -4205,12 +3769,6 @@ body:has(#hazard-tbody) #write-hazard:hover {
     overflow-x: auto;
 }
 
-.hazard-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: var(--color-card);
-    white-space: nowrap;
-}
 
 .hazard-table th,
 .hazard-table td {
@@ -4233,22 +3791,9 @@ body:has(#hazard-tbody) #write-hazard:hover {
     font-size: var(--font-body);
 }
 
-.hazard-table tbody tr {
-    cursor: pointer;
-    transition: background-color 0.15s ease;
-}
 
 .hazard-table tbody tr:hover {
     background: #f8fbf9;
-}
-
-.hazard-table tbody tr:focus-visible {
-    outline: 2px solid var(--color-primary);
-    outline-offset: -2px;
-}
-
-.hazard-table tbody tr:last-child td {
-    border-bottom: 0;
 }
 
 .hazard-severity {
@@ -4268,10 +3813,6 @@ body:has(#hazard-tbody) #write-hazard:hover {
     color: var(--color-high);
 }
 
-.hazard-severity.medium {
-    background: #fff3d9;
-    color: #9a6700;
-}
 
 .hazard-severity.low {
     background: var(--color-primary-light);
@@ -4285,11 +3826,6 @@ body:has(#hazard-tbody) #write-hazard:hover {
     line-height: 1.5;
 }
 
-.hazard-empty {
-    padding: 24px;
-    color: var(--color-text-sub);
-    text-align: center;
-}
 
 /* 반응형 */
 @media (max-width: 1100px) {
@@ -4334,10 +3870,6 @@ body:has(#hazard-tbody) #write-hazard:hover {
         padding: 20px 16px;
     }
 
-    .hazard-toolbar {
-        align-items: flex-start;
-        flex-direction: column;
-    }
 
     
 
@@ -4417,14 +3949,8 @@ body:has(#hazard-tbody) .header-user {
     margin-left: 24px;
 }
 
-
-
 /* ===== 9. 위험 상세 ===== */
 
-body.hazard-detail-page {
-    background: var(--color-bg);
-    color: var(--color-text);
-}
 
 body:has(.hazard-detail-page) .site-header {
     display: flex;
@@ -4577,16 +4103,6 @@ body:has(.hazard-detail-page) .page-heading p {
     font-size: 13px;
 }
 
-.hazard-detail-page {
-    min-width: 0;
-}
-
-.hazard-detail-toolbar {
-    display: flex;
-    justify-content: flex-end;
-    margin-bottom: 16px;
-}
-
 .hazard-detail-toolbar .button {
     display: inline-flex;
     align-items: center;
@@ -4642,64 +4158,16 @@ body:has(.hazard-detail-page) .page-heading p {
     font-weight: 700;
 }
 
-.hazard-detail-meta {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 20px;
-    padding: 20px 0;
-    border-bottom: 1px solid var(--color-border);
-}
-
-.hazard-detail-meta div {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    min-width: 0;
-}
-
-.hazard-detail-meta span {
-    color: var(--color-text-sub);
-    font-size: 12px;
-}
-
 .hazard-detail-meta strong {
     color: var(--color-text);
     font-size: 14px;
     overflow-wrap: anywhere;
 }
 
-.hazard-detail-content {
-    padding-top: 20px;
-}
-
-.hazard-detail-content h3 {
-    margin: 0 0 12px;
-    font-size: 15px;
-}
-
-.hazard-detail-content p {
-    margin: 0;
-    color: var(--color-text-sub);
-    font-size: 14px;
-    line-height: 1.8;
-    white-space: pre-line;
-}
-
 /* 댓글 영역 */
 
 .hazard-comment-heading {
     margin-bottom: 18px;
-}
-
-.hazard-comment-heading h2 {
-    margin: 0;
-    font-size: 17px;
-}
-
-.hazard-comment-heading h2 span {
-    margin-left: 5px;
-    color: var(--color-primary);
-    font-size: 13px;
 }
 
 .hazard-comment-heading p {
@@ -4713,13 +4181,6 @@ body:has(.hazard-detail-page) .page-heading p {
     border-top: 1px solid var(--color-border);
 }
 
-.hazard-comment-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 16px 4px;
-    border-bottom: 1px solid var(--color-border);
-}
 
 .hazard-comment-avatar {
     display: flex;
@@ -4737,24 +4198,6 @@ body:has(.hazard-detail-page) .page-heading p {
 .hazard-comment-body {
     flex: 1;
     min-width: 0;
-}
-
-.hazard-comment-meta {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 8px;
-}
-
-.hazard-comment-meta strong {
-    font-size: 13px;
-}
-
-.hazard-comment-role,
-.hazard-comment-date {
-    color: var(--color-text-sub);
-    font-size: 11px;
 }
 
 .hazard-comment-text {
@@ -4782,13 +4225,6 @@ body:has(.hazard-detail-page) .page-heading p {
     background: #fff5f5;
 }
 
-.hazard-comment-empty {
-    margin: 0;
-    padding: 24px 0;
-    color: var(--color-text-sub);
-    font-size: 13px;
-    text-align: center;
-}
 
 .hazard-comment-form {
     display: flex;
@@ -4801,12 +4237,6 @@ body:has(.hazard-detail-page) .page-heading p {
     min-width: 0;
 }
 
-.hazard-comment-form label {
-    display: block;
-    margin-bottom: 8px;
-    font-size: 13px;
-    font-weight: 700;
-}
 
 .hazard-comment-form textarea {
     display: block;
@@ -4840,16 +4270,6 @@ body:has(.hazard-detail-page) .page-heading p {
     font-size: 11px;
 }
 
-.hazard-comment-form .primary-button {
-    min-height: 38px;
-    padding: 0 18px;
-    border: 0;
-    border-radius: 7px;
-    background: var(--color-primary);
-    color: #fff;
-    font-size: 13px;
-    cursor: pointer;
-}
 
 .hazard-comment-form .primary-button:hover {
     background: var(--color-primary-hover);
@@ -4954,27 +4374,6 @@ body:has(.hazard-detail-page) .page-heading p {
     display: none;
 }
 
-.hazard-image-gallery {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 12px;
-    margin-top: 14px;
-}
-
-.hazard-image-item {
-    position: relative;
-    overflow: hidden;
-    aspect-ratio: 4 / 3;
-    border: 1px solid var(--color-border);
-    border-radius: 8px;
-}
-
-.hazard-image-item img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
 .hazard-image-remove {
     position: absolute;
     top: 6px;
@@ -5002,11 +4401,6 @@ body:has(.hazard-detail-page) .page-heading p {
     font: inherit;
 }
 
-.hazard-comment-actions {
-    display: flex;
-    flex-shrink: 0;
-    gap: 6px;
-}
 
 .hazard-comment-actions button {
     padding: 5px 9px;
@@ -5030,19 +4424,10 @@ body:has(.hazard-detail-page) .page-heading p {
     color: var(--color-text-sub);
 }
 
-.hazard-comment-item img {
-    max-width: 220px;
-    max-height: 160px;
-    margin-top: 10px;
-    border-radius: 7px;
-    object-fit: contain;
-}
 
 .hazard-comment-item .hazard-comment-textarea {
     width: 100%;
 }
-
-
 
 /* ===== 공통 접이식 사이드바 ===== */
 
@@ -5160,9 +4545,6 @@ body.sidebar-collapsed .sidebar-toggle {
         font-size: 16px;
     }
 
-    body:has(#sidebar-toggle) .sidebar-notice {
-        display: none;
-    }
 }
 
 /* ===== 위험 목록 / 위험 상세 접이식 사이드바 ===== */
@@ -5290,9 +4672,6 @@ body.sidebar-collapsed:has(#sidebar-toggle) .side-nav a span {
     font-size: 17px;
 }
 
-body.sidebar-collapsed:has(#sidebar-toggle) .sidebar-notice {
-    display: none;
-}
 
 /* 좁은 화면 */
 @media (max-width: 600px) {
@@ -5321,10 +4700,6 @@ body.sidebar-collapsed:has(#sidebar-toggle) .sidebar-notice {
         display: none;
     }
 }
-
-
-
-
 
 /* ===== 위험 상세 댓글 영역 최종 보정 ===== */
 
@@ -5747,50 +5122,12 @@ body:has(.hazard-detail-page) .hazard-detail-content {
     border-color: #116b3b;
 }
 
-
-
 /* ===== 검색 필터 통합 ===== */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /* 검색 / 초기화 버튼 */
 
-
-
-
-
-
-
-
 /* 중간 화면 */
-@media (max-width: 1200px) {
-    
-
-    
-}
-
 /* 모바일 */
-@media (max-width: 700px) {
-    
-
-    
-
-    
-}
-
-
 /* 위험 / 공지 통합 목록 테이블 */
 .hazard-table-card {
     overflow: hidden;
@@ -6321,12 +5658,6 @@ body.hazard-detail-page {
 }
 
 /* 반응형 */
-@media (max-width: 1000px) {
-    
-
-    
-}
-
 @media (max-width: 700px) {
     .hazard-toolbar {
         align-items: flex-start;
@@ -6466,25 +5797,6 @@ body.hazard-detail-page {
 }
 
 /* 검색 및 필터 카드 */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /* 게시글 목록 카드 */
 .hazard-board-page .hazard-table-card {
@@ -7727,8 +7039,6 @@ body:has(.notice-detail-page) .main-content {
     margin-bottom: 16px;
 }
 
-
-
 /* 본문과 사이드바의 좌우 배치 */
 body:has(#sidebar-toggle) .dashboard-layout {
     display: flex;
@@ -7786,10 +7096,6 @@ body:has(#sidebar-toggle) .sidebar-notice p {
     line-height: 1.6;
 }
 
-
-
-
-
 /* 공지사항 페이지 버튼 */
 .notice-page .notice-toolbar {
     display: flex;
@@ -7829,8 +7135,6 @@ body:has(#sidebar-toggle) .sidebar-notice p {
     box-shadow: var(--shadow-card, 0 1px 3px rgba(0, 0, 0, .06));
 }
 
-
-
 /* 위험 상세 카드 너비 */
 .hazard-detail-page .hazard-detail-card,
 .hazard-detail-page .hazard-comment-card {
@@ -7844,8 +7148,6 @@ body.sidebar-collapsed:has(#sidebar-toggle) .sidebar-notice {
     display: none;
 }
 
-
-
 /* 위험 상세: 제목과 작업 버튼 정렬 */
 .hazard-detail-heading {
     display: flex;
@@ -7854,13 +7156,6 @@ body.sidebar-collapsed:has(#sidebar-toggle) .sidebar-notice {
     gap: 16px;
 }
 
-.hazard-detail-title-group {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 8px;
-    min-width: 0;
-}
 
 .hazard-detail-title-group h2 {
     width: 100%;
@@ -10313,8 +9608,6 @@ body.farm-drawer-open {
 .pilot-form-title { margin: 0 0 10px; font-size: 13px; font-weight: 800; }
 .pilot-form .task-field { margin-bottom: 10px; }
 
-
-
 /* =====================================================
    10. 조종사 대시보드 (pilot-dashboard.html)
    ※ 작업 배정 화면의 지도 핀도 여기 스타일을 같이 씀
@@ -10331,8 +9624,6 @@ body.farm-drawer-open {
   gap: var(--card-gap);
   align-items: start;
 }
-
-
 
 /* ----- 상태 색 (핀, 점, 태그가 같이 씀) ----- */
 .st-ready     { --st: var(--color-ready);       --st-bg: #e8f3ec; --st-text: #238451; }
@@ -10454,8 +9745,6 @@ span.pilot-pin { cursor: default; opacity: 0.75; }
   .pilot-map { height: 420px; }
 }
 
-
-
 /* =====================================================
    13. 작업 배정 추가 (선택 요약 줄, 분배 설정 팝업)
 ===================================================== */
@@ -10481,8 +9770,6 @@ span.pilot-pin { cursor: default; opacity: 0.75; }
 .task-assign-box .task-quota.ok { color: var(--color-primary); font-weight: 700; }
 .task-assign-box .task-quota.warn { color: var(--color-high); font-weight: 700; }
 .task-modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
-
-
 
 /* =====================================================
    14. 배정 현황 · 작업 이력 (task-assignment.html 탭 2, 3)
@@ -11049,9 +10336,6 @@ span.pilot-pin { cursor: default; opacity: 0.75; }
 }
 
 @media (max-width: 1100px) {
-    .team-summary {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
 
     .team-filters {
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -11392,9 +10676,6 @@ span.pilot-pin { cursor: default; opacity: 0.75; }
   .login-card { padding: 28px 22px; }
 }
 
-
-
-
 /* ===== 5. 회원가입 화면 ===== */
 .signup-page {
   min-height: 100vh;
@@ -11525,8 +10806,6 @@ span.pilot-pin { cursor: default; opacity: 0.75; }
   font-weight: 700;
 }
 .signup-timer.expired { color: #e5484d; }  /* 만료 시 붉은색 */
-
-
 
 /* ===== 6. 계정 찾기 화면 ===== */
 .findaccount-page {
@@ -11665,9 +10944,6 @@ span.pilot-pin { cursor: default; opacity: 0.75; }
 .signup-role-option strong { display: block; font-size: 13px; }
 .signup-role-option small { color: #7d8a99; font-size: 11px; }
 .signup-role-option:has(input:checked) { border-color: #238451; background: #e8f3ec; }
-
-
-
 
 /* =====================================================
    15. 마이페이지 (mypage.html)
@@ -12161,9 +11437,6 @@ details p { margin: 10px 0 0; color: var(--sub); font-size: 14px; }
 .home-feature-icon .material-icons-outlined { font-size: 24px; }
 .home-point-icon .material-icons-outlined { font-size: 20px; }
 
-
-
-
 /* =========================================================
    작업 배정 (2026-10-29)
    ========================================================= */
@@ -12257,6 +11530,34 @@ a.task-tab {
 }
 .login-popup-btn:hover {
   filter: brightness(0.95);
+}
+
+/* ===== 2버튼 확인 팝업 ===== */
+.login-popup-actions {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+.login-popup-actions .login-popup-btn,
+.login-popup-cancel {
+  flex: 1;
+  width: 50%;
+  height: 44px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.login-popup-cancel {
+  border: 0;
+  background: #e8eef7;
+  color: #203246;
+}
+
+.login-popup-cancel:hover {
+  filter: brightness(0.96);
 }
 
 
@@ -12438,9 +11739,6 @@ a.asset-pilot-detail-button {
   width: 100%;
 }
 
-
-
-
 /* ===== 자산 화면 탭 줄 카드 모양으로 정리 (2026-10-30) ===== */
 main.asset-page-main .asset-pilot-tabs {
   background: #ffffff;
@@ -12477,8 +11775,6 @@ main.asset-page-main .asset-pilot-tab {
     grid-template-columns: 145px minmax(180px, 1fr) auto auto;
   }
 }
-
-
 
 /* ===== 위험 구역 (hazards.html) (2026-10-30) ===== */
 
@@ -12640,8 +11936,6 @@ main.asset-page-main .asset-pilot-tab {
   .hz-layout > .dash-card { grid-column: auto; }
   .hz-map { height: 320px; }
 }
-
-
 
 /* ===== 위험 구역: 상세보기 + 표 정렬 (2026-10-30) ===== */
 
@@ -12887,8 +12181,6 @@ a.dash-btn-outline {
   justify-content: center;
   text-decoration: none;
 }
-
-
 
 /* ===== 위험 구역: 목록 검색 줄 (2026-11-02) ===== */
 .hz-filters {
@@ -13195,8 +12487,6 @@ a.mp-stat-link:hover { border-color: var(--color-primary, #238451); transform: t
   .adm-frame { grid-template-columns: 1fr; }
   .adm-side-art { display: none; }
 }
-
-
 
 /* =====================================================
    관리자 대시보드 (page/admin/dashboard.html)
@@ -13715,8 +13005,6 @@ select:not([multiple]):not([size]) {
 .sp-table tbody tr.sp-row { cursor: pointer; }
 .sp-table tbody tr.sp-row:hover { background: var(--color-bg); }
 
-
-
 /* 관리 칸: 상세보기 / 대상 선택 / 재배정 (초록 테마) */
 .team-row-actions {
     align-items: center;
@@ -13864,8 +13152,6 @@ body:has(.dash-header) > .pub-footer {
     }
 }
 
-
-
 /* 1100px 이하: 초대 코드 버튼을 아이콘만 표시 (클릭 복사는 그대로) */
 @media (max-width: 1100px) {
     .dash-header-right .gnb-invite {
@@ -13920,24 +13206,11 @@ body:has(.dash-header) > .pub-footer {
     font-weight: 500;
     transition: background 0.15s, color 0.15s;
 }
-.dash-header .dash-topnav a .material-icons-outlined { font-size: 18px; }
 
-.dash-header .dash-topnav a:hover {
-    background: var(--color-primary-light, #e8f5ee);
-    color: var(--color-primary, #238451);
-}
 
 /* 선택된 메뉴: 초록 그라데이션 알약 */
-.dash-header .dash-topnav a.active {
-    background: linear-gradient(135deg, #2fae6a, #17803f);
-    color: #ffffff;
-    font-weight: 700;
-    box-shadow: 0 4px 10px rgba(23, 128, 63, 0.3);
-}
-.dash-header .dash-topnav a.active:hover { color: #ffffff; }
 
 /* 오른쪽 영역은 맨 오른쪽으로 */
-.dash-header .dash-header-right { margin-left: auto; }
 
 /* 작은 화면: 메뉴 간격 줄이기 */
 @media (max-width: 900px) {
@@ -13966,26 +13239,8 @@ body:has(.dash-header) > .pub-footer {
 }
 
 /* 🌱 아이콘: 연한 초록 둥근 박스 */
-.dash-header .dash-logo > span:first-child {
-    display: grid;
-    place-items: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
-    border: 1px solid rgba(35, 132, 81, 0.18);
-    background: linear-gradient(135deg, #eaf8f0, #c9ecd7);
-    box-shadow: 0 3px 8px rgba(35, 132, 81, 0.18);
-    font-size: 22px;
-    line-height: 1;
-}
 
 /* 제목 글씨 */
-.dash-header .dash-logo-text {
-    font-size: 19px;
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    color: #12372a;
-}
 
 /* 로고 오른쪽 구분선: 굵은 초록 선 → 은은한 그라데이션 선 */
 .dash-header .dash-logo::after {
@@ -13995,14 +13250,8 @@ body:has(.dash-header) > .pub-footer {
     background: linear-gradient(180deg, transparent, rgba(35, 132, 81, 0.55), transparent);
 }
 
-.dash-header .dash-logo-text em {
-    font-style: normal;
-    color: var(--color-primary, #238451);
-}
 
 /* 메뉴 알약 왼쪽 여백 제거 */
-.dash-header .dash-topnav::before,
-.dash-header .dash-topnav::after { content: none; display: none; }
 .dash-header .dash-topnav { padding-left: 6px; }
 .dash-header .dash-topnav > a:first-child { margin-left: 0; }
 
@@ -14103,8 +13352,6 @@ body:has(.dash-header) > .pub-footer {
     .dash-header .dash-topnav a { padding: 0 8px; font-size: 12px; }
 }
 
-
-
 /* 드론 · 약제 관리 - 이모지 대신 쓰는 드론 이미지 아이콘 */
 .asset-icon-img {
     display: block;
@@ -14182,8 +13429,6 @@ body:has(.dash-header) > .pub-footer {
     content: none;
     display: none;
 }
-
-
 
 /* 소속 조종사 상태 드롭다운 (오른쪽, 작게) */
 .pilot-filter {
@@ -14724,6 +13969,12 @@ body:has(.dash-header) > .pub-footer {
     background: #ffffff;
     color: var(--hd-bg);
 }
+.dash-header .dash-avatar img {
+    display: block;
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+}
 .dash-header .gnb-logout {
     border-color: rgba(255, 255, 255, 0.6);
     background: transparent;
@@ -14818,69 +14069,18 @@ body:has(#farm-list) .main-content {
     gap: 10px;                /* 로고와 글씨 사이 간격 */
 }
 
-
-
 /* =====================================================
    [메인 헤더] 단장/조종사 헤더와 같은 디자인으로 사용
 ===================================================== */
 
 /* 메인/소개/기능/안내 헤더는 메뉴가 적으니 로고 글씨를 계속 보여줌 */
-.dash-header.dash-header-main .dash-logo-text { display: inline; }
-@media (max-width: 700px) {
-    .dash-header.dash-header-main .dash-logo-text { display: none; }
-}
-
 /* 회원가입 / 로그인 / 대시보드 이동 버튼 */
-.dash-header .gnb-signup,
-.dash-header .gnb-login,
-.dash-header .gnb-dash {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    height: 34px;
-    padding: 0 16px;
-    border-radius: 999px;
-    font-family: inherit;
-    font-size: 13px;
-    font-weight: 700;
-    text-decoration: none;
-    white-space: nowrap;
-    cursor: pointer;
-}
-.dash-header .gnb-signup {
-    border: 1px solid rgba(255, 255, 255, 0.6);
-    background: transparent;
-    color: #ffffff;
-}
-.dash-header .gnb-signup:hover { background: rgba(255, 255, 255, 0.16); }
 
-.dash-header .gnb-login,
-.dash-header .gnb-dash {
-    border: 1px solid #ffffff;
-    background: #ffffff;
-    color: var(--hd-bg, #1f5637);
-}
-.dash-header .gnb-login:hover,
-.dash-header .gnb-dash:hover { background: #e8f5ee; }
 
 /* 헤더가 dash-header가 되면 body > main 에 1680px 규칙이 걸려서
    시스템 소개/주요 기능/이용 안내(.pub-section)가 너무 넓어지는 것 방지 */
-body:has(.dash-header) > main.pub-section {
-    max-width: 1120px;
-}
-
-
 
 /* 메인 헤더: 메뉴를 헤더 정중앙에 배치 */
-.dash-header.dash-header-main .dash-topnav {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    margin-right: 0;
-}
-
-
 
 /* =====================================================
    [메인 헤더] 단장/조종사 헤더와 같은 디자인
@@ -15128,28 +14328,8 @@ html {
 }
 
 /* 작업 배정(단장) 제목 아이콘: 배경 없이 이미지만 */
-.task-title-img {
-    display: block;
-    flex-shrink: 0;
-    width: 52px;
-    height: 52px;
-    object-fit: contain;
-}
 
 /* 작업 관리(조종사) 제목 아이콘 */
-.title-with-icon {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.title-icon-img {
-    display: block;
-    width: 44px;
-    height: 44px;
-    object-fit: contain;
-}
-
 
 .title-with-icon {
     display: flex;
@@ -15249,3 +14429,38 @@ html {
 .field-split-wrap .fs-map-label {
     left: 56px;   /* 줌 버튼 너비(약 34px) + 여백 */
 }
+
+
+/* ===== 인라인 style → 클래스 정리 ===== */
+
+/* 지도 범례 색 점 (리더/조종사 대시보드 공통) */
+.dash-legend .lg-ready     { background: #238451; }
+.dash-legend .lg-assigned  { background: #f2b705; }
+.dash-legend .lg-progress  { background: #2f80ed; }
+.dash-legend .lg-completed { background: #8a8f8c; }
+
+/* 조종사 작업 이력: 완료 보고 / 작업 취소 버튼 영역 */
+.hist-action-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 15px;
+    width: 100%;
+}
+.hist-action-form {
+    flex: 1;
+}
+.hist-action-row .hist-action-btn {
+    width: 100%;
+    height: 38px !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+}
+
+/* 메인 팝업 */
+.popup-bg-black   { background: #000; }
+.popup-swiper-box { width: 100%; aspect-ratio: 3/4; background: #000; }
+.popup-img-full   { width: 100%; height: 100%; object-fit: cover; }

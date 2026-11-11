@@ -18,6 +18,7 @@ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
 
 const markers = {};
 
+<<<<<<< HEAD
 // 로그인 정보로 조종사명 채우기
 function applyUser(user) {
   if (user?.userName) {
@@ -32,6 +33,9 @@ if (window.currentUser) {
     applyUser(e.detail);
   }, { once: true });
 }
+=======
+
+>>>>>>> develop
 
 // 페이지 진입 시 방제단 고유 채널 자동 연결
 if (document.readyState === "loading") {
@@ -209,8 +213,19 @@ function startRealGpsAuto() {
     }));
   }
 
+<<<<<<< HEAD
 // 5. 중지 (비행 중단 시 서버 DB에 비행 궤적 자동 저장!)
 function stopAuto(shouldSave = true) {
+=======
+  stompClient.send("/pub/location", {}, JSON.stringify({
+    latitude,
+    longitude,
+  }));
+}
+
+// 5. 중지
+function stopAuto() {
+>>>>>>> develop
   if (fakeInterval) { clearInterval(fakeInterval); fakeInterval = null; }
   if (gpsWatchId !== null) { navigator.geolocation.clearWatch(gpsWatchId); gpsWatchId = null; }
   $("#autoStatus").text("⏹️ 위치 전송이 중지되었습니다.").css("color", "#6c757d");
