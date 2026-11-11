@@ -36,7 +36,7 @@
           <span class="dash-role" th:text="${roleLabel}">-</span>
 
           <a th:href="@{/mypage}" class="gnb-user" title="마이페이지">
-            <span class="dash-avatar">👤</span><span th:text="${loginName}">사용자</span>
+            <span class="dash-avatar"><img th:src="@{/img/leader-profile.png}" alt="방제단장 프로필"></span><span th:text="${loginName}">사용자</span>
           </a>
 
           <form th:action="@{/logout}" method="post">
