@@ -1,5 +1,3 @@
-// 조종사 대시보드: 실시간 지도 + 웹소켓 위치 전송
-
 let stompClient = null;
 let currentLat = 36.3504; // 초기 위치: 대전 시청
 let currentLng = 127.3845;
@@ -25,7 +23,49 @@ if (document.readyState === "loading") {
   connect();
 }
 
+// 💛 새로고침 시 조종사 본인이 날았던 이전 실시간 궤적을 복원하는 함수
+async function loadMyActiveTrack(channelKey) {
+  try {
+    const res = await fetch(`/api/drone/active-tracks?teamCode=${channelKey}`);
+    if (!res.ok) return;
+    const activeTracks = await res.json();
 
+    const myName = $("#pilotName").val()?.trim();
+    const myCoords = activeTracks[myName];
+
+    // 내 이름으로 서버에 누적된 좌표가 있으면 지도와 메모리에 복원
+    if (myCoords && myCoords.length > 0) {
+      window.myFlightTrackCoords = myCoords;
+
+      if (!window.myFlightTrackLayer && typeof map !== "undefined") {
+        window.myFlightTrackLayer = L.polyline(myCoords, {
+          color: "#2f80ed",
+          weight: 4,
+          opacity: 0.85
+        }).addTo(map);
+      } else if (window.myFlightTrackLayer) {
+        window.myFlightTrackLayer.setLatLngs(myCoords);
+      }
+
+      // 드론의 현재 위치와 지도 중심을 마지막 비행 위치로 맞춤
+      const last = myCoords[myCoords.length - 1];
+      currentLat = last[0];
+      currentLng = last[1];
+      if (typeof map !== "undefined") {
+        map.setView([currentLat, currentLng], 16);
+      }
+
+      // 마지막 비행 위치에 조종사 드론 마커 즉시 표시
+      if (typeof updateMarker === "function" && myName) {
+        updateMarker(myName, currentLat, currentLng);
+      }
+
+      console.log(`🔄 [조종사 궤적 복원 성공]: 이전 점 ${myCoords.length}개 복원됨`);
+    }
+  } catch (err) {
+    console.error("조종사 비행 궤적 복원 실패:", err);
+  }
+}
 
 // 1. 웹소켓 자동 연결 및 팀별 채널 구독
 function connect() {
@@ -58,8 +98,9 @@ function connect() {
 
   stompClient.connect({}, () => {
 
-    $("#status .status-text")
-    .text("방제단 관제 채널 연결됨");
+    $("#status .status-text").text("방제단 관제 채널 연결됨");
+    loadMyActiveTrack(channelKey);
+    
 
      $("#status").css("color", "#238451");
 
@@ -75,9 +116,7 @@ function connect() {
     });
 
   }, () => {
-
-    $("#status .status-text")
-  .text("연결 끊김 (3초 후 재연결...)");
+  $("#status .status-text").text("연결 끊김 (3초 후 재연결...)");
 
    $("#status").css("color", "#f2b705");
     setTimeout(connect, 3000);
