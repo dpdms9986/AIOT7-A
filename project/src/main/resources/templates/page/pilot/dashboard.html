@@ -69,8 +69,14 @@
                        </button>
 
                
-                <button type="button" class="gps-btn btn-stop"
-                        onclick="stopAuto()">
+                <button type="button" class="gps-btn btn-pause"
+                        onclick="pauseWork()">
+                       <i data-lucide="pause"></i>
+                      일시정지
+                      </button>
+
+               <button type="button" class="gps-btn btn-stop"
+                        onclick="confirmStop()">
                        <i data-lucide="square"></i>
                       중지
                       </button>
@@ -86,6 +92,7 @@
                     <li><i class="lg-assigned"></i>ASSIGNED 대기</li>
                     <li><i class="lg-progress"></i>IN_PROGRESS 진행 중</li>
                     <li><i class="lg-completed"></i>COMPLETED 완료</li>
+                    <li><i class="lg-interrupted"></i>INTERRUPTED 중단됨</li>
                 </ul>
             </article>
 

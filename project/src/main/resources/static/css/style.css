@@ -14464,3 +14464,22 @@ html {
 .popup-bg-black   { background: #000; }
 .popup-swiper-box { width: 100%; aspect-ratio: 3/4; background: #000; }
 .popup-img-full   { width: 100%; height: 100%; object-fit: cover; }
+
+
+/* ===== 중단됨(INTERRUPTED) 상태 - 빨강 ===== */
+.dash-legend .lg-interrupted { background: #e11d48; }
+.st-interrupted { --st: #e11d48; --st-bg: #fde8ec; --st-text: #c81e3a; }
+#farm-detail-drawer .status-badge.st-interrupted { background: #fde8ec; color: #c81e3a; }
+
+/* 일시정지 버튼 (중지 버튼 왼쪽) */
+.gps-btn.btn-pause { background: #f2994a; }
+.gps-control-bar .gps-btn.btn-pause:hover { background: #d9822f; }
+
+/* 선택 팝업 (예 / 아니오) */
+.login-popup-msg { white-space: pre-line; }
+.login-popup .login-popup-sub { margin: -8px 0 18px; color: #64727b; font-size: 13px; font-weight: 500; line-height: 1.6; white-space: pre-line; }
+
+/* 농지 상세 패널: 중단됨 조종사 카드 밑 재배정 폼 */
+#farm-detail-drawer .interrupt-reassign { margin-top: 12px; padding-top: 12px; border-top: 1px dashed #dce4e9; }
+#farm-detail-drawer .interrupt-reassign .team-reassign-form { width: 100%; }
+#farm-detail-drawer .interrupt-reassign .team-reassign-form select { flex: 1; min-width: 0; }

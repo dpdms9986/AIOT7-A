@@ -103,6 +103,8 @@
                         th:data-pilot-name="${assignment.pilotName}"
                         th:data-status-label="${assignment.statusLabel}"
                         th:data-status-class="${assignment.stClass}"
+                        th:data-status-code="${assignment.status}"
+                        th:data-pilot-no="${pilotNoByName.get(assignment.pilotName)}"
                         th:data-assigned-at="${assignment.assignedAt != null ? #temporals.format(assignment.assignedAt, 'yyyy-MM-dd HH:mm') : '-'}">
                     </div>
 
@@ -223,7 +225,23 @@
 
   </aside>
 
-<!-- ===== 농지 등록 모달 (POST → LandCreateRequest) ===== -->
+<!-- 중단됨 조종사 카드 밑에 JS 가 복사해서 붙이는 재배정 폼 -->
+<template id="reassign-form-template">
+  <div class="interrupt-reassign team-row-actions">
+    <form th:action="@{/leader/team-management/0/reassign}"
+          method="post" class="team-reassign-form"
+          onsubmit="return confirm('이 조종사의 미완료 작업을 선택한 조종사에게 재배정하시겠습니까?');">
+      <select name="targetNo" required>
+        <option value="">대상 선택</option>
+        <option th:each="target : ${onlineMembers}"
+                th:value="${target.no}"
+                th:data-no="${target.no}"
+                th:text="${target.name}">이서연</option>
+      </select>
+      <button type="submit" class="team-row-btn reassign">재배정</button>
+    </form>
+  </div>
+</template>
 <div class="team-modal-backdrop" id="farm-register-modal" hidden>
   <section class="team-modal" role="dialog" aria-modal="true" aria-labelledby="farm-register-title">
     <div class="team-modal-heading">
