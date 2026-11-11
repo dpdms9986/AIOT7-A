@@ -2,17 +2,27 @@ package com.aloha.project.controller.common;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.node.ArrayNode;
+
 import com.aloha.project.domain.tasks.WorkAssignments;
 import com.aloha.project.domain.users.CustomUser;
 import com.aloha.project.domain.users.Users;
@@ -32,6 +42,11 @@ public class DroneGpsController {
     private final UserRepository userRepository;
     private final WorkAssignmentRepository workAssignmentRepository;
     private final JsonMapper objectMapper;
+
+    // 서버 메모리에 팀별, 조종사별 실시간 비행 궤적 보관
+    // 구조: Map<팀초대코드, Map<조종사명, List<[위도, 경도]>>>
+    private final Map<String, Map<String, List<double[]>>> activeTracks =
+            new ConcurrentHashMap<>();
 
     // 조종사 화면에서 전송한 GPS 데이터 수신
     @Transactional
@@ -79,7 +94,6 @@ public class DroneGpsController {
             return;
         }
 
-        
         // 4. 조종사의 진행 중인 작업 조회
         WorkAssignments assignment = workAssignmentRepository
                 .findFirstByPilot_NoAndStatusOrderByStartedAtDesc(
@@ -92,12 +106,11 @@ public class DroneGpsController {
             return;
         }
 
-        // 5. 마지막 위치와 이동 경로 저장
+        // 5. 마지막 위치와 이동 경로 DB 저장
         assignment.setLastLatitude(latitude);
         assignment.setLastLongitude(longitude);
         assignment.setLastLocationAt(LocalDateTime.now());
 
-        // GPS 이동 경로 누적 저장
         appendFlightPath(assignment, latitude, longitude);
 
         workAssignmentRepository.save(assignment);
@@ -110,26 +123,32 @@ public class DroneGpsController {
                 longitude
         );
 
-        // 6. 단장 화면으로 전송할 데이터 설정
+        // 6. 팀 채널 및 조종사 정보 설정
         String safeTeamChannel = pilot.getTeam().getInviteCode();
+        String pilotName = pilot.getName();
 
-        message.setPilotName(pilot.getName());
+        message.setPilotName(pilotName);
         message.setTeamNo(pilot.getTeam().getNo());
+
+        // 7. develop의 실시간 궤적 메모리 누적 기능 유지
+        activeTracks
+                .computeIfAbsent(safeTeamChannel, k -> new ConcurrentHashMap<>())
+                .computeIfAbsent(pilotName, k -> new CopyOnWriteArrayList<>())
+                .add(new double[]{latitude, longitude});
 
         log.info(
                 "[실시간 위치 중계] 팀채널=/sub/team/{}, 조종사={}, 좌표=({}, {})",
                 safeTeamChannel,
-                message.getPilotName(),
+                pilotName,
                 latitude,
                 longitude
         );
 
-        // 7. 기존 단장 화면 실시간 GPS 중계 기능 유지
+        // 8. 단장 화면으로 실시간 GPS 중계
         messagingTemplate.convertAndSend(
                 "/sub/team/" + safeTeamChannel,
                 message
         );
-
     }
 
     /**
@@ -185,5 +204,17 @@ public class DroneGpsController {
                     e
             );
         }
+    }
+
+    // 단장 대시보드 새로고침 시 현재 메모리에 저장된 궤적 조회
+    @GetMapping("/api/drone/active-tracks")
+    @ResponseBody
+    public ResponseEntity<?> getActiveTracks(
+            @RequestParam("teamCode") String teamCode) {
+
+        Map<String, List<double[]>> teamTracks =
+                activeTracks.getOrDefault(teamCode, Collections.emptyMap());
+
+        return ResponseEntity.ok(teamTracks);
     }
 }
