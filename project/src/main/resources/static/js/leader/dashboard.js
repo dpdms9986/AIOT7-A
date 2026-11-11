@@ -385,7 +385,7 @@ document.addEventListener("DOMContentLoaded", () => {
     ) {
         map.panTo(marker.getLatLng());
     }
-   }
+}
       };
 
       pilotAnimations[name] = requestAnimationFrame(animate);
