@@ -14395,3 +14395,38 @@ html {
 .field-split-wrap .fs-map-label {
     left: 56px;   /* 줌 버튼 너비(약 34px) + 여백 */
 }
+
+
+/* ===== 인라인 style → 클래스 정리 ===== */
+
+/* 지도 범례 색 점 (리더/조종사 대시보드 공통) */
+.dash-legend .lg-ready     { background: #238451; }
+.dash-legend .lg-assigned  { background: #f2b705; }
+.dash-legend .lg-progress  { background: #2f80ed; }
+.dash-legend .lg-completed { background: #8a8f8c; }
+
+/* 조종사 작업 이력: 완료 보고 / 작업 취소 버튼 영역 */
+.hist-action-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 15px;
+    width: 100%;
+}
+.hist-action-form {
+    flex: 1;
+}
+.hist-action-row .hist-action-btn {
+    width: 100%;
+    height: 38px !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+}
+
+/* 메인 팝업 */
+.popup-bg-black   { background: #000; }
+.popup-swiper-box { width: 100%; aspect-ratio: 3/4; background: #000; }
+.popup-img-full   { width: 100%; height: 100%; object-fit: cover; }
