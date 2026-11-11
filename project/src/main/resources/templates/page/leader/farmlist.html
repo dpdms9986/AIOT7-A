@@ -73,9 +73,16 @@
                 <td th:text="${land.address}">전민동 15-2</td>
                 <td th:text="${#numbers.formatDecimal(land.areaSize, 0, 'COMMA', 0, 'POINT')}">3,300</td>
                 <td>
-                  <span class="status-badge"
-                  th:classappend="${land.statusClass}"
-                  th:text="${land.statusLabel}">대기</span>
+                  <div class="status-cell">
+                    <div class="status-cell-row">
+                      <span class="status-badge"
+                            th:classappend="${land.statusClass}"
+                            th:text="${land.statusLabel}">대기</span>
+                    </div>
+                    <span class="reassign-tag"
+                          th:if="${land.reassigned}"
+                          th:text="'이전: ' + ${land.prevPilotName}">이전: 조종사</span>
+                  </div>
                 </td>
                 <td th:text="${land.createdAt != null} ? ${#temporals.format(land.createdAt, 'yyyy-MM-dd HH:mm')} : '-'">2026-11-04 14:54</td>
                 
@@ -103,6 +110,9 @@
                         th:data-pilot-name="${assignment.pilotName}"
                         th:data-status-label="${assignment.statusLabel}"
                         th:data-status-class="${assignment.stClass}"
+                        th:data-status-code="${assignment.status}"
+                        th:data-pilot-no="${assignment.pilotNo}"
+                        th:data-assignment-no="${assignment.no}"
                         th:data-assigned-at="${assignment.assignedAt != null ? #temporals.format(assignment.assignedAt, 'yyyy-MM-dd HH:mm') : '-'}">
                     </div>
 
@@ -223,7 +233,24 @@
 
   </aside>
 
-<!-- ===== 농지 등록 모달 (POST → LandCreateRequest) ===== -->
+<!-- 중단됨 조종사 카드 밑에 JS 가 복사해서 붙이는 재배정 폼 -->
+<template id="reassign-form-template">
+  <div class="interrupt-reassign team-row-actions">
+    <form th:action="@{/leader/team-management/0/reassign}"
+          method="post" class="team-reassign-form"
+          onsubmit="return confirm('이 중단된 작업을 선택한 조종사에게 재배정하시겠습니까?');">
+      <input type="hidden" name="assignmentNo" value="">
+      <select name="targetNo" required>
+        <option value="">대상 선택</option>
+        <option th:each="target : ${onlineMembers}"
+                th:value="${target.no}"
+                th:data-no="${target.no}"
+                th:text="${target.name}">이서연</option>
+      </select>
+      <button type="submit" class="team-row-btn reassign">재배정</button>
+    </form>
+  </div>
+</template>
 <div class="team-modal-backdrop" id="farm-register-modal" hidden>
   <section class="team-modal" role="dialog" aria-modal="true" aria-labelledby="farm-register-title">
     <div class="team-modal-heading">

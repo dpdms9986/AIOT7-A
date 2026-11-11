@@ -465,6 +465,7 @@ public class PilotController {
                 .pilotName(assignment.getPilot() == null
                         ? null : assignment.getPilot().getName())
                 .assignedAt(assignment.getCreatedAt())
+                .interruptedAt(assignment.getInterruptedAt())
                 .startedAt(assignment.getStartedAt())
                 .completedAt(assignment.getCompletedAt())
                 .droneName(resources == null
@@ -472,6 +473,9 @@ public class PilotController {
                 .chemicalName(resources == null
                         ? null : resources.getChemical().getChemicalName())
                 .flightPath(assignment.getFlightPath())
+                .lastLatitude(assignment.getLastLatitude())
+                .lastLongitude(assignment.getLastLongitude())
+                .lastLocationAt(assignment.getLastLocationAt())
                 .build();
         }
 

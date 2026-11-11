@@ -26,6 +26,37 @@ document.addEventListener("DOMContentLoaded", () => {
     })[char]);
   };
 
+  // 중단됨 조종사 카드 밑에 [대상 선택 + 재배정] 폼 붙이기
+  const reassignTemplate = document.getElementById("reassign-form-template");
+
+  const appendReassignForm = (card, pilotNo, assignmentNo) => {
+    if (!reassignTemplate || !card) return;
+
+    const wrap = reassignTemplate.content.cloneNode(true);
+    const form = wrap.querySelector("form");
+
+    // 재배정할 작업 번호 (이게 없으면 "재배정할 작업을 선택해주세요." 에러가 뜸)
+    form.querySelector('input[name="assignmentNo"]').value = assignmentNo;
+
+    // 주소 .../team-management/0/reassign 의 0 을 중단된 조종사 번호로 교체
+    form.setAttribute("action", form.getAttribute("action").replace("/0/", `/${pilotNo}/`));
+
+    // 중단된 조종사 본인은 대상 목록에서 제외
+    form.querySelectorAll("option[data-no]").forEach((opt) => {
+      if (opt.dataset.no === String(pilotNo)) opt.remove();
+    });
+
+    // 고를 수 있는 조종사가 없으면 안내만 표시
+    const select = form.querySelector("select");
+    if (select.options.length <= 1) {
+      select.options[0].textContent = "배정 가능한 조종사 없음";
+      select.disabled = true;
+      form.querySelector("button").disabled = true;
+    }
+
+    card.appendChild(wrap);
+  };
+
   const openDrawer = (btn) => {
     const d = btn.dataset;
     lastTrigger = btn;
@@ -50,7 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
       : [];
 
     // 조종사 한 명의 정보 카드 생성
-    const createPilotCard = (pilotName, statusLabel, statusClass, assignedAt) => {
+    const createPilotCard = (pilotName, statusLabel, statusClass, assignedAt, statusCode, pilotNo, assignmentNo) => {
       pilotAssignmentsContainer.insertAdjacentHTML("beforeend", `
         <div class="pilot-assignment-card">
           <dl class="drawer-info">
@@ -69,6 +100,11 @@ document.addEventListener("DOMContentLoaded", () => {
           </dl>
         </div>
       `);
+
+      // 중단됨(INTERRUPTED) 상태인 조종사 카드 밑에만 재배정 폼 표시
+      if (statusCode === "INTERRUPTED" && pilotNo && assignmentNo) {
+        appendReassignForm(pilotAssignmentsContainer.lastElementChild, pilotNo, assignmentNo);
+      }
     };
 
     // 배정 정보가 있는 경우
@@ -80,7 +116,10 @@ document.addEventListener("DOMContentLoaded", () => {
           data.pilotName || "미배정",
           data.statusLabel || "-",
           data.statusClass || "",
-          data.assignedAt || "-"
+          data.assignedAt || "-",
+          data.statusCode || "",
+          data.pilotNo || "",
+          data.assignmentNo || ""
         );
       });
     } else {
@@ -142,6 +181,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll(".detail-button").forEach((btn) => {
     btn.addEventListener("click", () => openDrawer(btn));
   });
+
 
   closeBtn.addEventListener("click", closeDrawer);
   backdrop.addEventListener("click", closeDrawer);

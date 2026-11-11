@@ -25,15 +25,22 @@ public class PilotTaskDto {
     private String address;            // 농지 주소
     private String region;             // 행정구역 예) 유성구 전민동  (단장 화면용)
     private Double areaSize;           // 면적 ㎡
-    private String status;             // ASSIGNED / IN_PROGRESS / COMPLETED
+    private String status;             // ASSIGNED / IN_PROGRESS / PAUSED / INTERRUPTED / STOPPED / COMPLETED
     private String pilotName;          // 담당 조종사               (단장 화면용)
+    private Long pilotNo;              // 담당 조종사 회원 번호
     private LocalDateTime assignedAt;  // 배정 일시
+    private LocalDateTime interruptedAt; // 작업 중단 일시 (중단된 적 없으면 null)
 
 
-    // 다격형 변수 
+    // 다격형 변수
     private String polygonCoordinates;
-    // 배정 이전 시 사용될 비행궤적 JSON 문자열 
+    // 배정 이전 시 사용될 비행궤적 JSON 문자열
     private String flightPath;
+
+    // 마지막 GPS 위치 정보
+    private Double lastLatitude;
+    private Double lastLongitude;
+    private LocalDateTime lastLocationAt;
 
     // 작업 시작 때 채워짐
     private String droneName;          // 사용 드론
@@ -51,6 +58,9 @@ public class PilotTaskDto {
         return switch (status) {
             case "ASSIGNED"    -> "대기";
             case "IN_PROGRESS" -> "진행 중";
+            case "PAUSED"      -> "일시정지";
+            case "INTERRUPTED" -> "중단됨";
+            case "STOPPED"     -> "인계됨";
             case "COMPLETED"   -> "완료";
             default            -> status;
         };
@@ -62,6 +72,9 @@ public class PilotTaskDto {
             case "ASSIGNED"    -> "st-assigned";
             case "IN_PROGRESS" -> "st-progress";
             case "COMPLETED"   -> "st-completed";
+            case "PAUSED"      -> "st-assigned";
+            case "INTERRUPTED" -> "st-interrupted";
+            case "STOPPED"     -> "st-stopped";
             default            -> "";
         };
     }
@@ -90,9 +103,14 @@ public class PilotTaskDto {
                 .areaSize(area)
                 .status(assignment.getStatus())
                 .pilotName(pilot)
+                .pilotNo(assignment.getPilot() != null ? assignment.getPilot().getNo() : null)
                 .polygonCoordinates(polygon)
                 .flightPath(assignment.getFlightPath())
+                .lastLatitude(assignment.getLastLatitude())
+                .lastLongitude(assignment.getLastLongitude())
+                .lastLocationAt(assignment.getLastLocationAt())
                 .assignedAt(assignment.getCreatedAt())
+                .interruptedAt(assignment.getInterruptedAt())
                 .startedAt(assignment.getStartedAt())
                 .completedAt(assignment.getCompletedAt() != null ? assignment.getCompletedAt() : assignment.getCreatedAt())
                 .droneName("-")               // 기본값 (추후 기체 배정 연동)

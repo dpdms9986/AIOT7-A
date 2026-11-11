@@ -1,6 +1,7 @@
 package com.aloha.project.dto;
 
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -25,6 +26,9 @@ public class FarmPointDto {
     private String assignedAt;   // "2026-10-29 09:30" 같은 글자 (없으면 null)
     private String polygonCoordinates;
 
+    // 농지에 배정된 조종사별 작업 및 비행 경로 정보
+    private List<PilotTaskDto> pilotAssignments;
+
     private static final DateTimeFormatter DT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     public static FarmPointDto from(LandDto l) {
@@ -33,6 +37,8 @@ public class FarmPointDto {
                 l.getStatus(), l.getStatusLabel(), l.getStColor(),
                 l.getLatitude(), l.getLongitude(), l.getPilotName(),
                 l.getAssignedAt() == null ? null : l.getAssignedAt().format(DT),
-                l.getPolygonCoordinates() );
+                l.getPolygonCoordinates(),
+                l.getPilotAssignments()
+        );
     }
 }

@@ -28,7 +28,7 @@ public class TeamMemberDto {
     private String name;        // 이름
     private String username;    // 이메일(아이디)
     private String phone;       // 연락처
-    private String status;      // online / working / offline
+    private String status;      // online / working / paused / offline
     private String drone;       // 담당 기체 (없으면 null)
     private String currentTask; // 현재 작업 (없으면 "-")
     private int completed;      // 금일 완료 건수
@@ -69,28 +69,47 @@ public class TeamMemberDto {
 
         if (dto == null) return null;
 
+        if (works == null) {
+            return dto;
+        }
+
         // 현재 작업 중인 배정 건 조회
         WorkAssignments current = works.stream()
                 .filter(w -> "IN_PROGRESS".equals(w.getStatus()))
                 .findFirst()
                 .orElse(null);
 
+        // 작업 중인 배정이 없다면 일시정지된 배정 건 조회
+        WorkAssignments paused = works.stream()
+                .filter(w -> "PAUSED".equals(w.getStatus()))
+                .findFirst()
+                .orElse(null);
+
+        // IN_PROGRESS 상태를 PAUSED보다 우선 적용
         if (current != null) {
 
-            // 작업 상태 변경
             dto.setStatus("working");
 
-            // 현재 작업 농지 주소
             dto.setCurrentTask(
                     current.getLand() != null
                             ? current.getLand().getAddress()
                             : "-"
             );
 
-            // 현재 작업에 선택된 드론 모델명
             if (resources != null && resources.getDrone() != null) {
                 dto.setDrone(resources.getDrone().getModelName());
             }
+
+        } else if (paused != null) {
+
+            // 일시정지 상태
+            dto.setStatus("paused");
+
+            dto.setCurrentTask(
+                    paused.getLand() != null
+                            ? paused.getLand().getAddress()
+                            : "-"
+            );
         }
 
         // 금일 완료 작업 건수

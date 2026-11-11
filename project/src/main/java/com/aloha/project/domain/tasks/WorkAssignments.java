@@ -1,3 +1,4 @@
+
 package com.aloha.project.domain.tasks;
 
 import java.time.LocalDateTime;
@@ -17,14 +18,15 @@ import lombok.Setter;
 
 @Entity
 @Table(name = "work_assignments")
-@Getter 
-@Setter 
-@Builder 
-@AllArgsConstructor 
+@Getter
+@Setter
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class WorkAssignments {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long no;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -37,15 +39,34 @@ public class WorkAssignments {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "users_no", nullable = false)
-    private Users pilot; // 담당 조종사(Users.no) 참조
+    private Users pilot; // 담당 조종사(Users.no)
 
     private Double weightRatio; // 분배 가중치 비율 (균등 또는 수동 할당 비율)
 
+    @Builder.Default
     @Column(nullable = false, length = 20)
-    private String status = "ASSIGNED"; // ASSIGNED(배정됨), IN_PROGRESS(작업중), COMPLETED(완료)
+    private String status = "ASSIGNED";
+    // ASSIGNED(배정됨), IN_PROGRESS(작업중),
+    // PAUSED(일시정지), INTERRUPTED(강제중단),
+    // STOPPED(작업중지/인계), COMPLETED(완료)
 
-    @Column(columnDefinition = "TEXT")
-    private String flightPath;
+    @Column(name = "flight_path", columnDefinition = "TEXT")
+    private String flightPath; // 드론 이동 경로
+
+    @Column(name = "last_latitude")
+    private Double lastLatitude; // 마지막 GPS 위도
+
+    @Column(name = "last_longitude")
+    private Double lastLongitude; // 마지막 GPS 경도
+
+    @Column(name = "last_location_at")
+    private LocalDateTime lastLocationAt; // 마지막 GPS 수신 일시
+
+    @Column(name = "interrupted_at")
+    private LocalDateTime interruptedAt; // 작업 중단 일시
+
+    @Column(name = "reassignment_notice_read_at")
+    private LocalDateTime reassignmentNoticeReadAt; // 재배정 알림 확인 일시
 
     private LocalDateTime startedAt; // 작업 시작 일시
 
@@ -58,8 +79,9 @@ public class WorkAssignments {
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
     }
-// Lands.java 및 WorkAssignments.java 내부에 각각 추가
+
+    // Lands.java 및 WorkAssignments.java 내부에 각각 추가
     public void updateStatus(String status) {
-    this.status = status;
+        this.status = status;
     }
 }
