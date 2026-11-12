@@ -448,9 +448,42 @@ public class PilotController {
                 .build();
     }
 
+        /**
+         * from(인계됨 STOPPED 작업) → to(새로 만들어진 작업) 인계 관계인지 확인
+         * 같은 농지 + 같은 배정 묶음 + 같은 가중치 + 다른 조종사 + 인계 시각이 5초 이내
+         */
+        private boolean handedOver(WorkAssignments from, WorkAssignments to) {
+            return "STOPPED".equals(from.getStatus())
+                    && !java.util.Objects.equals(from.getNo(), to.getNo())
+                    && from.getCompletedAt() != null && to.getCreatedAt() != null
+                    && from.getLand() != null && to.getLand() != null
+                    && java.util.Objects.equals(from.getLand().getNo(), to.getLand().getNo())
+                    && from.getDispatchBatch() != null && to.getDispatchBatch() != null
+                    && java.util.Objects.equals(from.getDispatchBatch().getNo(), to.getDispatchBatch().getNo())
+                    && java.util.Objects.equals(from.getWeightRatio(), to.getWeightRatio())
+                    && from.getPilot() != null && to.getPilot() != null
+                    && !java.util.Objects.equals(from.getPilot().getNo(), to.getPilot().getNo())
+                    && Math.abs(java.time.Duration.between(from.getCompletedAt(), to.getCreatedAt()).getSeconds()) <= 5;
+        }
+
         /** 작업 배정 엔티티 → 작업 이력 DTO */
         private PilotTaskDto toPilotTaskDto(WorkAssignments assignment) {
         Lands land = assignment.getLand();
+
+        // 인계 관계: 이 작업을 넘겨준 조종사(받은 사람 화면) / 이 작업을 인계받은 조종사(넘긴 사람 화면)
+        List<WorkAssignments> sameLand = land == null ? List.of() : workAssignmentRepository.findByLand(land);
+
+        String prevPilotName = sameLand.stream()
+                .filter(o -> handedOver(o, assignment))
+                .max(java.util.Comparator.comparing(WorkAssignments::getNo))
+                .map(o -> o.getPilot().getName())
+                .orElse(null);
+
+        String nextPilotName = sameLand.stream()
+                .filter(o -> handedOver(assignment, o))
+                .min(java.util.Comparator.comparing(WorkAssignments::getNo))
+                .map(o -> o.getPilot().getName())
+                .orElse(null);
 
         // 작업 시작 시 선택한 드론과 약제 정보 조회
         WorkAssignmentResources resources = workAssignmentResourceRepository
@@ -466,6 +499,8 @@ public class PilotController {
                         ? null : assignment.getPilot().getName())
                 .assignedAt(assignment.getCreatedAt())
                 .interruptedAt(assignment.getInterruptedAt())
+                .prevPilotName(prevPilotName)
+                .nextPilotName(nextPilotName)
                 .startedAt(assignment.getStartedAt())
                 .completedAt(assignment.getCompletedAt())
                 .droneName(resources == null

@@ -741,6 +741,7 @@ if (req.getLandNos() != null && req.getLandNos().size() == 1) {
                 .lastLatitude(oldTask.getLastLatitude())
                 .lastLongitude(oldTask.getLastLongitude())
                 .lastLocationAt(oldTask.getLastLocationAt())
+                .interruptedAt(oldTask.getInterruptedAt())
                 .build();
 
         workAssignmentRepository.save(newTask);
