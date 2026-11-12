@@ -11,11 +11,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const items = () => [...list.querySelectorAll("li")];
   const buttons = () => [...list.querySelectorAll(".pilot-task")];
 
-  // 완료(COMPLETED)가 아닌 모든 상태는 진행 중으로 분류한다.
-  // 진행 중 작업이 하나라도 있으면 진행 중 탭을 기본으로 보여준다.
-  let currentFilter = items().some((li) => li.dataset.group === "active")
-    ? "active"
-    : "done";
+  // 진행 중 탭을 기본으로 보여준다.
+  let currentFilter = "active";
 
   let selectedNo = list.dataset.selected;
   let markers = [];
@@ -26,54 +23,28 @@ document.addEventListener("DOMContentLoaded", () => {
     ASSIGNED: 1,
     INTERRUPTED: 2,
     PAUSED: 2,
-    STOPPED: 3,
-    COMPLETED: 4
+    STOPPED: 3
   };
 
-  // 날짜 문자열을 timestamp로 변환
-  const toTimestamp = (value) => {
-    if (!value) return 0;
-
-    const timestamp = new Date(value).getTime();
-
-    return Number.isNaN(timestamp) ? 0 : timestamp;
-  };
-
-  // 상태별 우선순위 정렬
-  // 완료 작업은 완료 일시 최신순
+  // 대시보드에 남는 작업의 상태별 우선순위 정렬
   const sortTasks = () => {
     const taskItems = items();
 
     taskItems.sort((a, b) => {
-      // 상태와 날짜는 li에서 가져온다.
       const statusA = a.dataset.status;
       const statusB = b.dataset.status;
 
       const orderA = STATUS_ORDER[statusA] ?? 5;
       const orderB = STATUS_ORDER[statusB] ?? 5;
 
-      // 1. 상태별 우선순위
       if (orderA !== orderB) {
         return orderA - orderB;
-      }
-
-      // 2. 완료 작업은 완료 일시 최신순
-      if (
-        statusA === "COMPLETED" &&
-        statusB === "COMPLETED"
-      ) {
-        const dateA = toTimestamp(a.dataset.completedAt);
-        const dateB = toTimestamp(b.dataset.completedAt);
-
-        return dateB - dateA;
       }
 
       return 0;
     });
 
-    taskItems.forEach((li) => {
-      list.appendChild(li);
-    });
+    taskItems.forEach((li) => list.appendChild(li));
   };
 
   sortTasks();
@@ -81,9 +52,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* ===== 1. 탭: 개수 표시 + 보였다/숨겼다 ===== */
   const NAMES = {
-    active: "진행 중",
-    stopped: "중단 및 인계",
-    done: "완료됨"
+    active: "작업중",
+    stopped: "중단 및 인계"
   };
 
   const renderTabs = () => {
@@ -94,10 +64,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       stopped: items().filter(
         (li) => li.dataset.group === "stopped"
-      ).length,
-
-      done: items().filter(
-        (li) => li.dataset.group === "done"
       ).length
     };
 

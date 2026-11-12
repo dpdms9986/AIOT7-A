@@ -93,6 +93,8 @@ public class PilotController {
         List<LandDto> myTasks = workAssignmentRepository
                 .findByPilot_No(pilot.getNo())
                 .stream()
+                // 대시보드에서는 완료된 작업 제외
+                .filter(a -> !"COMPLETED".equals(a.getStatus()))
                 .map(this::toLandDto)
                 .toList();
 
