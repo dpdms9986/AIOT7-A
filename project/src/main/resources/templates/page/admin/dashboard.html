@@ -50,6 +50,7 @@
       </div>
       <ul class="adm-inq" id="inquiry-list"></ul>
       <p class="adm-empty" id="inquiry-empty">새로 들어온 문의가 없어요.</p>
+      <div class="um-pager" id="inquiry-pager" hidden></div>
       <a class="adm-link" th:href="@{/admin/inquiries}">문의현황 바로가기 ›</a>
     </article>
   </div>
@@ -88,6 +89,15 @@
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- 방제 이력 페이지네이션 -->
+      <div class="um-pager" th:if="${workTotalPages != null and workTotalPages > 1}">
+        <a th:if="${workPage > 1}" th:href="@{/admin/dashboard(workPage=${workPage - 1})}">‹</a>
+        <a th:each="p : ${#numbers.sequence(1, workTotalPages)}"
+           th:href="@{/admin/dashboard(workPage=${p})}"
+           th:classappend="${p == workPage} ? 'on'" th:text="${p}">1</a>
+        <a th:if="${workPage < workTotalPages}" th:href="@{/admin/dashboard(workPage=${workPage + 1})}">›</a>
       </div>
     </article>
   </div>
@@ -143,25 +153,46 @@ document.addEventListener('DOMContentLoaded', () => {
     .then(d => { if (d) setAll('.js-waiting', d.waitingCount); })
     .catch(() => {});
 
-  // TODO(백엔드) 신규 문의: 답변 대기 최근 4건
-  fetch('/api/inquiries/admin?status=WAITING&size=4')
-    .then(r => (r.ok ? r.json() : null))
-    .then(page => {
-      const list = page && page.content ? page.content : [];
-      if (list.length === 0) return;
-      const ul = document.getElementById('inquiry-list');
-      list.forEach(q => {
-        const li = document.createElement('li');
-        const title = document.createElement('span');
-        title.textContent = q.title;
-        const date = document.createElement('span');
-        date.textContent = (q.createdAt || '').slice(5, 10).replace('-', '.');
-        li.append(title, date);
-        ul.appendChild(li);
-      });
-      document.getElementById('inquiry-empty').hidden = true;
-    })
-    .catch(() => {});
+  // 신규 문의: 답변 대기 목록 (4건씩 페이지네이션)
+  const INQ_SIZE = 4;
+  const loadInquiries = (pageNo) => {
+    fetch('/api/inquiries/admin?status=WAITING&size=' + INQ_SIZE + '&page=' + pageNo)
+      .then(r => (r.ok ? r.json() : null))
+      .then(page => {
+        const list = page && page.content ? page.content : [];
+        const ul = document.getElementById('inquiry-list');
+        const pager = document.getElementById('inquiry-pager');
+        ul.innerHTML = '';
+        pager.innerHTML = '';
+
+        document.getElementById('inquiry-empty').hidden = list.length > 0;
+        if (list.length === 0) { pager.hidden = true; return; }
+
+        list.forEach(q => {
+          const li = document.createElement('li');
+          const title = document.createElement('span');
+          title.textContent = q.title;
+          const date = document.createElement('span');
+          date.textContent = (q.createdAt || '').slice(5, 10).replace('-', '.');
+          li.append(title, date);
+          ul.appendChild(li);
+        });
+
+        // 페이지 버튼
+        const total = page.totalPages || 1;
+        pager.hidden = total <= 1;
+        for (let p = 0; p < total; p++) {
+          const a = document.createElement('a');
+          a.href = '#';
+          a.textContent = p + 1;
+          if (p === pageNo) a.className = 'on';
+          a.addEventListener('click', (e) => { e.preventDefault(); loadInquiries(p); });
+          pager.appendChild(a);
+        }
+      })
+      .catch(() => {});
+  };
+  loadInquiries(0);
 
   // 주간 방제 작업 추이: 값이 없거나 전부 0이면 안내 문구만 보임
   const labels = WEEK_LABELS || [];
