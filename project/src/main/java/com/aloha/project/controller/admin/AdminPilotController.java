@@ -68,7 +68,6 @@ public class AdminPilotController {
         model.addAttribute("tab", tab);
         size = (size < 1 || size > 100) ? 10 : size;
 
-        // TODO(백엔드) 아래는 findAll() 로 전체를 읽어 메모리에서 계산 중 (데이터가 많아지면 느려짐)
         //   - UserRepository : role=PILOT 조회 + 검색/방제단/상태 필터 + 페이징 쿼리
         //   - WorkAssignmentRepository : 조종사별 상태별 건수 집계 쿼리 (GROUP BY pilot)
         Map<Long, List<WorkAssignments>> worksByPilot = workAssignmentRepository.findAll().stream()

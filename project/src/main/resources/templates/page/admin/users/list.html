@@ -188,7 +188,7 @@
     if (ids.length === 0) return;
 
     $confirmHTML('선택 삭제',
-        '선택한 ' + ids.length + '명의 회원을 삭제하시겠습니까?<br><br><strong>주의:</strong> 삭제된 데이터는 복구할 수 없습니다.',
+                '선택한 ' + ids.length + '명의 회원을 삭제하시겠습니까?<br><br><strong>주의:</strong> 삭제된 회원은 비활성화되어 로그인할 수 없습니다.',
         'warning', '삭제', '취소')
       .then(function (result) {
         if (!result.isConfirmed) return;
@@ -200,9 +200,15 @@
     let ok = 0, fail = 0;
     $('#deleteSelectedBtn').prop('disabled', true).text('삭제 중...');
 
-    // TODO(백엔드) DELETE /api/users/user/{id} 가 만들어져야 동작함 (id = Users.id UUID)
+    // DELETE /api/users/user/{id} (id = Users.id UUID)
+    // $ajax 는 실패해도 예외를 던지지 않으므로 success / error 콜백으로 성공·실패를 센다
     const jobs = ids.map(id =>
-      $ajax({ url: '/api/users/user/' + id, type: 'DELETE' }).then(() => { ok++; }).catch(() => { fail++; })
+      $ajax({
+        url: '/api/users/user/' + id,
+        type: 'DELETE',
+        success: () => { ok++; },
+        error: () => { fail++; }
+      })
     );
 
     Promise.all(jobs).then(() => {
