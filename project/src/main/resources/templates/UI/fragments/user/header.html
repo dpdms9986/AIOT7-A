@@ -39,4 +39,6 @@
 
       </div>
     </header>
+    <!-- 조종사만: 작업 중 로그아웃 확인 팝업 -->
+    <script th:src="@{/js/common/pilot-logout.js}" sec:authorize="hasRole('PILOT')"></script>
 </th:block>
