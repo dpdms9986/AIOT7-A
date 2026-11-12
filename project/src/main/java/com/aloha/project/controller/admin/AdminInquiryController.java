@@ -43,7 +43,6 @@ public class AdminInquiryController {
         page = Math.max(page, 1);
         size = (size < 1 || size > 100) ? 10 : size;
 
-        // TODO(백엔드) 지금은 InquiryService#adminList 그대로 사용 (상태/유형/검색어 필터 + 최신순)
         Page<Inquiries> result = inquiryService.adminList(status, category, keyword.trim(), PageRequest.of(page - 1, size));
 
         // 없는 페이지 번호로 들어오면 마지막 페이지로 다시 조회

@@ -18,5 +18,8 @@ public interface WorkAssignmentResourceRepository
     // 약제가 작업 배정에 사용 중인지 확인
     boolean existsByChemical_No(Long chemicalNo);
 
+    // 드론이 특정 상태(예: IN_PROGRESS)의 작업에 쓰이고 있는지 확인
+    boolean existsByDrone_NoAndWorkAssignment_Status(Long droneNo, String status);
+
 }
 

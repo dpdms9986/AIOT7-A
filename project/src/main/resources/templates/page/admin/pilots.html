@@ -23,11 +23,11 @@
 <th:block th:if="${tab == 'pilots'}">
 
 <!--/*
-  TODO(백엔드) 이 페이지에서 받는 값 (AdminPilotController#list)
+   이 페이지에서 받는 값 (AdminPilotController#list)
     pilots (List<AdminPilotDto>) : no, name, userName, phone, teamName, statusLabel/statusClass,
                                    assignedCount, inProgressCount, completedCount, lastWorkAt, createdAt
     pagination / teams(List<Teams>) / search / teamNo / status / totalCount / workingCount / disabledCount
-  TODO(백엔드) 아직 없는 기능 (API 만들어지면 표 맨 끝에 "관리" 칸 추가)
+   아직 없는 기능 (API 만들어지면 표 맨 끝에 "관리" 칸 추가)
     - 계정 정지 / 정지 해제 (Users.enabled 변경)
     - 조종사 삭제, 방제단 변경
     - 조종사 상세 (배정된 작업 목록 등)

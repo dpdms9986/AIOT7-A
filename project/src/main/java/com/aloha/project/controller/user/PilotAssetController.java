@@ -84,7 +84,15 @@ public class PilotAssetController {
         // 3. Entity → DTO 변환
         List<AssetDto> all = new ArrayList<>(
                 drones.stream()
-                        .map(AssetDto::from)
+                        .map(d -> {
+                            AssetDto dto = AssetDto.from(d);
+                            // 진행 중인 작업에 쓰이는 드론은 "운용 중"으로 표시
+                            if (workAssignmentResourceRepository
+                                    .existsByDrone_NoAndWorkAssignment_Status(d.getNo(), "IN_PROGRESS")) {
+                                dto.setStatus("operating");
+                            }
+                            return dto;
+                        })
                         .toList()
         );
 
@@ -308,11 +316,18 @@ public class PilotAssetController {
                             "error", "자산 정보를 확인할 수 없습니다."
                     );
 
-                } else if (!List.of("normal", "operating", "maintenance",
+                } else if (!List.of("normal", "maintenance",
                         "in-maintenance", "fault").contains(status)) {
 
                     redirectAttributes.addFlashAttribute(
                             "error", "올바르지 않은 드론 상태입니다."
+                    );
+
+                } else if (workAssignmentResourceRepository
+                        .existsByDrone_NoAndWorkAssignment_Status(droneNo, "IN_PROGRESS")) {
+
+                    redirectAttributes.addFlashAttribute(
+                            "error", "작업 중에는 드론 상태를 변경할 수 없습니다.\n일시정지 또는 완료 후 변경해 주세요."
                     );
 
                 } else {
