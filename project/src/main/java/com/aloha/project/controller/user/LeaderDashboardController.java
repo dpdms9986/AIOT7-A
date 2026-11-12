@@ -92,7 +92,15 @@ public class LeaderDashboardController {
             .collect(Collectors.toMap(
                     w -> w.getLand().getNo(),
                     w -> w,
-                    (a, b) -> b,
+                    (a, b) -> {
+                       if ("IN_PROGRESS".equals(b.getStatus())) {
+                         return b;
+                       }
+                       if ("IN_PROGRESS".equals(b.getStatus())) {
+                         return a;
+                       }
+                       return b;
+                     },
                     LinkedHashMap::new
             ));
 
@@ -157,13 +165,34 @@ public class LeaderDashboardController {
         model.addAttribute("readyLands", readyLands);
 
         // 4) 조종사별: 맡은 작업 수(배정+진행 중), 지금 작업 중인 농지 주소
-        Map<String, Long> activeCount = lands.stream()
-                .filter(l -> ("ASSIGNED".equals(l.getStatus()) || "IN_PROGRESS".equals(l.getStatus())) && l.getPilotName() != null)
-                .collect(Collectors.groupingBy(LandDto::getPilotName, LinkedHashMap::new, Collectors.counting()));
-        Map<String, String> workingAt = lands.stream()
-                .filter(l -> "IN_PROGRESS".equals(l.getStatus()) && l.getPilotName() != null)
-                .collect(Collectors.toMap(LandDto::getPilotName, LandDto::getAddress, (a, b) -> a, LinkedHashMap::new));
+        // 조종사별 실제 작업 배정 기록을 기준으로 집계
+        Map<String, Long> activeCount = pilots.stream()
+        .collect(Collectors.toMap(
+                TeamMemberDto::getName,
+                p -> worksByPilot.getOrDefault(p.getNo(), List.of()).stream()
+                        .filter(w ->
+                                "ASSIGNED".equals(w.getStatus())
+                                || "IN_PROGRESS".equals(w.getStatus()))
+                        .count(),
+                (a, b) -> a,
+                LinkedHashMap::new
+        ));
 
+         // 조종사별 현재 작업 중인 농지 주소
+        Map<String, String> workingAt = pilots.stream()
+        .filter(p -> worksByPilot.getOrDefault(p.getNo(), List.of()).stream()
+                .anyMatch(w -> "IN_PROGRESS".equals(w.getStatus())))
+        .collect(Collectors.toMap(
+                TeamMemberDto::getName,
+                p -> worksByPilot.getOrDefault(p.getNo(), List.of()).stream()
+                        .filter(w -> "IN_PROGRESS".equals(w.getStatus()))
+                        .filter(w -> w.getLand() != null)
+                        .findFirst()
+                        .map(w -> w.getLand().getAddress())
+                        .orElse("-"),
+                (a, b) -> a,
+                LinkedHashMap::new
+        ));
         // 일시정지된 조종사별 현재 작업 농지 주소
         Map<String, String> pausedAt = pilots.stream()
                 .filter(p -> "paused".equals(p.getStatus()))

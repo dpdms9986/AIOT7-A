@@ -55,7 +55,6 @@ document.addEventListener("DOMContentLoaded", () => {
         color: sel ? "#000" : "#fff", weight: sel ? 3 : 2, fillOpacity: 0.9,
       }).addTo(map);
       const lines = [`🌱 ${f.address}`, `면적: ${Number(f.area || 0).toLocaleString()}㎡`, `상태: ${farmLabel(f)}`];
-      if (f.pilotName) lines.push(`조종사: ${f.pilotName}`);
       m.bindPopup(popupOf(lines));
       m.on("click", () => selectFarm(f.no, false));
       if (sel) m.bringToFront();
@@ -94,7 +93,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     if ($("#ap-area")) $("#ap-area").textContent = `${Number(f.area || 0).toLocaleString()}㎡`;
     if ($("#ap-date")) $("#ap-date").textContent = f.assignedAt || "-";
-    if ($("#ap-pilot")) $("#ap-pilot").textContent = f.pilotName || "미배정";
 
     const canAssign = f.status === "READY" || f.status === "ASSIGNED";
 
@@ -114,10 +112,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (note) {
-      note.hidden = canAssign;
-      if (f.status === "IN_PROGRESS") note.textContent = isInterrupted(f)
-        ? "⚠️ 작업이 중단된 조종사가 있습니다. [농지 관리]에서 재배정할 수 있어요."
-        : `🚁 ${f.pilotName} 조종사가 작업 중입니다.`;
+      note.hidden = canAssign || f.status === "IN_PROGRESS";
+     
       if (f.status === "COMPLETED") note.textContent = "완료된 작업입니다.";
     }
 

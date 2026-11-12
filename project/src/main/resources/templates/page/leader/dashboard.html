@@ -153,10 +153,6 @@
                         <span th:text="${#numbers.formatDecimal(l.areaSize, 0, 'COMMA', 0, 'POINT')} + '㎡'">
                             3,300㎡
                         </span>
-                        <span th:if="${l.pilotName != null}"
-                              th:text="' · ' + ${l.pilotName}">
-                            · 조종사
-                        </span>
                     </small>
                 </span>
 
@@ -217,7 +213,6 @@
               <dt>상태</dt>   <dd><span class="assign-status" id="ap-status">-</span></dd>
               <dt>면적</dt>   <dd id="ap-area">-</dd>
               <dt>배정일</dt> <dd id="ap-date">-</dd>
-              <dt>조종사</dt> <dd id="ap-pilot">-</dd>
             </dl>
 
             <!-- 작업 배정 연동 수정! 11.09 예은 -->

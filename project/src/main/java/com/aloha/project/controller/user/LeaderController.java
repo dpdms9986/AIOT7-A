@@ -233,7 +233,7 @@ public class LeaderController {
         List<PilotTaskDto> rows = filterHistory(from, to, hPilot);
 
         StringBuilder sb = new StringBuilder("\uFEFF");   // 엑셀 한글 깨짐 방지
-        sb.append("완료 일시,주소,면적(㎡),담당 조종사,배정 일시,사용 약제\r\n");
+        sb.append("완료 일시,주소,면적(㎡),담당 조종사,배정 일시,사용 드론,사용 약제\r\n");
         for (PilotTaskDto r : rows) {
             sb.append(String.join(",",
                     csv(r.getCompletedAt() == null ? "" : r.getCompletedAt().format(DT)),
@@ -241,6 +241,7 @@ public class LeaderController {
                     csv(r.getAreaSize()),
                     csv(r.getPilotName()),
                     csv(r.getAssignedAt() == null ? "" : r.getAssignedAt().format(DT)),
+                    csv(r.getDroneName()) + "," +
                     csv(r.getChemicalName())))
               .append("\r\n");
         }
@@ -1024,6 +1025,7 @@ if (req.getLandNos() != null && req.getLandNos().size() == 1) {
                     .assignedAt(w.getCreatedAt())
                     .interruptedAt(w.getInterruptedAt())
                     .completedAt(w.getCompletedAt() != null ? w.getCompletedAt() : w.getCreatedAt())
+                    .droneName(resources != null && resources.getDrone() != null ? resources.getDrone().getModelName() : "-")
                     .chemicalName(resources != null && resources.getChemical() != null ? resources.getChemical().getChemicalName() : "-")
                     .build();
         }).toList();

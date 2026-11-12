@@ -410,6 +410,7 @@
               <th>배정 일시</th>
               <th>중단 일시</th>
               <th>완료 일시</th>
+              <th>사용 드론</th>
               <th>사용 약제</th>
             </tr>
           </thead>
@@ -426,10 +427,11 @@
               <td th:text="${#temporals.format(h.assignedAt, 'yyyy-MM-dd HH:mm')}">2026-10-28 14:00</td>
               <td th:text="${h.interruptedAt != null ? #temporals.format(h.interruptedAt, 'yyyy-MM-dd HH:mm') : '-'}">-</td>
               <td th:text="${#temporals.format(h.completedAt, 'yyyy-MM-dd HH:mm')}">2026-10-28 15:10</td>
+              <td th:text="${h.droneName}">드론 모델명</td>
               <td th:text="${h.chemicalName}">살균제 A</td>
             </tr>
             <tr th:if="${#lists.isEmpty(history)}">
-              <td colspan="7" class="task-empty-cell">조건에 맞는 작업 이력이 없습니다.</td>
+              <td colspan="8" class="task-empty-cell">조건에 맞는 작업 이력이 없습니다.</td>
             </tr>
           </tbody>
         </table>
