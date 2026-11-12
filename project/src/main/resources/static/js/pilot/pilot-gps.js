@@ -163,7 +163,7 @@ async function startFakeAuto() {
     return alert("선택한 농지의 위치 정보가 올바르지 않습니다.");
   }
   const taskStatus = selectedTask.dataset.status;
-  if (taskStatus && taskStatus !== "진행 중") {
+  if (taskStatus && taskStatus !== "진행 중" && taskStatus !== "IN_PROGRESS") {
   return showPopup(
     `현재 [${taskStatus}] 상태인 작업입니다.\n먼저 [작업 시작] 또는 [작업 재개]를 진행한 후 비행을 시작해주세요.`,
     "warn"
