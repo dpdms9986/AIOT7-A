@@ -14491,6 +14491,9 @@ html {
 
 /* ===== 중단됨(INTERRUPTED) 상태 - 빨강 ===== */
 .dash-legend .lg-interrupted { background: #e11d48; }
+.pilot-tabs button[hidden] { display: none; }
+.pilot-tabs .tab-interrupted { color: #c81e3a; }
+.pilot-tabs .tab-interrupted.active { background: #e11d48; color: #fff; border-color: #e11d48; }
 .st-interrupted { --st: #e11d48; --st-bg: #fde8ec; --st-text: #c81e3a; }
 .st-stopped { --st: #0d9488; --st-bg: #e0f5f2; --st-text: #0f766e; }
 .st-reassigned { --st: #0d9488; --st-bg: #e0f5f2; --st-text: #0f766e; }
@@ -14606,3 +14609,13 @@ html {
         max-width: none;
     }
 }
+
+
+/* 중복 클릭 방지로 잠긴 버튼 / 대상 미선택 재배정 버튼 */
+button[data-orig-html]:disabled,
+.team-reassign-form button:disabled,
+.assign-reassign-form button:disabled { opacity: .55; cursor: not-allowed; }
+
+
+/* 제출 중 화면 전체 클릭 차단 */
+#form-busy-overlay { position: fixed; inset: 0; z-index: 99999; background: transparent; cursor: wait; }

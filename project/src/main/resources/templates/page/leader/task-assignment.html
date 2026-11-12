@@ -312,7 +312,7 @@
               <td class="col-manage">
                 <form th:if="${land.cancellable}"
                       th:action="@{/leader/task-assignment/cancel}" method="post"
-                      onsubmit="return confirm('이 농지의 배정을 취소할까요?');">
+                      data-confirm="이 농지의 배정을 취소할까요?" data-confirm-yes="배정 취소">
                   <input type="hidden" name="landNo" th:value="${land.no}">
                   <button type="submit" class="task-cancel-btn">배정 취소</button>
                 </form>
@@ -320,7 +320,8 @@
                       th:with="stopped=${land.pilotAssignments.?[status == 'INTERRUPTED']}"
                       th:action="@{/leader/team-management/{no}/reassign(no=${land.interruptedPilotNo})}"
                       method="post" class="assign-reassign-form"
-                      onsubmit="return confirm('이 농지의 중단된 작업을 선택한 조종사에게 재배정할까요?');">
+                      data-confirm="이 농지의 중단된 작업을 선택한 조종사에게 재배정할까요?"
+                      data-confirm-yes="재배정" data-select-gate>
                   <input type="hidden" name="back" value="task-assignment">
                   <input type="hidden" name="assignmentNo"
                          th:value="${!#lists.isEmpty(stopped) ? stopped[0].no : ''}">

@@ -77,14 +77,15 @@
                         일시정지
                     </button>
 
-                    <button type="button" class="gps-btn btn-stop"
-                            onclick="confirmStop()">
-                        <i data-lucide="square"></i>
-                        중지
-                    </button>
+               <button type="button" class="gps-btn btn-stop"
+                        onclick="confirmStop()">
+                       <i data-lucide="square"></i>
+                      중지
+                      </button>
 
-                    <div id="autoStatus" class="gps-status-text"></div>
-                </div>
+                <div id="autoStatus" class="gps-status-text"></div>
+               </div>
+
 
                 <div class="pilot-map" id="pilot-map"></div>
 
@@ -107,13 +108,13 @@
                 <div class="pilot-tabs" id="pilot-tabs">
                     <button type="button" class="active" data-filter="active">진행 중</button>
                     <button type="button" data-filter="done">완료</button>
+                    <button type="button" data-filter="interrupted" class="tab-interrupted" hidden>중단됨</button>
                 </div>
 
                 <!-- 서버가 전체 작업을 렌더링하고 JS가 탭별로 필터링 -->
                 <ul class="pilot-task-list" id="pilot-task-list"
                     th:data-selected="${selectedNo}">
                     <li th:each="t : ${myTasks}"
-                        th:data-status="${t.status}"
                         th:data-group="${t.status == 'COMPLETED'} ? 'done' : 'active'">
                         <button type="button" class="pilot-task"
                                 th:classappend="${t.no == selectedNo} ? 'selected'"

@@ -132,7 +132,7 @@
               <td>
                 <form th:if="${h.status == 'ACTIVE'}"
                       th:action="@{/hazards/{no}/resolve(no=${h.no})}" method="post"
-                      onsubmit="return confirm('이 위험 구역을 해소 완료로 바꿀까요?');">
+                      data-confirm="이 위험 구역을 해소 완료로 바꿀까요?" data-confirm-yes="해소 완료">
                   <button type="submit" class="hz-resolve-btn">해소 완료</button>
                 </form>
                 <span th:unless="${h.status == 'ACTIVE'}" class="hz-muted">-</span>

@@ -233,7 +233,7 @@
 
             <!-- 배정 취소 (ASSIGNED 일 때) -->
             <form id="ap-cancel-form" th:action="@{/leader/dashboard/unassign}" method="post"
-                  onsubmit="return confirm('이 농지의 배정을 취소할까요?');">
+                  data-confirm="이 농지의 배정을 취소할까요?" data-confirm-yes="배정 취소">
               <input type="hidden" name="landNo" id="ap-cancel-no">
               <button type="submit" class="dash-btn-outline btn-danger">배정 취소</button>
             </form>

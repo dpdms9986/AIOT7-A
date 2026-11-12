@@ -55,6 +55,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     card.appendChild(wrap);
+
+    // 대상 선택 전에는 [재배정] 버튼 비활성화 (폼이 화면에 붙은 뒤에 한 번 맞춰줌)
+    select.dispatchEvent(new Event("change", { bubbles: true }));
   };
 
   const openDrawer = (btn) => {
@@ -443,7 +446,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 외곽 그리기 버튼 이벤트
   if (drawBtn) {
-    drawBtn.addEventListener("click", () => {
+    drawBtn.addEventListener("click", async () => {
       if (!outlineDrawer) {
         if (window.showPopup) {
           showPopup("지도를 불러오지 못했어요. 페이지를 새로고침해 주세요.", "warn");
@@ -456,12 +459,12 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      if (
-        polygonInput &&
-        polygonInput.value &&
-        !window.confirm("이미 그린 외곽이 있어요. 지우고 새로 그릴까요?")
-      ) {
-        return;
+      if (polygonInput && polygonInput.value) {
+        const ok = await showAskPopup("이미 그린 외곽이 있어요.\n지우고 새로 그릴까요?", {
+          yesText: "지우고 새로 그리기",
+          noText: "취소",
+        });
+        if (!ok) return;
       }
 
       clearDrawing();
