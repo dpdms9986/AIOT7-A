@@ -148,70 +148,83 @@ function updateMarker(pilotName, lat, lng) {
   }
     
 }
+// [공통 함수] 비행 시작 전 선택된 농지 및 작업 상태(IN_PROGRESS / 진행 중) 검증
+function getValidSelectedTask() {
+  const selectedTask = document.querySelector(".pilot-task.selected");
+  if (!selectedTask) {
+    showPopup("먼저 비행할 농지를 선택해주세요!", "warn");
+    return null;
+  }
 
-// 3. 2초 간격 가상 비행
+  const taskStatus = selectedTask.dataset.status;
+  if (taskStatus && taskStatus !== "진행 중" && taskStatus !== "IN_PROGRESS") {
+    const statusKor = {
+      ASSIGNED: "대기",
+      INTERRUPTED: "일시정지",
+      STOPPED: "인계됨",
+      COMPLETED: "완료",
+    }[taskStatus] || taskStatus;
+
+    showPopup(
+      `현재 [${statusKor}] 상태인 작업입니다.\n먼저 [작업 시작] 또는 [작업 재개]를 진행한 후 비행을 시작해주세요.`,
+      "warn"
+    );
+    return null;
+  }
+
+  return selectedTask;
+}
+
 async function startFakeAuto() {
   stopAuto(false);
 
-  const selectedTask = document.querySelector(".pilot-task.selected");
-  if (!selectedTask) return alert("먼저 비행할 농지를 선택해주세요!");
+  const selectedTask = getValidSelectedTask();
+  if (!selectedTask) return;
 
   const lat = Number(selectedTask.dataset.lat);
   const lng = Number(selectedTask.dataset.lng);
-  
+
   if (!Number.isFinite(lat) || !Number.isFinite(lng) || (lat === 0 && lng === 0)) {
     return alert("선택한 농지의 위치 정보가 올바르지 않습니다.");
   }
-  const taskStatus = selectedTask.dataset.status;
-  if (taskStatus && taskStatus !== "진행 중") {
-  return showPopup(
-    `현재 [${taskStatus}] 상태인 작업입니다.\n먼저 [작업 시작] 또는 [작업 재개]를 진행한 후 비행을 시작해주세요.`,
-    "warn"
-  );
-}
 
-  // 주의 사항, 이전 궤적이 있고, 같은 농지라면 이어 비행 여부 확인
+  // 이전 궤적이 있으면 이어 비행 여부 확인
   const hasHistory = window.myFlightTrackCoords && window.myFlightTrackCoords.length > 0;
   let resume = false;
-  
+
   if (hasHistory) {
     resume = await showAskPopup("이전 비행 기록이 있습니다.\n마지막 중단 위치에서 이어서 비행하시겠습니까?", {
       yesText: "이어서 비행",
       noText: "새로 시작",
-      persistent: true,   // 바깥 클릭/ESC 로 닫히면 "새로 시작"이 되어 기록이 지워지므로 막음
+      persistent: true,
     });
   }
-  
+
   if (resume) {
-    // 1) 이이서 비행 : 마지막 좌표를 현재 출발지로 설정 (선은 지우지 않음!)
     const last = window.myFlightTrackCoords[window.myFlightTrackCoords.length - 1];
     currentLat = last[0];
     currentLng = last[1];
   } else {
-    // 2) 새로 시작: 기존 선 지우고 농지 원점으로 리셋
     resetMyFlightTrack();
     currentLat = lat;
     currentLng = lng;
   }
 
-  // 지도를 해당 농지로 즉시 줌인 이동! (이게 있어야 선이 눈에 보임)
   if (typeof map !== "undefined") {
     map.setView([currentLat, currentLng], 16);
   }
 
   $("#autoStatus").text("✈️ 가상 위치 자동 비행 중... (2초마다 전송)").css("color", "#2f80ed");
 
-  // 첫 위치 즉시 전송 및 첫 점 등록
+  // 첫 위치 즉시 전송
   sendLocation(currentLat, currentLng);
 
   fakeInterval = setInterval(() => {
     currentLat += 0.0002;
     currentLng += 0.0002;
 
-    // 비행하면서 지도 카메라도 드론을 따라가도록 이동
     if (typeof map !== "undefined") {
       map.panTo([currentLat, currentLng]);
-      
     }
     sendLocation(currentLat, currentLng);
   }, 2000);
@@ -219,20 +232,12 @@ async function startFakeAuto() {
 
 // 실제 GPS (거리 검증 가드 추가)
 function startRealGpsAuto() {
+  const selectedTask = getValidSelectedTask();
+  if (!selectedTask) return;
+
   if (!stompClient || !stompClient.connected) return alert("먼저 채널 연결을 확인해주세요!");
   if (!navigator.geolocation) return alert("GPS를 지원하지 않는 환경입니다.");
   stopAuto(false);
-
-  const selectedTask = document.querySelector(".pilot-task.selected");
-  if (!selectedTask) return alert ("먼저 비행할 농지를 선택해주세요!");     
-
-  const taskStatus = selectedTask.dataset.status;
-  if (taskStatus && taskStatus !== "진행 중") {
-    return showPopup(
-      `현재 [${taskStatus}] 상태인 작업입니다. \n먼저 [작업 시작] 또는 [작업 재개]를 진행한 후 비행을 시작해주세요!`,
-      "warn"
-    );
-  }
 
   $("#autoStatus").text("📱 실제 GPS 신호 확인 중...").css("color", "#238451");
 
@@ -244,20 +249,18 @@ function startRealGpsAuto() {
 
       if (acc > 20) return console.warn(`[무시됨] 위치 신호 불안정 (오차: ${acc}m)`);
 
-      // [💛] 이전 중단점이 있다면 실제 거리 (10m) 검증!
+      // 이전 중단점이 있다면 실제 거리 (10m) 검증
       if (window.myFlightTrackCoords && window.myFlightTrackCoords.length > 0) {
         const last = window.myFlightTrackCoords[window.myFlightTrackCoords.length - 1];
         const lastPoint = L.latLng(last[0], last[1]);
         const curPoint = L.latLng(curLat, curLng);
         const distance = map.distance(lastPoint, curPoint);
 
-        // 10m 이상 떨어져 있으면 비행을 차단하고 경고
         if (distance > 10) {
           stopAuto(false);
-          return alert(`⚠ 현재 위치가 이전 작업 중단점과 약 ${Math.round(distance)}m 떨어져 있습니다.`)
-        } 
-      } else { 
-        // 첫 비행이라면 초기화
+          return alert(`⚠ 현재 위치가 이전 작업 중단점과 약 ${Math.round(distance)}m 떨어져 있습니다.`);
+        }
+      } else {
         resetMyFlightTrack();
       }
 
@@ -268,36 +271,6 @@ function startRealGpsAuto() {
     { enableHighAccuracy: true }
   );
 }
-
-  // 실시간 이동선 그리고 + 웹소켓 전송
-  function sendLocation(latitude, longitude) {
-    if (!stompClient || !stompClient.connected) {
-      console.warn("GPS 전송 중단: 관제 채널이 연결되지 않았습니다.");
-      return;
-    }
-
-    // 1. 내 화면 지도에 실시간 비행선(polyline) 쓱쓱 그리기!
-    if ( !window.myFlightTrackLayer && typeof map !== "undefined") {
-      window.myFlightTrackLayer = L.polyline([], {
-        color: "#2f80ed", // 선명하고 시원한 비행 블루 색상
-        weight: 4,
-        opacity: 0.85
-      }).addTo(map);
-    }
-    if (window.myFlightTrackLayer) {
-      window.myFlightTrackLayer.addLatLng([latitude, longitude]);
-    }
-    
-    // 2. 비행 궤적 좌표를 메모리 배열에 실시간 누적
-    window.myFlightTrackCoords.push([latitude, longitude]);
-
-    // 3. 단장 대시보드로 실시간 웹소켓 발행
-     stompClient.send("/pub/location", {}, JSON.stringify({
-      pilotName: $("#myPilotName").val(),
-      latitude,
-      longitude,
-    }));
-  }
 
     // 비행 중단 시 서버 DB에 비행 궤적 자동 저장 함수 
     function stopAuto(shouldSave = true) {
