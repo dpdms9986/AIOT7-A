@@ -95,7 +95,7 @@ function connect() {
 
   const socket = new SockJS("/ws-drone");
   stompClient = Stomp.over(socket);
-  stompClient.debug = null;
+  // stompClient.debug = null;
 
   stompClient.connect({}, () => {
 
@@ -156,12 +156,18 @@ async function startFakeAuto() {
   const selectedTask = document.querySelector(".pilot-task.selected");
   if (!selectedTask) return alert("먼저 비행할 농지를 선택해주세요!");
 
-  const taskNo = selectedTask.dataset.no;
   const lat = Number(selectedTask.dataset.lat);
   const lng = Number(selectedTask.dataset.lng);
-
+  
   if (!Number.isFinite(lat) || !Number.isFinite(lng) || (lat === 0 && lng === 0)) {
-  return alert("선택한 농지의 위치 정보가 올바르지 않습니다.");
+    return alert("선택한 농지의 위치 정보가 올바르지 않습니다.");
+  }
+  const taskStatus = selectedTask.dataset.status;
+  if (taskStatus && taskStatus !== "진행 중") {
+  return showPopup(
+    `현재 [${taskStatus}] 상태인 작업입니다.\n먼저 [작업 시작] 또는 [작업 재개]를 진행한 후 비행을 시작해주세요.`,
+    "warn"
+  );
 }
 
   // 주의 사항, 이전 궤적이 있고, 같은 농지라면 이어 비행 여부 확인
@@ -219,6 +225,14 @@ function startRealGpsAuto() {
 
   const selectedTask = document.querySelector(".pilot-task.selected");
   if (!selectedTask) return alert ("먼저 비행할 농지를 선택해주세요!");     
+
+  const taskStatus = selectedTask.dataset.status;
+  if (taskStatus && taskStatus !== "진행 중") {
+    return showPopup(
+      `현재 [${taskStatus}] 상태인 작업입니다. \n먼저 [작업 시작] 또는 [작업 재개]를 진행한 후 비행을 시작해주세요!`,
+      "warn"
+    );
+  }
 
   $("#autoStatus").text("📱 실제 GPS 신호 확인 중...").css("color", "#238451");
 
@@ -361,33 +375,40 @@ function startRealGpsAuto() {
     }
 
     // [백엔드 API 호출] 지금까지의 비행 궤적을 DB에 저장하는 함수
-    function saveFlightPathToServer() {
+    async function saveFlightPathToServer() {
       const selectedTask = document.querySelector(".pilot-task.selected");
       const coords = window.myFlightTrackCoords || [];
 
       // 선택한 농지가 없거나, 비행 좌표가 없으면 전송 중단
       if (!selectedTask || coords.length === 0) return;
 
-      const taskNo = selectedTask.dataset.no;
-      if (!taskNo || taskNo === "undefined") return;
-      const pathJson = JSON.stringify(coords);
+      const landNo = selectedTask.dataset.no;
+      if (!landNo || landNo === "undefined") return;
 
-      const formData = new FormData();
-      formData.append("flightPath", pathJson);
+      try {
+        // 1. 선택된 농지(landNo)에 해당하는 내 작업 (assignmentNo) 조회
+        const res = await fetch("/api/pilot/assignments")
+        if (!res.ok) return;
+        const list = await res.json();
 
-      // 비행 궤적 저장 API
-      fetch(`/pilot/tasks/${taskNo}/save-path`, {
-        method: "POST",
-        body: formData,
-      })
-        .then((res) => {
-          if (res.ok) {
-            console.log(
-              `[${taskNo}번 농지] 비행 궤적 (${coords.length}개 점) DB 저장 성공!`
-            );
+        const target = list.find(
+          (a) => String(a.landNo) === String(landNo) && a.status === "IN_PROGRESS"
+        );
+        if (! target) return;
 
-            selectedTask.dataset.flightPath = pathJson;
-          }
-        })
-        .catch((err) => console.error("비행 궤적 저장 실패:", err));
+        const pathJson = JSON.stringify(coords);
+
+        // 2. CSRF 토큰이 자동 포함되는 $ajax로 저장 요청!
+        await $ajax({
+          url: `/pilot/tasks/${target.assignmentNo}/save-path`,
+          method: "POST",
+          data: { flightPath: pathJson},
+          success: () => {
+            console.log(`[작업 ${target.assignmentNo}번] 비행 궤적 (${coords.length}개 점)DB 저장 성공!`)
+          },
+          error: (err) => console.error("비행 궤적 저장 실패:", err),
+        });
+      } catch (err) {
+        console.error("비행 궤적 저장 중 오류:", err);
+      }
     }
