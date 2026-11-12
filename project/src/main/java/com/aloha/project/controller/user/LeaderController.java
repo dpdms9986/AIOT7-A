@@ -471,6 +471,7 @@ if (req.getLandNos() != null && req.getLandNos().size() == 1) {
 
         // 조종사별 담당 면적 합산 (한 명이 여러 구역을 맡아도 한 줄로)
         Map<Long, Double> areaByPilot = new LinkedHashMap<>();
+       Map<Long, List<Map<String, Object>>> geometryByPilot = new LinkedHashMap<>();
 
         for (PieceAssignment p : pieceList) {
         Long pilotNo = p.getPilotNo();
@@ -478,6 +479,21 @@ if (req.getLandNos() != null && req.getLandNos().size() == 1) {
         areaByPilot.merge(pilotNo,
         p.getAreaSize() != null ? p.getAreaSize() : 0.0,
         Double::sum);
+
+         
+
+    if (p.getGeometry() != null) {
+        Map<String, Object> pieceData = new LinkedHashMap<>();
+        pieceData.put("sliceIndex", p.getSliceIndex());
+        pieceData.put("geometry", p.getGeometry());
+
+
+
+        geometryByPilot
+            .computeIfAbsent(pilotNo, k -> new ArrayList<>())
+            .add(pieceData);
+    }
+
 
 }
         areaByPilot.keySet().removeIf(no -> !userRepository.existsById(no));
@@ -499,13 +515,27 @@ if (req.getLandNos() != null && req.getLandNos().size() == 1) {
             Users pilot = userRepository.findById(e.getKey()).orElse(null);
             if (pilot == null) continue;
 
+        String assignedGeometry = null;
+
+        try {
+        List<Map<String, Object>> geometries = geometryByPilot.get(e.getKey());
+
+        if (geometries != null && !geometries.isEmpty()) {
+        assignedGeometry = objectMapper.writeValueAsString(geometries);
+         }
+         } catch (Exception ex) {
+         log.warn("담당 구역 좌표 직렬화 실패: pilotNo={}", e.getKey(), ex);
+         }
             
-            
+
+
+
             workAssignmentRepository.save(WorkAssignments.builder()
                     .dispatchBatch(batch)
                     .land(land)
                     .pilot(pilot)
                     .weightRatio(total > 0 ? e.getValue() / total : 1.0 / areaByPilot.size())
+                    .assignedGeometry(assignedGeometry)
                     .status("ASSIGNED")
                     .build());
         }

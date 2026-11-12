@@ -6,6 +6,7 @@ let gpsWatchId = null;
 // 조종사 본인의 실시간 비행선 레이어 및 좌표 누적 배열
 window.myFlightTrackLayer = null; 
 window.myFlightTrackCoords = [];
+window.myFlightTrackLandNo = null;   // 현재 궤적이 어느 농지의 것인지
 
 // 지도
 const map = L.map("pilot-map").setView([currentLat, currentLng], 16);
@@ -34,10 +35,15 @@ async function loadMyActiveTrack(channelKey) {
     if (!myName) return;
     const myCoords = activeTracks[myName];
 
+    // 선택된 작업에 저장된 궤적이 있을 때만 복원 (완료된 이전 농지 궤적이 따라오는 것 방지)
+    const selected = document.querySelector(".pilot-task.selected");
+    const savedPath = selected?.dataset.flightPath;
+    if (!selected || !savedPath || savedPath === "null" || savedPath.trim() === "") return;
+
     // 내 이름으로 서버에 누적된 좌표가 있으면 지도와 메모리에 복원
     if (myCoords && myCoords.length > 0) {
       window.myFlightTrackCoords = myCoords;
-
+      window.myFlightTrackLandNo = selected.dataset.no;
       if (!window.myFlightTrackLayer && typeof map !== "undefined") {
         window.myFlightTrackLayer = L.polyline(myCoords, {
           color: "#2f80ed",
