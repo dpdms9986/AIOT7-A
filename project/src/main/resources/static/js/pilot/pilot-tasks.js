@@ -111,12 +111,18 @@ document.addEventListener("DOMContentLoaded", () => {
   // 선택된 작업의 농지 다각형 및 이전 비행 궤적 레이어 보관 변수
   let currentPolygonLayer = null;
   let currentFlightPathLayer = null;
+  let currentAssignedGeometryLayer = null;
 
   // 이전 선택 레이어 지우기 함수
   const clearSelectedTaskLayers = () => {
     if (currentPolygonLayer && hasMap()) {
       map.removeLayer(currentPolygonLayer);
       currentPolygonLayer = null;
+    }
+
+    if (currentAssignedGeometryLayer && hasMap()) {
+    map.removeLayer(currentAssignedGeometryLayer);
+    currentAssignedGeometryLayer = null;
     }
 
     if (currentFlightPathLayer && hasMap()) {
@@ -149,7 +155,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
           if (poly && map) {
             poly.addTo(map);
-            poly.bindTooltip(`🌱 ${d.address} (내 작업 구역)`, {
+            poly.bindTooltip(`🌱 ${d.address} (농지 전체 경계)`, {
               sticky: true
             });
 
@@ -161,7 +167,50 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // 2. 이전 조종사 비행 궤적 그리기
+    // 2. 조종사 본인에게 배정된 담당 구역
+    if (
+    d.assignedGeometry &&
+    d.assignedGeometry !== "null" &&
+    d.assignedGeometry.trim() !== ""
+   ) {
+    try {
+    const geometries = JSON.parse(d.assignedGeometry);
+
+    if (Array.isArray(geometries) && geometries.length > 0) {
+      const features = geometries.map((geometry) => ({
+        type: "Feature",
+        properties: {},
+        geometry: geometry.type === "Feature"
+          ? geometry.geometry
+          : geometry
+      }));
+
+      const assignedLayer = L.geoJSON({
+        type: "FeatureCollection",
+        features
+      }, {
+        style: {
+          color: "#238451",
+    weight: 2,
+    dashArray: "4 4",
+    fillColor: "#54a77b",
+    fillOpacity: 0.15
+        }
+      });
+
+      assignedLayer.addTo(map);
+      assignedLayer.bindTooltip("🚁 내 담당 구역", {
+        sticky: true
+      });
+
+      currentAssignedGeometryLayer = assignedLayer;
+    }
+  } catch (e) {
+    console.error("담당 구역 좌표 파싱 에러:", e);
+  }
+}
+
+    // 3. 이전 조종사 비행 궤적 그리기
     if (d.flightPath && d.flightPath !== "null" && d.flightPath.trim() !== "") {
       try {
         const pathCoords = JSON.parse(d.flightPath);

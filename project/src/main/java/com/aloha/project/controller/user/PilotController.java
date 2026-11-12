@@ -621,6 +621,7 @@ public class PilotController {
                 .completedAt(assignment.getCompletedAt())
                 .polygonCoordinates(
                         land == null ? null : land.getPolygonCoordinates())
+                .assignedGeometry(assignment.getAssignedGeometry())
                 .flightPath(assignment.getFlightPath())
                 .build();
         }

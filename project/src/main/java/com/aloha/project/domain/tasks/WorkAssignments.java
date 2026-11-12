@@ -53,6 +53,9 @@ public class WorkAssignments {
     @Column(name = "flight_path", columnDefinition = "TEXT")
     private String flightPath; // 드론 이동 경로
 
+    @Column(name = "assigned_geometry", columnDefinition = "TEXT")
+    private String assignedGeometry; // 조종사별 담당 구역 GeoJSON
+    
     @Column(name = "last_latitude")
     private Double lastLatitude; // 마지막 GPS 위도
 
