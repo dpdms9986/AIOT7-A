@@ -129,7 +129,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
       renderTabs();
       applyFilter();
-      renderMarkers();
+
+      // 바뀐 탭에서 현재 보이는 첫 번째 작업을 자동 선택
+      const firstVisible = buttons().find((b) => !b.closest("li").hidden);
+      if (firstVisible) {
+        selectTask(firstVisible.dataset.no, true, firstVisible);
+      } else {
+        renderMarkers();
+      }
     });
   });
 
@@ -216,8 +223,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  const selectTask = (no, moveMap = true) => {
+  const selectTask = (no, moveMap = true, targetBtn = null) => {
     selectedNo = String(no);
+
+    // 현재 탭에 보이는 버튼 중에서 우선 찾고, 
+    // 직접 클릭한 targetBtn 이 있으면 그것을 최우선으로 
+    const btn = targetBtn
+      || buttons().find((b) => b.dataset.no === selectedNo && !b.closest("li").hidden)
+      || buttons().find((b) => b.dataset.no === selectedNo);
 
     buttons().forEach((b) => {
       b.classList.toggle("selected", b.dataset.no === selectedNo);
@@ -225,12 +238,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     renderMarkers();
 
-    const btn = buttons().find((b) => b.dataset.no === selectedNo);
-
     if (btn) {
       drawSelectedTaskLayers(btn);
 
-      // 지도 중심 이동
       if (moveMap && hasMap() && btn.dataset.lat && btn.dataset.lng) {
         map.setView(
           [Number(btn.dataset.lat), Number(btn.dataset.lng)],
@@ -246,7 +256,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const btn = e.target.closest(".pilot-task");
 
     if (btn) {
-      selectTask(btn.dataset.no);
+      selectTask(btn.dataset.no, true, btn); // 클릭한 버튼(btn) 자체를 전달!
     }
   });
 
@@ -348,13 +358,18 @@ document.addEventListener("DOMContentLoaded", () => {
   renderTabs();
   applyFilter();
 
-  if (selectedNo) {
-    selectTask(selectedNo);
+  // 숨겨진(hidden) 완료 작업이 아니라, 현재 탭에서 보이는 작업 중에서만 초기 선택
+  const visibleMatch = selectedNo
+   ? buttons().find((b) => b.dataset.no === String(selectedNo) && !b.closest("li").hidden)
+   : null;
+  const firstVisible = visibleMatch || buttons().find((b) => !b.closest("li").hidden);
+
+  if (firstVisible) {
+    selectTask(firstVisible.dataset.no, true, firstVisible);
   } else {
     renderMarkers();
   }
-
   if (hasMap()) {
-    addHazardMarkers(map);
+    addHazardMakers(map);
   }
-});
+})
