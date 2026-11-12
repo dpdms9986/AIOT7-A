@@ -184,13 +184,30 @@
     if (inline) {
       const chip = document.createElement("b");
       chip.className = "wx-chip";
+
+      let face, msg;
       if (j.level === "ok") {
-        chip.textContent = "😊 작업하기 좋아요";
+        face = "😊";
+        msg = "작업하기 좋아요";
       } else if (j.level === "caution") {
-        chip.textContent = "😥 작업 시 주의하세요";
+        face = "😥";
+        msg = "작업 시 주의하세요";
       } else {
-        chip.textContent = "🥵 작업을 중단하세요";
+        face = "🥵";
+        msg = "작업을 중단하세요";
       }
+
+      const faceEl = document.createElement("span");
+      faceEl.className = "wx-face";
+      faceEl.textContent = face;
+
+      const msgEl = document.createElement("span");
+      msgEl.className = "wx-msg";
+      msgEl.textContent = " " + msg;
+
+      chip.title = msg;                 // 작은 화면에서 마우스를 올리면 문구 확인
+      chip.append(faceEl, msgEl);
+      el.classList.add("wx-has-chip");  // 이모지 칩이 있는 헤더(조종사)만 줄이기 위한 표시
       el.append(chip);
     }
 

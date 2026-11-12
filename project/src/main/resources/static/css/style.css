@@ -14659,3 +14659,12 @@ button[data-orig-html]:disabled,
 @media (max-width: 1100px) {
   .pilot-layout--history { grid-template-columns: 1fr; }
 }
+
+
+/* 좁은 화면: 날씨는 얼굴 표정만 표시 (글자 숨김) */
+@media (max-width: 1100px) {
+  .gnb-weather.wx-has-chip .wx-text { display: none; }   /* "맑음 14° · 3.2m/s" */
+  .gnb-weather .wx-chip .wx-msg { display: none; }       /* "작업하기 좋아요" */
+  .gnb-weather.wx-has-chip { padding: 5px 8px; gap: 0; }
+  .gnb-weather .wx-chip .wx-face { font-size: 18px; line-height: 1; }
+}

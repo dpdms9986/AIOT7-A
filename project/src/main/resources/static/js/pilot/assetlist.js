@@ -38,9 +38,8 @@ document.addEventListener("DOMContentLoaded", () => {
             subtitleInput.required = false;
 
             statusSelect.add(new Option("정상", "normal"));
-            statusSelect.add(new Option("운용 중", "operating"));
-            statusSelect.add(new Option("정비 중", "maintenance"));
-            statusSelect.add(new Option("정비 필요", "in-maintenance"));
+            statusSelect.add(new Option("정비 필요", "maintenance"));
+            statusSelect.add(new Option("정비 중", "in-maintenance"));
             statusSelect.add(new Option("고장", "fault"));
 
         } else if (type === "chemical") {
