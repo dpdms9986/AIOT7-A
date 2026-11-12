@@ -150,7 +150,7 @@ function updateMarker(pilotName, lat, lng) {
 }
 
 // 3. 2초 간격 가상 비행
-function startFakeAuto() {
+async function startFakeAuto() {
   stopAuto(false);
 
   const selectedTask = document.querySelector(".pilot-task.selected");
@@ -169,7 +169,11 @@ function startFakeAuto() {
   let resume = false;
   
   if (hasHistory) {
-    resume = confirm("이전 비행 기록이 있습니다. \n마지막 중단 위치에서 이어서 비행하시겠습니까?")
+    resume = await showAskPopup("이전 비행 기록이 있습니다.\n마지막 중단 위치에서 이어서 비행하시겠습니까?", {
+      yesText: "이어서 비행",
+      noText: "새로 시작",
+      persistent: true,   // 바깥 클릭/ESC 로 닫히면 "새로 시작"이 되어 기록이 지워지므로 막음
+    });
   }
   
   if (resume) {
@@ -274,15 +278,15 @@ function startRealGpsAuto() {
     window.myFlightTrackCoords.push([latitude, longitude]);
 
     // 3. 단장 대시보드로 실시간 웹소켓 발행
-    stompClient.send("/pub/location", {}, JSON.stringify({
-      pilotName: $("#pilotName").val(),
+     stompClient.send("/pub/location", {}, JSON.stringify({
+      pilotName: $("#myPilotName").val(),
       latitude,
       longitude,
     }));
   }
 
 
-    // 중지 (비행 중단 시 서버 DB에 비행 궤적 자동 저장!)
+    // 비행 중단 시 서버 DB에 비행 궤적 자동 저장 함수 
     function stopAuto(shouldSave = true) {
       if (fakeInterval) {
         clearInterval(fakeInterval);
@@ -302,35 +306,22 @@ function startRealGpsAuto() {
       }
     }
 
-    // 6. 중지 (확인 팝업 → 위치 전송 중지)
-    async function confirmStop() {
-      const ok = await showAskPopup("정말 중지하시겠습니까?\n위치 전송이 중지됩니다.", {
-        yesText: "중지",
-        noText: "취소",
-      });
-
-      if (ok) {
-        stopAuto();          // 비행 경로 저장
-        resetMyFlightTrack(); // 현재 지도 비행선 제거
-      }
-    }
-
-    // 7. 일시정지 (확인 팝업 → 위치 전송 중지 + 진행 중 작업을 PAUSED로 변경)
+    // 작업 일시정지 
     async function pauseWork() {
-      const ok = await showAskPopup("정말 일시정지하시겠습니까?", {
+      const ok = await showAskPopup("작업을 일시중단하시겠습니까?\n지금까지의 비행 궤적이 저장되며 위치 전송이 멈춥니다. ", {
         yesText: "일시정지",
         noText: "취소",
       });
 
       if (!ok) return;
 
-      // 일시정지는 별도 중지 저장 동작 없이 위치 전송만 중단
-      // 기존 궤적과 좌표 배열은 유지
-      stopAuto(false);
+      // 1) 비행 타이머 중지 및 지금까지의 비행 궤적 DB 저장 (true)
+      // 지도 위 비행선은 지우지 않고 그대로
+      stopAuto(true);
 
-      $("#autoStatus").text("⏸️ 작업이 일시정지되었습니다.").css("color", "#f2994a");
+      $("#autoStatus").text("⏸️ 작업이 일시정지되었습니다. ( 궤적 저장 완료) ").css("color", "#f2994a");
 
-      // 선택한 농지(land no)의 진행 중 작업(assignment no) 찾기
+      // 2) 선택된 농지의 작업 상태를 PAUSED로 서버에 업데이트
       const selected = document.querySelector(".pilot-task.selected");
       if (!selected) return;
 
@@ -341,8 +332,7 @@ function startRealGpsAuto() {
         const list = await res.json();
 
         const target = list.find(
-          (a) => String(a.landNo) === selected.dataset.no
-            && a.status === "IN_PROGRESS"
+          (a) => String(a.landNo) === selected.dataset.no && a.status === "IN_PROGRESS"
         );
 
         if (!target) return;
@@ -350,18 +340,11 @@ function startRealGpsAuto() {
         await $ajax({
           url: `/api/pilot/assignments/${target.assignmentNo}/status`,
           method: "PATCH",
-          data: { status: "PAUSED" },
+          data: { status: "INTERRUPTED" },
           success: () => showPopup(
-            "작업이 일시정지되었습니다.",
-            "ok",
-            () => location.reload()
-          ),
-          error: (r) => showPopup(
-            (r && r.message) || "일시정지에 실패했습니다.",
-            "warn"
-          ),
+            "작업이 일시정지되었습니다.\n중단 위치와 시각이 저장되어 다음 조종사에게 인계하거나 이어서 진행할 수 있습니다.", "ok"),
+          error: (r) => showPopup( (r && r.message) || "일시정지에 실패했습니다.", "warn"),
         });
-
       } catch (e) {
         console.error("일시정지 처리 오류:", e);
       }

@@ -213,7 +213,7 @@
       <div class="drawer-footer">
           <form th:action="@{/leader/farmlist/delete}"
                 method="post"
-                onsubmit="return confirm('이 농지를 삭제하시겠습니까?');">
+                data-confirm="이 농지를 삭제하시겠습니까?" data-confirm-yes="삭제">
 
               <input type="hidden" name="landNo" id="delete-land-no">
 
@@ -238,7 +238,8 @@
   <div class="interrupt-reassign team-row-actions">
     <form th:action="@{/leader/team-management/0/reassign}"
           method="post" class="team-reassign-form"
-          onsubmit="return confirm('이 중단된 작업을 선택한 조종사에게 재배정하시겠습니까?');">
+          data-confirm="이 중단된 작업을 선택한 조종사에게 재배정하시겠습니까?"
+          data-confirm-yes="재배정" data-select-gate>
       <input type="hidden" name="assignmentNo" value="">
       <select name="targetNo" required>
         <option value="">대상 선택</option>
