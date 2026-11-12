@@ -18,18 +18,21 @@ document.addEventListener("DOMContentLoaded", () => {
   const hasMap = () => typeof map !== "undefined" && typeof L !== "undefined";
 
   /* ===== 1. 탭: 개수 표시 + 보였다/숨겼다 ===== */
-  const NAMES = { all: "전체", active: "진행 중", done: "완료" };
+  const NAMES = { all: "전체", active: "진행 중", done: "완료", interrupted: "중단됨" };
 
   const renderTabs = () => {
     const counts = {
       all: items().length,
       active: items().filter((li) => li.dataset.group === "active").length,
       done: items().filter((li) => li.dataset.group === "done").length,
+      interrupted: items().filter((li) => li.dataset.group === "interrupted").length,
     };
     tabs.forEach((btn) => {
       const key = btn.dataset.filter;
       btn.textContent = `${NAMES[key]} (${counts[key]})`;
       btn.classList.toggle("active", key === currentFilter);
+      // 중단됨 탭은 중단된 작업이 있을 때만 표시
+      if (key === "interrupted") btn.hidden = counts.interrupted === 0;
     });
   };
 

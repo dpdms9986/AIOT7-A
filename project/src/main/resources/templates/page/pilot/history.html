@@ -214,7 +214,7 @@
           <!-- 작업 완료 보고 -->
          <form th:action="@{/pilot/history/{no}/complete(no=*{no})}"
           method="post"
-          onsubmit="return showConfirmPopup(this, '작업 완료를 보고할까요?');"
+          data-confirm="작업 완료를 보고할까요?" data-confirm-yes="완료 보고"
           style="flex: 1;">
 
         <button type="submit" class="dash-btn-primary"
@@ -226,7 +226,9 @@
 
           <!-- 작업 진행 중(IN_PROGRESS)일 때 취소 버튼 노출 -->
           <form th:action="@{/pilot/history/{no}/cancel(no=${selected.no})}" method="post" 
-                onsubmit="return confirm('작업을 취소하고 다시 대기 상태로 되돌리시겠습니까? (선택한 드론/약제가 초기화됩니다)');" class="hist-action-form">
+                data-confirm="작업을 취소하고 다시 대기 상태로 되돌리시겠습니까?"
+                data-confirm-detail="선택한 드론/약제가 초기화됩니다."
+                data-confirm-yes="작업 취소" class="hist-action-form">
             <button type="submit" class="dash-btn-danger hist-action-btn">작업 취소</button>
           </form>
           

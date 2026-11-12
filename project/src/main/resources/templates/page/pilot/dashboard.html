@@ -104,12 +104,13 @@
                     <button type="button" class="active" data-filter="all">전체</button>
                     <button type="button" data-filter="active">진행 중</button>
                     <button type="button" data-filter="done">완료</button>
+                    <button type="button" data-filter="interrupted" class="tab-interrupted" hidden>중단됨</button>
                 </div>
 
                 <!-- [추가] 내 작업 목록: 서버가 전부 그리고, 탭 필터는 JS가 보였다/숨겼다 -->
                 <ul class="pilot-task-list" id="pilot-task-list" th:data-selected="${selectedNo}">
                     <li th:each="t : ${myTasks}"
-                        th:data-group="${t.status == 'COMPLETED'} ? 'done' : 'active'">
+                        th:data-group="${t.status == 'COMPLETED'} ? 'done' : (${t.status == 'INTERRUPTED'} ? 'interrupted' : 'active')">
                         <button type="button" class="pilot-task"
                                 th:classappend="${t.no == selectedNo} ? 'selected'"
                                 th:data-no="${t.no}"
