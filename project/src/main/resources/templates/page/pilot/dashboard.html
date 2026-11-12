@@ -77,6 +77,12 @@
                         일시정지
                     </button>
 
+               <button type="button" class="gps-btn btn-stop"
+                        onclick="confirmStop()">
+                       <i data-lucide="square"></i>
+                      중지
+                      </button>
+
                 <div id="autoStatus" class="gps-status-text"></div>
                </div>
 
@@ -98,43 +104,70 @@
                     <h2>📋 내 작업 목록</h2>
                 </div>
 
-                <!-- 전체 탭 제거 -->
+                <!-- 작업 상태 탭 -->
                 <div class="pilot-tabs" id="pilot-tabs">
-                    <button type="button" class="active" data-filter="active">진행 중</button>
-                    <button type="button" data-filter="done">완료</button>
-                    <button type="button" data-filter="interrupted" class="tab-interrupted" hidden>중단됨</button>
+                    <button type="button"
+                            class="active"
+                            data-filter="active">
+                        작업중
+                    </button>
+
+                    <button type="button"
+                            data-filter="stopped">
+                        중단 및 인계
+                    </button>
+
+                    <button type="button"
+                            data-filter="done">
+                        완료됨
+                    </button>
                 </div>
 
                 <!-- 서버가 전체 작업을 렌더링하고 JS가 탭별로 필터링 -->
                 <ul class="pilot-task-list" id="pilot-task-list"
                     th:data-selected="${selectedNo}">
+
                     <li th:each="t : ${myTasks}"
-                        th:data-group="${t.status == 'COMPLETED'} ? 'done' : 'active'">
-                        <button type="button" class="pilot-task"
+                        th:data-group="${t.status == 'ASSIGNED' or t.status == 'IN_PROGRESS' ? 'active' : (t.status == 'COMPLETED' ? 'done' : 'stopped')}"
+                        th:data-status="${t.status}"
+                        th:data-completed-at="${t.completedAt}"
+                        th:data-assigned-at="${t.assignedAt}">
+
+                        <button type="button"
+                                class="pilot-task"
                                 th:classappend="${t.no == selectedNo} ? 'selected'"
                                 th:data-no="${t.no}"
                                 th:data-address="${t.address}"
-                                th:data-status="${t.statusLabel}"
+                                th:data-status="${t.status}"
                                 th:data-area="${t.areaSize}"
                                 th:data-lat="${t.latitude}"
                                 th:data-lng="${t.longitude}"
                                 th:data-color="${t.stColor}"
                                 th:data-polygon="${t.polygonCoordinates}"
-                                th:data-flight-path="${t.flightPath}">
-                            <span class="pilot-dot" th:classappend="${t.stClass}"></span>
+                                th:data-flight-path="${t.flightPath}"
+                                th:data-completed-at="${t.completedAt}"
+                                th:data-assigned-at="${t.assignedAt}">
+
+                            <span class="pilot-dot"
+                                th:classappend="${t.stClass}"></span>
+
                             <span class="pilot-task-body">
                                 <strong th:text="${t.address}">전민동 31-7</strong>
+
                                 <small th:text="${#numbers.formatDecimal(t.areaSize, 0, 'COMMA', 0, 'POINT')} + '㎡ · ' + ${#temporals.format(t.assignedAt, 'MM-dd HH:mm')}">
                                     4,800㎡ · 10-29 08:00
                                 </small>
                             </span>
+
                             <span class="pilot-status"
-                                  th:classappend="${t.stClass}"
-                                  th:text="${t.statusLabel}">작업 중</span>
+                                th:classappend="${t.stClass}"
+                                th:text="${t.statusLabel}">
+                                작업 중
+                            </span>
+
                         </button>
                     </li>
                 </ul>
-
                 <p class="pilot-empty" id="pilot-task-empty"
                    th:hidden="${not #lists.isEmpty(myTasks)}">
                     해당하는 작업이 없습니다.

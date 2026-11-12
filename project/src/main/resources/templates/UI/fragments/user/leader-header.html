@@ -23,6 +23,11 @@
       </nav>
 
       <div class="dash-header-right">
+          <!-- 현재 날씨 (weather.js 가 채움) -->
+          <span class="gnb-weather" data-weather="header">날씨 확인 중...</span>
+
+          <!-- 방제단 이름 + 초대 코드 (세로로 쌓기) -->
+          <div class="gnb-team-stack">
           <span class="gnb-team" th:text="${headerTeamName} ?: '방제단 없음'">방제단</span>
 
           <!-- 단장만: 초대코드 (클릭하면 복사) -->
@@ -32,11 +37,13 @@
             <span class="gnb-invite-text">초대 코드 <b id="invite-code" th:text="${headerInviteCode}">------</b></span>
             <span class="gnb-invite-icon">📋</span>
           </button>
-
-          <span class="dash-role" th:text="${roleLabel}">-</span>
+          </div>
 
           <a th:href="@{/mypage}" class="gnb-user" title="마이페이지">
-            <span class="dash-avatar"><img th:src="@{/img/leader-profile.png}" alt="방제단장 프로필"></span><span th:text="${loginName}">사용자</span>
+            <em class="gnb-role-avatar">
+              <span class="dash-avatar"><img th:src="@{/img/leader-profile.png}" alt="방제단장 프로필"></span>
+              <span class="dash-role" th:text="${roleLabel}">-</span>
+            </em>
           </a>
 
           <form th:action="@{/logout}" method="post">
@@ -45,6 +52,8 @@
       </div>
     </header>
 
+    <script th:src="@{/js/common/weather.js}"></script>
+    
     <!-- 헤더 초대코드 복사 -->
     <script>
       document.addEventListener("DOMContentLoaded", () => {

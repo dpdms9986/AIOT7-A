@@ -1,6 +1,6 @@
 /* ===== header.css ===== */
 /* ----- 상단 헤더 ----- */
-.dash-header { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 40px; height: var(--header-height); padding: 0 28px; background: #ffffff; border-bottom: 1px solid var(--color-border);}
+.dash-header { position: sticky; top: 0; z-index: 2000; display: flex; align-items: center; gap: 40px; height: var(--header-height); padding: 0 28px; background: #ffffff; border-bottom: 1px solid var(--color-border);}
 .dash-logo {  display: flex;  align-items: center;  gap: 10px;  color: var(--color-text);  font-size: 18px;  font-weight: 800;  text-decoration: none;  white-space: nowrap;}
 .dash-topnav { display: flex; flex: 1; height: 100%; }
 .dash-topnav a {  display: flex;  align-items: center;  padding: 0 18px;  border-bottom: 3px solid transparent;  color: var(--color-text);  font-size: 14px;  text-decoration: none;  white-space: nowrap; }
@@ -14619,3 +14619,113 @@ button[data-orig-html]:disabled,
 
 /* 제출 중 화면 전체 클릭 차단 */
 #form-busy-overlay { position: fixed; inset: 0; z-index: 99999; background: transparent; cursor: wait; }
+
+
+
+/* ===== 날씨 표시 ===== */
+.gnb-weather {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 5px 12px 5px 8px; border-radius: 14px;
+  background: var(--color-bg); color: var(--color-text-sub);
+  font-size: 12px; font-weight: 700; white-space: nowrap;
+}
+.gnb-weather.wx-caution { background: #fff4d6; color: #8a5a00; }
+.gnb-weather.wx-danger  { background: #ffe1e1; color: #b3261e; }
+.gnb-weather.wx-off     { opacity: .6; }
+.gnb-weather .wx-text { display: flex; flex-direction: column; line-height: 1.3; }
+.gnb-weather .wx-sub  { font-size: 11px; font-weight: 600; opacity: .85; padding-left: 6px; }
+
+.wx-notice {
+  display: flex; flex-direction: column; gap: 2px;
+  max-width: 420px; padding: 10px 16px;
+  border: 1px solid transparent; border-radius: 10px; font-size: 13px;
+}
+.wx-notice[hidden] { display: none; }
+.wx-notice strong { font-size: 14px; }
+.wx-notice small  { font-size: 11px; opacity: .75; }
+.wx-notice.wx-ok      { background: #e6f4ea; border-color: #b7dfc3; color: #1e6b3a; }
+.wx-notice.wx-caution { background: #fff4d6; border-color: #f0d58a; color: #8a5a00; }
+.wx-notice.wx-danger  { background: #ffe1e1; border-color: #f2a9a5; color: #b3261e; }
+
+/* 방제단 이름 + 초대 코드 가로 배치 */
+.gnb-team-stack {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+.gnb-team-stack .gnb-team {
+  padding: 6px 12px;
+  font-size: 12px;
+  line-height: 1.4;
+  text-align: center;
+}
+.gnb-team-stack .gnb-invite {
+  height: 32px;
+  padding: 0 12px;
+  font-size: 11px;
+  justify-content: center;
+}
+
+/* 아바타 + 방제단장 배지 합치기 */
+.gnb-role-avatar {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 14px 3px 3px;
+  border-radius: 999px;
+  background: var(--color-primary-light);
+  font-style: normal;
+}
+.gnb-role-avatar .dash-role {
+  padding: 0;
+  background: transparent;
+}
+
+
+.dash-header .gnb-user > span:not(.dash-avatar) { display: none; }
+
+
+/* 날씨 안내 박스 정리 */
+.wx-notice { gap: 6px; }
+.wx-notice .wx-reasons { display: flex; flex-wrap: wrap; gap: 4px; }
+.wx-notice .wx-reasons span {
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.65);
+  font-size: 12px;
+  font-weight: 600;
+}
+.wx-notice b { font-size: 13px; font-weight: 800; }
+
+.wx-notice { gap: 4px; max-width: 460px; }
+.wx-notice .wx-top { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.wx-notice .wx-top small { font-size: 10px; opacity: .6; white-space: nowrap; }
+.wx-notice b { font-size: 13px; font-weight: 700; padding-left: 6px; }
+
+/* 조종사 대시보드: 헤더 아래 여백 줄이기 */
+.dash-main { padding-top: 16px; }
+
+
+
+/* 헤더 날씨 클릭 팝업 (단계별 색 + 반투명) */
+.wx-notice.wx-pop {
+  position: fixed;
+  z-index: 9999;
+  min-width: min(460px, calc(100vw - 16px));
+  max-width: calc(100vw - 16px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+
+
+
+
+/* 날씨 칸: 윗줄(아이콘 + 날씨 이름)만 살짝 오른쪽으로 */
+.gnb-weather .wx-text > span:first-child { padding-left: 4px; }
+
+/* 헤더 날씨 칸: 살짝 투명 */
+/* .gnb-weather                { background: rgba(255, 255, 255, 0.7); }
+.gnb-weather.wx-caution     { background: rgba(255, 244, 214, 0.7); }
+.gnb-weather.wx-danger      { background: rgba(255, 225, 225, 0.7); } */
