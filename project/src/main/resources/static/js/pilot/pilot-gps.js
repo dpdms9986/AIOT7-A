@@ -146,7 +146,36 @@ function updateMarker(pilotName, lat, lng) {
     console.log(`[내 위치 지도 이동] ${pilotName}`);
     map.panTo([lat, lng]);
   }
-    
+}
+
+// 실시간 이동선 그리고 + 웹소켓 전송
+function sendLocation(latitude, longitude) {
+  if (!stompClient || !stompClient.connected) {
+    console.warn("GPS 전송 중단: 관제 채널이 연결되지 않았습니다.");
+    return;
+  }
+
+  // 1. 내 화면 지도에 실시간 비행선(polyline) 쓱쓱 그리기!
+  if (!window.myFlightTrackLayer && typeof map !== "undefined") {
+    window.myFlightTrackLayer = L.polyline([], {
+      color: "#2f80ed",
+      weight: 4,
+      opacity: 0.85
+    }).addTo(map);
+  }
+  if (window.myFlightTrackLayer) {
+    window.myFlightTrackLayer.addLatLng([latitude, longitude]);
+  }
+
+  // 2. 비행 궤적 좌표를 메모리 배열에 실시간 누적
+  window.myFlightTrackCoords.push([latitude, longitude]);
+
+  // 3. 단장 대시보드로 실시간 웹소켓 발행
+  stompClient.send("/pub/location", {}, JSON.stringify({
+    pilotName: $("#myPilotName").val(),
+    latitude,
+    longitude,
+  }));
 }
 // [공통 함수] 비행 시작 전 선택된 농지 및 작업 상태(IN_PROGRESS / 진행 중) 검증
 function getValidSelectedTask() {
