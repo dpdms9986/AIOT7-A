@@ -88,7 +88,6 @@ public class AdminPageController {
         int totalProgressPercent = (totalLandCount > 0) ? (int) ((completedLandCount * 100) / totalLandCount) : 0;
 
         // 5. 최근 방제 작업 이력 (8건)
-        // TODO(백엔드) findAll() 은 전체를 읽어서 느릴 수 있음.
         //   WorkAssignmentRepository 에 findTop8ByOrderByCreatedAtDesc() 만들어지면 아래 줄 교체:
         //   List<WorkAssignments> allWorks = workAssignmentRepository.findTop8ByOrderByCreatedAtDesc();
         List<WorkAssignments> allWorks = workAssignmentRepository.findAll();
@@ -107,7 +106,6 @@ public class AdminPageController {
         List<AdminWorkDto> recentWorks = sortedWorks.subList(fromIdx, toIdx);
 
         // 6. 주간(최근 7일) 방제 완료 추이 - 0건인 날도 채움
-        // TODO(백엔드) findByStatusAndCompletedAtGreaterThanEqual("COMPLETED", 시작일시) 만들어지면
         //   allWorks 대신 그 결과를 사용
         LocalDate today = LocalDate.now();
         List<String> weekLabels = new ArrayList<>();
@@ -186,7 +184,6 @@ public class AdminPageController {
      * 4. 시스템 종합 방제 통계
      * GET /admin/statistics
      */
-    // TODO(백엔드) w.getLand() 가 LAZY 라서 @Transactional(readOnly = true) 필요 (open-in-view=false)
     @GetMapping("/statistics")
     public String getStatistics(Model model) {
         // 전체 완료된 작업 이력 조회

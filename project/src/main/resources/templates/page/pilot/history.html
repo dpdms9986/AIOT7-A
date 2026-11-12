@@ -100,6 +100,7 @@
 
               <span class="pilot-status"
                     th:classappend="${t.stClass}"
+                    th:unless="${t.status == 'ASSIGNED' and t.prevPilotName != null}"
                     th:text="${t.statusLabel}">
                   작업 중
               </span>
@@ -186,6 +187,7 @@
           <dd>
             <span class="pilot-status"
                   th:classappend="*{stClass}"
+                  th:unless="*{status == 'ASSIGNED' and prevPilotName != null}"
                   th:text="*{statusLabel}">
               진행 중
             </span>

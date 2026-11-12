@@ -34,7 +34,7 @@ const close = () => {
 
   if (typeSel && statusSel) {
     const ALLOWED = {
-      drone: ["normal", "operating", "maintenance", "in-maintenance", "fault"],
+      drone: ["normal", "maintenance", "in-maintenance", "fault"],
       chemical: ["normal", "low"],
     };
     // 서버가 그려준 전체 상태 목록을 처음에 저장해 둠

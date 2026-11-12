@@ -8,6 +8,19 @@
   -->
   <script th:inline="javascript">
     (() => {
+      // 바깥 배경을 "누른 곳"과 "뗀 곳"이 모두 배경일 때만 실행
+      // (팝업 안에서 누르고 드래그해 바깥에서 뗀 경우에는 닫히지 않음)
+      const onBackdropClick = (backdrop, fn) => {
+        let downOnBackdrop = false;
+        backdrop.addEventListener("pointerdown", (e) => {
+          downOnBackdrop = (e.target === backdrop);
+        });
+        backdrop.addEventListener("click", (e) => {
+          if (e.target === backdrop && downOnBackdrop) fn();
+          downOnBackdrop = false;
+        });
+      };
+
       // ----- 팝업 띄우는 함수 (type: "ok" = 초록 체크, "warn" = 주황 느낌표) -----
       window.showPopup = (message, type = "ok", onClose) => {
         document.getElementById("login-popup")?.remove();   // 이미 떠 있으면 지우고 새로
@@ -76,9 +89,7 @@
 
   cancelBtn.addEventListener("click", close);
 
-  backdrop.addEventListener("click", (e) => {
-    if (e.target === backdrop) close();
-  });
+  onBackdropClick(backdrop, close);
 
   document.addEventListener("keydown", onKey);
   confirmBtn.focus();
@@ -87,7 +98,7 @@
 };
 
         btn.addEventListener("click", close);
-        backdrop.addEventListener("click", (e) => { if (e.target === backdrop) close(); });   // 바깥 클릭
+        onBackdropClick(backdrop, close);   // 바깥 클릭
         document.addEventListener("keydown", onKey);
           btn.focus();                                         // Enter 로 바로 닫히게
       };
@@ -141,7 +152,7 @@
           yesBtn.addEventListener("click", () => done(true));
           noBtn.addEventListener("click", () => done(false));
           if (!persistent) {
-            backdrop.addEventListener("click", (e) => { if (e.target === backdrop) done(false); });
+            onBackdropClick(backdrop, () => done(false));
           }
           document.addEventListener("keydown", onKey, true);
           yesBtn.focus();

@@ -471,6 +471,7 @@ if (req.getLandNos() != null && req.getLandNos().size() == 1) {
 
         // 조종사별 담당 면적 합산 (한 명이 여러 구역을 맡아도 한 줄로)
         Map<Long, Double> areaByPilot = new LinkedHashMap<>();
+        Map<Long, List<Object>> geometryByPilot = new LinkedHashMap<>();
 
         for (PieceAssignment p : pieceList) {
         Long pilotNo = p.getPilotNo();
@@ -478,6 +479,15 @@ if (req.getLandNos() != null && req.getLandNos().size() == 1) {
         areaByPilot.merge(pilotNo,
         p.getAreaSize() != null ? p.getAreaSize() : 0.0,
         Double::sum);
+
+         
+
+    if (p.getGeometry() != null) {
+        geometryByPilot
+            .computeIfAbsent(pilotNo, k -> new ArrayList<>())
+            .add(p.getGeometry());
+    }
+
 
 }
         areaByPilot.keySet().removeIf(no -> !userRepository.existsById(no));
@@ -499,13 +509,27 @@ if (req.getLandNos() != null && req.getLandNos().size() == 1) {
             Users pilot = userRepository.findById(e.getKey()).orElse(null);
             if (pilot == null) continue;
 
+        String assignedGeometry = null;
+
+        try {
+        List<Object> geometries = geometryByPilot.get(e.getKey());
+
+        if (geometries != null && !geometries.isEmpty()) {
+        assignedGeometry = objectMapper.writeValueAsString(geometries);
+         }
+         } catch (Exception ex) {
+         log.warn("담당 구역 좌표 직렬화 실패: pilotNo={}", e.getKey(), ex);
+         }
             
-            
+
+
+
             workAssignmentRepository.save(WorkAssignments.builder()
                     .dispatchBatch(batch)
                     .land(land)
                     .pilot(pilot)
                     .weightRatio(total > 0 ? e.getValue() / total : 1.0 / areaByPilot.size())
+                    .assignedGeometry(assignedGeometry)
                     .status("ASSIGNED")
                     .build());
         }
@@ -731,21 +755,49 @@ if (req.getLandNos() != null && req.getLandNos().size() == 1) {
         oldTask.setReassignmentNoticeReadAt(null);
         workAssignmentRepository.save(oldTask);
 
-        // 새 조종사에게 동일 농지의 새 작업 한 건만 배정
-        WorkAssignments newTask = WorkAssignments.builder()
-                .dispatchBatch(oldTask.getDispatchBatch())
-                .land(oldTask.getLand())
-                .pilot(targetPilot)
-                .weightRatio(oldTask.getWeightRatio())
-                .status("ASSIGNED")
-                .flightPath(oldTask.getFlightPath())
-                .lastLatitude(oldTask.getLastLatitude())
-                .lastLongitude(oldTask.getLastLongitude())
-                .lastLocationAt(oldTask.getLastLocationAt())
-                .interruptedAt(oldTask.getInterruptedAt())
-                .build();
+        // 인수받는 조종사에게 같은 농지의 시작 전(ASSIGNED) 작업이 이미 있으면 새로 만들지 않고 하나로 합침
+        WorkAssignments existingTask = workAssignmentRepository.findByLand(oldTask.getLand())
+                .stream()
+                .filter(w -> w.getPilot() != null
+                        && Objects.equals(w.getPilot().getNo(), targetNo)
+                        && "ASSIGNED".equals(w.getStatus())
+                        && w.getDispatchBatch() != null
+                        && Objects.equals(w.getDispatchBatch().getNo(),
+                                          oldTask.getDispatchBatch().getNo()))
+                .findFirst()
+                .orElse(null);
 
-        workAssignmentRepository.save(newTask);
+        if (existingTask != null) {
+            // 분배 비율 합산
+            if (existingTask.getWeightRatio() != null && oldTask.getWeightRatio() != null) {
+                existingTask.setWeightRatio(
+                        existingTask.getWeightRatio() + oldTask.getWeightRatio());
+            }
+            // 이전 조종사의 비행 궤적·중단 위치를 이어받음
+            existingTask.setFlightPath(oldTask.getFlightPath());
+            existingTask.setLastLatitude(oldTask.getLastLatitude());
+            existingTask.setLastLongitude(oldTask.getLastLongitude());
+            existingTask.setLastLocationAt(oldTask.getLastLocationAt());
+            existingTask.setInterruptedAt(oldTask.getInterruptedAt());
+            workAssignmentRepository.save(existingTask);
+
+        } else {
+            // 새 조종사에게 동일 농지의 새 작업 한 건만 배정
+            WorkAssignments newTask = WorkAssignments.builder()
+                    .dispatchBatch(oldTask.getDispatchBatch())
+                    .land(oldTask.getLand())
+                    .pilot(targetPilot)
+                    .weightRatio(oldTask.getWeightRatio())
+                    .status("ASSIGNED")
+                    .flightPath(oldTask.getFlightPath())
+                    .lastLatitude(oldTask.getLastLatitude())
+                    .lastLongitude(oldTask.getLastLongitude())
+                    .lastLocationAt(oldTask.getLastLocationAt())
+                    .interruptedAt(oldTask.getInterruptedAt())
+                    .build();
+
+            workAssignmentRepository.save(newTask);
+        }
 
         // 해당 농지의 남은 작업 상태를 기준으로 농지 상태 갱신
         List<WorkAssignments> activeAssignments = workAssignmentRepository

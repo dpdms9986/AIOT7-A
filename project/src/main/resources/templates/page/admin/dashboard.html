@@ -9,7 +9,6 @@
 <body layout:fragment="content">
 
 <!--/*
-  TODO(백엔드) 이 페이지에서 쓰는 값 (AdminPageController#getDashboard 에서 model 에 담김)
     leaderCount, pilotCount          : 이용자 수
     totalProgressPercent             : 방제 완료율(%)
     totalLandCount, completedLandCount : 전체/완료 농지 수
@@ -38,11 +37,6 @@
       </div>
     </article>
 
-    <!--/*
-      TODO(백엔드) 신규 문의: 아래 JS 가 호출하는 API (이미 InquiryApi 에 있음, 관리자 권한)
-        GET /api/inquiries/admin/waiting-count        → { waitingCount }
-        GET /api/inquiries/admin?status=WAITING&size=4 → Page { content: [{ title, createdAt ... }] }
-    */-->
     <article class="dash-card">
       <div class="dash-card-head">
         <h2>💬 신규 문의</h2>
@@ -104,10 +98,7 @@
 
   <!-- 오른쪽: 게시판, 드론 사진, 주간 추이 -->
   <div class="adm-col">
-    <!--/*
-      TODO(백엔드) 게시판 카드: GET /api/hazards (HazardApi) 응답 배열의 길이 = 위험 구역 건수,
-        hazardType === '고위험' 인 것만 세서 "그중 고위험" 표시. 필드명이 바뀌면 아래 JS 수정
-    */-->
+    
     <article class="dash-card">
       <div class="dash-card-head"><h2>📋 게시판</h2></div>
       <div class="adm-big">
@@ -138,7 +129,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   const setAll = (sel, v) => document.querySelectorAll(sel).forEach(el => { el.textContent = v; });
 
-  // TODO(백엔드) 게시판 카드: 위험 구역 건수와 고위험 건수
+  //  게시판 카드: 위험 구역 건수와 고위험 건수
   fetch('/api/hazards')
     .then(r => (r.ok ? r.json() : []))
     .then(list => {
@@ -147,13 +138,13 @@ document.addEventListener('DOMContentLoaded', () => {
     })
     .catch(() => {});
 
-  // TODO(백엔드) 신규 문의: 답변 대기 건수
+  //  신규 문의: 답변 대기 건수
   fetch('/api/inquiries/admin/waiting-count')
     .then(r => (r.ok ? r.json() : null))
     .then(d => { if (d) setAll('.js-waiting', d.waitingCount); })
     .catch(() => {});
 
-  // 신규 문의: 답변 대기 목록 (4건씩 페이지네이션)
+  //  신규 문의: 답변 대기 목록 (4건씩 페이지네이션)
   const INQ_SIZE = 4;
   const loadInquiries = (pageNo) => {
     fetch('/api/inquiries/admin?status=WAITING&size=' + INQ_SIZE + '&page=' + pageNo)

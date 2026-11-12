@@ -621,6 +621,7 @@ public class PilotController {
                 .completedAt(assignment.getCompletedAt())
                 .polygonCoordinates(
                         land == null ? null : land.getPolygonCoordinates())
+                .assignedGeometry(assignment.getAssignedGeometry())
                 .flightPath(assignment.getFlightPath())
                 .build();
         }
@@ -666,6 +667,22 @@ public class PilotController {
     }
 
 
+    // 재배정 시 기존 작업에 합쳐진 경우: 중단 일시가 같으면 인계 관계로 봄
+    private boolean mergedHandover(WorkAssignments from, WorkAssignments to) {
+        return "STOPPED".equals(from.getStatus())
+                && !java.util.Objects.equals(from.getNo(), to.getNo())
+                && from.getInterruptedAt() != null
+                && java.util.Objects.equals(from.getInterruptedAt(), to.getInterruptedAt())
+                && from.getLand() != null && to.getLand() != null
+                && java.util.Objects.equals(from.getLand().getNo(), to.getLand().getNo())
+                && from.getDispatchBatch() != null && to.getDispatchBatch() != null
+                && java.util.Objects.equals(from.getDispatchBatch().getNo(),
+                                            to.getDispatchBatch().getNo())
+                && from.getPilot() != null && to.getPilot() != null
+                && !java.util.Objects.equals(from.getPilot().getNo(), to.getPilot().getNo());
+    }
+
+
     /* =========================================================
        작업 배정 엔티티 → 작업 이력 DTO
        ========================================================= */
@@ -680,14 +697,14 @@ public class PilotController {
 
         // 이 작업을 인계해 준 이전 조종사
         String prevPilotName = sameLand.stream()
-                .filter(o -> handedOver(o, assignment))
+                .filter(o -> handedOver(o, assignment) || mergedHandover(o, assignment))
                 .max(java.util.Comparator.comparing(WorkAssignments::getNo))
                 .map(o -> o.getPilot().getName())
                 .orElse(null);
 
         // 이 작업을 인계받은 다음 조종사
         String nextPilotName = sameLand.stream()
-                .filter(o -> handedOver(assignment, o))
+                .filter(o -> handedOver(assignment, o) || mergedHandover(assignment, o))
                 .min(java.util.Comparator.comparing(WorkAssignments::getNo))
                 .map(o -> o.getPilot().getName())
                 .orElse(null);

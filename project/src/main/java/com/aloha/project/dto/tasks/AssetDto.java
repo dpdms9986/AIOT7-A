@@ -135,7 +135,7 @@ public static AssetDto from(Chemicals chemical) {
     public Map<String, String> getStatusOptions() {
         Map<String, String> options = new LinkedHashMap<>();
         List<String> keys = isDrone()
-                ? List.of("normal", "operating", "maintenance", "in-maintenance", "fault")
+                ? List.of("normal", "maintenance", "in-maintenance", "fault")
                 : List.of("normal", "low");
         keys.forEach(k -> options.put(k, STATUS_LABELS.get(k)));
         return options;
