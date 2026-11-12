@@ -1,11 +1,10 @@
 package com.aloha.project.dto.lands;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import com.aloha.project.domain.lands.Lands;
 import com.aloha.project.dto.tasks.PilotTaskDto;
-
-import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -76,6 +75,7 @@ public class LandDto {
             case "PAUSED"      -> "일시정지";
             case "INTERRUPTED" -> "중단됨";
             case "REASSIGNED"  -> "재배정";
+            case "STOPPED"     -> "인계 완료";
             default            -> status;
         };
     }
@@ -105,6 +105,7 @@ public class LandDto {
             case "PAUSED"      -> "st-assigned";
             case "INTERRUPTED" -> "st-interrupted";
             case "REASSIGNED"  -> "st-reassigned";
+            case "STOPPED"     -> "st-stopped";
             default            -> "";
         };
     }
@@ -119,6 +120,7 @@ public class LandDto {
             case "PAUSED"      -> "#f2b705";
             case "INTERRUPTED" -> "#e11d48";
             case "REASSIGNED"  -> "#0d9488";
+            case "STOPPED"     -> "#0d9488";
             default            -> "#8a8f8c";
         };
     }
