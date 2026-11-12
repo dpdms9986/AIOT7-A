@@ -1,5 +1,5 @@
 
-package com.aloha.project.dto;
+package com.aloha.project.dto.tasks;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

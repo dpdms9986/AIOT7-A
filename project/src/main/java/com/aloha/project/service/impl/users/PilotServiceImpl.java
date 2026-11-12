@@ -8,8 +8,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.aloha.project.domain.tasks.WorkAssignments;
-import com.aloha.project.dto.PilotAssignmentResponse;
-import com.aloha.project.dto.WorkActionRequest;
+import com.aloha.project.dto.tasks.PilotAssignmentResponse;
+import com.aloha.project.dto.tasks.WorkActionRequest;
 import com.aloha.project.repository.tasks.WorkAssignmentRepository;
 import com.aloha.project.service.inter.tasks.WorkAssignmentService;
 import com.aloha.project.service.inter.users.PilotService;

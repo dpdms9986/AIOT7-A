@@ -20,7 +20,7 @@ import com.aloha.project.domain.common.Pagination;
 import com.aloha.project.domain.common.QueryParams;
 import com.aloha.project.domain.tasks.WorkAssignments;
 import com.aloha.project.domain.users.Users;
-import com.aloha.project.dto.AdminPilotDto;
+import com.aloha.project.dto.users.AdminPilotDto;
 import com.aloha.project.repository.tasks.WorkAssignmentRepository;
 import com.aloha.project.repository.users.TeamRepository;
 import com.aloha.project.repository.users.UserRepository;

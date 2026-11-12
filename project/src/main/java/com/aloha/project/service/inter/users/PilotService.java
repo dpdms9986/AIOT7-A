@@ -2,8 +2,8 @@ package com.aloha.project.service.inter.users;
 
 import java.util.List;
 
-import com.aloha.project.dto.PilotAssignmentResponse;
-import com.aloha.project.dto.WorkActionRequest;
+import com.aloha.project.dto.tasks.PilotAssignmentResponse;
+import com.aloha.project.dto.tasks.WorkActionRequest;
 
 public interface PilotService {
 

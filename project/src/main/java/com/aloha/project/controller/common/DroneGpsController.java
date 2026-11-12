@@ -26,7 +26,7 @@ import tools.jackson.databind.node.ArrayNode;
 import com.aloha.project.domain.tasks.WorkAssignments;
 import com.aloha.project.domain.users.CustomUser;
 import com.aloha.project.domain.users.Users;
-import com.aloha.project.dto.GpsMessage;
+import com.aloha.project.dto.common.GpsMessage;
 import com.aloha.project.repository.tasks.WorkAssignmentRepository;
 import com.aloha.project.repository.users.UserRepository;
 

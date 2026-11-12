@@ -20,8 +20,8 @@ import com.aloha.project.domain.tasks.WorkAssignments;
 import com.aloha.project.domain.users.CustomUser;
 import com.aloha.project.domain.users.Teams;
 import com.aloha.project.domain.users.Users;
-import com.aloha.project.dto.AdminWorkDto; // dto/admin 폴더에 두었다면: com.aloha.project.dto.admin.AdminWorkDto
-import com.aloha.project.dto.LandDto;
+import com.aloha.project.dto.lands.LandDto;
+import com.aloha.project.dto.users.AdminWorkDto;
 import com.aloha.project.repository.lands.LandRepository;
 import com.aloha.project.repository.tasks.DroneRepository;
 import com.aloha.project.repository.tasks.WorkAssignmentRepository;

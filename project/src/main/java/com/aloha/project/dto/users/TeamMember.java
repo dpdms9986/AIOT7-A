@@ -1,4 +1,4 @@
-package com.aloha.project.dto;
+package com.aloha.project.dto.users;
 
 import com.aloha.project.domain.users.*;
 import lombok.AllArgsConstructor;
