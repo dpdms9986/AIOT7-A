@@ -30,6 +30,8 @@ public class PilotTaskDto {
     private Long pilotNo;              // 담당 조종사 회원 번호
     private LocalDateTime assignedAt;  // 배정 일시
     private LocalDateTime interruptedAt; // 작업 중단 일시 (중단된 적 없으면 null)
+    private String prevPilotName;        // 이 작업을 넘겨준 이전 조종사 (재배정으로 받은 작업만)
+    private String nextPilotName;        // 이 작업을 인계받은 조종사 (인계됨 상태 작업만)
 
 
     // 다격형 변수

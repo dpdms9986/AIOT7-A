@@ -194,6 +194,23 @@ document.addEventListener("DOMContentLoaded", () => {
   let stompClient = null;
   let followPilots = false;
   let selectedPilot = null;
+  let pilotFocusAnimating = false;
+
+  const focusPilot = (latlng) => {
+    // 진행 중인 지도 이동 애니메이션 정리
+    map.stop();
+
+    pilotFocusAnimating = true;
+
+    map.once("moveend", () => {
+        pilotFocusAnimating = false;
+    });
+
+    // 헬기를 중앙에 배치하고 줌 18로 확대
+    map.flyTo(latlng, 18, {
+        duration: 0.8
+    });
+};
 
   const isOnline = (name) => pilotLastSeen[name] && Date.now() - pilotLastSeen[name] < LIVE_TIMEOUT_MS;
 
@@ -289,12 +306,45 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 2. 마커가 처음 생성되는 경우
     if (!pilotMarkers[name]) {
-      pilotMarkers[name] = L.marker([lat, lng], { icon: droneIcon, zIndexOffset: 1000 })
-        .addTo(map).bindPopup(popupOf([`🚁 ${name}`]));
+    const marker = L.marker([lat, lng], {
+        icon: droneIcon,
+        zIndexOffset: 1000
+    }).addTo(map);
 
-      if (name === selectedPilot) {
+    marker.bindPopup(popupOf([`🚁 ${name}`]), {
+        autoPan: false
+    });
+
+    // 헬기 마커 클릭 시 개별 포커싱 또는 해제
+    marker.on("click", () => {
+
+        // 이미 선택된 조종사를 다시 누르면 전체 보기
+        if (selectedPilot === name) {
+            marker.closePopup();
+            fitAll();
+            return;
+        }
+
+        // 조종사 목록에서도 해당 조종사 선택 처리
+        const pilotItem = [...document.querySelectorAll("#pilot-status-list .side-item")]
+            .find((li) => li.dataset.name === name);
+
+        if (pilotItem) {
+            selectPilot(pilotItem);
+        } else {
+            selectedPilot = name;
+            focusPilot(marker.getLatLng());
+            marker.openPopup();
+        }
+    });
+
+    pilotMarkers[name] = marker;
+
+    if (name === selectedPilot) {
         map.panTo([lat, lng]);
-      }
+    }
+
+
     } else {
       // 3. 이미 마커가 있는 경우: 선형 보간(Lerp)으로 부드럽게 이동!
       if (pilotAnimations[name]) {
@@ -321,14 +371,31 @@ document.addEventListener("DOMContentLoaded", () => {
         if (followPilots) {
           const pts = Object.values(pilotMarkers).map((m) => m.getLatLng());
           if (pts.length === 1) map.panTo(pts[0]);
-          else map.fitBounds(pts, { padding: [40, 40], maxZoom: map.getZoom() });
-        } else if (name === selectedPilot) {
-          map.panTo([curLat, curLng]);
-        }
+          
+          if (pts.length === 1) {
+              map.panTo(pts[0]);
+          } else {
+            map.fitBounds(pts, { 
+                padding: [40, 40],
+                maxZoom: map.getZoom()
+            });
+            }
+          }
 
         if (progress < 1.0) {
-          pilotAnimations[name] = requestAnimationFrame(animate);
-        }
+    pilotAnimations[name] = requestAnimationFrame(animate);
+    } else {
+    delete pilotAnimations[name];
+
+    // 선택된 조종사의 위치를 지도 중앙으로 유지
+    if (
+        name === selectedPilot &&
+        !pilotFocusAnimating &&
+        !followPilots
+    ) {
+        map.panTo(marker.getLatLng());
+    }
+}
       };
 
       pilotAnimations[name] = requestAnimationFrame(animate);
@@ -408,13 +475,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 조종사 선택 → 실시간 위치, 없으면 작업 중 농지-로
   const selectPilot = (li) => {
+       // 조종사 개별 선택 시 전체 따라가기 해제
+    if (followPilots) {
+        followPilots = false;
+        updateFollowButton();
+    }
+
     selectedPilot = li.dataset.name;
     document.querySelectorAll("#pilot-status-list .side-item").forEach((x) =>
       x.classList.toggle("selected", x === li));
 
     const marker = pilotMarkers[selectedPilot];
     if (marker) {
-      map.flyTo(marker.getLatLng(), 17, { duration: 0.8 });
+      focusPilot(marker.getLatLng());
       marker.openPopup();
       setStatus(`🚁 ${selectedPilot} 조종사 위치로 이동했습니다.`, "#238451");
       return;
@@ -432,10 +505,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* ===== 4. 지도 버튼 (HTML onclick 에서 부르므로 window 에 연결) ===== */
   const fitAll = () => {
+    // 개별 조종사 추적 해제
+    selectedPilot = null;
+    
+    // 전체 따라가기 모드로 해제
+    followPilots = false;
+    updateFollowButton();
+    
+    // 조종사 목록의 선택 표시 해제
+    document.querySelectorAll("#pilot-status-list .side-item").forEach((li) => {
+        li.classList.remove("selected");
+    });
+    
     const pts = farms.filter((f) => f.lat != null).map((f) => [f.lat, f.lng]);
     Object.values(pilotMarkers).forEach((m) => pts.push(m.getLatLng()));
-    if (pts.length) map.fitBounds(pts, { padding: [30, 30], maxZoom: 16 });
+    if (pts.length) { map.fitBounds(pts, { padding: [30, 30], maxZoom: 16 });
+     }  
   };
+
+
   // 따라가기 시작: 조종사만 대상으로 하고, 한 명이면 현재 줌을 유지한 채 이동만 함
   const followNow = () => {
     const pts = Object.values(pilotMarkers).map((m) => m.getLatLng());
@@ -443,9 +531,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (pts.length === 1) map.panTo(pts[0]);            // 줌 유지
     else map.fitBounds(pts, { padding: [40, 40], maxZoom: map.getZoom() });  // 현재 줌보다 더 확대하지는 않음
   };
-  const toggleFollow = () => {
-    followPilots = !followPilots;
+   
+  const updateFollowButton = () => {
     const btn = $("#follow-btn");
+    if (!btn) return;
 
     btn.innerHTML = followPilots
         ? '<i data-lucide="locate-off"></i><span>따라가기 중지</span>'
@@ -454,13 +543,23 @@ document.addEventListener("DOMContentLoaded", () => {
     btn.classList.toggle("btn-real", !followPilots);
     btn.classList.toggle("btn-stop", followPilots);
 
-    // Lucide 아이콘 다시 렌더링
     if (window.lucide) {
         lucide.createIcons();
     }
-
-    if (followPilots) followNow();
   };
+
+
+  const toggleFollow = () => {
+    followPilots = !followPilots;
+
+    updateFollowButton();
+
+    if (followPilots) { followNow();
+      }
+    };
+
+
+
   window.connect = connect;
   window.fitAll = fitAll;
   window.toggleFollow = toggleFollow;
