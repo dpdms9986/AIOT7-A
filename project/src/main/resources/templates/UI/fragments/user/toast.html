@@ -156,6 +156,105 @@
         return new Promise((resolve) => window.showPopup(text, type, resolve));
       };
 
+      // ----- 폼 공통 기능 -----
+      //  data-confirm="메시지"      : 제출 전 예/아니오 팝업 (기본 confirm() 대체). 중복 클릭 방지도 자동 적용
+      //  data-confirm-yes="삭제"    : 확인 버튼 글자 (생략하면 "확인")
+      //  data-confirm-detail="설명" : 메시지 아래 작은 설명 (선택)
+      //  data-once                  : 확인 팝업 없이 중복 클릭 방지만 하고 싶을 때
+      //  data-select-gate           : 필수 select 를 고르기 전에는 제출 버튼 비활성화
+      const syncGate = (form) => {
+        if (form.dataset.submitting === "1") return;
+        const sel = form.querySelector("select[required]");
+        const btn = form.querySelector('button[type="submit"]');
+        if (sel && btn) btn.disabled = sel.disabled || !sel.value;
+      };
+
+      let formBusy = false;   // 어떤 폼이든 제출이 시작되면 true (다른 폼/버튼 클릭도 막음)
+
+      const lockForm = (form) => {
+        formBusy = true;
+        form.dataset.submitting = "1";
+
+        // 이동하는 동안 화면 전체를 투명 막으로 덮어 아무것도 못 누르게 함
+        if (!document.getElementById("form-busy-overlay")) {
+          const ov = document.createElement("div");
+          ov.id = "form-busy-overlay";
+          document.body.appendChild(ov);
+        }
+
+        // 안전장치: 15초가 지나도 페이지가 안 넘어가면 잠금 해제
+        setTimeout(() => unlockForm(form), 15000);
+
+        setTimeout(() => {   // 제출 데이터가 만들어진 뒤에 잠가야 함
+          form.querySelectorAll('button[type="submit"], button:not([type]), input[type="submit"]').forEach((b) => {
+            b.disabled = true;
+            b.dataset.locked = "1";
+            if (b.tagName === "BUTTON") {
+              b.dataset.origHtml = b.innerHTML;
+              b.textContent = "처리 중...";
+            }
+          });
+        }, 0);
+      };
+
+      const unlockForm = (form) => {
+        formBusy = false;
+        document.getElementById("form-busy-overlay")?.remove();
+        delete form.dataset.submitting;
+        form.querySelectorAll("[data-locked]").forEach((b) => {
+          b.disabled = false;
+          delete b.dataset.locked;
+          if (b.dataset.origHtml) { b.innerHTML = b.dataset.origHtml; delete b.dataset.origHtml; }
+        });
+        syncGate(form);
+      };
+
+      document.addEventListener("submit", async (e) => {
+        const form = e.target;
+        if (!(form instanceof HTMLFormElement)) return;
+
+        // 이미 제출 중이거나 확인 팝업이 떠 있으면 추가 제출 무시
+        if (formBusy || form.dataset.submitting === "1" || form.dataset.asking === "1") {
+          e.preventDefault();
+          return;
+        }
+
+        const msg = form.dataset.confirm;
+        if (msg && form.dataset.confirmed !== "1") {
+          e.preventDefault();
+          form.dataset.asking = "1";
+          const ok = await window.showAskPopup(msg, {
+            yesText: form.dataset.confirmYes || "확인",
+            noText: "취소",
+            detail: form.dataset.confirmDetail || "",
+          });
+          delete form.dataset.asking;
+          if (!ok) return;
+          form.dataset.confirmed = "1";
+          if (form.requestSubmit) form.requestSubmit(e.submitter); else form.submit();
+          return;
+        }
+
+        delete form.dataset.confirmed;
+        if (msg || form.hasAttribute("data-once")) lockForm(form);
+      });
+
+      document.addEventListener("change", (e) => {
+        const form = e.target.closest ? e.target.closest("form[data-select-gate]") : null;
+        if (form) syncGate(form);
+      });
+
+      document.addEventListener("DOMContentLoaded", () => {
+        document.querySelectorAll("form[data-select-gate]").forEach(syncGate);
+      });
+
+      // 뒤로가기로 돌아왔을 때 잠긴 버튼 풀기
+      window.addEventListener("pageshow", (e) => {
+        if (!e.persisted) return;
+        document.querySelectorAll('form[data-submitting="1"]').forEach(unlockForm);
+        document.querySelectorAll("form[data-select-gate]").forEach(syncGate);
+      });
+
       // ----- 서버가 보낸 1회용 메시지 자동 표시 -----
       const loginMessage  = /*[[${loginMessage}]]*/ null;
       const signupSuccess = /*[[${signupSuccess}]]*/ false;
