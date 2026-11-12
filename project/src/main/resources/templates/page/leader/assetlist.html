@@ -159,7 +159,7 @@
       </details>
 
          <form th:action="@{/leader/assetlist/{id}/delete(id=${a.id})}" method="post"
-         onsubmit="return confirm('이 자산을 삭제하시겠습니까?');">
+         data-confirm="이 자산을 삭제하시겠습니까?" data-confirm-yes="삭제">
         <button type="submit"
                class="asset-pilot-detail-button asset-row-delete-button"> 삭제</button>
         </form>
@@ -238,7 +238,6 @@
 
 
 <!-- 공통 팝업 불러오기 -->
-<th:block th:replace="~{UI/fragments/user/toast :: toast}"></th:block>
 <script th:src="@{/js/leader/assetlist.js}"></script>
 
 

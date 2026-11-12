@@ -150,7 +150,7 @@ function updateMarker(pilotName, lat, lng) {
 }
 
 // 3. 2초 간격 가상 비행
-function startFakeAuto() {
+async function startFakeAuto() {
   stopAuto(false);
 
   const selectedTask = document.querySelector(".pilot-task.selected");
@@ -169,7 +169,11 @@ function startFakeAuto() {
   let resume = false;
   
   if (hasHistory) {
-    resume = confirm("이전 비행 기록이 있습니다. \n마지막 중단 위치에서 이어서 비행하시겠습니까?")
+    resume = await showAskPopup("이전 비행 기록이 있습니다.\n마지막 중단 위치에서 이어서 비행하시겠습니까?", {
+      yesText: "이어서 비행",
+      noText: "새로 시작",
+      persistent: true,   // 바깥 클릭/ESC 로 닫히면 "새로 시작"이 되어 기록이 지워지므로 막음
+    });
   }
   
   if (resume) {
@@ -274,8 +278,8 @@ function startRealGpsAuto() {
     window.myFlightTrackCoords.push([latitude, longitude]);
 
     // 3. 단장 대시보드로 실시간 웹소켓 발행
-    stompClient.send("/pub/location", {}, JSON.stringify({
-      pilotName: $("#pilotName").val(),
+     stompClient.send("/pub/location", {}, JSON.stringify({
+      pilotName: $("#myPilotName").val(),
       latitude,
       longitude,
     }));
