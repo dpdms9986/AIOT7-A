@@ -8,7 +8,7 @@ import com.aloha.project.domain.tasks.DispatchBatches;
 import com.aloha.project.domain.tasks.WorkAssignments;
 import com.aloha.project.domain.users.Teams;
 import com.aloha.project.domain.users.Users;
-import com.aloha.project.dto.TaskAssignRequest;
+import com.aloha.project.dto.tasks.TaskAssignRequest;
 import com.aloha.project.repository.lands.LandRepository;
 import com.aloha.project.repository.tasks.DispatchBatchRepository;
 import com.aloha.project.repository.tasks.WorkAssignmentRepository;

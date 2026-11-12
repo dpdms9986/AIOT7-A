@@ -1,4 +1,4 @@
-package com.aloha.project.dto;
+package com.aloha.project.dto.users;
 
 import java.time.LocalDateTime;
 import java.util.List;

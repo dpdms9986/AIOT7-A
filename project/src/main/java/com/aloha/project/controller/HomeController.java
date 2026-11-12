@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.aloha.project.dto.SignupRequest;
+import com.aloha.project.dto.common.SignupRequest;
 import com.aloha.project.service.inter.users.UserService;
 
 import jakarta.servlet.http.Cookie;
