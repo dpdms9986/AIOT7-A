@@ -1,4 +1,4 @@
-package com.aloha.project.dto;
+package com.aloha.project.dto.common;
 
 import java.time.LocalDateTime;
 

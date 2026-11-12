@@ -1,8 +1,9 @@
-package com.aloha.project.dto;
+package com.aloha.project.dto.lands;
 
 import java.time.LocalDateTime;
 
 import com.aloha.project.domain.lands.Lands;
+import com.aloha.project.dto.tasks.PilotTaskDto;
 
 import java.util.List;
 

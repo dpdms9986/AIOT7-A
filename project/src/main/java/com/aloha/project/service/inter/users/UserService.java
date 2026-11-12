@@ -2,7 +2,7 @@ package com.aloha.project.service.inter.users;
 
 import com.aloha.project.domain.common.QueryParams;
 import com.aloha.project.domain.users.Users;
-import com.aloha.project.dto.SignupRequest;
+import com.aloha.project.dto.common.SignupRequest;
 import com.aloha.project.domain.common.PageInfo;
 
 public interface UserService {

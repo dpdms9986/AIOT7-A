@@ -1,4 +1,4 @@
-package com.aloha.project.dto;
+package com.aloha.project.dto.tasks;
 
 import java.util.LinkedHashMap;
 import java.util.List;

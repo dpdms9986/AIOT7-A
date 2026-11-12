@@ -1,5 +1,5 @@
 
-package com.aloha.project.dto;
+package com.aloha.project.dto.common;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
