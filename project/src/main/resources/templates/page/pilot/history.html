@@ -355,19 +355,6 @@
                 data-confirm-yes="작업 취소" class="hist-action-form">
             <button type="submit" class="dash-btn-danger hist-action-btn">작업 취소</button>
           </form>
-
-          <!-- 작업 취소 -->
-          <form th:action="@{/pilot/history/{no}/cancel(no=${selected.no})}"
-                method="post"
-                onsubmit="return confirm('작업을 취소하고 다시 대기 상태로 되돌리시겠습니까? (선택한 드론/약제가 초기화됩니다)');"
-                class="hist-action-form">
-
-            <button type="submit"
-                    class="dash-btn-danger hist-action-btn">
-              작업 취소
-            </button>
-          </form>
-
         </div>
 
       </div>
