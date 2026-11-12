@@ -719,6 +719,7 @@ public class PilotController {
                 .lastLatitude(assignment.getLastLatitude())
                 .lastLongitude(assignment.getLastLongitude())
                 .lastLocationAt(assignment.getLastLocationAt())
+                .polygonCoordinates(land != null ? land.getPolygonCoordinates() : null)
                 .build();
     }
 

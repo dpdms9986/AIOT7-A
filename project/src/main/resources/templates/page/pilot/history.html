@@ -6,6 +6,8 @@
 <head>
   <meta charset="UTF-8">
   <title>작업 관리 | 스마트 농업 관제 시스템</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body layout:fragment="content">
 
@@ -278,7 +280,6 @@
           </th:block>
         </dl>
 
-
         <!-- ASSIGNED 작업: 작업 시작 폼 -->
         <form th:if="*{status == 'ASSIGNED'}"
               th:action="@{/pilot/history/{no}/start(no=*{no})}"
@@ -340,8 +341,7 @@
 
 
         <!-- IN_PROGRESS 작업: 완료 보고 및 작업 취소 -->
-        <div th:if="*{status == 'IN_PROGRESS'}"
-             class="hist-action-row">
+        <div th:if="*{status == 'IN_PROGRESS'}" class="hist-action-row">
 
           <!-- 작업 완료 보고 -->
          <form th:action="@{/pilot/history/{no}/complete(no=*{no})}"
@@ -353,7 +353,7 @@
                 style="width: 100%; height: 38px !important; display: flex; align-items: center; justify-content: center; padding: 0 !important; margin: 0 !important; box-sizing: border-box !important;">
             작업 완료 보고
         </button>
-    </form>
+        </form>
 
           <!-- 작업 취소 -->
           <form th:action="@{/pilot/history/{no}/cancel(no=${selected.no})}"
@@ -369,7 +369,18 @@
               </button>
           </form>
         </div>
-
+        <!-- 👇 농지 위치 미리보기 미니맵 -->
+        <div th:if="*{polygonCoordinates != null or (lastLatitude != null and lastLongitude != null)}"
+             style="margin-top: 16px;">
+          <p class="pilot-form-title" style="margin-bottom: 8px;">📍 농지 위치</p>
+          <div id="history-map"
+               th:data-polygon="*{polygonCoordinates}"
+               th:data-flight-path="*{flightPath}"
+               th:data-lat="*{lastLatitude}"
+               th:data-lng="*{lastLongitude}"
+               style="width: 100%; height: 240px; border-radius: 10px; border: 1px solid #e5e7eb;">
+          </div>
+        </div>
       </div>
     </article>
   </section>
@@ -414,70 +425,137 @@ document.getElementById('resumeBtn')?.addEventListener('click', async (e) => {
 
 
 
-    <!-- 작업 목록: 서버 탭 이동 + 검색 -->
-    <script>
+  <!-- 작업 목록: 서버 탭 이동 + 검색 -->
+  <script>
+  (function () {
+      var tabs = document.querySelectorAll('#history-tabs button');
+      var input = document.getElementById('pilotSearch');
+      var emptyMsg = document.getElementById('pilotSearchEmpty');
+      var list = document.querySelector('.pilot-task-list');
+
+      if (!list) return;
+
+      var items = Array.from(list.querySelectorAll('li[data-search]'));
+
+      // 탭 클릭: 서버에 해당 상태 목록 다시 요청
+      tabs.forEach(function (tab) {
+          tab.addEventListener('click', function () {
+              var url = new URL(window.location.href);
+
+              url.searchParams.set('filter', tab.dataset.filter);
+
+              // 탭을 바꾸면 기존 페이지와 선택 작업 초기화
+              url.searchParams.delete('page');
+              url.searchParams.delete('no');
+
+              window.location.href = url.toString();
+          });
+      });
+
+      // 검색 기능
+      function applySearch() {
+          var words = input
+              ? input.value.trim().toLowerCase().split(/\s+/).filter(Boolean)
+              : [];
+
+          var shown = 0;
+
+          items.forEach(function (li) {
+              var text = (li.getAttribute('data-search') || '').toLowerCase();
+
+              var matchesSearch = words.every(function (word) {
+                  return text.indexOf(word) > -1;
+              });
+
+              li.style.display = matchesSearch ? '' : 'none';
+
+              if (matchesSearch) {
+                  shown++;
+              }
+          });
+
+          // 검색어가 있고, 실제 목록도 있는데 검색 결과가 없을 때만 표시
+          if (emptyMsg) {
+              emptyMsg.style.display =
+                  words.length > 0 && items.length > 0 && shown === 0
+                      ? ''
+                      : 'none';
+          }
+      }
+      if (input) {
+          input.addEventListener('input', applySearch);
+      }
+
+      applySearch();
+  })();
+  </script>
+
+  <!-- 작업 상세 미니맵 렌더링 -->
+   <script>
     (function () {
-        var tabs = document.querySelectorAll('#history-tabs button');
-        var input = document.getElementById('pilotSearch');
-        var emptyMsg = document.getElementById('pilotSearchEmpty');
-        var list = document.querySelector('.pilot-task-list');
+      var mapEl = document.getElementById('history-map');
+      if (!mapEl || typeof L === 'undefined') return;
 
-        if (!list) return;
+      var polyRaw = mapEl.dataset.polygon;
+      var pathRaw = mapEl.dataset.flightPath;
+      var lat = Number(mapEl.dataset.lat);
+      var lng = Number(mapEl.dataset.lng);
 
-        var items = Array.from(list.querySelectorAll('li[data-search]'));
+      // 조작 없이 고정된 미리보기용 미니맵
+      var hMap = L.map('history-map', {
+        touchZoom: false,
+        boxzoom: false,
+        zoomControl: false,
+        attributionControl: false
+      }).setView([36.3504, 127.3845], 15)
 
-        // 탭 클릭: 서버에 해당 상태 목록 다시 요청
-        tabs.forEach(function (tab) {
-            tab.addEventListener('click', function () {
-                var url = new URL(window.location.href);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxzoom: 19
+      }).addTo(hMap);
 
-                url.searchParams.set('filter', tab.dataset.filter);
+      var hasBound = false;
 
-                // 탭을 바꾸면 기존 페이지와 선택 작업 초기화
-                url.searchParams.delete('page');
-                url.searchParams.delete('no');
+      // 1. 농지 폴리곤 그리기 + 자동 확대/중앙 맞춤
+      if (polyRaw && polyRaw !== 'null' && polyRaw.trim() !== '') {
+        try {
+          var polyCoords = JSON.parse(polyRaw);
+          if (Array.isArray(polyCoords) && polyCoords.length >= 3) {
+            var poly = L.polygon(polyCoords, {
+              color: '#238451',
+              weight: 2,
+              fillColor: '#54a77b',
+              fillOpacity: 0.25
+            }).addTo(hMap);
+            hMap.fitBounds(poly.getBounds(), { padding: [20, 20]});
+            hasBound = ture;
+          }
+        } catch (e) { console.error('이력 폴리곤 파싱 오류:', e)}
+      }
 
-                window.location.href = url.toString();
-            });
-        });
-
-        // 검색 기능
-        function applySearch() {
-            var words = input
-                ? input.value.trim().toLowerCase().split(/\s+/).filter(Boolean)
-                : [];
-
-            var shown = 0;
-
-            items.forEach(function (li) {
-                var text = (li.getAttribute('data-search') || '').toLowerCase();
-
-                var matchesSearch = words.every(function (word) {
-                    return text.indexOf(word) > -1;
-                });
-
-                li.style.display = matchesSearch ? '' : 'none';
-
-                if (matchesSearch) {
-                    shown++;
-                }
-            });
-
-            // 검색어가 있고, 실제 목록도 있는데 검색 결과가 없을 때만 표시
-            if (emptyMsg) {
-                emptyMsg.style.display =
-                    words.length > 0 && items.length > 0 && shown === 0
-                        ? ''
-                        : 'none';
+      // 2. 비행 궤적이 있으면 함께 표시
+      if (pathRaw && pathRaw !== 'null' && pathRaw.trim() !== '') {
+        try {
+          var pathCoords = JSON.parse(pathRaw);
+          if (Array.isArray(pathCoords) && pathCoords.length > 0) {
+            var line = L.polyline(pathCoords, {
+              color: '#2f80ed',
+              weight: 3,
+              opacity: 0.9
+            }).addTo(hMap);
+            if (!hasBound) {
+              hMap.fitBounds(line.getBounds(), {padding: [20, 20]});
+              hasBound = true;
             }
+          }
+        } catch (e) { console.error('이력 궤적 파싱 오류:', e); }
         }
-
-        if (input) {
-            input.addEventListener('input', applySearch);
-        }
-
-        applySearch();
+        
+        // 3. 폴리곤 궤적이 없고 마지막 좌표만 있을 때 마커 표시
+        if (!hasBound && Number.isFinite(lat) && Number.isFinite(lng) && (lat !== 0 || lng !== 0)) {
+          { hMap.setView([lat, lng], 16); }
+          L.marker([lat, lng]).addTo(map);
+      }
     })();
-    </script>
+   </script>
   </body>
 </html>
