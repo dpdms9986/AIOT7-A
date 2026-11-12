@@ -41,6 +41,7 @@ public class LandDto {
 
     private String flightPath;
     private String polygonCoordinates; // 다각형 좌표 그리기
+    private String assignedGeometry;   // 조종사별 담당 구역 좌표
 
     // 재배정 표시용 (단장 화면)
     private boolean reassigned;        // 다른 조종사에게 인계된 농지인지
