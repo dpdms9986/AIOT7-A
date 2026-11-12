@@ -50,7 +50,7 @@
 
     const c = w.code;
     if (w.rain >= T.RAIN_DANGER) { reasons.push("강수량 : 100mm 이상"); up("danger"); }
-    if (c === 3 && level === "ok") { reasons.push("날씨 : 흐림"); up("caution"); }
+    if (c === 3) { reasons.push("날씨 : 흐림"); up("caution"); }
     if (c >= 95) { reasons.push("날씨 : 뇌우"); up("danger"); }
     else if ((c >= 51 && c <= 67) || (c >= 80 && c <= 82) || w.rain > 0) {
       reasons.push("날씨 : 비"); up("caution");
@@ -262,7 +262,8 @@
         ? "작업 전 현장 날씨를 확인하세요."
         : "작업 여부를 신중히 결정하세요.";
     }
-    el.append(top, msg, tip);
+    el.append(top, msg);
+    if (tip.textContent) el.append(tip);
   }
   async function init() {
     const headers = document.querySelectorAll('[data-weather="header"]');

@@ -54,7 +54,8 @@ public class AdminPageController {
      */
     @Transactional(readOnly = true) // open-in-view=false 라서 LAZY(농지/조종사)는 이 안에서 꺼내야 함
     @GetMapping({"", "/", "/dashboard"})
-    public String getDashboard(@AuthenticationPrincipal CustomUser customUser, Model model) {
+    public String getDashboard(@AuthenticationPrincipal CustomUser customUser, Model model,
+                               @RequestParam(value = "workPage", defaultValue = "1") int workPage) {
         log.info("관리자 대시보드 접근: {}", customUser != null ? customUser.getUsername() : "anonymous");
 
         // 1. 시스템 전체 회원 현황 (활성화된 회원만 집계)
@@ -91,12 +92,19 @@ public class AdminPageController {
         //   WorkAssignmentRepository 에 findTop8ByOrderByCreatedAtDesc() 만들어지면 아래 줄 교체:
         //   List<WorkAssignments> allWorks = workAssignmentRepository.findTop8ByOrderByCreatedAtDesc();
         List<WorkAssignments> allWorks = workAssignmentRepository.findAll();
-        List<AdminWorkDto> recentWorks = allWorks.stream()
+        List<AdminWorkDto> sortedWorks = allWorks.stream()
                 .map(AdminWorkDto::from)
                 .filter(w -> w.getWorkDate() != null)
                 .sorted(Comparator.comparing(AdminWorkDto::getWorkDate).reversed())
-                .limit(8)
                 .toList();
+
+        // 페이지네이션 (8건씩)
+        final int workSize = 8;
+        int workTotalPages = Math.max(1, (int) Math.ceil(sortedWorks.size() / (double) workSize));
+        int currentWorkPage = Math.min(Math.max(workPage, 1), workTotalPages); // 범위 보정
+        int fromIdx = (currentWorkPage - 1) * workSize;
+        int toIdx = Math.min(fromIdx + workSize, sortedWorks.size());
+        List<AdminWorkDto> recentWorks = sortedWorks.subList(fromIdx, toIdx);
 
         // 6. 주간(최근 7일) 방제 완료 추이 - 0건인 날도 채움
         // TODO(백엔드) findByStatusAndCompletedAtGreaterThanEqual("COMPLETED", 시작일시) 만들어지면
@@ -124,6 +132,8 @@ public class AdminPageController {
         model.addAttribute("completedLandCount", completedLandCount);
         model.addAttribute("totalProgressPercent", totalProgressPercent);
         model.addAttribute("recentWorks", recentWorks);
+        model.addAttribute("workPage", currentWorkPage);
+        model.addAttribute("workTotalPages", workTotalPages);
         model.addAttribute("weekLabels", weekLabels);
         model.addAttribute("weekCounts", weekCounts);
 

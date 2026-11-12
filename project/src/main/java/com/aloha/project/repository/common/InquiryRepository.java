@@ -35,8 +35,9 @@ public interface InquiryRepository extends JpaRepository<Inquiries, Long> {
                     :keyword IS NULL
                     OR LOWER(i.user.name) LIKE LOWER(CONCAT('%', :keyword, '%'))
                     OR LOWER(i.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
-                  )
-            ORDER BY i.createdAt DESC
+                    )
+            ORDER BY CASE WHEN i.status = 'WAITING' THEN 0 ELSE 1 END,
+                     i.createdAt DESC
             """)
     Page<Inquiries> findAllForAdmin(
             @Param("status") String status,
