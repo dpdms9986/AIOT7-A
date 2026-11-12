@@ -31,31 +31,41 @@
         </h2>
       </div>
 
-      <!-- 진행 중 / 완료 탭 -->
-      <div class="pilot-filter-row">
-        <div class="pilot-tabs" id="history-tabs">
+
+    <!-- 작업 상태 탭 -->
+    <div class="pilot-filter-row">
+      <div class="pilot-tabs" id="history-tabs">
+
           <button type="button"
-                  class="active"
                   data-filter="active"
-                  th:text="|진행 중 (${allCount - doneCount})|">
-            진행 중
+                  th:classappend="${filter == 'active'} ? 'active'"
+                  th:text="|작업중 (${activeCount})|">
+              작업중
+          </button>
+
+          <button type="button"
+                  data-filter="stopped"
+                  th:classappend="${filter == 'stopped'} ? 'active'"
+                  th:text="|중단 및 인계 (${stoppedCount})|">
+              중단 및 인계
           </button>
 
           <button type="button"
                   data-filter="done"
-                  th:text="|완료 (${doneCount})|">
-            완료
+                  th:classappend="${filter == 'done'} ? 'active'"
+                  th:text="|완료됨 (${doneCount})|">
+              완료됨
           </button>
-        </div>
 
+      </div>
         <!-- 작업 검색 -->
         <div class="pilot-search">
-          <input type="search"
-                 id="pilotSearch"
-                 placeholder="지역·주소 검색 (예: 선화동)"
-                 autocomplete="off">
+            <input type="search"
+                  id="pilotSearch"
+                  placeholder="지역·주소 검색 (예: 선화동)"
+                  autocomplete="off">
         </div>
-      </div>
+    </div>
 
       <!-- 완료 요약 -->
       <p class="task-history-sum"
@@ -64,78 +74,76 @@
         완료 2건 · 면적 3,700㎡
       </p>
 
-      <!-- 작업 목록 -->
-      <ul class="pilot-task-list"
-          th:data-active-count="${allCount - doneCount}">
+    <!-- 작업 목록 -->
+    <ul class="pilot-task-list"
+        th:data-current-filter="${filter}">
 
-        <li th:each="t : ${tasks}"
-            th:attr="data-search=${(t.region ?: '') + ' ' + (t.address ?: '')}"
-            th:data-status="${t.status}"
-            th:data-group="${t.status == 'COMPLETED'} ? 'done' : 'active'">
+      <li th:each="t : ${tasks}"
+          th:attr="data-search=${(t.region ?: '') + ' ' + (t.address ?: '')}"
+          th:data-status="${t.status}">
 
           <a class="pilot-task"
-             th:href="@{/pilot/history(filter='all', no=${t.no}, page=${pagination.page})}"
-             th:classappend="${selected != null and t.no == selected.no} ? 'selected'">
+            th:href="@{/pilot/history(filter=${filter}, no=${t.no}, page=${pagination.page})}"
+            th:classappend="${selected != null and t.no == selected.no} ? 'selected'">
 
-            <span class="pilot-dot" th:classappend="${t.stClass}"></span>
+              <span class="pilot-dot" th:classappend="${t.stClass}"></span>
 
-            <span class="pilot-task-body">
-              <strong th:text="${t.address}">전민동 31-7</strong>
+              <span class="pilot-task-body">
+                  <strong th:text="${t.address}">전민동 31-7</strong>
 
-              <small th:text="${#numbers.formatDecimal(t.areaSize, 0, 'COMMA', 0, 'POINT')} + '㎡ · ' + ${#temporals.format(t.assignedAt, 'MM-dd HH:mm')}">
-                4,800㎡ · 10-29 08:00
-              </small>
-            </span>
+                  <small th:text="${#numbers.formatDecimal(t.areaSize, 0, 'COMMA', 0, 'POINT')} + '㎡ · ' + ${#temporals.format(t.assignedAt, 'MM-dd HH:mm')}">
+                      4,800㎡ · 10-29 08:00
+                  </small>
+              </span>
 
-            <!-- 작업 상태 -->
-            <span class="pilot-status"
-                  th:classappend="${t.stClass}"
-                  th:text="${t.statusLabel}">
-              진행 중
-            </span>
+              <span class="pilot-status"
+                    th:classappend="${t.stClass}"
+                    th:text="${t.statusLabel}">
+                  작업 중
+              </span>
 
-            <!-- 인수된 작업 표시 -->
-            <span class="pilot-status st-reassigned"
-                  th:if="${t.prevPilotName != null}">
-              인수됨
-            </span>
+              <span class="pilot-status st-reassigned"
+                    th:if="${t.prevPilotName != null}">
+                  인수됨
+              </span>
 
           </a>
-        </li>
-
+      </li>
         <!-- 작업이 아예 없는 경우 -->
         <li class="pilot-empty"
             th:if="${#lists.isEmpty(tasks)}">
-          해당하는 작업이 없습니다.
+            해당하는 작업이 없습니다.
         </li>
 
         <!-- 검색 결과가 없는 경우 -->
         <li class="pilot-empty"
-            id="pilotSearchEmpty"
-            style="display:none">
-          검색 결과가 없습니다.
-        </li>
+      id="pilotSearchEmpty"
+      style="display:none">
+      검색 결과가 없습니다.
+  </li>
 
-      </ul>
+</ul>
 
+      
       <!-- 페이지 번호 -->
       <div class="um-pager pager-std"
-           th:if="${pagination.last >= 1}">
+          th:if="${pagination.last >= 1}">
 
-        <a th:href="@{/pilot/history(filter='all', no=${selected?.no}, page=1)}">
-          «
-        </a>
+          <a th:href="@{/pilot/history(filter=${filter}, no=${selected?.no}, page=1)}">
+              «
+          </a>
 
-        <a th:each="p : ${#numbers.sequence(pagination.start, pagination.end)}"
-           th:href="@{/pilot/history(filter='all', no=${selected?.no}, page=${p})}"
-           th:classappend="${p == pagination.page} ? 'on'"
-           th:text="${p}">
-          1
-        </a>
+          <a th:each="p : ${#numbers.sequence(pagination.start, pagination.end)}"
+            th:href="@{/pilot/history(filter=${filter}, no=${selected?.no}, page=${p})}"
+            th:classappend="${p == pagination.page} ? 'on'"
+            th:text="${p}">
+              1
+          </a>
 
-        <a th:href="@{/pilot/history(filter='all', no=${selected?.no}, page=${pagination.last})}">
-          »
-        </a>
+          <a th:href="@{/pilot/history(filter=${filter}, no=${selected?.no}, page=${pagination.last})}">
+              »
+          </a>
+
       </div>
     </article>
 
@@ -347,13 +355,18 @@
         </button>
     </form>
 
-
-          <!-- 작업 진행 중(IN_PROGRESS)일 때 취소 버튼 노출 -->
-          <form th:action="@{/pilot/history/{no}/cancel(no=${selected.no})}" method="post" 
+          <!-- 작업 취소 -->
+          <form th:action="@{/pilot/history/{no}/cancel(no=${selected.no})}"
+                method="post"
                 data-confirm="작업을 취소하고 다시 대기 상태로 되돌리시겠습니까?"
                 data-confirm-detail="선택한 드론/약제가 초기화됩니다."
-                data-confirm-yes="작업 취소" class="hist-action-form">
-            <button type="submit" class="dash-btn-danger hist-action-btn">작업 취소</button>
+                data-confirm-yes="작업 취소"
+                class="hist-action-form">
+
+              <button type="submit"
+                      class="dash-btn-danger hist-action-btn">
+                  작업 취소
+              </button>
           </form>
         </div>
 
@@ -400,103 +413,71 @@ document.getElementById('resumeBtn')?.addEventListener('click', async (e) => {
 </script>
 
 
-<!-- 작업 목록: 탭 필터, 검색, IN_PROGRESS 우선 정렬 -->
-<script>
-(function () {
-  var tabs = document.querySelectorAll('#history-tabs button');
-  var input = document.getElementById('pilotSearch');
-  var emptyMsg = document.getElementById('pilotSearchEmpty');
-  var list = document.querySelector('.pilot-task-list');
 
-  if (!list) return;
+    <!-- 작업 목록: 서버 탭 이동 + 검색 -->
+    <script>
+    (function () {
+        var tabs = document.querySelectorAll('#history-tabs button');
+        var input = document.getElementById('pilotSearch');
+        var emptyMsg = document.getElementById('pilotSearchEmpty');
+        var list = document.querySelector('.pilot-task-list');
 
-  var items = Array.from(list.querySelectorAll('li[data-search]'));
+        if (!list) return;
 
-  // 전체 작업 중 진행 중 작업이 존재하면 진행 중 탭을 기본으로 선택
-  var activeCount = Number(list.dataset.activeCount || 0);
-  var currentFilter = activeCount > 0 ? 'active' : 'done';
+        var items = Array.from(list.querySelectorAll('li[data-search]'));
 
-  // IN_PROGRESS 작업을 현재 페이지 목록의 최상단으로 이동
-  // 같은 상태 안에서는 기존 순서를 유지
-  items.sort(function (a, b) {
-    var aInProgress = a.dataset.status === 'IN_PROGRESS';
-    var bInProgress = b.dataset.status === 'IN_PROGRESS';
+        // 탭 클릭: 서버에 해당 상태 목록 다시 요청
+        tabs.forEach(function (tab) {
+            tab.addEventListener('click', function () {
+                var url = new URL(window.location.href);
 
-    return Number(bInProgress) - Number(aInProgress);
-  });
+                url.searchParams.set('filter', tab.dataset.filter);
 
-  // 정렬한 목록을 다시 DOM에 반영
-  var emptyItems = Array.from(list.children).filter(function (li) {
-    return !li.hasAttribute('data-search');
-  });
+                // 탭을 바꾸면 기존 페이지와 선택 작업 초기화
+                url.searchParams.delete('page');
+                url.searchParams.delete('no');
 
-  items.forEach(function (li) {
-    list.appendChild(li);
-  });
+                window.location.href = url.toString();
+            });
+        });
 
-  emptyItems.forEach(function (li) {
-    list.appendChild(li);
-  });
+        // 검색 기능
+        function applySearch() {
+            var words = input
+                ? input.value.trim().toLowerCase().split(/\s+/).filter(Boolean)
+                : [];
 
-  // 탭 필터 + 검색어 필터
-  function applyFilters() {
-    var words = input
-      ? input.value.trim().toLowerCase().split(/\s+/).filter(Boolean)
-      : [];
+            var shown = 0;
 
-    var shown = 0;
+            items.forEach(function (li) {
+                var text = (li.getAttribute('data-search') || '').toLowerCase();
 
-    items.forEach(function (li) {
-      var text = (li.getAttribute('data-search') || '').toLowerCase();
+                var matchesSearch = words.every(function (word) {
+                    return text.indexOf(word) > -1;
+                });
 
-      // 검색어가 모두 포함되어 있는지 확인
-      var matchesSearch = words.every(function (word) {
-        return text.indexOf(word) > -1;
-      });
+                li.style.display = matchesSearch ? '' : 'none';
 
-      // COMPLETED 여부로 탭 구분
-      var matchesStatus = li.dataset.group === currentFilter;
+                if (matchesSearch) {
+                    shown++;
+                }
+            });
 
-      var visible = matchesSearch && matchesStatus;
+            // 검색어가 있고, 실제 목록도 있는데 검색 결과가 없을 때만 표시
+            if (emptyMsg) {
+                emptyMsg.style.display =
+                    words.length > 0 && items.length > 0 && shown === 0
+                        ? ''
+                        : 'none';
+            }
+        }
 
-      li.style.display = visible ? '' : 'none';
+        if (input) {
+            input.addEventListener('input', applySearch);
+        }
 
-      if (visible) {
-        shown++;
-      }
-    });
-
-    // 검색 결과가 없거나 해당 상태의 작업이 없는 경우
-    if (emptyMsg) {
-      emptyMsg.style.display = shown === 0 ? '' : 'none';
-    }
-
-    // 현재 선택된 탭 표시
-    tabs.forEach(function (tab) {
-      tab.classList.toggle(
-        'active',
-        tab.dataset.filter === currentFilter
-      );
-    });
-  }
-
-  // 탭 클릭
-  tabs.forEach(function (tab) {
-    tab.addEventListener('click', function () {
-      currentFilter = tab.dataset.filter;
-      applyFilters();
-    });
-  });
-
-  // 검색어 입력
-  if (input) {
-    input.addEventListener('input', applyFilters);
-  }
-
-  // 최초 화면 적용
-  applyFilters();
-})();
-</script>
-
-</body>
+        applySearch();
+    })();
+    </script>
+  </body>
 </html>
