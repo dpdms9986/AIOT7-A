@@ -471,7 +471,7 @@ if (req.getLandNos() != null && req.getLandNos().size() == 1) {
 
         // 조종사별 담당 면적 합산 (한 명이 여러 구역을 맡아도 한 줄로)
         Map<Long, Double> areaByPilot = new LinkedHashMap<>();
-       Map<Long, List<Map<String, Object>>> geometryByPilot = new LinkedHashMap<>();
+        Map<Long, List<Object>> geometryByPilot = new LinkedHashMap<>();
 
         for (PieceAssignment p : pieceList) {
         Long pilotNo = p.getPilotNo();
@@ -483,15 +483,9 @@ if (req.getLandNos() != null && req.getLandNos().size() == 1) {
          
 
     if (p.getGeometry() != null) {
-        Map<String, Object> pieceData = new LinkedHashMap<>();
-        pieceData.put("sliceIndex", p.getSliceIndex());
-        pieceData.put("geometry", p.getGeometry());
-
-
-
         geometryByPilot
             .computeIfAbsent(pilotNo, k -> new ArrayList<>())
-            .add(pieceData);
+            .add(p.getGeometry());
     }
 
 
@@ -518,7 +512,7 @@ if (req.getLandNos() != null && req.getLandNos().size() == 1) {
         String assignedGeometry = null;
 
         try {
-        List<Map<String, Object>> geometries = geometryByPilot.get(e.getKey());
+        List<Object> geometries = geometryByPilot.get(e.getKey());
 
         if (geometries != null && !geometries.isEmpty()) {
         assignedGeometry = objectMapper.writeValueAsString(geometries);
