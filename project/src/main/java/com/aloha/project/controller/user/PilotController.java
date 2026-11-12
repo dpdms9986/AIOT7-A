@@ -634,7 +634,8 @@ public class PilotController {
             WorkAssignments from,
             WorkAssignments to) {
 
-        return "STOPPED".equals(from.getStatus())
+        return ("STOPPED".equals(from.getStatus())
+                || "COMPLETED".equals(from.getStatus()))
                 && !java.util.Objects.equals(from.getNo(), to.getNo())
                 && from.getCompletedAt() != null
                 && to.getCreatedAt() != null

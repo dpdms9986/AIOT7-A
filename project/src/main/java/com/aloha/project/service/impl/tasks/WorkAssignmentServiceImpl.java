@@ -1,5 +1,7 @@
+
 package com.aloha.project.service.impl.tasks;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -81,8 +83,10 @@ public class WorkAssignmentServiceImpl implements WorkAssignmentService {
         // 작업 중단 (INTERRUPTED)
         else if ("INTERRUPTED".equals(status)) {
             if (!"IN_PROGRESS".equals(currentStatus)) {
-                throw new IllegalStateException("진행 중인 작업만 중단(일시정지)할 수 있습니다.");
+                throw new IllegalStateException(
+                        "진행 중인 작업만 중단(일시정지)할 수 있습니다.");
             }
+
             // 중단 일시도 함께 기록
             assignment.setInterruptedAt(LocalDateTime.now());
         }
@@ -94,6 +98,7 @@ public class WorkAssignmentServiceImpl implements WorkAssignmentService {
                 throw new IllegalStateException(
                         "진행 중인 작업만 완료할 수 있습니다.");
             }
+
             assignment.setCompletedAt(LocalDateTime.now());
         }
 
@@ -106,11 +111,99 @@ public class WorkAssignmentServiceImpl implements WorkAssignmentService {
         // 작업 배정 상태 변경
         assignment.updateStatus(status);
 
+        // 인계받은 작업이 완료되면 이전 조종사의 작업도 완료 처리
+        if ("COMPLETED".equals(status)) {
+            completePreviousHandover(assignment);
+        }
+
         // 전체 작업 상태를 기준으로 농지 상태 변경
         updateLandStatus(assignment);
 
         log.info("작업 상태 변경 완료: 작업 번호={}, 상태={}",
                 assignmentNo, status);
+    }
+
+    // 인계받은 작업 완료 시 이전 조종사의 작업도 완료 처리
+    private void completePreviousHandover(
+            WorkAssignments completedAssignment) {
+
+        if (completedAssignment.getLand() == null
+                || completedAssignment.getDispatchBatch() == null
+                || completedAssignment.getCreatedAt() == null
+                || completedAssignment.getPilot() == null) {
+            return;
+        }
+
+        // 같은 농지에 배정된 작업 조회
+        List<WorkAssignments> sameLand =
+                workAssignmentRepository.findByLand(
+                        completedAssignment.getLand());
+
+        // 실제 인계 관계가 확인되는 이전 작업 한 건 조회
+        sameLand.stream()
+
+                // 인계 처리된 이전 작업만 대상
+                .filter(previous ->
+                        "STOPPED".equals(previous.getStatus()))
+
+                // 인계 시각이 있어야 함
+                .filter(previous ->
+                        previous.getCompletedAt() != null)
+
+                // 같은 배정 묶음인지 확인
+                .filter(previous ->
+                        previous.getDispatchBatch() != null
+                        && Objects.equals(
+                                previous.getDispatchBatch().getNo(),
+                                completedAssignment.getDispatchBatch().getNo()))
+
+                // 같은 농지의 동일 작업인지 확인
+                .filter(previous ->
+                        previous.getLand() != null
+                        && Objects.equals(
+                                previous.getLand().getNo(),
+                                completedAssignment.getLand().getNo()))
+
+                // 동일한 작업 분배 비율인지 확인
+                .filter(previous ->
+                        Objects.equals(
+                                previous.getWeightRatio(),
+                                completedAssignment.getWeightRatio()))
+
+                // 서로 다른 조종사인지 확인
+                .filter(previous ->
+                        previous.getPilot() != null
+                        && !Objects.equals(
+                                previous.getPilot().getNo(),
+                                completedAssignment.getPilot().getNo()))
+
+                // 인계 시각과 새 작업 생성 시각이 5초 이내인지 확인
+                .filter(previous ->
+                        Math.abs(
+                                Duration.between(
+                                        previous.getCompletedAt(),
+                                        completedAssignment.getCreatedAt()
+                                ).getSeconds()
+                        ) <= 5)
+
+                // 가장 최근에 인계된 작업 선택
+                .max(java.util.Comparator.comparing(
+                        WorkAssignments::getNo))
+
+                // 이전 작업 완료 처리
+                .ifPresent(previous -> {
+
+                    // 상태만 변경하고 인계 시각 및 GPS 기록은 보존
+                    previous.updateStatus("COMPLETED");
+
+                    log.info(
+                            "인계된 이전 작업 완료 처리: 이전 작업 번호={}, 이전 조종사={}, 완료 작업 번호={}, 완료 조종사={}",
+                            previous.getNo(),
+                            previous.getPilot().getNo(),
+                            completedAssignment.getNo(),
+                            completedAssignment.getPilot().getNo()
+                    );
+                });
     }
 
     // 드론과 약제를 선택하여 작업 시작
