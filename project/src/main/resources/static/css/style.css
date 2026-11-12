@@ -173,7 +173,6 @@
   white-space: nowrap;
 }
 .gnb-logout { height: 34px; padding: 0 12px; font-size: 12px; }
-/* ===== dashboard.css ===== */
 /* =====================================================
    8. 대시보드 / 관리자 화면 공통 틀 (dash-)
 ===================================================== */
@@ -340,7 +339,6 @@
 }
 
 /* 👈 저채도 레드(취소/중단) 버튼 스타일 */
-/* TODO: 가로폭 설정이 안 돼요  ㅠㅠ  */
 .dash-btn-danger {
   border: 0;
   background: #c25450; /* 차분하고 고급스러운 저채도 레드 */
@@ -1207,9 +1205,6 @@
     outline-offset: -3px;
 }
 
-
-/* 4. 요약 카드 */
-
 .asset-team-page .asset-summary-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1532,17 +1527,6 @@
     background: #fff;
 }
 
-/* 4. 요약 카드 */
-
-/* 5. 목록 및 상세 카드 */
-
-/* 6. 검색 필터 */
-
-/* 7. 자산 테이블 */
-
-/* 8. 상태 표시 */
-
-
 .asset-pilot-badge.maintenance {
     background: #fff0df;
     color: #b96300;
@@ -1557,10 +1541,6 @@
     background: #e5efff;
     color: #245fbd;
 }
-
-/* 9. 상세보기 버튼 */
-
-/* 10. 상세 정보 */
 
 /* 11. 자산 등록 버튼 */
 .asset-pilot-register-button {
@@ -6104,7 +6084,6 @@ body.hazard-detail-page {
         padding: 20px;
     }
 
-ㄴ
     .hazard-board-page .hazard-legend-card {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -6145,12 +6124,6 @@ body.hazard-detail-page {
         padding: 0 8px;
         font-size: 12px;
     }
-
-    
-
-    
-
-    
 
     .hazard-board-page .table-heading {
         padding: 16px;
@@ -7186,7 +7159,7 @@ body.sidebar-collapsed:has(#sidebar-toggle) .sidebar-notice {
     color: var(--color-primary);
 }
 
-/* 댓글 입력 영역 */tbo
+/* 댓글 입력 영역 */
 .hazard-comment-heading {
     margin-bottom: 18px;
 }
@@ -12192,10 +12165,6 @@ main.asset-page-main .asset-pilot-tab {
   font-size: 13px;
 }
 
-
-/* 링크(a)로 만든 버튼: 글자 세로 가운데 정렬 */
-
-
 /* 링크(a)로 만든 버튼: 글자 세로 가운데 정렬 */
 a.dash-btn-primary,
 a.dash-btn-outline {
@@ -13193,15 +13162,6 @@ body:has(.dash-header) > .pub-footer {
    헤더 디자인 개선 (단장/조종사 공통)
 ===================================================== */
 
-/* 로고 오른쪽 초록 구분선 */
-.dash-header .dash-logo::after {
-    content: "";
-    width: 2px;
-    height: 28px;
-    margin-left: 14px;
-    background: var(--color-primary, #238451);
-}
-
 /* 메뉴 묶음: 둥근 알약 컨테이너 */
 .dash-header .dash-topnav {
     flex: 0 1 auto;
@@ -13265,15 +13225,6 @@ body:has(.dash-header) > .pub-footer {
 
 /* 제목 글씨 */
 
-/* 로고 오른쪽 구분선: 굵은 초록 선 → 은은한 그라데이션 선 */
-.dash-header .dash-logo::after {
-    width: 1px;
-    height: 30px;
-    margin-left: 8px;
-    background: linear-gradient(180deg, transparent, rgba(35, 132, 81, 0.55), transparent);
-}
-
-
 /* 메뉴 알약 왼쪽 여백 제거 */
 .dash-header .dash-topnav { padding-left: 6px; }
 .dash-header .dash-topnav > a:first-child { margin-left: 0; }
@@ -13313,13 +13264,6 @@ body:has(.dash-header) > .pub-footer {
 .dash-header .dash-logo-text em {
     font-style: normal;
     color: var(--color-primary, #238451);
-}
-.dash-header .dash-logo::after {
-    content: "";
-    width: 1px;
-    height: 30px;
-    margin-left: 8px;
-    background: linear-gradient(180deg, transparent, rgba(35, 132, 81, 0.55), transparent);
 }
 
 /* ----- 메뉴 알약 ----- */
@@ -13444,13 +13388,6 @@ body:has(.dash-header) > .pub-footer {
 .asset-team-page .asset-row-actions {
     justify-content: center;
     flex-wrap: wrap;
-}
-
-
-/* 헤더 로고 오른쪽 구분선 제거 */
-.dash-header .dash-logo::after {
-    content: none;
-    display: none;
 }
 
 /* 소속 조종사 상태 드롭다운 (오른쪽, 작게) */
@@ -14093,19 +14030,6 @@ body:has(#farm-list) .main-content {
 }
 
 /* =====================================================
-   [메인 헤더] 단장/조종사 헤더와 같은 디자인으로 사용
-===================================================== */
-
-/* 메인/소개/기능/안내 헤더는 메뉴가 적으니 로고 글씨를 계속 보여줌 */
-/* 회원가입 / 로그인 / 대시보드 이동 버튼 */
-
-
-/* 헤더가 dash-header가 되면 body > main 에 1680px 규칙이 걸려서
-   시스템 소개/주요 기능/이용 안내(.pub-section)가 너무 넓어지는 것 방지 */
-
-/* 메인 헤더: 메뉴를 헤더 정중앙에 배치 */
-
-/* =====================================================
    [메인 헤더] 단장/조종사 헤더와 같은 디자인
 ===================================================== */
 
@@ -14349,8 +14273,6 @@ html {
     height: 40px;
     object-fit: contain;
 }
-
-/* 작업 배정(단장) 제목 아이콘: 배경 없이 이미지만 */
 
 /* 작업 관리(조종사) 제목 아이콘 */
 
@@ -14687,7 +14609,6 @@ button[data-orig-html]:disabled,
 
 
 /* 날씨 안내 박스 정리 */
-.wx-notice { gap: 6px; }
 .wx-notice .wx-reasons { display: flex; flex-wrap: wrap; gap: 4px; }
 .wx-notice .wx-reasons span {
   padding: 2px 8px;
@@ -14718,9 +14639,6 @@ button[data-orig-html]:disabled,
   -webkit-backdrop-filter: blur(8px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
 }
-
-
-
 
 /* 날씨 칸: 윗줄(아이콘 + 날씨 이름)만 살짝 오른쪽으로 */
 .gnb-weather .wx-text > span:first-child { padding-left: 4px; }
