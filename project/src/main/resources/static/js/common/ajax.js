@@ -11,10 +11,7 @@
  * @returns Promise (성공/실패 응답 데이터)
  */
 async function $ajax( obj ) {
-    console.log('data:', obj.data);
-    console.log('url:', obj.url);
     obj.method = obj.method ?? obj.type
-    console.log('method:', obj.method);
     
     try {
         // 💎 CSRF TOKEN

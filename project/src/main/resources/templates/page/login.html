@@ -83,7 +83,7 @@
         
         // 아이디 값이 채워졌으므로 비밀번호 필드에 자동 포커스
         const passwordInput = document.getElementById('password');
-        if (passwordInput) passwordInput.focus();
+        if (passwordInput && !urlParams.has('error')) passwordInput.focus();
       }
     });
 
@@ -92,11 +92,17 @@
     if (urlParams.has('error')) {
       try { sessionStorage.removeItem('justLoggedIn'); } catch (e) {}
       const errorMessage = urlParams.get('error');
-      $alert('로그인 실패', errorMessage || '로그인에 실패했습니다. 다시 시도해주세요.', 'error');
+      if (document.activeElement) document.activeElement.blur(); // 입력칸 포커스 해제 → Enter 로 팝업 닫힘
+      $alert('로그인 실패', errorMessage || '로그인에 실패했습니다. 다시 시도해주세요.', 'error')
+        .then(() => {
+          // 팝업이 닫힌 뒤에 비밀번호 칸으로 이동
+          const pw = document.getElementById('password');
+          if (pw) { pw.value = ''; pw.focus(); }
+        });
     }
 
     // 아이디 값이 있으면 비밀번호 필드에 포커스 (기존 로직 유지 보완)
-    if (document.getElementById('username').value.trim() !== '') {
+    if (!urlParams.has('error') && document.getElementById('username').value.trim() !== '') {
       document.getElementById('password').focus();
     }
 

@@ -14647,3 +14647,14 @@ button[data-orig-html]:disabled,
 /* .gnb-weather                { background: rgba(255, 255, 255, 0.7); }
 .gnb-weather.wx-caution     { background: rgba(255, 244, 214, 0.7); }
 .gnb-weather.wx-danger      { background: rgba(255, 225, 225, 0.7); } */
+
+
+/* ===== 조종사 작업 관리: 목록 : 상세 = 6 : 4 ===== */
+.pilot-layout--history {
+  grid-template-columns: minmax(0, 55fr) minmax(0, 45fr);
+}
+
+/* 화면이 좁을 때는 세로로 쌓기 (기존 동작 유지) */
+@media (max-width: 1100px) {
+  .pilot-layout--history { grid-template-columns: 1fr; }
+}

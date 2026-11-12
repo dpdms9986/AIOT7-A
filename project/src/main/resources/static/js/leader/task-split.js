@@ -714,16 +714,6 @@ return; // 완료 처리 후 새 그리기 시작 코드로 넘어가지 않도�
          );
         }
 
-        console.log("[배정 전송 검증]", {
-        landNo,
-        pieceCount: d.pieces.length,
-        assignmentCount: d.assignment.length,
-        assignments: d.pieces.map((piece, i) => ({
-        sliceIndex: piece.properties.sliceIndex,
-        pilotNo: d.assignment[i],
-        areaSize: Math.round(turf.area(piece))
-         }))
-        });
 
         body.append("pieceAssignmentsJson", JSON.stringify(d.pieces.map((piece, i) => ({
         sliceIndex: piece.properties.sliceIndex,
