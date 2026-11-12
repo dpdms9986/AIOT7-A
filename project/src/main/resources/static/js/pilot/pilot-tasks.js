@@ -30,32 +30,40 @@ document.addEventListener("DOMContentLoaded", () => {
     COMPLETED: 4
   };
 
+  // 날짜 문자열을 timestamp로 변환
+  const toTimestamp = (value) => {
+    if (!value) return 0;
+
+    const timestamp = new Date(value).getTime();
+
+    return Number.isNaN(timestamp) ? 0 : timestamp;
+  };
+
   // 상태별 우선순위 정렬
-  // 완료 작업은 완료 일시 기준 최신순
+  // 완료 작업은 완료 일시 최신순
   const sortTasks = () => {
     const taskItems = items();
 
     taskItems.sort((a, b) => {
+      // 상태와 날짜는 li에서 가져온다.
       const statusA = a.dataset.status;
       const statusB = b.dataset.status;
 
       const orderA = STATUS_ORDER[statusA] ?? 5;
       const orderB = STATUS_ORDER[statusB] ?? 5;
 
-      // 1. 상태 우선순위
+      // 1. 상태별 우선순위
       if (orderA !== orderB) {
         return orderA - orderB;
       }
 
       // 2. 완료 작업은 완료 일시 최신순
-      if (statusA === "COMPLETED" && statusB === "COMPLETED") {
-        const dateA = new Date(
-          a.dataset.completedAt || a.dataset.assignedAt || 0
-        ).getTime();
-
-        const dateB = new Date(
-          b.dataset.completedAt || b.dataset.assignedAt || 0
-        ).getTime();
+      if (
+        statusA === "COMPLETED" &&
+        statusB === "COMPLETED"
+      ) {
+        const dateA = toTimestamp(a.dataset.completedAt);
+        const dateB = toTimestamp(b.dataset.completedAt);
 
         return dateB - dateA;
       }
@@ -63,11 +71,12 @@ document.addEventListener("DOMContentLoaded", () => {
       return 0;
     });
 
-    taskItems.forEach((li) => list.appendChild(li));
+    taskItems.forEach((li) => {
+      list.appendChild(li);
+    });
   };
 
   sortTasks();
-
   const hasMap = () => typeof map !== "undefined" && typeof L !== "undefined";
 
   /* ===== 1. 탭: 개수 표시 + 보였다/숨겼다 ===== */

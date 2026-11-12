@@ -128,7 +128,10 @@
                     th:data-selected="${selectedNo}">
 
                     <li th:each="t : ${myTasks}"
-                        th:data-group="${t.status == 'ASSIGNED' or t.status == 'IN_PROGRESS' ? 'active' : (t.status == 'COMPLETED' ? 'done' : 'stopped')}">
+                        th:data-group="${t.status == 'ASSIGNED' or t.status == 'IN_PROGRESS' ? 'active' : (t.status == 'COMPLETED' ? 'done' : 'stopped')}"
+                        th:data-status="${t.status}"
+                        th:data-completed-at="${t.completedAt}"
+                        th:data-assigned-at="${t.assignedAt}">
 
                         <button type="button"
                                 class="pilot-task"
