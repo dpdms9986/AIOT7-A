@@ -294,48 +294,50 @@ function startRealGpsAuto() {
 
     // 작업 일시정지 
     async function pauseWork() {
-      const ok = await showAskPopup("작업을 일시중단하시겠습니까?\n지금까지의 비행 궤적이 저장되며 위치 전송이 멈춥니다. ", {
-        yesText: "일시정지",
-        noText: "취소",
+    if (!getValidSelectedTask()) return;
+
+    const ok = await showAskPopup("작업을 일시중단하시겠습니까?\n지금까지의 비행 궤적이 저장되며 위치 전송이 멈춥니다. ", {
+      yesText: "일시정지",
+      noText: "취소",
+    });
+
+    if (!ok) return;
+
+    // 1) 비행 타이머 중지 및 지금까지의 비행 궤적 DB 저장 (true)
+    // 지도 위 비행선은 지우지 않고 그대로
+    stopAuto(true);
+
+    $("#autoStatus").text("⏸️ 작업이 일시정지되었습니다. ( 궤적 저장 완료) ").css("color", "#f2994a");
+
+    // 2) 선택된 농지의 작업 상태를 PAUSED로 서버에 업데이트
+    const selected = document.querySelector(".pilot-task.selected");
+    if (!selected) return;
+
+    try {
+      const res = await fetch("/api/pilot/assignments");
+      if (!res.ok) return;
+
+      const list = await res.json();
+
+      const target = list.find(
+        (a) => String(a.landNo) === selected.dataset.no && a.status === "IN_PROGRESS"
+      );
+
+      if (!target) return;
+
+      await $ajax({
+        url: `/api/pilot/assignments/${target.assignmentNo}/status`,
+        method: "PATCH",
+        data: { status: "INTERRUPTED" },
+        success: () => showPopup(
+          "작업이 일시정지되었습니다.\n중단 위치와 시각이 저장되어 다음 조종사에게 인계하거나 이어서 진행할 수 있습니다.", "ok",
+          () => location.reload()),
+        error: (r) => showPopup( (r && r.message) || "일시정지에 실패했습니다.", "warn"),
       });
-
-      if (!ok) return;
-
-      // 1) 비행 타이머 중지 및 지금까지의 비행 궤적 DB 저장 (true)
-      // 지도 위 비행선은 지우지 않고 그대로
-      stopAuto(true);
-
-      $("#autoStatus").text("⏸️ 작업이 일시정지되었습니다. ( 궤적 저장 완료) ").css("color", "#f2994a");
-
-      // 2) 선택된 농지의 작업 상태를 PAUSED로 서버에 업데이트
-      const selected = document.querySelector(".pilot-task.selected");
-      if (!selected) return;
-
-      try {
-        const res = await fetch("/api/pilot/assignments");
-        if (!res.ok) return;
-
-        const list = await res.json();
-
-        const target = list.find(
-          (a) => String(a.landNo) === selected.dataset.no && a.status === "IN_PROGRESS"
-        );
-
-        if (!target) return;
-
-        await $ajax({
-          url: `/api/pilot/assignments/${target.assignmentNo}/status`,
-          method: "PATCH",
-          data: { status: "INTERRUPTED" },
-          success: () => showPopup(
-            "작업이 일시정지되었습니다.\n중단 위치와 시각이 저장되어 다음 조종사에게 인계하거나 이어서 진행할 수 있습니다.", "ok",
-            () => location.reload()),
-          error: (r) => showPopup( (r && r.message) || "일시정지에 실패했습니다.", "warn"),
-        });
-      } catch (e) {
-        console.error("일시정지 처리 오류:", e);
-      }
+    } catch (e) {
+      console.error("일시정지 처리 오류:", e);
     }
+  }
 
     // 궤적 초기화 헬퍼
     function resetMyFlightTrack() {
