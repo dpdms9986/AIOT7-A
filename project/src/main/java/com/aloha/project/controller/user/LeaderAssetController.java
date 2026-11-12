@@ -97,7 +97,14 @@ public class LeaderAssetController {
                     .filter(d -> d.getUser() != null
                             && d.getUser().getTeam() != null
                             && inviteCode.equals(d.getUser().getTeam().getInviteCode()))
-                    .map(AssetDto::from)
+                    .map(d -> {
+                        AssetDto dto = AssetDto.from(d);
+                        if (workAssignmentResourceRepository
+                                .existsByDrone_NoAndWorkAssignment_Status(d.getNo(), "IN_PROGRESS")) {
+                            dto.setStatus("operating");
+                        }
+                        return dto;
+                    })
                     .toList());
         
             // 2. 우리 방제단 소속 약제 조회
@@ -366,7 +373,6 @@ public class LeaderAssetController {
 
                 } else if (!List.of(
                         "normal",
-                        "operating",
                         "maintenance",
                         "in-maintenance",
                         "fault"
@@ -375,6 +381,14 @@ public class LeaderAssetController {
                     redirectAttributes.addFlashAttribute(
                             "error",
                             "올바르지 않은 드론 상태입니다."
+                    );
+
+                } else if (workAssignmentResourceRepository
+                        .existsByDrone_NoAndWorkAssignment_Status(droneNo, "IN_PROGRESS")) {
+
+                    redirectAttributes.addFlashAttribute(
+                            "error",
+                            "작업 중인 드론은 모든 상태 변경이 작업 종료 후 가능합니다."
                     );
 
                 } else {

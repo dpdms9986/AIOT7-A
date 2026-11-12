@@ -29,6 +29,7 @@
                  th:value="${keyword}" placeholder="주소 검색">
         </div>
 
+        
         <div class="filter-group status-group">
           <label for="status-filter">상태</label>
           <select id="status-filter" name="status" onchange="this.form.submit()">
@@ -36,9 +37,11 @@
             <option value="READY"       th:selected="${status == 'READY'}">대기</option>
             <option value="ASSIGNED"    th:selected="${status == 'ASSIGNED'}">배정됨</option>
             <option value="IN_PROGRESS" th:selected="${status == 'IN_PROGRESS'}">작업 중</option>
+            <option value="INTERRUPTED" th:selected="${status == 'INTERRUPTED'}">중단됨</option>
             <option value="COMPLETED"   th:selected="${status == 'COMPLETED'}">완료</option>
           </select>
         </div>
+
 
         <a class="button" th:href="@{/leader/farmlist}">초기화</a>
         <button type="submit" class="button primary-button">검색</button>
