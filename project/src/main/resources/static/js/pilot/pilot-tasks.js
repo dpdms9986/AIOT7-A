@@ -20,35 +20,76 @@ document.addEventListener("DOMContentLoaded", () => {
   let selectedNo = list.dataset.selected;
   let markers = [];
 
-  // IN_PROGRESS 작업을 항상 목록 맨 위에 배치한다.
-  // 나머지 작업은 기존 순서를 유지한다.
-  const pinInProgressTasks = () => {
+  // 상태별 우선순위
+  const STATUS_ORDER = {
+    IN_PROGRESS: 0,
+    ASSIGNED: 1,
+    INTERRUPTED: 2,
+    PAUSED: 2,
+    STOPPED: 3,
+    COMPLETED: 4
+  };
+
+  // 상태별 우선순위 정렬
+  // 완료 작업은 완료 일시 기준 최신순
+  const sortTasks = () => {
     const taskItems = items();
 
     taskItems.sort((a, b) => {
-      const aInProgress = a.dataset.status === "IN_PROGRESS";
-      const bInProgress = b.dataset.status === "IN_PROGRESS";
+      const statusA = a.dataset.status;
+      const statusB = b.dataset.status;
 
-      return Number(bInProgress) - Number(aInProgress);
+      const orderA = STATUS_ORDER[statusA] ?? 5;
+      const orderB = STATUS_ORDER[statusB] ?? 5;
+
+      // 1. 상태 우선순위
+      if (orderA !== orderB) {
+        return orderA - orderB;
+      }
+
+      // 2. 완료 작업은 완료 일시 최신순
+      if (statusA === "COMPLETED" && statusB === "COMPLETED") {
+        const dateA = new Date(
+          a.dataset.completedAt || a.dataset.assignedAt || 0
+        ).getTime();
+
+        const dateB = new Date(
+          b.dataset.completedAt || b.dataset.assignedAt || 0
+        ).getTime();
+
+        return dateB - dateA;
+      }
+
+      return 0;
     });
 
     taskItems.forEach((li) => list.appendChild(li));
   };
 
-  pinInProgressTasks();
+  sortTasks();
 
   const hasMap = () => typeof map !== "undefined" && typeof L !== "undefined";
 
   /* ===== 1. 탭: 개수 표시 + 보였다/숨겼다 ===== */
   const NAMES = {
     active: "진행 중",
-    done: "완료"
+    stopped: "중단 및 인계",
+    done: "완료됨"
   };
 
   const renderTabs = () => {
     const counts = {
-      active: items().filter((li) => li.dataset.group === "active").length,
-      done: items().filter((li) => li.dataset.group === "done").length,
+      active: items().filter(
+        (li) => li.dataset.group === "active"
+      ).length,
+
+      stopped: items().filter(
+        (li) => li.dataset.group === "stopped"
+      ).length,
+
+      done: items().filter(
+        (li) => li.dataset.group === "done"
+      ).length
     };
 
     tabs.forEach((btn) => {
