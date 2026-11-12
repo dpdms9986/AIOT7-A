@@ -11,11 +11,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const items = () => [...list.querySelectorAll("li")];
   const buttons = () => [...list.querySelectorAll(".pilot-task")];
 
-  // 완료(COMPLETED)가 아닌 모든 상태는 진행 중으로 분류한다.
-  // 진행 중 작업이 하나라도 있으면 진행 중 탭을 기본으로 보여준다.
-  let currentFilter = items().some((li) => li.dataset.group === "active")
-    ? "active"
-    : "done";
+  // 진행 중 탭을 기본으로 보여준다.
+  let currentFilter = "active";
 
   let selectedNo = list.dataset.selected;
   let markers = [];
@@ -26,12 +23,10 @@ document.addEventListener("DOMContentLoaded", () => {
     ASSIGNED: 1,
     INTERRUPTED: 2,
     PAUSED: 2,
-    STOPPED: 3,
-    COMPLETED: 4
+    STOPPED: 3
   };
 
-  // 상태별 우선순위 정렬
-  // 완료 작업은 완료 일시 기준 최신순
+  // 대시보드에 남는 작업의 상태별 우선순위 정렬
   const sortTasks = () => {
     const taskItems = items();
 
@@ -42,22 +37,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const orderA = STATUS_ORDER[statusA] ?? 5;
       const orderB = STATUS_ORDER[statusB] ?? 5;
 
-      // 1. 상태 우선순위
       if (orderA !== orderB) {
         return orderA - orderB;
-      }
-
-      // 2. 완료 작업은 완료 일시 최신순
-      if (statusA === "COMPLETED" && statusB === "COMPLETED") {
-        const dateA = new Date(
-          a.dataset.completedAt || a.dataset.assignedAt || 0
-        ).getTime();
-
-        const dateB = new Date(
-          b.dataset.completedAt || b.dataset.assignedAt || 0
-        ).getTime();
-
-        return dateB - dateA;
       }
 
       return 0;
@@ -67,14 +48,12 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   sortTasks();
-
   const hasMap = () => typeof map !== "undefined" && typeof L !== "undefined";
 
   /* ===== 1. 탭: 개수 표시 + 보였다/숨겼다 ===== */
   const NAMES = {
-    active: "진행 중",
-    stopped: "중단 및 인계",
-    done: "완료됨"
+    active: "작업중",
+    stopped: "중단 및 인계"
   };
 
   const renderTabs = () => {
@@ -85,10 +64,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       stopped: items().filter(
         (li) => li.dataset.group === "stopped"
-      ).length,
-
-      done: items().filter(
-        (li) => li.dataset.group === "done"
       ).length
     };
 
@@ -120,7 +95,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
       renderTabs();
       applyFilter();
-      renderMarkers();
+
+      // 바뀐 탭에서 현재 보이는 첫 번째 작업을 자동 선택
+      const firstVisible = buttons().find((b) => !b.closest("li").hidden);
+      if (firstVisible) {
+        selectTask(firstVisible.dataset.no, true, firstVisible);
+      } else {
+        renderMarkers();
+      }
     });
   });
 
@@ -207,8 +189,14 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  const selectTask = (no, moveMap = true) => {
+  const selectTask = (no, moveMap = true, targetBtn = null) => {
     selectedNo = String(no);
+
+    // 현재 탭에 보이는 버튼 중에서 우선 찾고, 
+    // 직접 클릭한 targetBtn 이 있으면 그것을 최우선으로 
+    const btn = targetBtn
+      || buttons().find((b) => b.dataset.no === selectedNo && !b.closest("li").hidden)
+      || buttons().find((b) => b.dataset.no === selectedNo);
 
     buttons().forEach((b) => {
       b.classList.toggle("selected", b.dataset.no === selectedNo);
@@ -216,12 +204,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     renderMarkers();
 
-    const btn = buttons().find((b) => b.dataset.no === selectedNo);
-
     if (btn) {
       drawSelectedTaskLayers(btn);
 
-      // 지도 중심 이동
       if (moveMap && hasMap() && btn.dataset.lat && btn.dataset.lng) {
         map.setView(
           [Number(btn.dataset.lat), Number(btn.dataset.lng)],
@@ -237,7 +222,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const btn = e.target.closest(".pilot-task");
 
     if (btn) {
-      selectTask(btn.dataset.no);
+      selectTask(btn.dataset.no, true, btn); // 클릭한 버튼(btn) 자체를 전달!
     }
   });
 
@@ -339,13 +324,18 @@ document.addEventListener("DOMContentLoaded", () => {
   renderTabs();
   applyFilter();
 
-  if (selectedNo) {
-    selectTask(selectedNo);
+  // 숨겨진(hidden) 완료 작업이 아니라, 현재 탭에서 보이는 작업 중에서만 초기 선택
+  const visibleMatch = selectedNo
+   ? buttons().find((b) => b.dataset.no === String(selectedNo) && !b.closest("li").hidden)
+   : null;
+  const firstVisible = visibleMatch || buttons().find((b) => !b.closest("li").hidden);
+
+  if (firstVisible) {
+    selectTask(firstVisible.dataset.no, true, firstVisible);
   } else {
     renderMarkers();
   }
-
   if (hasMap()) {
-    addHazardMarkers(map);
+    addHazardMakers(map);
   }
-});
+})

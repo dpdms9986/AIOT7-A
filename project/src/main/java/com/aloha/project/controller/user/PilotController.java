@@ -93,6 +93,8 @@ public class PilotController {
         List<LandDto> myTasks = workAssignmentRepository
                 .findByPilot_No(pilot.getNo())
                 .stream()
+                // 대시보드에서는 완료된 작업 제외
+                .filter(a -> !"COMPLETED".equals(a.getStatus()))
                 .map(this::toLandDto)
                 .toList();
 
@@ -151,20 +153,43 @@ public class PilotController {
             default -> "active";
         };
 
-        // 로그인 조종사 본인의 전체 작업 이력
-        // 작업 상태별 우선순위 정렬
+        // 로그인 조종사의 전체 작업 이력
+        // 1. 상태별 우선순위
+        // 2. 완료 작업은 완료 일시 최신순
         List<PilotTaskDto> all = workAssignmentRepository
                 .findByPilot_No(pilot.getNo())
                 .stream()
                 .map(this::toPilotTaskDto)
                 .sorted((a, b) -> {
-                    int aOrder = getStatusOrder(a.getStatus());
-                    int bOrder = getStatusOrder(b.getStatus());
 
-                    return Integer.compare(aOrder, bOrder);
+                // 상태별 우선순위 비교
+                int aOrder = getStatusOrder(a.getStatus());
+                int bOrder = getStatusOrder(b.getStatus());
+
+                if (aOrder != bOrder) {
+                        return Integer.compare(aOrder, bOrder);
+                }
+
+                // 완료 작업끼리는 완료 일시 최신순
+                if ("COMPLETED".equals(a.getStatus())
+                        && "COMPLETED".equals(b.getStatus())) {
+
+                        if (a.getCompletedAt() == null) {
+                        return b.getCompletedAt() == null ? 0 : 1;
+                        }
+
+                        if (b.getCompletedAt() == null) {
+                        return -1;
+                        }
+
+                        return b.getCompletedAt()
+                                .compareTo(a.getCompletedAt());
+                }
+
+                return 0;
                 })
                 .toList();
-
+                
         // 1) 탭으로 작업 필터링
         // 전체 목록은 위에서 정렬했으므로 여기서는 필터링만 진행
         List<PilotTaskDto> tasks = all.stream()
@@ -696,6 +721,7 @@ public class PilotController {
                 .lastLatitude(assignment.getLastLatitude())
                 .lastLongitude(assignment.getLastLongitude())
                 .lastLocationAt(assignment.getLastLocationAt())
+                .polygonCoordinates(land != null ? land.getPolygonCoordinates() : null)
                 .build();
     }
 

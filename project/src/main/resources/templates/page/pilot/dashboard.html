@@ -116,11 +116,6 @@
                             data-filter="stopped">
                         중단 및 인계
                     </button>
-
-                    <button type="button"
-                            data-filter="done">
-                        완료됨
-                    </button>
                 </div>
 
                 <!-- 서버가 전체 작업을 렌더링하고 JS가 탭별로 필터링 -->
@@ -128,7 +123,8 @@
                     th:data-selected="${selectedNo}">
 
                     <li th:each="t : ${myTasks}"
-                        th:data-group="${t.status == 'ASSIGNED' or t.status == 'IN_PROGRESS' ? 'active' : (t.status == 'COMPLETED' ? 'done' : 'stopped')}">
+                    th:data-group="${t.status == 'ASSIGNED' or t.status == 'IN_PROGRESS' ? 'active' : 'stopped'}"
+                    th:data-status="${t.status}">
 
                         <button type="button"
                                 class="pilot-task"
