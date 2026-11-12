@@ -21,13 +21,13 @@ import com.aloha.project.domain.tasks.WorkAssignments;
 import com.aloha.project.domain.users.CustomUser;
 import com.aloha.project.domain.users.Teams;
 import com.aloha.project.domain.users.Users;
-import com.aloha.project.dto.FarmPointDto;
-import com.aloha.project.dto.LandDto;
-import com.aloha.project.dto.TeamMemberDto;
+import com.aloha.project.dto.lands.FarmPointDto;
+import com.aloha.project.dto.lands.LandDto;
+import com.aloha.project.dto.tasks.PilotTaskDto;
+import com.aloha.project.dto.users.TeamMemberDto;
 import com.aloha.project.repository.lands.LandRepository;
 import com.aloha.project.repository.tasks.WorkAssignmentRepository;
 import com.aloha.project.repository.users.UserRepository;
-import com.aloha.project.dto.PilotTaskDto;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

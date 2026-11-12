@@ -13,7 +13,7 @@ import com.aloha.project.domain.common.QueryParams;
 import com.aloha.project.domain.users.Teams;
 import com.aloha.project.domain.users.UserAuth;
 import com.aloha.project.domain.users.Users;
-import com.aloha.project.dto.SignupRequest;
+import com.aloha.project.dto.common.SignupRequest;
 import com.aloha.project.repository.users.TeamRepository;
 import com.aloha.project.repository.users.UserRepository;
 import com.aloha.project.service.inter.users.UserService;

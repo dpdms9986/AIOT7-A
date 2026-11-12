@@ -285,7 +285,6 @@ function startRealGpsAuto() {
     }));
   }
 
-
     // 비행 중단 시 서버 DB에 비행 궤적 자동 저장 함수 
     function stopAuto(shouldSave = true) {
       if (fakeInterval) {
@@ -342,7 +341,8 @@ function startRealGpsAuto() {
           method: "PATCH",
           data: { status: "INTERRUPTED" },
           success: () => showPopup(
-            "작업이 일시정지되었습니다.\n중단 위치와 시각이 저장되어 다음 조종사에게 인계하거나 이어서 진행할 수 있습니다.", "ok"),
+            "작업이 일시정지되었습니다.\n중단 위치와 시각이 저장되어 다음 조종사에게 인계하거나 이어서 진행할 수 있습니다.", "ok",
+            () => location.reload()),
           error: (r) => showPopup( (r && r.message) || "일시정지에 실패했습니다.", "warn"),
         });
       } catch (e) {
@@ -369,6 +369,7 @@ function startRealGpsAuto() {
       if (!selectedTask || coords.length === 0) return;
 
       const taskNo = selectedTask.dataset.no;
+      if (!taskNo || taskNo === "undefined") return;
       const pathJson = JSON.stringify(coords);
 
       const formData = new FormData();

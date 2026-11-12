@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.aloha.project.dto.HazardResponse;
+import com.aloha.project.dto.common.HazardResponse;
 import com.aloha.project.repository.common.HazardRepository;
 
 import lombok.RequiredArgsConstructor;

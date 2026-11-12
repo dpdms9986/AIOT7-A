@@ -23,7 +23,7 @@ import com.aloha.project.domain.common.HazardImages;
 import com.aloha.project.domain.common.HazardReports;
 import com.aloha.project.domain.users.CustomUser;
 import com.aloha.project.domain.users.Users;
-import com.aloha.project.dto.HazardRequest;
+import com.aloha.project.dto.common.HazardRequest;
 import com.aloha.project.repository.common.HazardImageRepository;
 import com.aloha.project.repository.common.HazardRepository;
 import com.aloha.project.repository.users.UserRepository;

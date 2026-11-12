@@ -15,7 +15,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.aloha.project.domain.common.Inquiries;
 import com.aloha.project.domain.common.Pagination;
 import com.aloha.project.domain.users.CustomUser;
-import com.aloha.project.dto.InquiryDto;
+import com.aloha.project.dto.common.InquiryDto;
 import com.aloha.project.service.inter.common.InquiryService;
 
 import lombok.RequiredArgsConstructor;

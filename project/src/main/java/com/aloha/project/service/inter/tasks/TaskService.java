@@ -1,7 +1,7 @@
 package com.aloha.project.service.inter.tasks;
 
 import com.aloha.project.domain.users.Users;
-import com.aloha.project.dto.TaskAssignRequest;
+import com.aloha.project.dto.tasks.TaskAssignRequest;
 
 public interface TaskService {
     

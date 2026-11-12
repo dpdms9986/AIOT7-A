@@ -1,7 +1,9 @@
-package com.aloha.project.dto;
+package com.aloha.project.dto.lands;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+
+import com.aloha.project.dto.tasks.PilotTaskDto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

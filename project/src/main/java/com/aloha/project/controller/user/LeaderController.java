@@ -38,11 +38,11 @@ import com.aloha.project.domain.tasks.WorkAssignmentResources;
 import com.aloha.project.domain.users.CustomUser;
 import com.aloha.project.domain.users.Teams;
 import com.aloha.project.domain.users.Users;
-import com.aloha.project.dto.AssignRequest;
-import com.aloha.project.dto.LandCreateRequest;
-import com.aloha.project.dto.LandDto;
-import com.aloha.project.dto.PilotTaskDto;
-import com.aloha.project.dto.TeamMemberDto;
+import com.aloha.project.dto.lands.LandCreateRequest;
+import com.aloha.project.dto.lands.LandDto;
+import com.aloha.project.dto.tasks.AssignRequest;
+import com.aloha.project.dto.tasks.PilotTaskDto;
+import com.aloha.project.dto.users.TeamMemberDto;
 import com.aloha.project.repository.lands.LandRepository;
 import com.aloha.project.repository.tasks.DispatchBatchRepository;
 import com.aloha.project.repository.tasks.WorkAssignmentRepository;
@@ -1009,6 +1009,12 @@ if (req.getLandNos() != null && req.getLandNos().size() == 1) {
                 .toList();
 
         List<PilotTaskDto> dtos = completed.stream().map(w -> {
+                
+            WorkAssignmentResources resources =
+            workAssignmentResourceRepository
+                    .findByWorkAssignment_No(w.getNo())
+                    .orElse(null);
+
             return PilotTaskDto.builder()
                     .no(w.getNo())
                     .address(w.getLand() != null ? w.getLand().getAddress() : "-")
@@ -1018,7 +1024,7 @@ if (req.getLandNos() != null && req.getLandNos().size() == 1) {
                     .assignedAt(w.getCreatedAt())
                     .interruptedAt(w.getInterruptedAt())
                     .completedAt(w.getCompletedAt() != null ? w.getCompletedAt() : w.getCreatedAt())
-                    .chemicalName("기본 살충제")
+                    .chemicalName(resources != null && resources.getChemical() != null ? resources.getChemical().getChemicalName() : "-")
                     .build();
         }).toList();
 

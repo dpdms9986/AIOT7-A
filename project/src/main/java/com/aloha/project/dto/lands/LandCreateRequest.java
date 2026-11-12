@@ -1,4 +1,4 @@
-package com.aloha.project.dto;
+package com.aloha.project.dto.lands;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

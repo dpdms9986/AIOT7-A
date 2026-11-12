@@ -24,8 +24,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.aloha.project.domain.common.Inquiries;
 import com.aloha.project.domain.users.CustomUser;
-import com.aloha.project.dto.InquiryAnswerRequest;
-import com.aloha.project.dto.InquiryCreateRequest;
+import com.aloha.project.dto.common.InquiryAnswerRequest;
+import com.aloha.project.dto.common.InquiryCreateRequest;
 import com.aloha.project.service.inter.common.InquiryService;
 
 import lombok.RequiredArgsConstructor;
