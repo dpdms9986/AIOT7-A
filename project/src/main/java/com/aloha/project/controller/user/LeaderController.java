@@ -1009,6 +1009,12 @@ if (req.getLandNos() != null && req.getLandNos().size() == 1) {
                 .toList();
 
         List<PilotTaskDto> dtos = completed.stream().map(w -> {
+                
+            WorkAssignmentResources resources =
+            workAssignmentResourceRepository
+                    .findByWorkAssignment_No(w.getNo())
+                    .orElse(null);
+
             return PilotTaskDto.builder()
                     .no(w.getNo())
                     .address(w.getLand() != null ? w.getLand().getAddress() : "-")
@@ -1018,7 +1024,7 @@ if (req.getLandNos() != null && req.getLandNos().size() == 1) {
                     .assignedAt(w.getCreatedAt())
                     .interruptedAt(w.getInterruptedAt())
                     .completedAt(w.getCompletedAt() != null ? w.getCompletedAt() : w.getCreatedAt())
-                    .chemicalName("기본 살충제")
+                    .chemicalName(resources != null && resources.getChemical() != null ? resources.getChemical().getChemicalName() : "-")
                     .build();
         }).toList();
 
