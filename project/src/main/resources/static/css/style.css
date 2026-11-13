@@ -14672,3 +14672,26 @@ button[data-orig-html]:disabled,
   .gnb-weather.wx-has-chip { padding: 5px 8px; gap: 0; }
   .gnb-weather .wx-chip .wx-face { font-size: 18px; line-height: 1; }
 }
+
+/* 파일럿 자산 목록 테이블에만 적용 */
+.pilot-asset-list-table th,
+.pilot-asset-list-table td {
+    padding: 1px 1px;
+}
+
+/* 파일럿 자산 목록: 제목 행만 여백 확대 */
+.pilot-asset-list-table thead th {
+    padding: 12px 10px;
+}
+
+/* 관리자 파일럿 관리: 전체 열 자동 줄바꿈 방지 */
+.admin-pilots-list-table th,
+.admin-pilots-list-table td {
+    white-space: nowrap;
+}
+
+/* 관리자 사용자 관리: 전체 열 자동 줄바꿈 방지 */
+.admin-users-list-table th,
+.admin-users-list-table td {
+    white-space: nowrap;
+}
