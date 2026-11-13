@@ -42,7 +42,7 @@
           <a th:href="@{/mypage}" class="gnb-user" title="마이페이지">
             <em class="gnb-role-avatar">
               <span class="dash-avatar"><img th:src="@{/img/leader-profile.png}" alt="방제단장 프로필"></span>
-              <span class="dash-role" th:text="${roleLabel}">-</span>
+              <span class="dash-role" th:text="${loginName} ?: ${roleLabel}">-</span>
             </em>
           </a>
 
