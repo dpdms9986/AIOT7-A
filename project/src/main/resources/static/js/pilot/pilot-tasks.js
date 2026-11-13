@@ -384,6 +384,6 @@ document.addEventListener("DOMContentLoaded", () => {
     renderMarkers();
   }
   if (hasMap()) {
-    addHazardMakers(map);
+    addHazardMarkers(map);
   }
 })
