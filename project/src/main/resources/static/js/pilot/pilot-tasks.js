@@ -190,11 +190,10 @@ document.addEventListener("DOMContentLoaded", () => {
         features
       }, {
         style: {
-          color: "#238451",
-    weight: 2,
-    dashArray: "4 4",
-    fillColor: "#54a77b",
-    fillOpacity: 0.15
+          color: "#e67e22",
+          weight: 3,
+          fillColor: "#f39c12",
+          fillOpacity: 0.35
         }
       });
 
