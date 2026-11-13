@@ -69,13 +69,6 @@
         </div>
     </div>
 
-      <!-- 완료 요약 -->
-      <p class="task-history-sum"
-         th:if="${doneCount > 0}"
-         th:text="|완료 ${doneCount}건 · 면적 ${#numbers.formatDecimal(doneArea, 0, 'COMMA', 0, 'POINT')}㎡|">
-        완료 2건 · 면적 3,700㎡
-      </p>
-
     <!-- 작업 목록 -->
     <ul class="pilot-task-list"
         th:data-current-filter="${filter}">
