@@ -39,6 +39,12 @@ public class UserServiceImpl implements UserService {
         try {
             Teams team = null;
 
+            // 가입 가능한 유형은 LEADER / PILOT 만 허용 (ADMIN 등 임의 권한 가입 차단)
+            String joinRole = request.getRole();
+            if (!"LEADER".equals(joinRole) && !"PILOT".equals(joinRole)) {
+                throw new IllegalArgumentException("가입할 수 없는 회원 유형입니다.");
+            }
+
             // 방제단 처리 (단장은 생성, 조종사는 초대코드로 조회)
             if ("LEADER".equals(request.getRole())) {
                 String inviteCode = UUID.randomUUID().toString().substring(0, 6).toUpperCase();
