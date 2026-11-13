@@ -11861,7 +11861,7 @@ main.asset-page-main .asset-pilot-tab {
 .hz-modal {
   position: fixed;
   inset: 0;
-  z-index: 1000;
+  z-index: 10000;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -12615,7 +12615,7 @@ a.adm-stat.on { border-color: #1f9d57; background: #e9f6ee; box-shadow: 0 0 0 2p
 .iq-row:hover .um-link { color: #17803f; text-decoration: underline; }
 
 /* 문의 상세 / 답변 모달 */
-.iq-modal { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; background: rgba(15, 30, 22, .5); }
+.iq-modal { position: fixed; inset: 0; z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 20px; background: rgba(15, 30, 22, .5); }
 .iq-modal[hidden] { display: none; }
 /* 팝업 열림 애니메이션: 배경은 페이드 인, 창은 살짝 위로 떠오르며 확대 */
 .iq-modal:not([hidden]) { animation: iq-fade .18s ease-out; }
@@ -14128,7 +14128,7 @@ html {
 /* 오버레이 스크롤바 트랙 */
 .overlay-scrollbar {
     position: fixed;
-    z-index: 2147483647;
+    z-index: 9000;
     pointer-events: none;
     opacity: 0;
     transition: opacity 0.2s ease;
