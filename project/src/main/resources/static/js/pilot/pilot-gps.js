@@ -391,7 +391,14 @@ async function startFakeAuto() {
     stepIndex++;
     if (stepIndex >= sprayPath.length) {
       stopAuto(true);
-      showPopup("농지 방제 비행 경로를 모두 완료했습니다!", "ok");
+      showAskPopup("농지 방제 비행 경로를 모두 완료했습니다!", {
+        type: "ok",
+        yesText: "작업 관리 이동",
+        noText: "확인",
+        persistent: true,
+      }).then((goHistory) => {
+        if (goHistory) location.href = "/pilot/history";
+      });
       return;
     }
 
