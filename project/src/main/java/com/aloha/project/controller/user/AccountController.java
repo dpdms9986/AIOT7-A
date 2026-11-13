@@ -46,8 +46,8 @@ public class AccountController {
                 .orElse(null);
 
         if (user != null) {
-            // 이메일 마스킹 처리 (예: abc***@gmail.com) 또는 전체 이메일 전달
-            model.addAttribute("foundUsername", user.getUserName());
+            // 이메일 마스킹 처리 (예: le****@test.com)
+            model.addAttribute("foundUsername", maskEmail(user.getUserName()));
             model.addAttribute("searchSuccess", true);
         } else {
             model.addAttribute("errorMessage", "입력하신 정보와 일치하는 계정을 찾을 수 없습니다.");
@@ -93,5 +93,23 @@ public class AccountController {
 
         model.addAttribute("activeTab", "password"); // 비밀번호 찾기 탭 유지
         return "page/find-account";
+    }
+
+    // 이메일 마스킹 (예: leader@test.com -> le****@test.com)
+    private String maskEmail(String email) {
+        if (email == null || !email.contains("@")) {
+            return email;
+        }
+
+        int at = email.indexOf("@");
+        String local = email.substring(0, at);   // @ 앞부분
+        String domain = email.substring(at);     // @test.com
+
+        // 2글자 이하면 첫 글자만 보여줌
+        int visible = local.length() <= 2 ? 1 : 2;
+
+        return local.substring(0, visible)
+                + "*".repeat(local.length() - visible)
+                + domain;
     }
 }

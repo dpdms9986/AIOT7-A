@@ -10638,18 +10638,22 @@ span.pilot-pin { cursor: default; opacity: 0.75; }
   text-decoration: none;
 }
 .login-signup-link a:hover { text-decoration: underline; }
+/* 회원가입 줄 바로 아래에 오는 줄(계정찾기)은 간격을 좁게 */
+.login-signup-link + .login-signup-link { margin-top: 10px; }
 
 .login-forgot-link {
   margin-top: 10px;
-  font-size: 12px;
+  color: #687789;
+  font-size: 13px;
   text-align: center;
 }
 .login-forgot-link a {
-  color: #7d8a99;
+  margin-left: 4px;
+  color: #238451;
+  font-weight: 700;
   text-decoration: none;
 }
 .login-forgot-link a:hover {
-  color: #238451;
   text-decoration: underline;
 }
 
@@ -12515,7 +12519,7 @@ a.mp-stat-link:hover { border-color: var(--color-primary, #238451); transform: t
 
 /* 드론 사진 칸: static/img/admin-drone.jpg 를 넣으면 사진이 나옴 */
 .adm-photo { height: 190px; padding: 0; border: 0; border-radius: 16px; overflow: hidden;
-  background: url('/img/admin-drone.jpg') center 40% / cover no-repeat, linear-gradient(135deg, #cfe6f2, #a9d4a6); }
+  background: url('../img/admin-drone.jpg') center 40% / cover no-repeat, linear-gradient(135deg, #cfe6f2, #a9d4a6); }
 
 /* 주간 추이 막대 */
 .adm-bars { display: flex; align-items: flex-end; gap: 8px; height: 150px; }
