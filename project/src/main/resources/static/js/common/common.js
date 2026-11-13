@@ -19,6 +19,11 @@ function logout() {
         const track = document.createElement('div');
         track.className = `overlay-scrollbar ${direction}`;
 
+        // 헤더 메뉴 전용 스크롤바 구분
+        if (element.matches('.dash-topnav')) {
+            track.classList.add('dash-topnav-scrollbar');
+        }
+
         const thumb = document.createElement('div');
         thumb.className = 'overlay-scrollbar-thumb';
 

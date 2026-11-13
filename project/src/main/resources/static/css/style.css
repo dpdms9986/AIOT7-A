@@ -10638,18 +10638,22 @@ span.pilot-pin { cursor: default; opacity: 0.75; }
   text-decoration: none;
 }
 .login-signup-link a:hover { text-decoration: underline; }
+/* 회원가입 줄 바로 아래에 오는 줄(계정찾기)은 간격을 좁게 */
+.login-signup-link + .login-signup-link { margin-top: 10px; }
 
 .login-forgot-link {
   margin-top: 10px;
-  font-size: 12px;
+  color: #687789;
+  font-size: 13px;
   text-align: center;
 }
 .login-forgot-link a {
-  color: #7d8a99;
+  margin-left: 4px;
+  color: #238451;
+  font-weight: 700;
   text-decoration: none;
 }
 .login-forgot-link a:hover {
-  color: #238451;
   text-decoration: underline;
 }
 
@@ -11857,7 +11861,7 @@ main.asset-page-main .asset-pilot-tab {
 .hz-modal {
   position: fixed;
   inset: 0;
-  z-index: 1000;
+  z-index: 10000;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -12515,7 +12519,7 @@ a.mp-stat-link:hover { border-color: var(--color-primary, #238451); transform: t
 
 /* 드론 사진 칸: static/img/admin-drone.jpg 를 넣으면 사진이 나옴 */
 .adm-photo { height: 190px; padding: 0; border: 0; border-radius: 16px; overflow: hidden;
-  background: url('/img/admin-drone.jpg') center 40% / cover no-repeat, linear-gradient(135deg, #cfe6f2, #a9d4a6); }
+  background: url('../img/admin-drone.jpg') center 40% / cover no-repeat, linear-gradient(135deg, #cfe6f2, #a9d4a6); }
 
 /* 주간 추이 막대 */
 .adm-bars { display: flex; align-items: flex-end; gap: 8px; height: 150px; }
@@ -12611,7 +12615,7 @@ a.adm-stat.on { border-color: #1f9d57; background: #e9f6ee; box-shadow: 0 0 0 2p
 .iq-row:hover .um-link { color: #17803f; text-decoration: underline; }
 
 /* 문의 상세 / 답변 모달 */
-.iq-modal { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; background: rgba(15, 30, 22, .5); }
+.iq-modal { position: fixed; inset: 0; z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 20px; background: rgba(15, 30, 22, .5); }
 .iq-modal[hidden] { display: none; }
 /* 팝업 열림 애니메이션: 배경은 페이드 인, 창은 살짝 위로 떠오르며 확대 */
 .iq-modal:not([hidden]) { animation: iq-fade .18s ease-out; }
@@ -14124,7 +14128,7 @@ html {
 /* 오버레이 스크롤바 트랙 */
 .overlay-scrollbar {
     position: fixed;
-    z-index: 2147483647;
+    z-index: 9000;
     pointer-events: none;
     opacity: 0;
     transition: opacity 0.2s ease;
@@ -14667,4 +14671,27 @@ button[data-orig-html]:disabled,
   .gnb-weather .wx-chip .wx-msg { display: none; }       /* "작업하기 좋아요" */
   .gnb-weather.wx-has-chip { padding: 5px 8px; gap: 0; }
   .gnb-weather .wx-chip .wx-face { font-size: 18px; line-height: 1; }
+}
+
+/* 파일럿 자산 목록 테이블에만 적용 */
+.pilot-asset-list-table th,
+.pilot-asset-list-table td {
+    padding: 1px 1px;
+}
+
+/* 파일럿 자산 목록: 제목 행만 여백 확대 */
+.pilot-asset-list-table thead th {
+    padding: 12px 10px;
+}
+
+/* 관리자 파일럿 관리: 전체 열 자동 줄바꿈 방지 */
+.admin-pilots-list-table th,
+.admin-pilots-list-table td {
+    white-space: nowrap;
+}
+
+/* 관리자 사용자 관리: 전체 열 자동 줄바꿈 방지 */
+.admin-users-list-table th,
+.admin-users-list-table td {
+    white-space: nowrap;
 }
