@@ -206,10 +206,56 @@ function getValidSelectedTask() {
     );
     return null;
   }
-
   return selectedTask;
 }
 
+// [시연용 헬퍼] 선택한 농지 폴리곤(dataset.polygon) 내부를 훑는 ㄹ자 비행 경로 자동 생성
+function buildSprayPathInPolygon(selectedTask, fallbackLat, fallbackLng) {
+  const polyRaw = selectedTask.dataset.polygon;
+
+  // 기본 범위(폴리곤 없을 때 대비)
+  let south = fallbackLat - 0.0004;
+  let north = fallbackLat + 0.0004;
+  let west  = fallbackLng - 0.0005;
+  let east  = fallbackLng + 0.0005;
+
+  if (polyRaw && polyRaw !== "null" && polyRaw.trim() !== "") {
+    try {
+      const polyCoords = JSON.parse(polyRaw);
+      if (Array.isArray(polyCoords) && polyCoords.length >= 3) {
+        const bounds = L.polygon(polyCoords).getBounds();
+        const latSpan = bounds.getNorth() - bounds.getSouth();
+        const lngSpan = bounds.getEast() - bounds.getWest();
+
+        // 농지 테두리 안쪽 15% 여백을 두어 바깥으로 삐져나가지 않게 조정
+        south = bounds.getSouth() + latSpan * 0.15;
+        north = bounds.getNorth() - latSpan * 0.15;
+        west  = bounds.getWest() + lngSpan * 0.15;
+        east  = bounds.getEast() - lngSpan * 0.15;
+      }
+    } catch (e) {
+      console.warn("폴리곤 경로 계산 fallback:", e);
+    }
+  }
+
+  // 4줄 왕복(ㄹ자 지그재그) 16개 포인트 생성 (북서쪽 모서리 시작!)
+  const rows = 4;
+  const cols = 4;
+  const points = [];
+
+  for (let r = 0; r < rows; r++) {
+    const lat = north - ((north - south) * r) / (rows - 1);
+    for (let c = 0; c < cols; c++) {
+      // 짝수 줄은 왼쪽->오른쪽, 홀수 줄은 오른쪽->왼쪽 (ㄹ자)
+      const colRatio = (r % 2 === 0) ? c / (cols - 1) : (cols - 1 - c) / (cols - 1);
+      const lng = west + (east - west) * colRatio;
+      points.push([lat, lng]);
+    }
+  }
+  return points;
+}
+
+// 3. 2초 간격 가상 비행 (농지 영역 내부 ㄹ자 시연 모드)
 async function startFakeAuto() {
   stopAuto(false);
 
@@ -223,7 +269,10 @@ async function startFakeAuto() {
     return alert("선택한 농지의 위치 정보가 올바르지 않습니다.");
   }
 
-  // 이전 궤적이 있으면 이어 비행 여부 확인
+  // 해당 농지 영역에 딱 맞는 ㄹ자 비행 경로 생성
+  const sprayPath = buildSprayPathInPolygon(selectedTask, lat, lng);
+  let stepIndex = 0;
+
   const hasHistory = window.myFlightTrackCoords && window.myFlightTrackCoords.length > 0;
   let resume = false;
 
@@ -239,24 +288,32 @@ async function startFakeAuto() {
     const last = window.myFlightTrackCoords[window.myFlightTrackCoords.length - 1];
     currentLat = last[0];
     currentLng = last[1];
+    stepIndex = Math.min(window.myFlightTrackCoords.length - 1, sprayPath.length - 1);
   } else {
     resetMyFlightTrack();
-    currentLat = lat;
-    currentLng = lng;
+    currentLat = sprayPath[0][0];
+    currentLng = sprayPath[0][1];
   }
 
   if (typeof map !== "undefined") {
-    map.setView([currentLat, currentLng], 16);
+    map.setView([currentLat, currentLng], 17);
   }
 
-  $("#autoStatus").text("✈️ 가상 위치 자동 비행 중... (2초마다 전송)").css("color", "#2f80ed");
+  $("#autoStatus").text("✈️ 가상 위치 자동 비행 중... (영역 내 방제 패턴)").css("color", "#2f80ed");
 
-  // 첫 위치 즉시 전송
+  // 첫 위치(농지 북서쪽 모서리) 즉시 전송
   sendLocation(currentLat, currentLng);
 
   fakeInterval = setInterval(() => {
-    currentLat += 0.0002;
-    currentLng += 0.0002;
+    stepIndex++;
+    if (stepIndex >= sprayPath.length) {
+      stopAuto(true);
+      showPopup("농지 방제 비행 경로를 모두 완료했습니다!", "ok");
+      return;
+    }
+
+    currentLat = sprayPath[stepIndex][0];
+    currentLng = sprayPath[stepIndex][1];
 
     if (typeof map !== "undefined") {
       map.panTo([currentLat, currentLng]);
