@@ -42,6 +42,7 @@ public class DroneGpsController {
     private final UserRepository userRepository;
     private final WorkAssignmentRepository workAssignmentRepository;
     private final JsonMapper objectMapper;
+    private  final Map<String, Long> lastAssignmentByPilot = new ConcurrentHashMap<>();
 
     // 서버 메모리에 팀별, 조종사별 실시간 비행 궤적 보관
     // 구조: Map<팀초대코드, Map<조종사명, List<[위도, 경도]>>>
@@ -129,6 +130,13 @@ public class DroneGpsController {
 
         message.setPilotName(pilotName);
         message.setTeamNo(pilot.getTeam().getNo());
+
+        // 직전에 날던 작업 번호와 다르면, 이전 농지 메모리 궤적을 비우고 새로 시작
+        String pilotKey = safeTeamChannel + ":" + pilotName;
+        Long prevAssignmentNo = lastAssignmentByPilot.put(pilotKey, assignment.getNo());
+        if (prevAssignmentNo != null && !prevAssignmentNo.equals(assignment.getNo())) {
+            activeTracks.getOrDefault(safeTeamChannel, Collections.emptyMap()).remove(pilotName);
+        } 
 
         // 7. develop의 실시간 궤적 메모리 누적 기능 유지
         activeTracks
