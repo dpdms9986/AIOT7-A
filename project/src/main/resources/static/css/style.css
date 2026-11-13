@@ -5088,9 +5088,9 @@ body:has(.hazard-detail-page) .hazard-detail-content {
 
 /* 위험 구역 게시글 수정 버튼 */
 .hz-edit-btn {
-    background-color: #16834a;
+    background-color: #1f5637;
     color: #fff;
-    border: 1px solid #16834a;
+    border: 1px solid #1f5637;
     border-radius: 8px;
     padding: 10px 22px;
     font-weight: 600;
@@ -5098,8 +5098,8 @@ body:has(.hazard-detail-page) .hazard-detail-content {
 }
 
 .hz-edit-btn:hover {
-    background-color: #116b3b;
-    border-color: #116b3b;
+    background-color: #16834a;
+    border-color: #16834a;
 }
 
 /* ===== 검색 필터 통합 ===== */
@@ -11910,9 +11910,9 @@ main.asset-page-main .asset-pilot-tab {
 .hz-edit-btn {
   height: var(--button-height);
   padding: 0 16px;
-  border: 1px solid #16834a;
+  border: 1px solid #1f5637;
   border-radius: 8px;
-  background: #16834a;
+  background: #1f5637;
   color: #ffffff;
   font-family: inherit;
   font-size: 13px;
@@ -11922,8 +11922,8 @@ main.asset-page-main .asset-pilot-tab {
 }
 
 .hz-edit-btn:hover {
-  background: #116b3b;
-  border-color: #116b3b;
+  background: #16834a;
+  border-color: #16834a;
 }
 
 .hz-edit-btn[hidden] {
@@ -13473,7 +13473,7 @@ body:has(.dash-header) > .pub-footer {
     flex-shrink: 0;
     margin: 0;
     padding: 22px 26px 10px;
-    background: var(--color-primary);
+    background: #1f5637;
     color: #ffffff;
     font-size: 20px;
     font-weight: 800;
@@ -13484,7 +13484,7 @@ body:has(.dash-header) > .pub-footer {
     flex-shrink: 0;
     margin: 0;
     padding: 0 26px 18px;
-    background: var(--color-primary);
+    background: #1f5637;
     color: rgba(255, 255, 255, 0.85);
     font-size: 12px;
 }
@@ -13667,7 +13667,7 @@ body:has(.dash-header) > .pub-footer {
 #hz-view-modal .hz-view-header {
     flex-shrink: 0;
     padding: 22px 60px 20px 26px;
-    background: var(--color-primary);
+    background: #1f5637;
     color: #ffffff;
 }
 
@@ -14703,4 +14703,56 @@ button[data-orig-html]:disabled,
 .admin-users-list-table th,
 .admin-users-list-table td {
     white-space: nowrap;
+}
+
+/* 리더 자산 목록 테이블 본문 여백 */
+.leader-asset-list-table th,
+.leader-asset-list-table td {
+    padding: 1px 1px;
+}
+
+/* 리더 자산 목록 테이블 제목 행 여백 */
+.leader-asset-list-table thead th {
+    padding: 12px 10px;
+}
+
+/* 로그인 하단 링크 공통 */
+.login-signup-link {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 24px;
+  font-size: 13px;
+}
+
+.login-signup-link a {
+  font-weight: 700;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+/* 계정찾기 - 검정색 */
+.login-signup-link .find-account {
+  color: #757877;
+}
+
+.login-signup-link .find-account:hover {
+  color: #555555;
+  text-decoration: underline;
+}
+
+/* 구분선 */
+.login-signup-link .link-divider {
+  color: #a3adba;
+}
+
+/* 회원가입 - 초록색 */
+.login-signup-link .signup {
+  color: #238451;
+}
+
+.login-signup-link .signup:hover {
+  color: #196b40;
+  text-decoration: underline;
 }
