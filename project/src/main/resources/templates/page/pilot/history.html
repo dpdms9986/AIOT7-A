@@ -520,7 +520,7 @@ document.getElementById('resumeBtn')?.addEventListener('click', async (e) => {
               fillOpacity: 0.25
             }).addTo(hMap);
             hMap.fitBounds(poly.getBounds(), { padding: [20, 20]});
-            hasBound = ture;
+            hasBound = true;
           }
         } catch (e) { console.error('이력 폴리곤 파싱 오류:', e)}
       }

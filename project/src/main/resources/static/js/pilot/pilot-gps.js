@@ -36,7 +36,8 @@ async function loadMyActiveTrack(channelKey) {
     const myCoords = activeTracks[myName];
 
     // 선택된 작업에 저장된 궤적이 있을 때만 복원 (완료된 이전 농지 궤적이 따라오는 것 방지)
-    const selected = document.querySelector(".pilot-task.selected");
+    const selected = document.querySelector(".pilot-task.selected")
+                  || document.querySelector('.pilot-task[data-status="INTERRUPTED"]');
     const savedPath = selected?.dataset.flightPath;
     if (!selected || !savedPath || savedPath === "null" || savedPath.trim() === "") return;
 
@@ -209,57 +210,111 @@ function getValidSelectedTask() {
   return selectedTask;
 }
 
-// [시연용 헬퍼] 선택한 농지 폴리곤(dataset.polygon) 내부를 훑는 ㄹ자 비행 경로 자동 생성
+function isPointInRing(lat, lng, ringLatLngs) {
+  let inside = false;
+  for (let i = 0, j = ringLatLngs.length - 1; i < ringLatLngs.length; j = i++) {
+    const xi = ringLatLngs[i][0], yi = ringLatLngs[i][1];
+    const xj = ringLatLngs[j][0], yj = ringLatLngs[j][1];
+    const intersect = ((yi > lng) !== (yj > lng))
+      && (lat < ((xj - xi) * (lng - yi) / (yj - yi + 1e-12) + xi))
+    if (intersect) inside = !inside;
+  }
+  return inside;
+}
+
+// [시연용 핵심] 주황색 담당 구역(assignmentGeometry) 내부를 훑는 ㄹ자 비행 경로 자동 생성
 function buildSprayPathInPolygon(selectedTask, fallbackLat, fallbackLng) {
+  const assignedRaw = selectedTask.dataset.assignedGeometry;
   const polyRaw = selectedTask.dataset.polygon;
 
-  // 기본 범위(폴리곤 없을 때 대비)
-  let south = fallbackLat - 0.0004;
-  let north = fallbackLat + 0.0004;
-  let west  = fallbackLng - 0.0005;
-  let east  = fallbackLng + 0.0005;
+  let targetLayer = null;
+  const rings = [];
 
+  const scanArea = (layer, areaRings) => {
+    let s = fallbackLat - 0.0003, n = fallbackLat + 0.0003;
+    let w = fallbackLng - 0.0004, e = fallbackLng + 0.0004;
+
+    if (layer) {
+      const b = layer.getBounds();
+      const latSpan = b.getNorth() - b.getSouth();
+      const lngSpan = b.getEast() - b.getWest();
+      s = b.getSouth() + latSpan * 0.1;
+      n = b.getNorth() - latSpan * 0.1;
+      w = b.getWest() + lngSpan * 0.1;
+      e = b.getEast() - lngSpan * 0.1;
+    }
+    const rows = 4, cols = 4, subPoints = [];
+    for (let r = 0; r < rows; r++) {
+      const lat = n - ((n - s) * r) / (rows - 1);
+      for (let c = 0; c < cols; c++) {
+        const colRatio = (r % 2 == 0) ? c / (cols - 1) : (cols - 1 - c) / (cols - 1);
+        const lng = w + (e - w) * colRatio;
+        
+        if (areaRings.length === 0 || areaRings.some((ring) => isPointInRing(lat, lng, ring))) {
+          subPoints.push([lat, lng]);          
+        }
+      }     
+    }
+    return subPoints.length >= 2 ? subPoints : [[n, w], [n, e], [s, e], [s, w]];
+  };
+
+  // 1순위: assignedGeometry 각 조각(feature)마다 따로 ㄹ자 생성 후 순서대로 이어붙임!
+  if (assignedRaw && assignedRaw !== "null" && assignedRaw.trim() !== "") {
+    try {
+      const geometries = JSON.parse(assignedRaw);
+      if (Array.isArray(geometries) && geometries.length > 0) {
+        const allPoints = [];
+
+        geometries.forEach((g) => {
+          const features = {
+            type: "Feature",
+            properties: {},
+            geometry: g.type === "Feature" ? g.geometry : g
+        };
+        const singleLayer = L.geoJSON(features);
+        const singleRings = [];
+        const geom = features.geometry;
+
+        if (geom?.type === "Polygon" && geom.coordinates[0]) {
+          singleRings.push(geom.coordinates[0].map((c) => [c[1], c[0]])); 
+        } else if (geom?.type === "MultiPolygon") {
+          geom.coordinates.forEach((poly) => {
+            if (poly[0]) singleRings.push(poly[0].map((c) => [c[1], c[0]]));
+          });
+        }
+
+        allPoints.push(...scanArea(singleLayer, singleRings));
+        });
+
+        if (allPoints.length >= 2) return allPoints;
+      }
+    } catch (e) {
+      console.warn("담당 구역 경로 파싱 실패:", e);
+    }
+  }
+
+  // 2순위: 분할 구역이 없을 때 기존처럼 전체 농지(polyRaw) 1개 스캔
   if (polyRaw && polyRaw !== "null" && polyRaw.trim() !== "") {
     try {
       const polyCoords = JSON.parse(polyRaw);
       if (Array.isArray(polyCoords) && polyCoords.length >= 3) {
-        const bounds = L.polygon(polyCoords).getBounds();
-        const latSpan = bounds.getNorth() - bounds.getSouth();
-        const lngSpan = bounds.getEast() - bounds.getWest();
-
-        // 농지 테두리 안쪽 15% 여백을 두어 바깥으로 삐져나가지 않게 조정
-        south = bounds.getSouth() + latSpan * 0.15;
-        north = bounds.getNorth() - latSpan * 0.15;
-        west  = bounds.getWest() + lngSpan * 0.15;
-        east  = bounds.getEast() - lngSpan * 0.15;
+        return scanArea(L.polygon(polyCoords), [polyCoords]);
       }
     } catch (e) {
-      console.warn("폴리곤 경로 계산 fallback:", e);
-    }
+      console.warn("전체 농지 경로 파싱 실패:", e);
+    } 
   }
 
-  // 4줄 왕복(ㄹ자 지그재그) 16개 포인트 생성 (북서쪽 모서리 시작!)
-  const rows = 4;
-  const cols = 4;
-  const points = [];
-
-  for (let r = 0; r < rows; r++) {
-    const lat = north - ((north - south) * r) / (rows - 1);
-    for (let c = 0; c < cols; c++) {
-      // 짝수 줄은 왼쪽->오른쪽, 홀수 줄은 오른쪽->왼쪽 (ㄹ자)
-      const colRatio = (r % 2 === 0) ? c / (cols - 1) : (cols - 1 - c) / (cols - 1);
-      const lng = west + (east - west) * colRatio;
-      points.push([lat, lng]);
-    }
-  }
-  return points;
+  return scanArea(null, []);
 }
 
-// 3. 2초 간격 가상 비행 (농지 영역 내부 ㄹ자 시연 모드)
+// 3. 2초 간격 가상 비행 (농지 영역 내부 ㄹ자 시연 모드 + 항상 마지막 좌표에서 이어서 비행)
 async function startFakeAuto() {
   stopAuto(false);
 
+  let resume = false;
   const selectedTask = getValidSelectedTask();
+
   if (!selectedTask) return;
 
   const lat = Number(selectedTask.dataset.lat);
@@ -273,8 +328,20 @@ async function startFakeAuto() {
   const sprayPath = buildSprayPathInPolygon(selectedTask, lat, lng);
   let stepIndex = 0;
 
+  // 1. 메모리에 없으면 HTML(DB)에 저장된 기존 궤적(dataset.flightPath)을 먼저 복원!
+  if ((!window.myFlightTrackCoords || window.myFlightTrackCoords.length === 0)
+       && selectedTask.dataset.flightPath
+       && selectedTask.dataset.flightPath !== "null"
+       && selectedTask.dataset.flightPath.trim() !== "") {
+    try {
+      const saved = JSON.parse(selectedTask.dataset.flightPath);
+      if (Array.isArray(saved) && saved.length > 0) {
+        window.myFlightTrackCoords = saved;
+      }
+    } catch (e) { /* 무시 */}
+  }
+
   const hasHistory = window.myFlightTrackCoords && window.myFlightTrackCoords.length > 0;
-  let resume = false;
 
   if (hasHistory) {
     resume = await showAskPopup("이전 비행 기록이 있습니다.\n마지막 중단 위치에서 이어서 비행하시겠습니까?", {
@@ -283,17 +350,33 @@ async function startFakeAuto() {
       persistent: true,
     });
   }
-
+  
+  // 이어서 비행: 기존 비행 기록이 있으면 무조건 마지막 좌표(last)에서 그대로 이어서
   if (resume) {
     const last = window.myFlightTrackCoords[window.myFlightTrackCoords.length - 1];
     currentLat = last[0];
     currentLng = last[1];
-    stepIndex = Math.min(window.myFlightTrackCoords.length - 1, sprayPath.length - 1);
+
+    // 다음 2초 뒤에 이동할 목표 인덱스만 가장 가까운 sprayPath 점으로 맞춤
+    let minDist = Infinity;
+    sprayPath.forEach((pt, idx) => {
+      const dist = Math.hypot(pt[0] - last[0], pt[1] - last[1]);
+      if (dist < minDist) {
+        minDist =dist;
+        stepIndex = idx;
+      }
+    });
   } else {
+    // 새로 시작하거나 첫 비행일 때: 화면 선 비우고 + 기존 기록이 있었으면 DB궤적도 비움
     resetMyFlightTrack();
+    if (hasHistory && typeof clearFlightPathInDB === "function") {
+      await clearFlightPathInDB(selectedTask.dataset.no);
+    }
     currentLat = sprayPath[0][0];
     currentLng = sprayPath[0][1];
   }
+
+  window.myFlightTrackLandNo = selectedTask.dataset.no;
 
   if (typeof map !== "undefined") {
     map.setView([currentLat, currentLng], 17);
@@ -301,7 +384,7 @@ async function startFakeAuto() {
 
   $("#autoStatus").text("✈️ 가상 위치 자동 비행 중... (영역 내 방제 패턴)").css("color", "#2f80ed");
 
-  // 첫 위치(농지 북서쪽 모서리) 즉시 전송
+  // 첫 위치 즉시 전송
   sendLocation(currentLat, currentLng);
 
   fakeInterval = setInterval(() => {
@@ -320,6 +403,26 @@ async function startFakeAuto() {
     }
     sendLocation(currentLat, currentLng);
   }, 2000);
+}
+
+// 새로 시작 시 DB에 남아있던 이전 flightPath를 비워주는 헬퍼
+async function clearFlightPathInDB(landNo) {
+  if (!landNo || landNo === "undefined") return;
+  try {
+    const res = await fetch("/api/pilot/assignment");
+    if (!res.ok) return;
+    const list = await res.json();
+    const target = list.find((a) => String(a.landNo) === String(landNo) && a.status === "IN_PROGRESS");
+    if(!target) return;
+
+    await $ajax({
+      url: `/pilot/tasks/${target.assignmentNo}/save-path`,
+      method: "POST",
+      data: { flightPath: "[]"},
+    });
+  } catch (e) {
+    console.warn("DB 궤적 초기화 실패:", e);
+  } 
 }
 
 // 실제 GPS (거리 검증 가드 추가)
