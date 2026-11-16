@@ -14756,3 +14756,88 @@ button[data-orig-html]:disabled,
   color: #196b40;
   text-decoration: underline;
 }
+
+/* ===== 위험 구역 이미지 크게 보기 (라이트박스) ===== */
+#hz-v-image {
+  cursor: zoom-in;
+}
+
+.hz-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 20000; /* 상세보기 팝업(10000)보다 위 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.88);
+}
+.hz-lightbox[hidden] { display: none !important; }
+
+#hz-lightbox-img {
+  max-width: 92vw;
+  max-height: 88vh;
+  object-fit: contain;
+  border-radius: 6px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+  cursor: zoom-in;
+  user-select: none;
+  -webkit-user-drag: none;
+  touch-action: none;
+  transform-origin: center center;
+  transition: transform 0.12s ease-out;
+}
+#hz-lightbox-img.is-dragging {
+  transition: none; /* 드래그 중에는 즉시 따라오게 */
+}
+
+/* 확대된 사진이 버튼 위를 덮지 않게 */
+.hz-lightbox-close,
+.hz-lightbox-nav,
+.hz-lightbox-count {
+  z-index: 2;
+}
+.hz-lightbox { overflow: hidden; }
+
+.hz-lightbox-close {
+  position: absolute;
+  top: 18px;
+  right: 22px;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+}
+.hz-lightbox-close:hover { background: rgba(255, 255, 255, 0.3); }
+
+.hz-lightbox-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 46px;
+  height: 46px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+}
+.hz-lightbox-nav:hover { background: rgba(255, 255, 255, 0.3); }
+.hz-lightbox-prev { left: 24px; }
+.hz-lightbox-next { right: 24px; }
+
+.hz-lightbox-count {
+  position: absolute;
+  bottom: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-size: 13px;
+}
