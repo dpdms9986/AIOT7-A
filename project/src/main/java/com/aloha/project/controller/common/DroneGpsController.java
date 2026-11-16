@@ -29,6 +29,7 @@ import com.aloha.project.domain.users.Users;
 import com.aloha.project.dto.common.GpsMessage;
 import com.aloha.project.repository.tasks.WorkAssignmentRepository;
 import com.aloha.project.repository.users.UserRepository;
+import com.aloha.project.service.impl.tasks.WorkAssignmentServiceImpl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,11 +39,12 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class DroneGpsController {
 
+    private final WorkAssignmentServiceImpl workAssignmentServiceImpl;
     private final SimpMessagingTemplate messagingTemplate;
     private final UserRepository userRepository;
     private final WorkAssignmentRepository workAssignmentRepository;
     private final JsonMapper objectMapper;
-    private  final Map<String, Long> lastAssignmentByPilot = new ConcurrentHashMap<>();
+    private final Map<String, Long> lastAssignmentByPilot = new ConcurrentHashMap<>();
 
     // 서버 메모리에 팀별, 조종사별 실시간 비행 궤적 보관
     // 구조: Map<팀초대코드, Map<조종사명, List<[위도, 경도]>>>
@@ -130,6 +132,7 @@ public class DroneGpsController {
 
         message.setPilotName(pilotName);
         message.setTeamNo(pilot.getTeam().getNo());
+        message.setAssignmentNo(assignment.getNo());
 
         // 직전에 날던 작업 번호와 다르면, 이전 농지 메모리 궤적을 비우고 새로 시작
         String pilotKey = safeTeamChannel + ":" + pilotName;
@@ -217,11 +220,19 @@ public class DroneGpsController {
     // 단장 대시보드 새로고침 시 현재 메모리에 저장된 궤적 조회
     @GetMapping("/api/drone/active-tracks")
     @ResponseBody
-    public ResponseEntity<?> getActiveTracks(
-            @RequestParam("teamCode") String teamCode) {
+    public ResponseEntity<?> getActiveTracks( @RequestParam("teamCode") String teamCode) {
+        Map<String, List<double[]>> teamTracks = activeTracks.get(teamCode);
+        if (teamTracks == null || teamTracks.isEmpty()) {
+            return ResponseEntity.ok(Collections.emptyMap()); }
 
-        Map<String, List<double[]>> teamTracks =
-                activeTracks.getOrDefault(teamCode, Collections.emptyMap());
+        // 완료(COMPLETED) 또는 인계(STOPPED)된 작업의 메모리 궤적은 대시보드에서 제거 (DB이력에는 유지)
+        teamTracks.keySet().removeIf(pilotName -> {
+            Long taskNo = lastAssignmentByPilot.get(teamCode + ":" + pilotName);
+            if (taskNo == null) return false;
+            return workAssignmentRepository.findById(taskNo)
+                            .map(a -> "COMPLETED".equals(a.getStatus()) || "STOPPED".equals(a.getStatus()))
+                            .orElse(true);
+        });
 
         return ResponseEntity.ok(teamTracks);
     }

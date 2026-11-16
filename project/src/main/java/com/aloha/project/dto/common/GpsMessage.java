@@ -8,4 +8,5 @@ public class GpsMessage {
     private String pilotName;   // 조종사 이름
     private Double latitude;    // 위도
     private Double longitude;   // 경도
+    private Long assignmentNo;
 }
