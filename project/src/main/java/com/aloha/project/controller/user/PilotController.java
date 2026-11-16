@@ -508,11 +508,11 @@ public class PilotController {
             return "redirect:/pilot/history";
         }
 
-        // 2. 이미 완료된 작업은 취소 불가 방어
-        if ("COMPLETED".equals(task.getStatus())) {
+        // 2. 진행 중인 작업만 취소 가능
+        if (!"IN_PROGRESS".equals(task.getStatus())) {
             redirectAttributes.addFlashAttribute(
                     "errorMessage",
-                    "이미 완료된 작업은 취소 불가합니다."
+                    "진행 중인 작업만 취소할 수 있습니다."
             );
 
             return "redirect:/pilot/history";

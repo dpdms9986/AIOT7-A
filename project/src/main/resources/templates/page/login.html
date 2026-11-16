@@ -55,11 +55,9 @@
       </form>
 
       <div class="login-signup-link">
-        계정이 없으신가요? <a th:href="@{/signup}">회원가입</a>
-      </div>
-
-      <div class="login-forgot-link">
-        계정을 잊으셨나요? <a th:href="@{/find-account}">계정찾기</a>
+          <a th:href="@{/find-account}" class="find-account">계정찾기</a>
+          <span class="link-divider">|</span>
+          <a th:href="@{/signup}" class="signup">회원가입</a>
       </div>
     </section>
   </main>

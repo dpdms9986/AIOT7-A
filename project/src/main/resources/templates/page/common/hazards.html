@@ -128,14 +128,17 @@
                 <span class="hz-status" th:classappend="${h.status == 'ACTIVE'} ? 'active' : 'resolved'"
                       th:text="${h.status == 'ACTIVE'} ? '주의 요망' : '해소됨'">주의 요망</span>
               </td>
-              <!-- 관리: 주의 요망일 때만 해소 버튼 -->
-              <td>
-                <form th:if="${h.status == 'ACTIVE'}"
+              <!-- 관리: 주의 요망 + (작성자 본인 또는 단장)일 때만 해소 버튼 -->
+              <td th:with="canResolve=${h.status == 'ACTIVE'
+                                        and ((h.user != null and h.user.no == currentLoginUserNo)
+                                             or currentLoginUserRole == 'LEADER'
+                                             or currentLoginUserRole == 'ADMIN')}">
+                <form th:if="${canResolve}"
                       th:action="@{/hazards/{no}/resolve(no=${h.no})}" method="post"
                       data-confirm="이 위험 구역을 해소 완료로 바꿀까요?" data-confirm-yes="해소 완료">
                   <button type="submit" class="hz-resolve-btn">해소 완료</button>
                 </form>
-                <span th:unless="${h.status == 'ACTIVE'}" class="hz-muted">-</span>
+                <span th:unless="${canResolve}" class="hz-muted">-</span>
               </td>
               <!-- 상세: 행에 심어 둔 값으로 팝업을 띄움 (서버 요청 없음) -->
               <td>
@@ -370,6 +373,15 @@
 
     </div>
   </section>
+</div>
+
+<!-- ===== 이미지 크게 보기 (라이트박스) ===== -->
+<div class="hz-lightbox" id="hz-lightbox" hidden>
+  <button type="button" class="hz-lightbox-close" id="hz-lightbox-close" aria-label="닫기">✖</button>
+  <button type="button" class="hz-lightbox-nav hz-lightbox-prev" id="hz-lightbox-prev" aria-label="이전 이미지">❮</button>
+  <img id="hz-lightbox-img" src="" alt="확대 이미지">
+  <button type="button" class="hz-lightbox-nav hz-lightbox-next" id="hz-lightbox-next" aria-label="다음 이미지">❯</button>
+  <span class="hz-lightbox-count" id="hz-lightbox-count"></span>
 </div>
 
 <script th:src="@{/js/common/hazards.js}"></script>

@@ -305,15 +305,34 @@ public class HazardPageController {
 
     /**
      * 5. 위험 해소 완료 처리 (버튼 클릭 시)
+     * - 작성자 본인 또는 방제단장(LEADER)만 가능
      */
     @PostMapping("/{no}/resolve")
-    public String resolveHazard(@PathVariable("no") Long no, RedirectAttributes redirectAttributes) {
+    public String resolveHazard(@PathVariable("no") Long no,
+                                @AuthenticationPrincipal CustomUser customUser,
+                                RedirectAttributes redirectAttributes) {
+        if (customUser == null) return "redirect:/login";
+
         HazardReports hazard = hazardRepository.findById(no).orElse(null);
-        if (hazard != null) {
-            hazard.setStatus("RESOLVED");
-            hazardRepository.save(hazard);
-            redirectAttributes.addFlashAttribute("successMessage", "위험 요소가 해소(완료) 처리되었습니다.");
+        if (hazard == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "존재하지 않는 게시글입니다.");
+            return "redirect:/hazards";
         }
+
+        Users loginUser = customUser.getUser();
+        boolean isAuthor = hazard.getUser() != null && hazard.getUser().getNo().equals(loginUser.getNo());
+        boolean isLeader = "LEADER".equals(loginUser.getRole());
+        boolean isAdmin = "ADMIN".equals(loginUser.getRole());
+
+        // 권한 체크: 작성자 본인, 단장, 관리자가 아니면 차단
+        if (!isAuthor && !isLeader && !isAdmin) {
+            redirectAttributes.addFlashAttribute("errorMessage", "해소 완료 처리 권한이 없습니다. (작성자, 단장, 관리자만 가능)");
+            return "redirect:/hazards";
+        }
+
+        hazard.setStatus("RESOLVED");
+        hazardRepository.save(hazard);
+        redirectAttributes.addFlashAttribute("successMessage", "위험 요소가 해소(완료) 처리되었습니다.");
         return "redirect:/hazards";
     }
 

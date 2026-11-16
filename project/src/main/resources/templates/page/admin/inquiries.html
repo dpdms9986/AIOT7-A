@@ -186,28 +186,63 @@
   $(document).on('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
   // 답변 등록 (기존 API 사용). $ajax 는 실패해도 예외 없이 응답 본문을 돌려주므로 success 값으로 판단
-  $('#iqSubmit').on('click', async function () {
+  
+$('#iqSubmit').on('click', async function () {
     const no = $('#iqNo').val();
     const answerContent = $('#iqAnswer').val().trim();
+
     if (!answerContent) {
-      $alert('입력 확인', '답변 내용을 입력해주세요.', 'warning');
-      return;
+        $alert('입력 확인', '답변 내용을 입력해주세요.', 'warning');
+        return;
     }
 
-    const btn = $(this).prop('disabled', true).text('등록 중...');
-    const res = await $ajax({
-      url: '/api/inquiries/admin/' + no + '/answer',
-      method: 'POST',
-      data: { answerContent }
-    });
+    const btn = $(this);
+    btn.prop('disabled', true).text('등록 중...');
 
-    if (res && res.success === true) {
-      $alert('등록 완료', '답변이 등록되었습니다.', 'success').then(() => location.reload());
-    } else {
-      btn.prop('disabled', false).text('답변 등록');
-      $alert('등록 실패', (res && res.message) || '답변 등록에 실패했습니다.', 'error');
+    try {
+        const res = await $ajax({
+            url: '/api/inquiries/admin/' + no + '/answer',
+            method: 'POST',
+            data: { answerContent }
+        });
+
+        if (res && res.success === true) {
+
+            // 1. 문의 상세 모달 먼저 닫기
+            closeModal();
+
+            // 2. 등록 완료 알림 표시
+            $alert(
+                '등록 완료',
+                '답변이 등록되었습니다.',
+                'success'
+            ).then(() => {
+                // 3. 확인 후 목록 새로고침
+                location.reload();
+            });
+
+        } else {
+            $alert(
+                '등록 실패',
+                (res && res.message) || '답변 등록에 실패했습니다.',
+                'error'
+            );
+        }
+
+    } catch (error) {
+        console.error('답변 등록 오류:', error);
+
+        $alert(
+            '오류 발생',
+            '답변 등록 중 오류가 발생했습니다.',
+            'error'
+        );
+
+    } finally {
+        btn.prop('disabled', false).text('답변 등록');
     }
-  });
+});
+
 </script>
 
 </body>

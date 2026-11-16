@@ -80,8 +80,12 @@ public class AdminPageController {
         long availableDroneCount = allDrones.stream().filter(d -> "AVAILABLE".equals(d.getStatus())).count();
 
         // 4. 시스템 전체 농지 및 방제 실적 집계
-        List<Lands> allLands = landRepository.findAll();
+        List<Lands> allLands = landRepository.findAll().stream()
+        .filter(l -> !l.isDeleted())
+        .toList();
+
         long totalLandCount = allLands.size();
+        
         long completedLandCount = allLands.stream().filter(l -> "COMPLETED".equals(l.getStatus())).count();
 
         // 전체 방제 완료율 계산

@@ -106,7 +106,7 @@
       // ----- 예 / 아니오 선택 팝업 (Promise<boolean> 반환) -----
       // opts.persistent = true : 바깥 클릭 / ESC 로 닫히지 않고, 반드시 버튼을 눌러야 닫힘
       window.showAskPopup = (message, opts = {}) => {
-        const { yesText = "예", noText = "아니오", detail = "", persistent = false } = opts;
+        const { yesText = "예", noText = "아니오", detail = "", persistent = false, type = "warn" } = opts;
 
         return new Promise((resolve) => {
           document.getElementById("login-popup")?.remove();
@@ -116,7 +116,7 @@
           backdrop.id = "login-popup";
           backdrop.innerHTML = `
             <div class="login-popup" role="alertdialog" aria-modal="true">
-              <div class="login-popup-icon warn">!</div>
+              <div class="login-popup-icon ${type === "ok" ? "" : "warn"}">${type === "ok" ? "✓" : "!"}</div>
               <p class="login-popup-msg"></p>
               <p class="login-popup-sub" hidden></p>
               <div class="login-popup-actions">

@@ -113,11 +113,10 @@ document.addEventListener("DOMContentLoaded", () => {
     modal.hidden = false;
   });
 
-  modal.addEventListener("click", (e) => {
-    // 배경에서 누르고 배경에서 뗐을 때만 닫기 (팝업 안에서 드래그하다 밖에서 놓아도 안 닫힘)
-    let downOnBackdrop = false;
-    modal?.addEventListener("pointerdown", (e) => { downOnBackdrop = (e.target === modal); });
-    modal?.addEventListener("click", (e) => { if (e.target === modal && downOnBackdrop) close(); });
+// 배경에서 누르고 배경에서 뗐을 때만 닫기 (팝업 안에서 드래그하다 밖에서 놓아도 안 닫힘)
+  let downOnBackdrop = false;
+  modal.addEventListener("pointerdown", (e) => { downOnBackdrop = (e.target === modal); });
+  modal.addEventListener("click", (e) => { if (e.target === modal && downOnBackdrop) modal.hidden = true; });
   });
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") modal.hidden = true;
