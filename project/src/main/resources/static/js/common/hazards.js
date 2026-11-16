@@ -286,6 +286,170 @@ document.addEventListener("DOMContentLoaded", () => {
     showHazardImage(index);
   });
 
+  /* ---------- 이미지 크게 보기 (라이트박스) ---------- */
+  const lightbox = $("hz-lightbox");
+  const lightboxImg = $("hz-lightbox-img");
+  const lightboxPrev = $("hz-lightbox-prev");
+  const lightboxNext = $("hz-lightbox-next");
+  const lightboxClose = $("hz-lightbox-close");
+  const lightboxCount = $("hz-lightbox-count");
+
+  function renderLightbox() {
+    if (!currentImages.length) return;
+    resetZoom(); // 사진이 바뀔 때마다 확대 상태 초기화
+    lightboxImg.src = currentImages[currentImageIndex];
+    const multiple = currentImages.length > 1;
+    lightboxPrev.hidden = !multiple;
+    lightboxNext.hidden = !multiple;
+    lightboxCount.hidden = !multiple;
+    lightboxCount.textContent = `${currentImageIndex + 1} / ${currentImages.length}`;
+  }
+
+  function openLightbox() {
+    if (!currentImages.length) return;
+    renderLightbox();
+    lightbox.hidden = false;
+  }
+
+  function closeLightbox() {
+    if (lightbox) lightbox.hidden = true;
+    resetZoom();
+  }
+
+  function moveLightbox(step) {
+    currentImageIndex =
+      (currentImageIndex + step + currentImages.length) % currentImages.length;
+    showHazardImage(currentImageIndex); // 상세 팝업 안의 사진도 같이 맞춤
+    renderLightbox();
+  }
+
+  viewImage?.addEventListener("click", openLightbox);
+
+  /* ---------- 마우스 휠 확대/축소 + 드래그 이동 ---------- */
+  const ZOOM_MIN = 1;
+  const ZOOM_MAX = 5;
+  const ZOOM_STEP = 1.15;
+
+  let zoomScale = 1;
+  let panX = 0;
+  let panY = 0;
+  let isPanning = false;
+  let panStartX = 0;
+  let panStartY = 0;
+
+  // 사진이 화면 밖으로 벗어나지 않도록 이동 범위 제한
+  function clampPan() {
+    const viewW = lightbox.clientWidth;
+    const viewH = lightbox.clientHeight;
+    const imgW = lightboxImg.offsetWidth * zoomScale;
+    const imgH = lightboxImg.offsetHeight * zoomScale;
+
+    // 확대된 사진이 화면보다 클 때만 그만큼만 이동 가능, 작으면 중앙 고정
+    const maxPanX = Math.max(0, (imgW - viewW) / 2);
+    const maxPanY = Math.max(0, (imgH - viewH) / 2);
+
+    panX = Math.min(maxPanX, Math.max(-maxPanX, panX));
+    panY = Math.min(maxPanY, Math.max(-maxPanY, panY));
+  }
+
+  function applyZoom() {
+    clampPan();
+    lightboxImg.style.transform =
+      `translate(${panX}px, ${panY}px) scale(${zoomScale})`;
+    lightboxImg.style.cursor =
+      zoomScale > 1 ? (isPanning ? "grabbing" : "grab") : "zoom-in";
+  }
+
+  function resetZoom() {
+    zoomScale = 1;
+    panX = 0;
+    panY = 0;
+    isPanning = false;
+    lightboxImg.classList.remove("is-dragging");
+    applyZoom();
+  }
+
+  // 휠: 위로 굴리면 확대, 아래로 굴리면 축소 (마우스 커서 위치 기준)
+  lightbox?.addEventListener("wheel", (e) => {
+    e.preventDefault(); // 뒤 페이지가 같이 스크롤되는 것 방지
+
+    const prevScale = zoomScale;
+    const next = e.deltaY < 0 ? zoomScale * ZOOM_STEP : zoomScale / ZOOM_STEP;
+    zoomScale = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, next));
+    if (zoomScale === prevScale) return;
+
+    // 화면 중앙 기준 마우스 위치
+    const rect = lightbox.getBoundingClientRect();
+    const dx = e.clientX - (rect.left + rect.width / 2);
+    const dy = e.clientY - (rect.top + rect.height / 2);
+
+    // 커서 아래에 있던 지점이 확대/축소 후에도 같은 자리에 오도록 이동값 보정
+    const ratio = zoomScale / prevScale;
+    panX = dx - (dx - panX) * ratio;
+    panY = dy - (dy - panY) * ratio;
+
+    if (zoomScale === 1) { panX = 0; panY = 0; }
+    applyZoom(); // 내부에서 이동 범위 제한(clampPan)도 적용됨
+  }, { passive: false });
+
+  // 확대된 상태에서 드래그로 이동
+  lightboxImg?.addEventListener("pointerdown", (e) => {
+    if (zoomScale <= 1) return;
+    isPanning = true;
+    panStartX = e.clientX - panX;
+    panStartY = e.clientY - panY;
+    lightboxImg.setPointerCapture(e.pointerId);
+    lightboxImg.classList.add("is-dragging");
+    applyZoom();
+    e.preventDefault();
+  });
+
+  lightboxImg?.addEventListener("pointermove", (e) => {
+    if (!isPanning) return;
+    panX = e.clientX - panStartX;
+    panY = e.clientY - panStartY;
+    applyZoom();
+  });
+
+  const endPan = () => {
+    if (!isPanning) return;
+    isPanning = false;
+    lightboxImg.classList.remove("is-dragging");
+    applyZoom();
+  };
+  lightboxImg?.addEventListener("pointerup", endPan);
+  lightboxImg?.addEventListener("pointercancel", endPan);
+
+  // 더블클릭: 2배 확대 <-> 원래 크기 전환
+  lightboxImg?.addEventListener("dblclick", () => {
+    if (zoomScale > 1) {
+      resetZoom();
+    } else {
+      zoomScale = 2;
+      applyZoom();
+    }
+  });
+  lightboxClose?.addEventListener("click", closeLightbox);
+  lightboxPrev?.addEventListener("click", (e) => { e.stopPropagation(); moveLightbox(-1); });
+  lightboxNext?.addEventListener("click", (e) => { e.stopPropagation(); moveLightbox(1); });
+
+  // 검은 배경 클릭 시 닫기 (사진 자체를 클릭하면 안 닫힘)
+  lightbox?.addEventListener("click", (e) => {
+    if (e.target === lightbox) closeLightbox();
+  });
+
+  // 키보드: ESC 닫기 / 좌우 방향키 이동
+  document.addEventListener("keydown", (e) => {
+    if (!lightbox || lightbox.hidden) return;
+    if (e.key === "Escape") {
+      e.stopImmediatePropagation(); // 상세보기 팝업의 ESC 핸들러로 전달되지 않게 차단
+      closeLightbox();
+      return;
+    }
+    if (e.key === "ArrowLeft" && currentImages.length > 1) moveLightbox(-1);
+    if (e.key === "ArrowRight" && currentImages.length > 1) moveLightbox(1);
+  });
+
   const closeView = () => { if (viewModal) viewModal.hidden = true; };
 
   document.querySelectorAll(".hz-view-btn").forEach((btn) => {
@@ -298,7 +462,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   viewModal?.querySelectorAll("[data-hz-view-close]").forEach((b) => b.addEventListener("click", closeView));
   // closeOnBackdrop(viewModal, closeView); - 바깥 클릭 시 팝업 꺼짐
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && viewModal && !viewModal.hidden) closeView(); });
+  document.addEventListener("keydown", (e) => {
+    // 이미지 확대 중이면 확대만 닫고, 상세 팝업은 유지
+    if (lightbox && !lightbox.hidden) return;
+    if (e.key === "Escape" && viewModal && !viewModal.hidden) closeView();
+  });
 
   /* ---------- 3) 신고 팝업 ---------- */
   const modal = document.getElementById("hz-modal");
