@@ -62,13 +62,55 @@
       <p class="adm-caption" th:text="|전체 농지 ${totalLandCount ?: 0}곳 중 ${completedLandCount ?: 0}곳 완료|">전체 농지 0곳 중 0곳 완료</p>
 
       <div class="dash-card-head"><h2>🚁 최근 방제 작업 이력</h2></div>
+     
+      <!-- 방제 작업 이력 검색 -->
+      <div class="adm-work-search">
+      <div class="adm-search-item">
+        <label for="work-date">날짜</label>
+        <input type="date" id="work-date">
+      </div>
+
+      <div class="adm-search-item">
+        <label for="work-region">작업 지역</label>
+        <input type="text" id="work-region" placeholder="지역 검색">
+      </div>
+
+      <div class="adm-search-item">
+        <label for="work-pilot">담당 조종사</label>
+        <input type="text" id="work-pilot" placeholder="조종사 검색">
+      </div>
+
+      <div class="adm-search-item">
+        <label for="work-status">상태</label>
+        <select id="work-status">
+            <option value="">전체</option>
+            <option value="ASSIGNED">대기</option>
+            <option value="IN_PROGRESS">진행 중</option>
+            <option value="COMPLETED">완료</option>
+            <option value="PAUSED">일시정지</option>
+            <option value="INTERRUPTED">강제 중단</option>
+            <option value="STOPPED">중단</option>
+        </select>
+      </div>
+
+    <button type="button" id="work-search-btn">검색</button>
+    <button type="button" id="work-reset-btn">초기화</button>
+   </div>
+       
+     
       <div class="asset-pilot-table-scroll">
         <table class="asset-pilot-table">
           <thead>
             <tr><th>날짜</th><th>작업 지역</th><th>조종사</th><th>상태</th></tr>
           </thead>
           <tbody>
-            <tr th:each="w : ${recentWorks}">
+            <tr th:each="w : ${recentWorks}"
+                th:attr="
+                        data-date=${w.workDate != null ? #temporals.format(w.workDate, 'yyyy-MM-dd') : ''},
+                        data-region=${w.region},
+                        data-pilot=${w.pilotName},
+                        data-status=${w.status}" >
+
               <td th:text="${w.workDate != null} ? ${#temporals.format(w.workDate, 'MM-dd')} : '-'">11-02</td>
               <td th:text="${w.region}">유성구 전민동</td>
               <td th:text="${w.pilotName}">김인수</td>
@@ -206,7 +248,55 @@ document.addEventListener('DOMContentLoaded', () => {
       day.textContent = label;
       col.append(num, bar, day);
       box.appendChild(col);
-    });
+
+          // 주간 방제 작업 추이 코드
+    // ... 기존 코드 유지
+
+
+    // =================================
+    // 방제 작업 이력 검색
+    // =================================
+    const searchWorkHistory = () => {
+        const date = document.getElementById('work-date').value;
+        const region = document.getElementById('work-region').value.trim().toLowerCase();
+        const pilot = document.getElementById('work-pilot').value.trim().toLowerCase();
+        const status = document.getElementById('work-status').value;
+
+        const rows = document.querySelectorAll(
+            '.asset-pilot-table tbody tr[data-date]'
+        );
+
+        rows.forEach(row => {
+            const rowDate = row.dataset.date || '';
+            const rowRegion = (row.dataset.region || '').toLowerCase();
+            const rowPilot = (row.dataset.pilot || '').toLowerCase();
+            const rowStatus = row.dataset.status || '';
+
+            const match =
+                (!date || rowDate === date) &&
+                (!region || rowRegion.includes(region)) &&
+                (!pilot || rowPilot.includes(pilot)) &&
+                (!status || rowStatus === status);
+
+            row.hidden = !match;
+        });
+    };
+
+    document.getElementById('work-search-btn')
+        .addEventListener('click', searchWorkHistory);
+
+    document.getElementById('work-reset-btn')
+        .addEventListener('click', () => {
+            document.getElementById('work-date').value = '';
+            document.getElementById('work-region').value = '';
+            document.getElementById('work-pilot').value = '';
+            document.getElementById('work-status').value = '';
+
+            searchWorkHistory();
+        });
+
+});
+
   }
 });
 </script>
