@@ -66,7 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const cancelForm = $("#ap-cancel-form");
   const note = $("#ap-note");
   const goAssignBtn = $("#ap-go-assign"); // 바로가기 버튼
-  const currentDashboardPolygon = null;
+  let currentDashboardPolygon = null;
 
   // [작업 진행중] 상세 패널을 표시할 위치
   const workingPanelSlot = $("#working-assign-panel-slot");
@@ -123,9 +123,9 @@ document.addEventListener("DOMContentLoaded", () => {
       currentDashboardPolygon = null;
     }
     
-    if (f.polygonCooredinates && f.polygonCooredinates.trim() !== "") {
+    if (f.polygonCoordinates && f.polygonCoordinates.trim() !== "") {
       try {
-        const coords = JSON.parse(f.polygonCooredinates);
+        const coords = JSON.parse(f.polygonCoordinates);
         if (Array.isArray(coords) && coords.length >= 3 && map) {
           currentDashboardPolygon = L.polygon(coords, {
             color: f.color || "#238451", // 농지 상태 색상 (READY면 초록, ASSIGNED 면 노랑 등)
@@ -263,6 +263,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const pilotAnimations = {};
   const pilotTracks = {};
+  // 기억용 객체
+  const pilotTaskNo = {};
+
   // 조종사별 고유 비행선 컬러 팔레트 (선명하고 겹치지 않는 색상군)
   const TRACK_COLORS = [
     "#0284c7", // 선명한 테크 블루 (조종사 1)
@@ -282,7 +285,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return TRACK_COLORS[index];
   }
 
-  const updatePilotMarker = (name, lat, lng) => {
+  const updatePilotMarker = (name, lat, lng, assignmentNo) => {
     pilotLastSeen[name] = Date.now();
 
     // 1. 해당 조종사의 실시간 비행선이 없으면 생성
@@ -295,6 +298,16 @@ document.addEventListener("DOMContentLoaded", () => {
         opacity: 0.9
       }).addTo(map);
     }
+
+    const existingPts = pilotTracks[name].getLatLngs();
+    if (!pilotTaskNo[name] && existingPts.length > 0 && map.distance(existingPts[existingPts.length - 1], [lat, lng]) > 500) {
+      pilotTracks[name].setLatLngs([]);
+    }
+
+    if (assignmentNo && pilotTaskNo[name] && pilotTaskNo[name] !== assignmentNo) {
+      pilotTracks[name].setLatLngs([]);
+    }
+    if (assignmentNo) pilotTaskNo[name] = assignmentNo;
 
     // 핵심: 새 좌표가 오자마자 비행선에 점을 무조건 즉시 추가! (선이 끊기지 않음)
     pilotTracks[name].addLatLng([lat, lng]);
@@ -458,7 +471,7 @@ document.addEventListener("DOMContentLoaded", () => {
       stompClient.subscribe("/sub/team/" + channelKey, (message) => {
         const d = JSON.parse(message.body);
         console.log("🚁 [단장 화면 실시간 수신 성공!]:", d);
-        updatePilotMarker(d.pilotName, d.latitude, d.longitude);
+        updatePilotMarker(d.pilotName, d.latitude, d.longitude, d.assignmentNo);
       });
 
     }, () => {
