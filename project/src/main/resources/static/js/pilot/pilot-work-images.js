@@ -73,9 +73,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 const data = await response.json();
 
-                button.textContent = hasImages(data)
-                    ? "사진 수정"
-                    : "사진 등록";
+                // 사진이 하나라도 등록되어 있으면 목록의 등록 버튼 숨김
+                button.hidden = hasImages(data);
 
             } catch (error) {
                 console.error(
@@ -362,15 +361,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
         updateCounts();
 
-        // 현재 작업의 목록 버튼 문구 갱신
+        // 사진이 등록되어 있으면 목록의 사진 등록 버튼 숨김
         imageButtons.forEach(button => {
 
             if (button.dataset.assignmentNo !== assignmentNo) {
                 return;
             }
 
-            button.textContent =
-                totalCount > 0 ? "사진 수정" : "사진 등록";
+            button.hidden = totalCount > 0;
         });
     }
 
