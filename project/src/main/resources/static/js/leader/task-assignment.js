@@ -141,4 +141,3 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* ===== 처음 열렸을 때 (농지 관리에서 ?landNo= 로 넘어온 경우 미리 체크돼 있음) ===== */
     renderSelection();
-});
