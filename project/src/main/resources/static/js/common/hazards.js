@@ -474,6 +474,40 @@ document.addEventListener("DOMContentLoaded", () => {
   const imageInput = document.getElementById("hz-images");
   const imagePreview = document.getElementById("hz-image-preview");
 
+  // 위험구역 이미지 개수 초과 안내 팝업
+  function showHazardImageLimitNotice() {
+
+      let notice = document.getElementById("image-limit-notice");
+
+      if (!notice) {
+
+          notice = document.createElement("div");
+          notice.id = "image-limit-notice";
+          notice.className = "image-limit-notice";
+
+          notice.innerHTML = `
+              <div class="image-limit-notice-box">
+                  <span class="image-limit-notice-icon">!</span>
+                  <p class="image-limit-notice-message"></p>
+                  <button type="button">확인</button>
+              </div>
+          `;
+
+          document.body.appendChild(notice);
+
+          notice.querySelector("button").addEventListener("click", () => {
+              notice.hidden = true;
+          });
+      }
+
+      notice.querySelector(
+          ".image-limit-notice-message"
+      ).textContent = "이미지는 최대 3개까지 업로드할 수 있습니다.";
+
+      notice.hidden = false;
+  }
+
+
   // 기존 등록 이미지 관리
   const existingImagePreview = document.getElementById("hz-existing-image-preview");
   const deleteImageInputs = document.getElementById("hz-delete-image-inputs");
@@ -546,7 +580,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
               // 삭제 취소 후 3개를 초과하면 취소하지 않음
               if (remainingCountAfterUndo > 3) {
-                  alert("이미지는 최대 3개까지 업로드할 수 있습니다.");
+                  showHazardImageLimitNotice();
                   return;
               }
 
@@ -679,7 +713,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     if (exceeded) {
-      alert("이미지는 최대 3개까지 업로드할 수 있습니다.");
+      showHazardImageLimitNotice();
     }
 
     updateImageInput();

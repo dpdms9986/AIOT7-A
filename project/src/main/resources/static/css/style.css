@@ -11487,7 +11487,7 @@ a.task-tab {
 .login-popup-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 3000;
+  z-index: 50000;
   display: grid;
   place-items: center;
   background: rgba(15, 23, 42, 0.45);
@@ -14895,4 +14895,970 @@ button[data-orig-html]:disabled,
   background: rgba(255, 255, 255, 0.15);
   color: #fff;
   font-size: 13px;
+}
+
+
+/* =========================================
+   조종사 작업 전·후 사진 기능
+========================================= */
+
+/* 작업 목록 사진 등록 버튼 배치 */
+.pilot-task-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.pilot-task-row > .pilot-task {
+    flex: 1;
+    min-width: 0;
+}
+
+/* 사진 등록 / 수정 버튼 */
+.pilot-image-register-btn {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    min-width: 76px;
+    height: 36px;
+    padding: 0 13px;
+    border: 1px solid #238451;
+    border-radius: 9px;
+    background: #ffffff;
+    color: #238451;
+    font-size: 12px;
+    font-weight: 800;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 5px rgba(35, 132, 81, 0.08);
+}
+
+.pilot-image-register-btn:hover {
+    background: #238451;
+    color: #ffffff;
+    box-shadow: 0 3px 9px rgba(35, 132, 81, 0.2);
+    transform: translateY(-1px);
+}
+
+.pilot-image-register-btn:active {
+    transform: translateY(0);
+}
+
+/* 작업 상세 사진 영역 */
+.pilot-work-image-section {
+    margin-top: 20px;
+    padding: 16px;
+    border: 1px solid #e3ece6;
+    border-radius: 12px;
+    background: #f8fbf9;
+}
+
+.pilot-work-image-group[hidden] {
+    display: none !important;
+}
+
+.pilot-work-image-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.pilot-work-image-header h3 {
+    margin: 0;
+    color: #263d30;
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.pilot-image-limit {
+    color: #7b8980;
+    font-size: 11px;
+}
+
+.pilot-work-image-group {
+    margin-bottom: 18px;
+    padding: 14px;
+    border: 1px solid #e5ece7;
+    border-radius: 10px;
+    background: #ffffff;
+}
+
+.pilot-work-image-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.pilot-work-image-title strong {
+    color: #34483b;
+    font-size: 13px;
+}
+
+.pilot-work-image-title span {
+    color: #238451;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.pilot-work-image-gallery {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.pilot-work-image-item {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 4 / 3;
+    border: 1px solid #e1e8e3;
+    border-radius: 8px;
+    background: #f1f5f2;
+    cursor: pointer;
+}
+
+.pilot-work-image-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.2s;
+}
+
+.pilot-work-image-item:hover img {
+    transform: scale(1.05);
+}
+
+.pilot-work-image-empty {
+    margin: 18px 0;
+    padding: 24px 12px;
+    border: 1px dashed #cbd8cf;
+    border-radius: 9px;
+    background: #ffffff;
+    color: #87928b;
+    font-size: 13px;
+    text-align: center;
+}
+
+.pilot-work-image-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 12px;
+}
+
+.pilot-work-image-actions[hidden] {
+    display: none !important;
+}
+
+/* =========================================
+   작업 사진 등록 / 수정 모달
+   위험 구역 사진 업로드 모달 디자인 계승
+========================================= */
+
+.pilot-image-modal {
+    z-index: 11000;
+}
+
+#pilot-image-modal .hz-modal-box {
+    display: flex;
+    flex-direction: column;
+    width: min(560px, 100%);
+    max-height: calc(100vh - 32px);
+    padding: 0;
+    overflow: hidden;
+    border-radius: 18px;
+    background: #f5f9f6;
+    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.2);
+}
+
+#pilot-image-modal .hz-modal-box > h3 {
+    flex-shrink: 0;
+    margin: 0;
+    padding: 22px 26px 10px;
+    background: #1f5637;
+    color: #ffffff;
+    font-size: 20px;
+    font-weight: 800;
+}
+
+#pilot-image-modal .hz-modal-box > .hz-muted {
+    flex-shrink: 0;
+    margin: 0;
+    padding: 0 26px 18px;
+    background: #1f5637;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 12px;
+}
+
+#pilot-image-modal .hz-modal-close {
+    z-index: 2;
+    top: 17px;
+    right: 20px;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.18);
+    color: #ffffff;
+    font-size: 17px;
+}
+
+#pilot-image-modal .hz-modal-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+#pilot-image-modal form {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 20px 24px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    box-sizing: border-box;
+    scrollbar-width: thin;
+}
+
+.pilot-image-upload-card {
+    padding: 16px;
+    border: 1px solid #e3ece6;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 2px 7px rgba(35, 132, 81, 0.04);
+}
+
+.pilot-image-upload-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.pilot-image-upload-title strong {
+    color: #34483b;
+    font-size: 14px;
+}
+
+.pilot-image-upload-title span {
+    color: #238451;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.pilot-image-file-label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 36px;
+    padding: 0 14px;
+    border: 1px solid #238451;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #238451;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.pilot-image-file-label:hover {
+    background: #eaf5ee;
+}
+
+.pilot-image-preview {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 9px;
+    margin-top: 12px;
+}
+
+.pilot-image-preview-item {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 1 / 1;
+    border: 1px solid #e1e8e3;
+    border-radius: 8px;
+    background: #f1f5f2;
+}
+
+.pilot-image-preview-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.pilot-image-preview-remove {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 24px;
+    height: 24px;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(31, 41, 55, 0.85);
+    color: #ffffff;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.pilot-image-preview-remove:hover {
+    background: #dc3545;
+}
+
+.pilot-image-modal-notice {
+    margin: 0;
+    color: #7b8980;
+    font-size: 11px;
+    line-height: 1.7;
+}
+
+#pilot-image-modal .hz-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin: 0;
+    padding: 16px 0 0;
+    border-top: 1px solid #edf1ed;
+}
+
+/* 사진 확대 */
+.pilot-image-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 50000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
+    background: rgba(0, 0, 0, 0.9);
+}
+
+.pilot-image-lightbox[hidden] {
+    display: none !important;
+}
+
+.pilot-image-lightbox img {
+    max-width: 90%;
+    max-height: 85vh;
+    object-fit: contain;
+}
+
+#pilot-image-lightbox-close {
+    position: absolute;
+    top: 20px;
+    right: 25px;
+    width: 40px;
+    height: 40px;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+/* 모바일 대응 */
+@media (max-width: 600px) {
+
+    .pilot-task-row {
+    flex-wrap: nowrap;
+    }
+
+    .pilot-task-row > .pilot-task {
+        flex: 1;
+        width: auto;
+        min-width: 0;
+    }
+
+    .pilot-image-register-btn {
+        margin-left: 0;
+    }
+
+    .pilot-work-image-gallery,
+    .pilot-image-preview {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    #pilot-image-modal .hz-modal-box {
+        width: 100%;
+        max-height: calc(100vh - 24px);
+        border-radius: 16px;
+    }
+
+    #pilot-image-modal form {
+        padding: 16px;
+    }
+
+    .pilot-work-image-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+
+
+/* =========================================
+   작업 사진 삭제 선택 상태
+   위험구역 게시판 디자인과 동일하게 적용
+========================================= */
+
+.pilot-image-preview-item.is-delete img {
+    opacity: 0.35;
+    border: 2px solid #dc3545;
+}
+
+.pilot-image-preview-item.is-delete::after {
+    content: "삭제 예정";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    padding: 4px 8px;
+    border-radius: 5px;
+    background: rgba(220, 53, 69, 0.92);
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+.pilot-image-preview-item.is-delete .pilot-image-preview-remove {
+    background: #dc3545;
+}
+
+.pilot-image-preview-item.is-delete .pilot-image-preview-remove:hover {
+    background: #a71d2a;
+}
+
+
+/* =========================================
+   이미지 개수 초과 안내 팝업
+   위험구역 / 작업 사진 공통
+========================================= */
+
+.image-limit-notice {
+    position: fixed;
+    inset: 0;
+    z-index: 50000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background: rgba(0, 0, 0, 0.35);
+}
+
+.image-limit-notice[hidden] {
+    display: none !important;
+}
+
+.image-limit-notice-box {
+    width: min(360px, 100%);
+    padding: 26px 24px 20px;
+    border-radius: 16px;
+    background: #ffffff;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+    text-align: center;
+    animation: imageNoticeAppear 0.18s ease-out;
+}
+
+.image-limit-notice-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    margin: 0 auto 14px;
+    border-radius: 50%;
+    background: #fff1f0;
+    color: #dc3545;
+    font-size: 24px;
+    font-weight: 800;
+}
+
+.image-limit-notice-message {
+    margin: 0 0 20px;
+    color: #34483b;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.6;
+}
+
+.image-limit-notice-box button {
+    min-width: 90px;
+    padding: 9px 20px;
+    border: 0;
+    border-radius: 8px;
+    background: #238451;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.image-limit-notice-box button:hover {
+    background: #1f5637;
+}
+
+@keyframes imageNoticeAppear {
+    from {
+        opacity: 0;
+        transform: translateY(8px) scale(0.97);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+
+/* =========================================
+   파일럿 작업 사진 UI 보완
+   2026-11-17
+========================================= */
+
+/* -----------------------------------------
+   1. 작업 목록 행 배치
+   작업 상태는 왼쪽, 사진 버튼은 오른쪽
+----------------------------------------- */
+
+.pilot-task-row {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    gap: 8px;
+    box-sizing: border-box;
+}
+
+.pilot-task-row > .pilot-task {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.pilot-task-row .pilot-task-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.pilot-task-row .pilot-status {
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+/* 사진 등록 / 수정 버튼 */
+.pilot-task-row .pilot-image-register-btn {
+    flex: 0 0 auto;
+    min-width: 78px;
+    height: 36px;
+    padding: 0 12px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid #238451;
+    border-radius: 9px;
+
+    background: #ffffff;
+    color: #238451;
+
+    font-size: 12px;
+    font-weight: 800;
+    white-space: nowrap;
+
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.pilot-task-row .pilot-image-register-btn:hover {
+    background: #238451;
+    color: #ffffff;
+    box-shadow: 0 3px 9px rgba(35, 132, 81, 0.18);
+}
+
+.pilot-task-row .pilot-image-register-btn:active {
+    transform: scale(0.97);
+}
+
+/* -----------------------------------------
+   2. 상세 화면 사진 영역
+----------------------------------------- */
+
+.pilot-work-image-section {
+    margin-top: 20px;
+    padding: 17px;
+
+    border: 1px solid #e1ebe4;
+    border-radius: 13px;
+
+    background: #f8fbf9;
+    box-sizing: border-box;
+}
+
+.pilot-work-image-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+
+    margin-bottom: 16px;
+}
+
+.pilot-work-image-header h3 {
+    margin: 0;
+    color: #263d30;
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.pilot-image-limit {
+    color: #849188;
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+/* 사진 그룹 */
+.pilot-work-image-group {
+    margin-bottom: 14px;
+    padding: 14px;
+
+    border: 1px solid #e5ece7;
+    border-radius: 10px;
+
+    background: #ffffff;
+    box-sizing: border-box;
+}
+
+/* hidden 속성 우선 적용 */
+.pilot-work-image-group[hidden],
+.pilot-work-image-actions[hidden],
+#pilot-work-image-empty[hidden] {
+    display: none !important;
+}
+
+/* 사진 제목 및 개수 */
+.pilot-work-image-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-bottom: 12px;
+}
+
+.pilot-work-image-title strong {
+    color: #34483b;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.pilot-work-image-title span {
+    color: #238451;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+/* 상세 사진 갤러리 */
+.pilot-work-image-gallery {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.pilot-work-image-item {
+    position: relative;
+    overflow: hidden;
+
+    aspect-ratio: 4 / 3;
+
+    border: 1px solid #e1e8e3;
+    border-radius: 9px;
+
+    background: #f1f5f2;
+    cursor: pointer;
+}
+
+.pilot-work-image-item img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.2s ease;
+}
+
+.pilot-work-image-item:hover img {
+    transform: scale(1.05);
+}
+
+/* 등록된 사진이 없는 경우 */
+.pilot-work-image-empty {
+    margin: 12px 0 0;
+    padding: 25px 12px;
+
+    border: 1px dashed #cbd8cf;
+    border-radius: 9px;
+
+    background: #ffffff;
+    color: #87928b;
+
+    font-size: 13px;
+    text-align: center;
+}
+
+/* 상세 화면 사진 수정 버튼 */
+.pilot-work-image-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 12px;
+}
+
+.pilot-work-image-actions button {
+    min-width: 100px;
+}
+
+/* -----------------------------------------
+   3. 사진 등록 / 수정 모달
+----------------------------------------- */
+
+#pilot-image-modal[hidden] {
+    display: none !important;
+}
+
+#pilot-image-modal {
+    z-index: 11000;
+}
+
+#pilot-image-modal .hz-modal-box {
+    width: min(560px, 100%);
+    max-height: calc(100vh - 32px);
+
+    display: flex;
+    flex-direction: column;
+
+    padding: 0;
+    overflow: hidden;
+
+    border-radius: 18px;
+    background: #f5f9f6;
+
+    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.2);
+}
+
+#pilot-image-modal form {
+    flex: 1;
+    min-height: 0;
+
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+
+    padding: 20px 24px 24px;
+    overflow-y: auto;
+
+    box-sizing: border-box;
+}
+
+/* 모달 내부 작업 전·후 사진 카드 */
+#pilot-image-modal .pilot-work-image-group {
+    margin: 0;
+    padding: 15px;
+
+    border: 1px solid #e3ece6;
+    border-radius: 12px;
+
+    background: #ffffff;
+    box-shadow: 0 2px 7px rgba(35, 132, 81, 0.04);
+}
+
+/* 파일 선택 버튼 */
+#pilot-image-modal .pilot-image-file-label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 38px;
+    padding: 0 15px;
+
+    border: 1px solid #238451;
+    border-radius: 8px;
+
+    background: #ffffff;
+    color: #238451;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#pilot-image-modal .pilot-image-file-label:hover {
+    background: #eaf5ee;
+}
+
+/* 사진 미리보기 */
+#pilot-image-modal .pilot-image-preview {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 9px;
+    margin-top: 12px;
+}
+
+#pilot-image-modal .pilot-image-preview-item {
+    position: relative;
+    overflow: hidden;
+
+    aspect-ratio: 1 / 1;
+
+    border: 1px solid #e1e8e3;
+    border-radius: 8px;
+
+    background: #f1f5f2;
+}
+
+#pilot-image-modal .pilot-image-preview-item img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* 삭제 버튼 */
+#pilot-image-modal .pilot-image-preview-remove {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+
+    width: 25px;
+    height: 25px;
+
+    border: 0;
+    border-radius: 50%;
+
+    background: rgba(31, 41, 55, 0.85);
+    color: #ffffff;
+
+    font-size: 14px;
+    cursor: pointer;
+}
+
+#pilot-image-modal .pilot-image-preview-remove:hover {
+    background: #dc3545;
+}
+
+/* 삭제 예정 이미지 */
+#pilot-image-modal .pilot-image-preview-item.is-delete img {
+    opacity: 0.35;
+    border: 2px solid #dc3545;
+}
+
+#pilot-image-modal .pilot-image-preview-item.is-delete::after {
+    content: "삭제 예정";
+
+    position: absolute;
+    top: 50%;
+    left: 50%;
+
+    transform: translate(-50%, -50%);
+
+    padding: 4px 8px;
+    border-radius: 5px;
+
+    background: rgba(220, 53, 69, 0.92);
+    color: #ffffff;
+
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+
+    pointer-events: none;
+}
+
+#pilot-image-modal .pilot-image-preview-item.is-delete
+.pilot-image-preview-remove {
+    background: #dc3545;
+}
+
+/* 모달 안내 문구 */
+.pilot-image-modal-notice {
+    margin: 0;
+
+    color: #7b8980;
+    font-size: 11px;
+    line-height: 1.7;
+}
+
+/* 모달 하단 버튼 */
+#pilot-image-modal .hz-modal-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+
+    margin: 0;
+    padding-top: 16px;
+
+    border-top: 1px solid #edf1ed;
+}
+
+/* -----------------------------------------
+   4. 사진 확대 화면
+----------------------------------------- */
+
+.pilot-image-lightbox[hidden] {
+    display: none !important;
+}
+
+/* -----------------------------------------
+   5. 모바일 대응
+----------------------------------------- */
+
+@media (max-width: 600px) {
+
+    .pilot-task-row {
+        flex-wrap: nowrap;
+        gap: 6px;
+    }
+
+    .pilot-task-row > .pilot-task {
+        flex: 1 1 auto;
+        min-width: 0;
+        padding: 10px 8px;
+        gap: 7px;
+    }
+
+    .pilot-task-row .pilot-image-register-btn {
+        min-width: 70px;
+        height: 34px;
+        padding: 0 9px;
+        font-size: 11px;
+    }
+
+    .pilot-work-image-section {
+        padding: 12px;
+    }
+
+    .pilot-work-image-gallery,
+    #pilot-image-modal .pilot-image-preview {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    #pilot-image-modal .hz-modal-box {
+        width: 100%;
+        max-height: calc(100vh - 24px);
+        border-radius: 16px;
+    }
+
+    #pilot-image-modal form {
+        padding: 16px;
+    }
+
+    .pilot-work-image-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
 }
