@@ -258,7 +258,6 @@ public class LeaderController {
         /**
      * 작업 배정 (DB 저장)
      * - 구역별 배정: 농지 1건(또는 지도에서 직접 그린 영역)을 N조각으로 나눠 조종사별로 배정
-     * - 일반 배정: 여러 농지를 조종사별 필지 수(quotas)대로 배정
      */
     @PostMapping("/task-assignment")
     public String assign(@ModelAttribute AssignRequest req,
@@ -322,56 +321,56 @@ public class LeaderController {
 					Lands land = landRepository.findById(landNo).orElse(null);
 
 					if (land != null && "READY".equals(land.getStatus())) {
-							double totalPieces = pilotQueue.size(); // 총 조각 수 (예: 1:2면 3조각)
+						double totalPieces = pilotQueue.size(); // 총 조각 수 (예: 1:2면 3조각)
 
-							// 조종사별로 담당하는 지분만큼 WorkAssignments 생성
-							for (Map.Entry<Long, Integer> entry : req.getQuotas().entrySet()) {
-									int quota = (entry.getValue() != null) ? entry.getValue() : 0;
-									if (quota > 0) {
-											Users pilot = userRepository.findById(entry.getKey()).orElse(leader);
-											double myRatio = quota / totalPieces; // 1:2 분할 시 각각 1/3, 2/3
+						// 조종사별로 담당하는 지분만큼 WorkAssignments 생성
+						for (Map.Entry<Long, Integer> entry : req.getQuotas().entrySet()) {
+							int quota = (entry.getValue() != null) ? entry.getValue() : 0;
+							if (quota > 0) {
+								Users pilot = userRepository.findById(entry.getKey()).orElse(leader);
+								double myRatio = quota / totalPieces; // 1:2 분할 시 각각 1/3, 2/3
 
-											WorkAssignments assignment = WorkAssignments.builder()
-															.dispatchBatch(batch)
-															.land(land)
-															.pilot(pilot)
-															.weightRatio(myRatio) // 조종사 개인 지분율 저장!
-															.status("ASSIGNED")
-															.build();
-											workAssignmentRepository.save(assignment);
-									}
+								WorkAssignments assignment = WorkAssignments.builder()
+																								.dispatchBatch(batch)
+																								.land(land)
+																								.pilot(pilot)
+																								.weightRatio(myRatio) // 조종사 개인 지분율 저장!
+																								.status("ASSIGNED")
+																								.build();
+								workAssignmentRepository.save(assignment);
 							}
-							land.updateStatus("ASSIGNED");
-							landRepository.save(land);
+						}
+						land.updateStatus("ASSIGNED");
+						landRepository.save(land);
 					}
-			} else {
+				} else {
 					/* =========================================================
 					* [케이스 B] 여러 농지를 여러 명에게 배정 (기존 1인 1필지 로직)
 					* ========================================================= */
 					for (int i = 0; i < req.getLandNos().size(); i++) {
-							Long landNo = req.getLandNos().get(i);
-							Lands land = landRepository.findById(landNo).orElse(null);
+						Long landNo = req.getLandNos().get(i);
+						Lands land = landRepository.findById(landNo).orElse(null);
 
-							if (land != null && "READY".equals(land.getStatus())) {
-									Long pilotNo = (i < pilotQueue.size()) ? pilotQueue.get(i) : leader.getNo();
-									Users pilot = userRepository.findById(pilotNo).orElse(leader);
+						if (land != null && "READY".equals(land.getStatus())) {
+														Long pilotNo = (i < pilotQueue.size()) ? pilotQueue.get(i) : leader.getNo();
+														Users pilot = userRepository.findById(pilotNo).orElse(leader);
 
-									WorkAssignments assignment = WorkAssignments.builder()
-													.dispatchBatch(batch)
-													.land(land)
-													.pilot(pilot)
-													.weightRatio(1.0)
-													.status("ASSIGNED")
-													.build();
-									workAssignmentRepository.save(assignment);
+														WorkAssignments assignment = WorkAssignments.builder()
+																														.dispatchBatch(batch)
+																														.land(land)
+																														.pilot(pilot)
+																														.weightRatio(1.0)
+																														.status("ASSIGNED")
+																														.build();
+														workAssignmentRepository.save(assignment);
 
-									land.updateStatus("ASSIGNED");
-									landRepository.save(land);
-							}
+														land.updateStatus("ASSIGNED");
+														landRepository.save(land);
+						}
 					}
-			}
-            redirectAttributes.addFlashAttribute("message",
-                    req.getLandNos().size() + "필지를 " + pilotCount + "명의 조종사에게 배정했습니다.");
+				}
+				redirectAttributes.addFlashAttribute("message",
+								req.getLandNos().size() + "필지를 " + pilotCount + "명의 조종사에게 배정했습니다.");
 
         }
         return "redirect:/leader/task-assignment?tab=status";
@@ -488,7 +487,6 @@ if (req.getLandNos() != null && req.getLandNos().size() == 1) {
             .add(p.getGeometry());
     }
 
-
 }
         areaByPilot.keySet().removeIf(no -> !userRepository.existsById(no));
         if (areaByPilot.isEmpty()) {
@@ -520,10 +518,6 @@ if (req.getLandNos() != null && req.getLandNos().size() == 1) {
          } catch (Exception ex) {
          log.warn("담당 구역 좌표 직렬화 실패: pilotNo={}", e.getKey(), ex);
          }
-            
-
-
-
             workAssignmentRepository.save(WorkAssignments.builder()
                     .dispatchBatch(batch)
                     .land(land)

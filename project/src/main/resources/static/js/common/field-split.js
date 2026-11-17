@@ -66,8 +66,8 @@ window.FieldSplit = (() => {
     if (!Array.isArray(coordinates) || coordinates.length < 3) {
       throw new Error("다각형을 만들려면 꼭짓점 좌표가 3개 이상 필요합니다.");
     }
-    if (!Number.isInteger(n) || n < 2 || n > 12) {
-      throw new Error("분할 개수는 2개에서 12개 사이의 정수로 입력해 주세요.");
+    if (!Number.isInteger(n) || n < 1 || n > 12) {
+      throw new Error("분할 개수는 1개에서 12개 사이의 정수로 입력해 주세요.");
     }
     if (!window.turf) {
       throw new Error("Turf.js를 불러오지 못했습니다. 페이지를 새로고침한 뒤 다시 시도해 주세요.");
