@@ -1105,7 +1105,8 @@ if (req.getLandNos() != null && req.getLandNos().size() == 1) {
                 .filter(w -> "ASSIGNED".equals(w.getStatus())
                         || "IN_PROGRESS".equals(w.getStatus())
                         || "PAUSED".equals(w.getStatus())
-                        || "INTERRUPTED".equals(w.getStatus()))
+                        || "INTERRUPTED".equals(w.getStatus())
+                        || "COMPLETED".equals(w.getStatus()))
                 .toList();
 
         // 농지 번호별 작업 전체 그룹화 (공동분할 지원)
