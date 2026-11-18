@@ -64,7 +64,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let lastKey = "";            // 영역이 바뀌면 담당 매핑을 초기화하기 위한 값
   let pieces = [];             // 분할 결과 (GeoJSON Feature, 서→동 순)
   let pieceLayers = [];
-    let assignment = [];         // 구역 index → 조종사 번호 ("" = 미지정)
+  let assignment = [];         // 구역 index → 조종사 번호 ("" = 미지정)
 
   /* ----- 농지별 임시저장 (새로고침 전까지 유지) ----- */
   const drafts = new Map();    // 농지 번호 → { key, drawn, drawnInLand, address, count, assignment, pieces, label }
@@ -325,9 +325,7 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
   resetDrawUi();
 }
-
 return; // 완료 처리 후 새 그리기 시작 코드로 넘어가지 않도록 종료
-
     }
 
     // 새로 그리기 시작
@@ -379,7 +377,7 @@ return; // 완료 처리 후 새 그리기 시작 코드로 넘어가지 않도�
     assignment = pieces.map((_, i) => (valid.has(assignment[i]) ? assignment[i] : ""));
   };
 
-  // 조종사별 담당 구역 · 면적 요약 (숙련도에 따라 넓게/좁게 줬는지 한눈에 보기)
+  // 조종사별 담당 구역 · 면적 요약
   const renderPilotSummary = () => {
     if (!pieces.length) { summaryBox.textContent = ""; return; }
     const areas = pieces.map((p) => turf.area(p));
@@ -448,8 +446,6 @@ return; // 완료 처리 후 새 그리기 시작 코드로 넘어가지 않도�
         hint.textContent = "배정 가능한 조종사가 없어요.";
         card.append(hint);
       }
-
-
       cardsBox.append(card);
     });
     renderPilotSummary();
@@ -575,7 +571,7 @@ return; // 완료 처리 후 새 그리기 시작 코드로 넘어가지 않도�
     }
     currentCoords = coords;
 
-    const n = Math.min(12, Math.max(2, Math.round(Number(countInput.value)) || 2));
+    const n = Math.min(12, Math.max(1, Math.round(Number(countInput.value)) || 2));
     countInput.value = String(n);
     try {
       pieces = FieldSplit.splitPolygonIntoN(coords, n);
