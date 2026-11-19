@@ -27,6 +27,7 @@ public class AdminWorkDto {
             case "ASSIGNED"    -> "대기";
             case "IN_PROGRESS" -> "진행 중";
             case "COMPLETED"   -> "완료";
+            case "INTERRUPTED" -> "중단됨";
             default            -> status;
         };
     }

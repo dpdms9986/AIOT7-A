@@ -12531,6 +12531,7 @@ a.mp-stat-link:hover { border-color: var(--color-primary, #238451); transform: t
 /* 작업 상태 배지: 진행 중(operating) / 대기(maintenance) (normal 은 위쪽에 이미 있음) */
 .asset-pilot-badge.operating   { background: #dff1fb; color: #0b6a96; }
 .asset-pilot-badge.maintenance { background: #fff3cd; color: #946c00; }
+.asset-pilot-badge.interrupted { background: #fee2e2; color: #dc2626; }
 
 /* =====================================================
    관리자 사용자 관리 (page/admin/users/list.html)
@@ -12556,7 +12557,6 @@ a.mp-stat-link:hover { border-color: var(--color-primary, #238451); transform: t
 .um-btn.primary { border-color: #1f9d57; background: #1f9d57; color: #fff; }
 .um-btn.danger  { border-color: #e5484d; background: #e5484d; color: #fff; }
 .um-btn:disabled { opacity: .45; cursor: not-allowed; }
-
 
 .um-grow { flex: 1 1 260px; min-width: 0; }
 .um-filter { display: flex; flex-direction: column; gap: 12px; margin-bottom: 14px; padding: 14px 16px; border: 1px solid #e3ece6; border-radius: 12px; background: #f7faf8; }

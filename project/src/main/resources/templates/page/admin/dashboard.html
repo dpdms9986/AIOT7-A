@@ -88,8 +88,7 @@
             <option value="IN_PROGRESS">진행 중</option>
             <option value="COMPLETED">완료</option>
             <option value="PAUSED">일시정지</option>
-            <option value="INTERRUPTED">강제 중단</option>
-            <option value="STOPPED">중단</option>
+            <option value="INTERRUPTED">중단됨</option>
         </select>
       </div>
 
@@ -116,7 +115,7 @@
               <td th:text="${w.pilotName}">김인수</td>
               <td>
                 <span class="asset-pilot-badge"
-                      th:classappend="${w.status == 'COMPLETED'} ? 'normal' : (${w.status == 'IN_PROGRESS'} ? 'operating' : 'maintenance')"
+                      th:classappend="${w.status == 'COMPLETED'} ? 'normal' : (${w.status == 'IN_PROGRESS'} ? 'operating' : (${w.status == 'INTERRUPTED'} ? 'interrupted' : 'maintenance'))"
                       th:text="${w.statusLabel}">완료</span>
               </td>
             </tr>
